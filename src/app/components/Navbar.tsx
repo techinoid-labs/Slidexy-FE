@@ -1,8 +1,5 @@
-import React from 'react'
-import Logo from '@/app/'
+import React from "react";
 
 export default function Navbar() {
-  return (
-    <div>Navbar</div>
-  )
+  return <div>Navbar</div>;
 }
