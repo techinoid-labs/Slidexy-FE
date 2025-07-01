@@ -1,19 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Box,
-  TextField,
-  IconButton,
-  Button,
-  Typography,
-  useTheme,
-  alpha,
-} from "@mui/material";
+import { useState } from "react";
+import { Box, TextField, Button, Typography } from "@mui/material";
 import Image from "next/image";
 import InputModeSelector from "./InputModeSelector";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function PresentationMaker({
   promptCards,
@@ -26,13 +16,9 @@ export default function PresentationMaker({
 }) {
   const [inputMode, setInputMode] = useState("Text");
   const [inputValue, setInputValue] = useState("");
-  const [slides, setSlides] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  console.log(slides);
-
-  const theme = useTheme();
+  const [loading, setLoading] = useState(false);
+  const [slides, setSlides] = useState([]);
 
   const getPlaceholder = () => {
     switch (inputMode) {
@@ -44,10 +30,28 @@ export default function PresentationMaker({
         return "Describe your idea... e.g., 'Pitch for a new mental health app'";
     }
   };
+
+  const handlePromptClick = (description: string) => {
+    setInputValue(description);
+    setInputMode("Text");
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
     setSlides([]);
+
+    // Basic website validation
+    if (inputMode === "Website") {
+      try {
+        const url = new URL(inputValue);
+        if (!["http:", "https:"].includes(url.protocol)) throw new Error();
+      } catch {
+        setError("Please enter a valid website URL.");
+        setLoading(false);
+        return;
+      }
+    }
 
     const payload =
       inputMode === "Youtube"
@@ -55,14 +59,11 @@ export default function PresentationMaker({
         : inputMode === "Website"
         ? { source: "website", inputWebsiteUrl: inputValue }
         : { source: "text", textContent: inputValue };
-    console.log(payload);
-    // return;
+
     try {
-      const res = await fetch(`${API_BASE_URL}/generate-slides`, {
+      const res = await fetch("/api/generate-slides", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -74,7 +75,6 @@ export default function PresentationMaker({
       const data = await res.json();
       setSlides(data.slides);
     } catch (err: any) {
-      console.error(err);
       setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -82,88 +82,129 @@ export default function PresentationMaker({
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        mt: 6,
-        width: "100%",
-      }}
-    >
-      <InputModeSelector onModeChange={(mode) => setInputMode(mode)} />
+    <Box sx={{ mx: "auto", mt: 6, width: { xs: "100%", md: "70%" } }}>
+      <InputModeSelector onModeChange={setInputMode} />
 
-      <div className="w-full">
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            backgroundColor: "#fff",
-            borderRadius: "999px",
-            border: "2px solid #8E2DE2",
-            boxShadow: "4px 5px 0px 0px #8E2DE2",
-            width: { xs: "100%", md: 660 },
-            height: 72,
-            px: 2,
-            mb: 3,
-          }}
-        >
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder={getPlaceholder()}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            InputProps={{
-              sx: {
-                height: "100%",
-                border: "none",
-                "& fieldset": { border: "none" },
-                fontSize: "1.125rem",
-                px: 2,
-              },
-            }}
-          />
-        </Box>
-
-        <Button
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          backgroundColor: "#fff",
+          borderRadius: "999px",
+          border: "2px solid #8E2DE2",
+          boxShadow: "4px 5px 0px 0px #8E2DE2",
+          height: 72,
+          px: 2,
+          mb: 3,
+        }}
+      >
+        <TextField
           fullWidth
-          variant="contained"
-          onClick={handleSubmit}
-          sx={{
-            textTransform: "none",
-            background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
-            borderRadius: "999px",
-            px: 6,
-            py: 1.75,
-            fontSize: "1.125rem",
-            fontWeight: 600,
-            mb: 4,
-            "&:hover": {
-              background: "linear-gradient(90deg, #7a23c2 0%, #3e00c2 100%)",
+          variant="outlined"
+          placeholder={getPlaceholder()}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          InputProps={{
+            sx: {
+              height: "100%",
+              border: "none",
+              "& fieldset": { border: "none" },
+              fontSize: "1.125rem",
+              px: 2,
             },
           }}
-          disableElevation
-          disabled={loading}
-        >
-          <Typography>
-            {loading ? "Generating..." : "Generate Outlines"}
-          </Typography>
-          <Image
-            src="/images/create-presentation/generate-presentation-btn-ico.svg"
-            alt="Magic Wand"
-            width={22}
-            height={22}
-            style={{ marginLeft: "8px" }}
-          />
-        </Button>
-      </div>
+        />
+      </Box>
+
+      <Button
+        fullWidth
+        variant="contained"
+        onClick={handleSubmit}
+        disabled={loading}
+        sx={{
+          textTransform: "none",
+          background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+          borderRadius: "999px",
+          px: 6,
+          py: 1.75,
+          fontSize: "1.125rem",
+          fontWeight: 600,
+          mb: 4,
+          "&:hover": {
+            background: "linear-gradient(90deg, #7a23c2 0%, #3e00c2 100%)",
+          },
+        }}
+      >
+        {loading ? "Generating..." : "Generate Outlines"}
+        <Image
+          src="/images/create-presentation/generate-presentation-btn-ico.svg"
+          alt="Magic Wand"
+          width={22}
+          height={22}
+          style={{ marginLeft: "8px" }}
+        />
+      </Button>
 
       {error && (
         <Typography color="error" sx={{ mt: 2 }}>
           {error}
         </Typography>
       )}
+
+      {/* Prompt Cards */}
+      <Box sx={{ px: 2 }}>
+        <Typography
+          variant="subtitle1"
+          sx={{ fontWeight: 600, mb: 2, color: "#333" }}
+        >
+          Quick Prompt Generator:
+        </Typography>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 2,
+            flexWrap: { xs: "wrap", sm: "nowrap" },
+          }}
+        >
+          {promptCards.map((card, index) => (
+            <Box
+              key={index}
+              sx={{
+                backgroundColor: "#F7F5FD",
+                borderRadius: "16px",
+                padding: 2,
+                flex: "1 1 30%",
+                position: "relative",
+              }}
+            >
+              <Typography variant="subtitle1" fontWeight={600} mt={3} mb={3}>
+                {card.title}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={6}>
+                {card.description}
+              </Typography>
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 43,
+                  right: 16,
+                  cursor: "pointer",
+                }}
+                onClick={() => handlePromptClick(card.description)}
+              >
+                <Image
+                  src={card.icon}
+                  alt="Prompt icon"
+                  width={20}
+                  height={20}
+                />
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </Box>
     </Box>
   );
 }
