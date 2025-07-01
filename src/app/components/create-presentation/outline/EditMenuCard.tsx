@@ -71,11 +71,11 @@ const EditMenuCard: React.FC<EditMenuCardProps> = ({ open, anchorEl, onClose, on
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       PaperProps={{
         sx: {
-          borderRadius: 2.5,
+          borderRadius: 1.5,
           boxShadow: 3,
           p: 0,
-          minWidth: 340,
-          maxWidth: 380,
+          minWidth: { xs: 220, sm: 300, md: 340 },
+          maxWidth: { xs: 260, sm: 340, md: 380 },
           bgcolor: '#fff',
         },
       }}
@@ -87,23 +87,23 @@ const EditMenuCard: React.FC<EditMenuCardProps> = ({ open, anchorEl, onClose, on
               sx={{
                 display: 'flex',
                 alignItems: 'flex-start',
-                gap: 2.5,
-                px: 3.5,
-                py: 2.7,
+                gap: { xs: 1.2, sm: 2, md: 2.5 },
+                px: { xs: 1.5, sm: 2.5, md: 3.5 },
+                py: { xs: 1.2, sm: 2, md: 2.7 },
                 cursor: 'pointer',
                 '&:hover': { bgcolor: '#F2F0FF' },
-                borderRadius: idx === 0 ? '10px 10px 0 0' : idx === menuItems.length - 1 ? '0 0 10px 10px' : 0,
+                borderRadius: idx === 0 ? { xs: '3px 3px 0 0', md: '5px 5px 0 0' } : idx === menuItems.length - 1 ? { xs: '0 0 3px 3px', md: '0 0 5px 5px' } : 0,
                 transition: 'background 0.2s',
               }}
               onClick={() => onAction(item.key)}
             >
-              <img src={item.icon} alt={item.title + ' icon'} width={32} height={32} style={{ flexShrink: 0 }} />
+              <img src={item.icon} alt={item.title + ' icon'} width={22} height={22} style={{ flexShrink: 0 }} />
               <Box>
-                <Typography sx={{ fontWeight: 600, color: '#18181B', fontSize: 18, mb: 0.2 }}>{item.title}</Typography>
-                <Typography sx={{ color: '#757575', fontSize: 15, fontWeight: 400 }}>{item.subtitle}</Typography>
+                <Typography sx={{ fontWeight: 600, color: '#18181B', fontSize: { xs: 14, sm: 16, md: 18 }, mb: 0.2 }}>{item.title}</Typography>
+                <Typography sx={{ color: '#757575', fontSize: { xs: 12, sm: 14, md: 15 }, fontWeight: 400 }}>{item.subtitle}</Typography>
               </Box>
             </Box>
-            {idx < menuItems.length - 1 && <Divider sx={{ mx: 3.5 }} />}
+            {idx < menuItems.length - 1 && <Divider sx={{ mx: { xs: 1.5, sm: 2.5, md: 3.5 } }} />}
           </React.Fragment>
         ))}
       </Box>

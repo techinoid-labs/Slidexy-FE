@@ -94,8 +94,66 @@ const mockDetails = [
   },
 ];
 
+// --- API response type for future integration ---
+export interface SlideApiResponse {
+  slide_id: string;
+  slide_title: {
+    text: string;
+    konva_component: string;
+    properties: Record<string, any>;
+  };
+  image_url?: string;
+  image_caption?: string;
+  elements: Array<{
+    element_type: string;
+    text: string;
+    konva_component: string;
+    properties: Record<string, any>;
+  }>;
+}
+
+// Utility to map API response to card data structure
+export function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
+  return apiSlides.map((slide) => ({
+    title: slide.slide_title.text,
+    bullets: slide.elements
+      .filter((el) => el.element_type === "bullet_point")
+      .map((el) => el.text),
+    images: slide.image_url ? [slide.image_url] : [],
+    // You can add more fields as needed
+  }));
+}
+
 export default function OutlinePage() {
   const [cards, setCards] = useState(initialCards);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState<string>("");
+  const [editingBulletsIdx, setEditingBulletsIdx] = useState<number | null>(null);
+  const [editingBulletsValue, setEditingBulletsValue] = useState<string>("");
+
+  // Bullets as paragraph editing handlers
+  const handleBulletsEditStart = (cardIdx: number, bullets: string[] | undefined) => {
+    setEditingBulletsIdx(cardIdx);
+    setEditingBulletsValue((bullets || []).join("\n"));
+  };
+
+  const handleBulletsEditChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEditingBulletsValue(e.target.value);
+  };
+
+  const handleBulletsEditSave = (cardIdx: number) => {
+    setCards((prev) => prev.map((card, i) => {
+      if (i !== cardIdx) return card;
+      return { ...card, bullets: editingBulletsValue.split(/\r?\n/).filter(line => line.trim() !== "") };
+    }));
+    setEditingBulletsIdx(null);
+    setEditingBulletsValue("");
+  };
+
+  const handleBulletsEditCancel = () => {
+    setEditingBulletsIdx(null);
+    setEditingBulletsValue("");
+  };
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [editMenuAnchor, setEditMenuAnchor] = useState<null | HTMLElement>(
     null
@@ -125,8 +183,31 @@ export default function OutlinePage() {
     setExpandedIdx(null);
   };
 
+
   const handleCardClick = (idx: number) => {
+    // If currently editing, do not expand/collapse
+    if (editingIdx !== null) return;
     setExpandedIdx(expandedIdx === idx ? null : idx);
+  };
+
+  const handleTitleEditStart = (idx: number, currentTitle: string) => {
+    setEditingIdx(idx);
+    setEditingTitle(currentTitle);
+  };
+
+  const handleTitleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingTitle(e.target.value);
+  };
+
+  const handleTitleEditSave = (idx: number) => {
+    setCards((prev) => prev.map((card, i) => i === idx ? { ...card, title: editingTitle } : card));
+    setEditingIdx(null);
+    setEditingTitle("");
+  };
+
+  const handleTitleEditCancel = () => {
+    setEditingIdx(null);
+    setEditingTitle("");
   };
 
   const handleEditClick = (
@@ -192,7 +273,7 @@ export default function OutlinePage() {
             }}
           >
             <Image
-              src="/images/create-presentation/generate-presentation-header-star.svg"
+              src="/images/side-star-dark.svg"
               alt="Icon"
               width={60}
               height={60}
@@ -324,48 +405,64 @@ export default function OutlinePage() {
                   }}
                 >
                   {cards.map((card, idx) => (
-                    <Draggable key={idx} draggableId={String(idx)} index={idx}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          style={{
-                            ...provided.draggableProps.style,
-                            width: "100%",
-                            cursor: "pointer",
-                            zIndex: snapshot.isDragging ? 100 : "auto",
-                          }}
-                          onClick={() => handleCardClick(idx)}
-                        >
-                          <OutlineCard
-                            index={idx}
-                            title={card.title}
-                            onDelete={() => handleDelete(idx)}
-                            dragHandleProps={provided.dragHandleProps}
-                            isDragging={snapshot.isDragging}
-                            expanded={expandedIdx === idx}
-                            bullets={mockDetails[idx]?.bullets}
-                            images={mockDetails[idx]?.images}
-                            onEdit={
-                              expandedIdx === idx
-                                ? (event) => handleEditClick(event, idx)
-                                : undefined
+                  <Draggable key={idx} draggableId={String(idx)} index={idx}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        style={{
+                          ...provided.draggableProps.style,
+                          width: "100%",
+                          cursor: "pointer",
+                          zIndex: snapshot.isDragging ? 100 : "auto",
+                        }}
+                        onClick={() => handleCardClick(idx)}
+                      >
+                        <OutlineCard
+                          index={idx}
+                          title={card.title}
+                          onDelete={() => handleDelete(idx)}
+                          dragHandleProps={provided.dragHandleProps}
+                          isDragging={snapshot.isDragging}
+                          expanded={expandedIdx === idx}
+                          bullets={cards[idx]?.bullets}
+                          images={mockDetails[idx]?.images}
+                          onEdit={
+                            expandedIdx === idx
+                              ? (event) => handleEditClick(event, idx)
+                              : undefined
+                          }
+                          editable={true}
+                          isEditing={editingIdx === idx}
+                          editingTitle={editingTitle}
+                          onTitleEditStart={() => handleTitleEditStart(idx, card.title)}
+                          onTitleEditChange={handleTitleEditChange}
+                          onTitleEditSave={() => handleTitleEditSave(idx)}
+                          onTitleEditCancel={handleTitleEditCancel}
+                          // Bullets paragraph editing props
+                          editingBulletsIdx={editingBulletsIdx}
+                          editingBulletsValue={editingBulletsValue}
+                          onBulletsEditStart={() => handleBulletsEditStart(idx, cards[idx]?.bullets)}
+                          onBulletsEditChange={handleBulletsEditChange}
+                          onBulletsEditSave={() => handleBulletsEditSave(idx)}
+                          onBulletsEditCancel={handleBulletsEditCancel}
+                          // Prevent card close on image click
+                          onImageClick={e => e.stopPropagation()}
+                        />
+                        {expandedIdx === idx && (
+                          <EditMenuCard
+                            open={
+                              editMenuCardIdx === idx &&
+                              Boolean(editMenuAnchor)
                             }
+                            anchorEl={editMenuAnchor}
+                            onClose={handleEditMenuClose}
+                            onAction={handleEditMenuAction}
                           />
-                          {expandedIdx === idx && (
-                            <EditMenuCard
-                              open={
-                                editMenuCardIdx === idx &&
-                                Boolean(editMenuAnchor)
-                              }
-                              anchorEl={editMenuAnchor}
-                              onClose={handleEditMenuClose}
-                              onAction={handleEditMenuAction}
-                            />
-                          )}
-                        </div>
-                      )}
-                    </Draggable>
+                        )}
+                      </div>
+                    )}
+                  </Draggable>
                   ))}
                   {provided.placeholder}
                 </div>

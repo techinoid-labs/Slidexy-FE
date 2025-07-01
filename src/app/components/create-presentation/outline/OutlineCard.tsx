@@ -1,8 +1,89 @@
 import React from "react";
 import { Paper, IconButton, Box, Typography } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import Image from "next/image";
+
+// Responsive click-to-enlarge image for mobile/desktop
+function ImageWithClick({ src, alt, onShowLarge }: { src: string; alt: string; onShowLarge?: () => void }) {
+  const [open, setOpen] = React.useState(false);
+  // Detect if desktop (width >= 768)
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
+  const handleClick = () => {
+    if (isDesktop && onShowLarge) {
+      onShowLarge();
+    } else {
+      setOpen(true);
+    }
+  };
+  return (
+    <>
+      <Box
+        sx={{
+          width: { xs: 36, sm: 48, md: 56 },
+          height: { xs: 36, sm: 48, md: 56 },
+          borderRadius: 2,
+          bgcolor: '#F2F0FF',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          position: 'relative',
+          cursor: 'pointer',
+        }}
+        onClick={handleClick}
+      >
+        <Image
+          src={src}
+          alt={alt}
+          width={28}
+          height={28}
+          style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }}
+        />
+      </Box>
+      {/* Mobile overlay */}
+      {!isDesktop && open && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            bgcolor: 'rgba(0,0,0,0.4)',
+            zIndex: 2000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onClick={() => setOpen(false)}
+        >
+          <Box
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.97)',
+              borderRadius: 2,
+              boxShadow: 4,
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: { xs: 180, sm: 220 },
+              height: { xs: 180, sm: 220 },
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <Image
+              src={src}
+              alt={alt}
+              width={160}
+              height={160}
+              style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }}
+            />
+          </Box>
+        </Box>
+      )}
+    </>
+  );
+}
 
 interface OutlineCardProps {
   index: number;
@@ -14,19 +95,67 @@ interface OutlineCardProps {
   bullets?: string[];
   images?: string[];
   onEdit?: (event: React.MouseEvent<HTMLElement>) => void;
+  editable?: boolean;
+  isEditing?: boolean;
+  editingTitle?: string;
+  onTitleEditStart?: () => void;
+  onTitleEditChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onTitleEditSave?: () => void;
+  onTitleEditCancel?: () => void;
+  // Bullets paragraph editing
+  editingBulletsIdx?: number | null;
+  editingBulletsValue?: string;
+  onBulletsEditStart?: () => void;
+  onBulletsEditChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onBulletsEditSave?: () => void;
+  onBulletsEditCancel?: () => void;
+  onImageClick?: (e: React.MouseEvent) => void;
 }
 
-const OutlineCard: React.FC<OutlineCardProps> = ({
-  index,
-  title,
-  onDelete,
-  dragHandleProps,
-  isDragging = false,
-  expanded = false,
-  bullets = [],
-  images = [],
-  onEdit,
-}) => {
+const OutlineCard: React.FC<OutlineCardProps> = (props) => {
+  const {
+    index,
+    title,
+    onDelete,
+    dragHandleProps,
+    isDragging = false,
+    expanded = false,
+    bullets = [],
+    images = [],
+    onEdit,
+    editable = false,
+    isEditing = false,
+    editingTitle = "",
+    onTitleEditStart,
+    onTitleEditChange,
+    onTitleEditSave,
+    onTitleEditCancel,
+    editingBulletsIdx,
+    editingBulletsValue,
+    onBulletsEditStart,
+    onBulletsEditChange,
+    onBulletsEditSave,
+    onBulletsEditCancel,
+  } = props;
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [largeImageIdx, setLargeImageIdx] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      onTitleEditSave && onTitleEditSave();
+    } else if (e.key === "Escape") {
+      onTitleEditCancel && onTitleEditCancel();
+    }
+  };
+
+
   return (
     <Paper
       elevation={0}
@@ -77,23 +206,51 @@ const OutlineCard: React.FC<OutlineCardProps> = ({
           {index < 9 ? `0${index + 1}` : index + 1}
         </Box>
         {/* Title */}
-        <Typography
-          sx={{
-            fontWeight: 500,
-            color: '#18181B',
-            fontSize: { xs: 14, sm: 16, md: 18 },
-            flex: 1,
-            textAlign: 'left',
-            pl: 1,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-          }}
-          className="text-sm sm:text-base md:text-lg"
-          noWrap
-        >
-          {title}
-        </Typography>
+        {editable && isEditing ? (
+          <input
+            ref={inputRef}
+            value={editingTitle}
+            onChange={onTitleEditChange}
+            onBlur={onTitleEditSave}
+            onKeyDown={handleKeyDown}
+            style={{
+              fontWeight: 500,
+              color: '#18181B',
+              fontSize: 16,
+              flex: 1,
+              textAlign: 'left',
+              paddingLeft: 8,
+              border: '1px solid #8E2DE2',
+              borderRadius: 6,
+              outline: 'none',
+              minWidth: 0,
+              maxWidth: '90%',
+            }}
+            className="text-sm sm:text-base md:text-lg"
+            onClick={e => e.stopPropagation()}
+          />
+        ) : (
+          <Typography
+            sx={{
+              fontWeight: 500,
+              color: '#18181B',
+              fontSize: { xs: 14, sm: 16, md: 18 },
+              flex: 1,
+              textAlign: 'left',
+              pl: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              cursor: editable ? 'pointer' : 'default',
+            }}
+            className="text-sm sm:text-base md:text-lg"
+            noWrap
+            onClick={editable ? (e) => { e.stopPropagation(); onTitleEditStart && onTitleEditStart(); } : undefined}
+            title={title}
+          >
+            {title}
+          </Typography>
+        )}
         {/* Vertical divider before edit/delete icons */}
         {/* Delete icon */}
         <IconButton onClick={onDelete} size="small" sx={{ color: '#A095C6', pr: 2 }}>
@@ -102,15 +259,57 @@ const OutlineCard: React.FC<OutlineCardProps> = ({
       </Box>
       {/* Expanded Content */}
       {expanded && (
-        <Box sx={{ bgcolor: '#fff', px: { xs: 2, sm: 3 }, pt: 2, pb: 1.5, borderBottomLeftRadius: '20px', borderBottomRightRadius: '20px' }}>
+        <Box sx={{ bgcolor: '#fff', px: { xs: 2, sm: 3 }, pt: 2, pb: 1.5, borderBottomLeftRadius: '20px', borderBottomRightRadius: '20px', position: 'relative' }}>
           {/* Bullets */}
-          {bullets.length > 0 && (
+          {bullets && bullets.length > 0 && (
             <Box sx={{ mb: 2 }}>
-              <ul style={{ margin: 0, paddingLeft: 20, color: '#757575', fontSize: 16, lineHeight: 1.7 }}>
-                {bullets.map((b, i) => (
-                  <li key={i}>{b}</li>
-                ))}
-              </ul>
+              {editable && editingBulletsIdx === index ? (
+                <Box sx={{ position: 'relative', width: '100%' }}>
+                  <textarea
+                    value={editingBulletsValue}
+                    onChange={onBulletsEditChange}
+                    onBlur={onBulletsEditSave}
+                    style={{
+                      width: '100%',
+                      minHeight: 80,
+                      fontSize: 16,
+                      color: '#18181B',
+                      border: '1px solid #8E2DE2',
+                      borderRadius: 6,
+                      outline: 'none',
+                      padding: '8px',
+                      resize: 'vertical',
+                    }}
+                    autoFocus
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        onBulletsEditSave && onBulletsEditSave();
+                      } else if (e.key === 'Escape') {
+                        onBulletsEditCancel && onBulletsEditCancel();
+                      }
+                    }}
+                  />
+                  <Box sx={{ display: 'flex', gap: 1, mt: 1, justifyContent: 'flex-end' }}>
+                    <button onClick={onBulletsEditSave} style={{ background: '#8E2DE2', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 12px', cursor: 'pointer' }}>Save</button>
+                    <button onClick={onBulletsEditCancel} style={{ background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '4px 12px', cursor: 'pointer' }}>Cancel</button>
+                  </Box>
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                  <ul style={{ margin: 0, paddingLeft: 20, color: '#757575', fontSize: 16, lineHeight: 1.7, flex: 1 }}>
+                    {bullets.map((b, i) => (
+                      <li key={i}
+                        onClick={editable ? (e) => { e.stopPropagation(); onBulletsEditStart && onBulletsEditStart(); } : undefined}
+                        style={{ cursor: editable ? 'pointer' : 'default' }}
+                        title={b}
+                      >
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
             </Box>
           )}
           {/* Horizontal divider after outline points */}
@@ -118,31 +317,71 @@ const OutlineCard: React.FC<OutlineCardProps> = ({
           {images.length > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
               {images.map((src, i) => (
-                <Box
-                  key={i}
-                  sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 2,
-                    bgcolor: '#F2F0FF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                  }}
-                >
-                  {/* Placeholder for image, use objectFit contain */}
-                  <Image src={src} alt={`img-${i}`} width={44} height={44} style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }} />
-                </Box>
+                <span key={i} onClick={props.onImageClick} style={{ display: 'inline-flex' }}>
+                  <ImageWithClick
+                    src={src}
+                    alt={`img-${i}`}
+                    onShowLarge={() => setLargeImageIdx(i)}
+                  />
+                </span>
               ))}
             </Box>
           )}
-          {/* Edit Button */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 2 }}>
-            <IconButton sx={{ color: '#8E2DE2', bgcolor: '#F2F0FF', borderRadius: 2 }} onClick={onEdit}>
-              <EditIcon />
-            </IconButton>
-          </Box>
+          {/* Desktop large image preview */}
+          {typeof window !== 'undefined' && window.innerWidth >= 768 && largeImageIdx !== null && images[largeImageIdx] && (
+            <Box
+              sx={{
+                position: 'absolute',
+                right: 200, // move further to the left
+                bottom: 40, // move a little further down
+                zIndex: 3,
+                bgcolor: '#fff',
+                borderRadius: 1, // less rounded
+                boxShadow: 4,
+                p: 0.5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 130, // increased more
+                height: 130, // increased more
+                cursor: 'pointer',
+              }}
+              onClick={() => setLargeImageIdx(null)}
+            >
+              <Image
+                src={images[largeImageIdx]}
+                alt={`large-img-${largeImageIdx}`}
+                width={120}
+                height={120}
+                style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: '100%', borderRadius: 6 }}
+              />
+            </Box>
+          )}
+        </Box>
+      )}
+      {/* Edit icon bottom right - only show when expanded */}
+      {expanded && (
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 38, // move it a little above the bottom
+            right: 20,
+            zIndex: 2,
+          }}
+        >
+          <IconButton
+            size="small"
+            sx={{ p: 0 }} // remove background and shadow
+            onClick={onEdit}
+          >
+            <Image
+              src="/images/regenerate-card.svg"
+              alt="Edit"
+              width={20}
+              height={20}
+              style={{ display: 'block' }}
+            />
+          </IconButton>
         </Box>
       )}
     </Paper>
@@ -150,3 +389,4 @@ const OutlineCard: React.FC<OutlineCardProps> = ({
 };
 
 export default OutlineCard;
+
