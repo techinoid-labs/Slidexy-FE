@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, TextField, Button, Typography } from "@mui/material";
 import Image from "next/image";
 import InputModeSelector from "./InputModeSelector";
+import PromptAttributeSelector from "./PromptAttributeSelector";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function PresentationMaker({
   promptCards,
@@ -20,6 +23,12 @@ export default function PresentationMaker({
   const [loading, setLoading] = useState(false);
   const [slides, setSlides] = useState([]);
 
+  // New: Prompt metadata state
+  const [goal, setGoal] = useState("");
+  const [tone, setTone] = useState("");
+  const [audience, setAudience] = useState("");
+  const [length, setLength] = useState("");
+
   const getPlaceholder = () => {
     switch (inputMode) {
       case "Youtube":
@@ -32,8 +41,8 @@ export default function PresentationMaker({
   };
 
   const handlePromptClick = (description: string) => {
-    setInputValue(description);
     setInputMode("Text");
+    setInputValue(description);
   };
 
   const handleSubmit = async () => {
@@ -41,7 +50,6 @@ export default function PresentationMaker({
     setError("");
     setSlides([]);
 
-    // Basic website validation
     if (inputMode === "Website") {
       try {
         const url = new URL(inputValue);
@@ -53,15 +61,27 @@ export default function PresentationMaker({
       }
     }
 
-    const payload =
+    // Build payload
+    const base =
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
         ? { source: "website", inputWebsiteUrl: inputValue }
         : { source: "text", textContent: inputValue };
 
+    const promptMeta = {
+      goal,
+      tone,
+      audience,
+      length,
+    };
+
+    // const payload = { ...base, ...promptMeta };
+    const payload = { ...base };
+    console.log(payload, promptMeta);
+    // return;
     try {
-      const res = await fetch("/api/generate-slides", {
+      const res = await fetch(`${API_BASE_URL}/generate-slides`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -85,6 +105,17 @@ export default function PresentationMaker({
     <Box sx={{ mx: "auto", mt: 6, width: { xs: "100%", md: "70%" } }}>
       <InputModeSelector onModeChange={setInputMode} />
 
+      <PromptAttributeSelector
+        goal={goal}
+        tone={tone}
+        audience={audience}
+        length={length}
+        setGoal={setGoal}
+        setTone={setTone}
+        setAudience={setAudience}
+        setLength={setLength}
+      />
+
       <Box
         sx={{
           display: "flex",
@@ -100,6 +131,7 @@ export default function PresentationMaker({
       >
         <TextField
           fullWidth
+          type="url"
           variant="outlined"
           placeholder={getPlaceholder()}
           value={inputValue}
