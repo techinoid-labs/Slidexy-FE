@@ -5,8 +5,11 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import Image from "next/image";
 import InputModeSelector from "./InputModeSelector";
 import PromptAttributeSelector from "./PromptAttributeSelector";
+import { useSlides } from "@/app/context/SlidesContext";
+import { useRouter } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+console.log("[SlidesX] API_BASE_URL:", API_BASE_URL);
 
 export default function PresentationMaker({
   promptCards,
@@ -21,7 +24,8 @@ export default function PresentationMaker({
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [slides, setSlides] = useState([]);
+  const { setSlides } = useSlides();
+  const router = useRouter();
 
   // New: Prompt metadata state
   const [goal, setGoal] = useState("");
@@ -78,23 +82,33 @@ export default function PresentationMaker({
 
     // const payload = { ...base, ...promptMeta };
     const payload = { ...base };
-    console.log(payload, promptMeta);
-    // return;
+    console.log("[SlidesX] Payload to backend:", payload);
+    console.log("[SlidesX] Prompt meta (not sent):", promptMeta);
     try {
       const res = await fetch(`${API_BASE_URL}/generate-slides`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      console.log("[SlidesX] Raw response:", res);
 
       if (!res.ok) {
-        const errorData = await res.json();
+        let errorData = {};
+        try {
+          errorData = await res.json();
+        } catch (e) {
+          errorData = { error: "Unknown error" };
+        }
+        console.error("[SlidesX] Error response from backend:", errorData);
         throw new Error(errorData.error || "Failed to generate slides");
       }
 
       const data = await res.json();
+      console.log("[SlidesX] Parsed slides data:", data);
       setSlides(data.slides);
+      router.push("/presentation/outline");
     } catch (err: any) {
+      console.error("[SlidesX] Exception in handleSubmit:", err);
       setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);

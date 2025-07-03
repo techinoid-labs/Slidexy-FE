@@ -7,6 +7,7 @@ import Image from "next/image";
 import EditIcon from "@mui/icons-material/Edit";
 import GeneralHeader from "@/app/components/create-presentation/outline/General-Header";
 import EditMenuCard from "@/app/components/create-presentation/outline/EditMenuCard";
+import { useSlides } from "@/app/context/SlidesContext";
 
 // Placeholder SVGs (replace with Figma SVGs as needed)
 const sampleImages = [
@@ -125,7 +126,10 @@ export function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
 }
 
 export default function OutlinePage() {
-  const [cards, setCards] = useState(initialCards);
+  const { slides } = useSlides();
+  const [cards, setCards] = useState(() =>
+    slides && slides.length > 0 ? mapApiSlidesToCards(slides) : initialCards
+  );
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>("");
   const [editingBulletsIdx, setEditingBulletsIdx] = useState<number | null>(null);
@@ -144,7 +148,12 @@ export default function OutlinePage() {
   const handleBulletsEditSave = (cardIdx: number) => {
     setCards((prev) => prev.map((card, i) => {
       if (i !== cardIdx) return card;
-      return { ...card, bullets: editingBulletsValue.split(/\r?\n/).filter(line => line.trim() !== "") };
+      // Always preserve images (even if undefined, fallback to [])
+      return {
+        ...card,
+        bullets: editingBulletsValue.split(/\r?\n/).filter(line => line.trim() !== ""),
+        images: 'images' in card ? card.images ?? [] : [],
+      };
     }));
     setEditingBulletsIdx(null);
     setEditingBulletsValue("");
@@ -426,7 +435,7 @@ export default function OutlinePage() {
                           isDragging={snapshot.isDragging}
                           expanded={expandedIdx === idx}
                           bullets={cards[idx]?.bullets}
-                          images={mockDetails[idx]?.images}
+                          images={cards[idx]?.images}
                           onEdit={
                             expandedIdx === idx
                               ? (event) => handleEditClick(event, idx)
