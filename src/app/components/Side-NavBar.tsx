@@ -27,47 +27,59 @@ interface SideNavBarProps {
   setShowTemplatePanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const SideNavBar: React.FC<SideNavBarProps> = ({ showTemplatePanel, setShowTemplatePanel }) => {
+const SideNavBar: React.FC<SideNavBarProps> = ({
+  showTemplatePanel,
+  setShowTemplatePanel,
+}) => {
   const [selectedIdx, setSelectedIdx] = React.useState(0);
   const [openPanel, setOpenPanel] = React.useState<PanelType>(null);
-  const sidebarHeight = '100vh';
+  const sidebarHeight = "88.5vh";
   return (
-    <Box sx={{ position: 'relative', display: 'flex' }}>
+    <Box sx={{ position: "relative", display: "flex" }}>
       <Box
         sx={{
           width: 80,
           height: sidebarHeight,
-          bgcolor: '#fff',
-          borderRight: '1px solid #E0E0E0',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          bgcolor: "#fff",
+          borderRight: "1px solid #E0E0E0",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
           py: 3,
-          boxSizing: 'border-box',
+          boxSizing: "border-box",
         }}
       >
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
             gap: 2.5,
-            width: '100%',
+            width: "100%",
           }}
         >
           {navItems.map((item, idx) => (
-            <Tooltip key={item.label} title={item.label} placement="right" arrow>
+            <Tooltip
+              key={item.label}
+              title={item.label}
+              placement="right"
+              arrow
+            >
               <IconButton
                 onClick={() => {
                   setSelectedIdx(idx);
                   if (idx === 0) {
-                    setOpenPanel((prev) => prev === "template" ? null : "template");
+                    setOpenPanel((prev) =>
+                      prev === "template" ? null : "template"
+                    );
                   } else if (idx === 1) {
-                    setOpenPanel((prev) => prev === "text" ? null : "text");
+                    setOpenPanel((prev) => (prev === "text" ? null : "text"));
                   } else if (idx === 2) {
-                    setOpenPanel((prev) => prev === "media" ? null : "media");
+                    setOpenPanel((prev) => (prev === "media" ? null : "media"));
                   } else if (idx === 3) {
-                    setOpenPanel((prev) => prev === "shapes" ? null : "shapes");
+                    setOpenPanel((prev) =>
+                      prev === "shapes" ? null : "shapes"
+                    );
                   } else {
                     setOpenPanel(null);
                   }
@@ -76,11 +88,11 @@ const SideNavBar: React.FC<SideNavBarProps> = ({ showTemplatePanel, setShowTempl
                   width: 64,
                   height: 64,
                   borderRadius: 2,
-                  color: selectedIdx === idx ? '#4A00E0' : '#18181B',
-                  transition: 'color 0.2s',
-                  '&:hover': {
-                    backgroundColor: 'transparent',
-                    color: '#4A00E0',
+                  color: selectedIdx === idx ? "#4A00E0" : "#18181B",
+                  transition: "color 0.2s",
+                  "&:hover": {
+                    backgroundColor: "transparent",
+                    color: "#4A00E0",
                   },
                 }}
               >
