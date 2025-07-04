@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 export type SlidesType = any[];
 
@@ -14,12 +14,14 @@ const SlidesContext = createContext<{
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const [slides, setSlidesState] = useState<SlidesType>([]);
 
+
+
   const setSlides = (slides: SlidesType) => {
     console.log("[SlidesContext] Setting slides:", slides);
     setSlidesState(slides);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     console.log("[SlidesContext] Current slides:", slides);
   }, [slides]);
 

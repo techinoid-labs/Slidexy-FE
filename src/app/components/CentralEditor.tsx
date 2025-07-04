@@ -20,6 +20,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import dynamic from "next/dynamic";
+import { useThemeContext } from "../context/ThemeContext";
 
 const TextPanel = dynamic(() => import("./TextPanel"), { ssr: false });
 const ThemePanel = dynamic(() => import("./Theme"), { ssr: false });
@@ -55,6 +56,7 @@ const CentralEditor: React.FC = () => {
   const [editing, setEditing] = useState<number | null>(null); // which slide is being edited
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up("lg"));
+  const { selectedTheme } = useThemeContext();
 
   // Dynamically set maxWidth based on sidebar and screen size
   const cardMaxWidth = isLargeScreen ? 1600 : "100%";
@@ -107,7 +109,7 @@ const CentralEditor: React.FC = () => {
             p: 5,
             mb: 4,
             border: "2px solid #D4CDFF",
-            bgcolor: "#F9F9FB",
+            bgcolor: selectedTheme?.backgroundColor || "#F9F9FB",
             minHeight: 520,
             maxWidth: cardMaxWidth,
             width: "100%",
@@ -128,11 +130,13 @@ const CentralEditor: React.FC = () => {
               borderRadius: 2,
               px: 2,
               py: 1,
+              fontFamily: selectedTheme?.font || undefined,
+              color: selectedTheme?.primaryColor || undefined,
             }}
             placeholder="Slide Title"
           />
           {/* Editable Bullets */}
-          <List sx={{ pl: 4, mb: 4, color: "#444", fontSize: 21 }}>
+          <List sx={{ pl: 4, mb: 4, color: selectedTheme?.secondaryColor || "#444", fontSize: 21, fontFamily: selectedTheme?.font || undefined }}>
             {slides[0]?.bullets?.map((b, i) => (
               <ListItem key={i} sx={{ py: 0.5, px: 0 }} disableGutters>
                 <InputBase
@@ -140,7 +144,7 @@ const CentralEditor: React.FC = () => {
                   onChange={e => handleBulletChange(0, i, e.target.value)}
                   onFocus={() => setEditing(0)}
                   onBlur={() => setEditing(null)}
-                  sx={{ fontSize: 19, width: '90%', bgcolor: '#F8F8FA', borderRadius: 1, px: 1.5, mr: 1 }}
+                  sx={{ fontSize: 19, width: '90%', bgcolor: '#F8F8FA', borderRadius: 1, px: 1.5, mr: 1, fontFamily: selectedTheme?.font || undefined, color: selectedTheme?.secondaryColor || undefined }}
                   placeholder={`Bullet ${i + 1}`}
                 />
                 <Button size="small" color="error" sx={{ minWidth: 0, px: 1 }} onClick={() => handleRemoveBullet(0, i)}>-</Button>
@@ -164,7 +168,7 @@ const CentralEditor: React.FC = () => {
             }}
           >
             <img
-              src={slides[0]?.image}
+              src={selectedTheme?.image_url || slides[0]?.image}
               alt="slide preview"
               style={{ width: "200%", maxHeight: 380, objectFit: "cover", borderRadius: 29 }}
             />
