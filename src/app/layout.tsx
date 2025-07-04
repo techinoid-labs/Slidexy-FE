@@ -1,9 +1,8 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
-import { ThemeProvider } from "@/lib/theme-provider";
-import CssBaseline from "@mui/material/CssBaseline";
-import { SlidesProvider } from "@/app/context/SlidesContext";
+  import Providers from "./provider/Provider";
+
 
 const raleway = Raleway({
   subsets: ["latin"],
@@ -24,10 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={raleway.variable} suppressHydrationWarning>
       <body className={raleway.className}>
-        <ThemeProvider>
-          <CssBaseline />
-          <SlidesProvider>{children}</SlidesProvider>
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

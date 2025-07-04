@@ -1,101 +1,18 @@
 "use client";
 import React, { useState } from "react";
-import { Box, Button, Typography, Paper, IconButton } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import OutlineCard from "@/app/components/create-presentation/outline/OutlineCard";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import Image from "next/image";
-import EditIcon from "@mui/icons-material/Edit";
-import GeneralHeader from "@/app/components/create-presentation/outline/General-Header";
 import EditMenuCard from "@/app/components/create-presentation/outline/EditMenuCard";
+import GeneralHeader from "@/app/components/create-presentation/outline/General-Header";
 import { useSlides } from "@/app/context/SlidesContext";
+import { useDispatch } from "react-redux";
+import { setSlides } from "@/app/slice/slidesSlice";
+import { useRouter } from "next/navigation";
+import type { Slide } from "@/app/slice/slidesSlice";
 
-// Placeholder SVGs (replace with Figma SVGs as needed)
-const sampleImages = [
-  "/images/ai-card-img.svg",
-  "/images/black-star.svg",
-  "/images/blue-star.svg",
-  "/images/community-icon.svg",
-  "/images/context-image.svg",
-];
-
-const initialCards = [
-  {
-    title: "Personal Portfolio: [Your Name/Professional Title]",
-    bullets: [
-      "Expert in [Your Core Field]",
-      "Results for [Type of Clients]",
-      "Committed to growth since [Year]",
-    ],
-    images: sampleImages,
-  },
-  { title: "About Me: Driving Impact Through [Key Skill 1] & [Key Skill 2]" },
-  { title: "Project Spotlight: [Project Title 1] - [Quantifiable Outcome]" },
-  { title: "Impact & Recognition: Testimonials and Awards" },
-  { title: "Core Skills & Expertise: Delivering Excellence" },
-  { title: "Impact & Recognition: Testimonials and Awards" },
-  { title: "Let's Connect: Your Future Collaboration Partner" },
-];
-
-const mockDetails = [
-  {
-    bullets: [
-      "Expert in [Your Core Field]",
-      "Results for [Type of Clients]",
-      "Committed to growth since [Year]",
-    ],
-    images: sampleImages,
-  },
-  {
-    bullets: [
-      "Driven by innovation and results",
-      "Skilled in [Skill 1] and [Skill 2]",
-      "Passionate about growth",
-    ],
-    images: sampleImages.slice(0, 3),
-  },
-  {
-    bullets: [
-      "Project delivered on time",
-      "Exceeded client expectations",
-      "Quantifiable outcome: +30% ROI",
-    ],
-    images: sampleImages.slice(2),
-  },
-  {
-    bullets: [
-      "Recognized by industry leaders",
-      "Multiple awards for excellence",
-      "Positive client testimonials",
-    ],
-    images: sampleImages,
-  },
-  {
-    bullets: [
-      "Expert in core skills",
-      "Consistent delivery of excellence",
-      "Continuous learning",
-    ],
-    images: sampleImages.slice(1, 4),
-  },
-  {
-    bullets: [
-      "Awarded for outstanding impact",
-      "Recognized by peers",
-      "Featured in media",
-    ],
-    images: sampleImages,
-  },
-  {
-    bullets: [
-      "Ready to collaborate",
-      "Open to new opportunities",
-      "Let's connect!",
-    ],
-    images: sampleImages.slice(0, 2),
-  },
-];
-
-// --- API response type for future integration ---
+// API response type and map helper
 export interface SlideApiResponse {
   slide_id: string;
   slide_title: {
@@ -113,7 +30,6 @@ export interface SlideApiResponse {
   }>;
 }
 
-// Utility to map API response to card data structure
 export function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
   return apiSlides.map((slide) => ({
     title: slide.slide_title.text,
@@ -121,80 +37,107 @@ export function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
       .filter((el) => el.element_type === "bullet_point")
       .map((el) => el.text),
     images: slide.image_url ? [slide.image_url] : [],
-    // You can add more fields as needed
+  }));
+}
+
+// Map UI cards back to Redux Slide[] format
+function mapCardsToSlides(cards: any[]): Slide[] {
+  return cards.map((card, index) => ({
+    slide_id: `slide-${index + 1}`,
+    slide_title: {
+      text: card.title,
+      konva_component: "Konva.Text",
+      properties: {
+        fontSize: 32,
+        fontFamily: "Inter",
+        fill: "#333",
+        fontStyle: "bold",
+      },
+    },
+    elements: (card.bullets || []).map((text: string) => ({
+      element_type: "bullet_point",
+      text,
+      konva_component: "Konva.Text",
+      properties: {
+        fontSize: 18,
+        fontFamily: "Inter",
+        fill: "#444",
+        fontStyle: "normal",
+      },
+    })),
+    image_url: card.images?.[0] || null,
+    image_caption: "",
   }));
 }
 
 export default function OutlinePage() {
-  const { slides } = useSlides();
+  const { slides }: any = useSlides();
+  const dispatch = useDispatch();
+  const router = useRouter();
+
   const [cards, setCards] = useState(() =>
-    slides && slides.length > 0 ? mapApiSlidesToCards(slides) : initialCards
+    slides && slides.length > 0 ? mapApiSlidesToCards(slides) : []
   );
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>("");
-  const [editingBulletsIdx, setEditingBulletsIdx] = useState<number | null>(null);
+  const [editingBulletsIdx, setEditingBulletsIdx] = useState<number | null>(
+    null
+  );
   const [editingBulletsValue, setEditingBulletsValue] = useState<string>("");
-
-  // Bullets as paragraph editing handlers
-  const handleBulletsEditStart = (cardIdx: number, bullets: string[] | undefined) => {
-    setEditingBulletsIdx(cardIdx);
-    setEditingBulletsValue((bullets || []).join("\n"));
-  };
-
-  const handleBulletsEditChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setEditingBulletsValue(e.target.value);
-  };
-
-  const handleBulletsEditSave = (cardIdx: number) => {
-    setCards((prev) => prev.map((card, i) => {
-      if (i !== cardIdx) return card;
-      // Always preserve images (even if undefined, fallback to [])
-      return {
-        ...card,
-        bullets: editingBulletsValue.split(/\r?\n/).filter(line => line.trim() !== ""),
-        images: 'images' in card ? card.images ?? [] : [],
-      };
-    }));
-    setEditingBulletsIdx(null);
-    setEditingBulletsValue("");
-  };
-
-  const handleBulletsEditCancel = () => {
-    setEditingBulletsIdx(null);
-    setEditingBulletsValue("");
-  };
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [editMenuAnchor, setEditMenuAnchor] = useState<null | HTMLElement>(
     null
   );
   const [editMenuCardIdx, setEditMenuCardIdx] = useState<number | null>(null);
 
-  // Drag and drop handler
+  const handleBulletsEditStart = (idx: number, bullets?: string[]) => {
+    setEditingBulletsIdx(idx);
+    setEditingBulletsValue((bullets || []).join("\n"));
+  };
+  const handleBulletsEditChange = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+    setEditingBulletsValue(e.target.value);
+  const handleBulletsEditSave = (idx: number) => {
+    setCards((prev) =>
+      prev.map((c, i) =>
+        i !== idx
+          ? c
+          : {
+              ...c,
+              bullets: editingBulletsValue
+                .split(/\r?\n/)
+                .filter((l) => l.trim() !== ""),
+              images: "images" in c ? c.images ?? [] : [],
+            }
+      )
+    );
+    setEditingBulletsIdx(null);
+    setEditingBulletsValue("");
+  };
+  const handleBulletsEditCancel = () => {
+    setEditingBulletsIdx(null);
+    setEditingBulletsValue("");
+  };
+
   const onDragEnd = (result: any) => {
     if (!result.destination) return;
-    const reordered = Array.from(cards);
-    const [removed] = reordered.splice(result.source.index, 1);
-    reordered.splice(result.destination.index, 0, removed);
-    setCards(reordered);
-    // If expanded card is moved, collapse it
+    const arr = Array.from(cards);
+    const [removed] = arr.splice(result.source.index, 1);
+    arr.splice(result.destination.index, 0, removed);
+    setCards(arr);
     setExpandedIdx(null);
   };
 
-  // Delete handler
   const handleDelete = (idx: number) => {
-    setCards((cards) => cards.filter((_, i) => i !== idx));
+    setCards((prev) => prev.filter((_, i) => i !== idx));
     if (expandedIdx === idx) setExpandedIdx(null);
   };
 
-  // Regenerate handler (placeholder)
   const handleRegenerate = () => {
-    setCards(initialCards);
+    setCards([]);
     setExpandedIdx(null);
   };
 
-
   const handleCardClick = (idx: number) => {
-    // If currently editing, do not expand/collapse
     if (editingIdx !== null) return;
     setExpandedIdx(expandedIdx === idx ? null : idx);
   };
@@ -203,39 +146,39 @@ export default function OutlinePage() {
     setEditingIdx(idx);
     setEditingTitle(currentTitle);
   };
-
-  const handleTitleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTitleEditChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setEditingTitle(e.target.value);
-  };
-
   const handleTitleEditSave = (idx: number) => {
-    setCards((prev) => prev.map((card, i) => i === idx ? { ...card, title: editingTitle } : card));
+    setCards((prev) =>
+      prev.map((c, i) => (i === idx ? { ...c, title: editingTitle } : c))
+    );
     setEditingIdx(null);
     setEditingTitle("");
   };
-
   const handleTitleEditCancel = () => {
     setEditingIdx(null);
     setEditingTitle("");
   };
 
-  const handleEditClick = (
-    event: React.MouseEvent<HTMLElement>,
-    idx: number
-  ) => {
-    event.stopPropagation();
-    setEditMenuAnchor(event.currentTarget);
+  const handleEditClick = (e: React.MouseEvent<HTMLElement>, idx: number) => {
+    e.stopPropagation();
+    setEditMenuAnchor(e.currentTarget);
     setEditMenuCardIdx(idx);
   };
-
   const handleEditMenuClose = () => {
     setEditMenuAnchor(null);
     setEditMenuCardIdx(null);
   };
-
   const handleEditMenuAction = (key: string) => {
-    // Handle the action here (e.g., call an API or update state)
     handleEditMenuClose();
+  };
+
+  const handleContinue = () => {
+    const mapped = mapCardsToSlides(cards);
+    dispatch(setSlides(mapped));
+    console.log("[OutlinePage] Slides sent to Redux:", mapped);
+    router.push('/editor');
+      
   };
 
   return (
@@ -261,7 +204,6 @@ export default function OutlinePage() {
         }}
         className="sm:px-4 px-1"
       >
-        {/* Header */}
         <Box
           sx={{
             width: "100%",
@@ -272,7 +214,6 @@ export default function OutlinePage() {
             pb: { xs: 1, md: 2 },
           }}
         >
-          {/* Hide the star on mobile, show on md+ */}
           <Box
             sx={{
               display: { xs: "none", md: "block" },
@@ -367,9 +308,7 @@ export default function OutlinePage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                "&:hover": {
-                  background: "#4A00E0",
-                },
+                "&:hover": { background: "#4A00E0" },
               }}
               className="w-full md:w-auto"
             >
@@ -389,7 +328,7 @@ export default function OutlinePage() {
             {cards.length} Cards
           </Typography>
         </Box>
-        {/* Cards List */}
+
         <Box
           sx={{
             width: "100%",
@@ -414,64 +353,66 @@ export default function OutlinePage() {
                   }}
                 >
                   {cards.map((card, idx) => (
-                  <Draggable key={idx} draggableId={String(idx)} index={idx}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        style={{
-                          ...provided.draggableProps.style,
-                          width: "100%",
-                          cursor: "pointer",
-                          zIndex: snapshot.isDragging ? 100 : "auto",
-                        }}
-                        onClick={() => handleCardClick(idx)}
-                      >
-                        <OutlineCard
-                          index={idx}
-                          title={card.title}
-                          onDelete={() => handleDelete(idx)}
-                          dragHandleProps={provided.dragHandleProps}
-                          isDragging={snapshot.isDragging}
-                          expanded={expandedIdx === idx}
-                          bullets={cards[idx]?.bullets}
-                          images={cards[idx]?.images}
-                          onEdit={
-                            expandedIdx === idx
-                              ? (event) => handleEditClick(event, idx)
-                              : undefined
-                          }
-                          editable={true}
-                          isEditing={editingIdx === idx}
-                          editingTitle={editingTitle}
-                          onTitleEditStart={() => handleTitleEditStart(idx, card.title)}
-                          onTitleEditChange={handleTitleEditChange}
-                          onTitleEditSave={() => handleTitleEditSave(idx)}
-                          onTitleEditCancel={handleTitleEditCancel}
-                          // Bullets paragraph editing props
-                          editingBulletsIdx={editingBulletsIdx}
-                          editingBulletsValue={editingBulletsValue}
-                          onBulletsEditStart={() => handleBulletsEditStart(idx, cards[idx]?.bullets)}
-                          onBulletsEditChange={handleBulletsEditChange}
-                          onBulletsEditSave={() => handleBulletsEditSave(idx)}
-                          onBulletsEditCancel={handleBulletsEditCancel}
-                          // Prevent card close on image click
-                          onImageClick={e => e.stopPropagation()}
-                        />
-                        {expandedIdx === idx && (
-                          <EditMenuCard
-                            open={
-                              editMenuCardIdx === idx &&
-                              Boolean(editMenuAnchor)
+                    <Draggable key={idx} draggableId={String(idx)} index={idx}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          style={{
+                            ...provided.draggableProps.style,
+                            width: "100%",
+                            cursor: "pointer",
+                            zIndex: snapshot.isDragging ? 100 : "auto",
+                          }}
+                          onClick={() => handleCardClick(idx)}
+                        >
+                          <OutlineCard
+                            index={idx}
+                            title={card.title}
+                            onDelete={() => handleDelete(idx)}
+                            dragHandleProps={provided.dragHandleProps}
+                            isDragging={snapshot.isDragging}
+                            expanded={expandedIdx === idx}
+                            bullets={card.bullets}
+                            images={card.images}
+                            onEdit={
+                              expandedIdx === idx
+                                ? (e) => handleEditClick(e, idx)
+                                : undefined
                             }
-                            anchorEl={editMenuAnchor}
-                            onClose={handleEditMenuClose}
-                            onAction={handleEditMenuAction}
+                            editable
+                            isEditing={editingIdx === idx}
+                            editingTitle={editingTitle}
+                            onTitleEditStart={() =>
+                              handleTitleEditStart(idx, card.title)
+                            }
+                            onTitleEditChange={handleTitleEditChange}
+                            onTitleEditSave={() => handleTitleEditSave(idx)}
+                            onTitleEditCancel={handleTitleEditCancel}
+                            editingBulletsIdx={editingBulletsIdx}
+                            editingBulletsValue={editingBulletsValue}
+                            onBulletsEditStart={() =>
+                              handleBulletsEditStart(idx, card.bullets)
+                            }
+                            onBulletsEditChange={handleBulletsEditChange}
+                            onBulletsEditSave={() => handleBulletsEditSave(idx)}
+                            onBulletsEditCancel={handleBulletsEditCancel}
+                            onImageClick={(e) => e.stopPropagation()}
                           />
-                        )}
-                      </div>
-                    )}
-                  </Draggable>
+                          {expandedIdx === idx && (
+                            <EditMenuCard
+                              open={
+                                editMenuCardIdx === idx &&
+                                Boolean(editMenuAnchor)
+                              }
+                              anchorEl={editMenuAnchor}
+                              onClose={handleEditMenuClose}
+                              onAction={handleEditMenuAction}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </Draggable>
                   ))}
                   {provided.placeholder}
                 </div>
@@ -480,7 +421,8 @@ export default function OutlinePage() {
           </DragDropContext>
         </Box>
       </Box>
-      {/* Continue Button - sticky on mobile */}
+
+      {/* Continue Button */}
       <Box
         sx={{
           width: "100%",
@@ -499,6 +441,7 @@ export default function OutlinePage() {
       >
         <Button
           variant="contained"
+          onClick={handleContinue}
           sx={{
             width: { xs: "80%", md: 320 },
             maxWidth: 400,
@@ -510,9 +453,7 @@ export default function OutlinePage() {
             background:
               "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
             boxShadow: "none",
-            "&:hover": {
-              background: "#4A00E0",
-            },
+            "&:hover": { background: "#4A00E0" },
           }}
           className="w-4/5 md:w-[320px]"
         >
