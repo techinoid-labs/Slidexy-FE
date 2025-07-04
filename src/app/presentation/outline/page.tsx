@@ -177,8 +177,7 @@ export default function OutlinePage() {
     const mapped = mapCardsToSlides(cards);
     dispatch(setSlides(mapped));
     console.log("[OutlinePage] Slides sent to Redux:", mapped);
-    router.push('/editor');
-      
+    router.push("/editor");
   };
 
   return (
