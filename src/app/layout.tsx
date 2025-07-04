@@ -12,7 +12,7 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
-  title: "S lides - Your Idea, Instantly on Slides",
+  title: "Slides - Your Idea, Instantly on Slides",
   description:
     "Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers.",
 };
@@ -25,11 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={raleway.variable} suppressHydrationWarning>
       <body className={raleway.className}>
-        {/* <Providers>{children}</Providers> */}
         <ThemeContextProvider>
           <ThemeProvider>
             <CssBaseline />
-            {/* {children} */}
             <Providers>{children}</Providers>
           </ThemeProvider>
         </ThemeContextProvider>

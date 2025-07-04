@@ -23,7 +23,7 @@ interface EditingState {
   fontSize: number;
 }
 
-const SlideEditor = () => {
+const SlideEditor = ({ slides = [] }: any) => {
   const stageRefs = useRef<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -61,7 +61,7 @@ const SlideEditor = () => {
           alignItems: "center",
         }}
       >
-        {dummyData.map((slide, index) => {
+        {slides.map((slide: any, index: number) => {
           const title = slide.slide_title;
           const titleProps = title.properties;
           const titleY = 25;
@@ -109,7 +109,7 @@ const SlideEditor = () => {
                   />
 
                   {/* Bullet Points */}
-                  {slide.elements.map((el, i) => {
+                  {slide.elements.map((el: any, i: number) => {
                     const elY =
                       bulletStartY + i * (el.properties.fontSize + bulletGap);
 
