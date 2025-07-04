@@ -5,7 +5,6 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import Image from "next/image";
 import InputModeSelector from "./InputModeSelector";
 import PromptAttributeSelector from "./PromptAttributeSelector";
-import { useSlides } from "@/app/context/SlidesContext";
 import { useRouter } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -52,7 +51,6 @@ export default function PresentationMaker({
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
-    setSlides([]);
 
     if (inputMode === "Website") {
       try {
@@ -106,7 +104,8 @@ export default function PresentationMaker({
       const data = await res.json();
       console.log("[SlidesX] Parsed slides data:", data);
       setSlides(data.slides);
-      router.push("/presentation/outline");
+      localStorage.setItem("slides", JSON.stringify(data.slides)); // Ensure persistence before navigation
+      router.push(`/presentation/outline`);
     } catch (err: any) {
       console.error("[SlidesX] Exception in handleSubmit:", err);
       setError(err.message || "Something went wrong");

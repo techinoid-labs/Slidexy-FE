@@ -1,8 +1,10 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
-  import Providers from "./provider/Provider";
-
+import Providers from "./provider/Provider";
+import { ThemeProvider } from "@/lib/theme-provider";
+import CssBaseline from "@mui/material/CssBaseline";
+import { ThemeProvider as ThemeContextProvider } from "./context/ThemeContext";
 
 const raleway = Raleway({
   subsets: ["latin"],
@@ -10,7 +12,7 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
-  title: "Slides - Your Idea, Instantly on Slides",
+  title: "S lides - Your Idea, Instantly on Slides",
   description:
     "Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers.",
 };
@@ -23,7 +25,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={raleway.variable} suppressHydrationWarning>
       <body className={raleway.className}>
-        <Providers>{children}</Providers>
+        {/* <Providers>{children}</Providers> */}
+        <ThemeContextProvider>
+          <ThemeProvider>
+            <CssBaseline />
+            {/* {children} */}
+            <Providers>{children}</Providers>
+          </ThemeProvider>
+        </ThemeContextProvider>
       </body>
     </html>
   );

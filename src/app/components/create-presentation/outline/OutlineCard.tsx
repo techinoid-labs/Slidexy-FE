@@ -556,4 +556,3 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
 };
 
 export default OutlineCard;
-
