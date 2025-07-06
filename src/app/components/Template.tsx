@@ -13,8 +13,8 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { useSlideThemeContext } from "../context/ThemeContext";
 import Image from "next/image";
-import { useThemeContext } from "../context/ThemeContext";
 
 interface Theme {
   font: string;
@@ -29,16 +29,20 @@ interface TemplatePanelProps {
   onClose?: () => void;
 }
 
-const TemplatePanel: React.FC<TemplatePanelProps> = ({
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+console.log(API_BASE_URL);
+
+const TemplatePanel = ({
   sidebarHeight = "100vh",
   onClose,
-}) => {
+}: TemplatePanelProps) => {
   const [search, setSearch] = useState("");
   const [themes, setThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [imgError, setImgError] = useState(false);
-  const { selectedTheme, setSelectedTheme } = useThemeContext();
+  const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
 
   const themeImageUrls = [
     "/theme-1.jpeg",
@@ -143,44 +147,100 @@ const TemplatePanel: React.FC<TemplatePanelProps> = ({
     setThemes(mockThemes);
   }, []);
 
+  // const handleSearch = async () => {
+  //   if (!search.trim()) return;
+
+  //   console.log("Search triggered with prompt:", search);
+  //   setLoading(true);
+  //   setError("");
+
+  //   try {
+  //     const res = await fetch(`${API_BASE_URL}/generate-theme-image`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ prompt: search }),
+  //     });
+
+  //     console.log("\uD83D\uDCF1 API Response Status:", res.status);
+
+  //     if (!res.ok) throw new Error("Failed to fetch themes");
+
+  //     const data = await res.json();
+  //     console.log("✅ API Response Data:", data);
+
+  //     const cleanedThemes = (data.themes || []).map(
+  //       (theme: any, index: number) => ({
+  //         font: theme.font,
+  //         primaryColor: theme.primaryColor,
+  //         secondaryColor: theme.secondaryColor,
+  //         backgroundColor: theme.backgroundColor,
+  //         image_url: theme.image_url,
+  //       })
+  //     );
+
+  //     // Fallback if API returns 0 themes
+  //     setThemes(cleanedThemes.length > 0 ? cleanedThemes : fallbackThemes);
+  //   } catch (e: any) {
+  //     console.error("\uD83D\uDEA8 Error during fetch:", e);
+  //     setError(e.message || "Unknown error");
+  //     setThemes(fallbackThemes);
+  //   } finally {
+  //     setLoading(false);
+  //     console.log("\uD83D\uDD01 Search finished");
+  //   }
+  // };
+
   const handleSearch = async () => {
     if (!search.trim()) return;
 
-    console.log("Search triggered with prompt:", search);
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/generate-theme-image", {
+      const res = await fetch(`${API_BASE_URL}/generate-theme-image`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: search }),
       });
 
-      console.log("\uD83D\uDCF1 API Response Status:", res.status);
-
       if (!res.ok) throw new Error("Failed to fetch themes");
 
       const data = await res.json();
-      console.log("✅ API Response Data:", data);
 
-      const cleanedThemes = (data.themes || []).map((theme: any, index: number) => ({
-        font: theme.font,
-        primaryColor: theme.primaryColor,
-        secondaryColor: theme.secondaryColor,
-        backgroundColor: theme.backgroundColor,
-        image_url: theme.image_url,
-      }));
+      const cleanedThemes = (data.themes || []).map((theme: any) => {
+        let imageUrl = theme.image_url;
 
-      // Fallback if API returns 0 themes
-      setThemes(cleanedThemes.length > 0 ? cleanedThemes : fallbackThemes);
+        // ✅ Sanitize double "data:image/png;base64," prefixes
+        if (typeof imageUrl === "string" && imageUrl.startsWith("data:image")) {
+          const parts = imageUrl.split(",");
+          if (parts.length > 2) {
+            imageUrl = parts[0] + "," + parts.pop(); // keep only one prefix and the base64
+          }
+        }
+
+        return {
+          font: theme.font,
+          primaryColor: theme.primaryColor,
+          secondaryColor: theme.secondaryColor,
+          backgroundColor: theme.backgroundColor,
+          image_url: imageUrl,
+        };
+      });
+
+      const newThemes =
+        cleanedThemes.length > 0 ? cleanedThemes : fallbackThemes;
+      setThemes(newThemes);
+
+      // ✅ Apply the first theme to context right away
+      if (newThemes.length > 0) {
+        setSelectedTheme(newThemes[0]);
+      }
     } catch (e: any) {
-      console.error("\uD83D\uDEA8 Error during fetch:", e);
+      console.error("Error during fetch:", e);
       setError(e.message || "Unknown error");
       setThemes(fallbackThemes);
     } finally {
       setLoading(false);
-      console.log("\uD83D\uDD01 Search finished");
     }
   };
 
@@ -323,9 +383,15 @@ const TemplatePanel: React.FC<TemplatePanelProps> = ({
                   p: 2,
                   mb: 2,
                   bgcolor: "#FAFAFA",
-                  border: selectedTheme?.image_url === theme.image_url ? "2px solid #7B4AE2" : "1px solid #EEE",
+                  border:
+                    selectedTheme?.image_url === theme.image_url
+                      ? "2px solid #7B4AE2"
+                      : "1px solid #EEE",
                   borderRadius: 3,
-                  boxShadow: selectedTheme?.image_url === theme.image_url ? "0 4px 16px rgba(123,74,226,0.12)" : "0 2px 6px rgba(0,0,0,0.05)",
+                  boxShadow:
+                    selectedTheme?.image_url === theme.image_url
+                      ? "0 4px 16px rgba(123,74,226,0.12)"
+                      : "0 2px 6px rgba(0,0,0,0.05)",
                   transition: "0.2s ease",
                   cursor: "pointer",
                   "&:hover": {
@@ -350,7 +416,11 @@ const TemplatePanel: React.FC<TemplatePanelProps> = ({
                   />
                 ) : (
                   <img
-                    src={imgError ? "https://source.unsplash.com/200x140/?abstract,theme" : theme.image_url}
+                    src={
+                      imgError
+                        ? "https://source.unsplash.com/200x140/?abstract,theme"
+                        : theme.image_url
+                    }
                     alt="theme"
                     style={{
                       width: 200,
@@ -372,20 +442,22 @@ const TemplatePanel: React.FC<TemplatePanelProps> = ({
                     {theme.font}
                   </Typography>
                   <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                    {[theme.primaryColor, theme.secondaryColor, theme.backgroundColor].map(
-                      (color, index) => (
-                        <Box
-                          key={index}
-                          sx={{
-                            width: 18,
-                            height: 18,
-                            borderRadius: "50%",
-                            bgcolor: color,
-                            border: "1px solid #CCC",
-                          }}
-                        />
-                      )
-                    )}
+                    {[
+                      theme.primaryColor,
+                      theme.secondaryColor,
+                      theme.backgroundColor,
+                    ].map((color, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: "50%",
+                          bgcolor: color,
+                          border: "1px solid #CCC",
+                        }}
+                      />
+                    ))}
                   </Box>
                 </Box>
               </Box>

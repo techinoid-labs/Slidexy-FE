@@ -4,21 +4,10 @@ import React from "react";
 import Image from "next/image";
 import { Box, Tooltip, IconButton } from "@mui/material";
 import { useRouter } from "next/navigation";
-
-const navItems = [
-  { label: "Home", icon: "/images/template-icon.svg" },
-  { label: "Dashboard", icon: "/images/text-icon.svg" },
-  { label: "Files", icon: "/images/picture-icon.svg" },
-  { label: "AI", icon: "/images/nav-icon.svg" },
-];
-
 import TemplatePanel from "./Template";
-
 import TextEditorPanel from "./TextEditor";
 import MediaPanel from "./Media";
 import ShapesPanel from "./Shapes";
-// Re-export with correct prop types for linter
-// (No change needed if default export is used, but ensure import is not type-mismatched)
 
 type PanelType = null | "template" | "text" | "media" | "shapes";
 
@@ -27,11 +16,20 @@ interface SideNavBarProps {
   setShowTemplatePanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const SideNavBar: React.FC<SideNavBarProps> = ({
+const navItems = [
+  { label: "Themes", icon: "/images/template-icon.svg" },
+  { label: "Text", icon: "/images/text-icon.svg" },
+  { label: "Images", icon: "/images/picture-icon.svg" },
+  { label: "Shapes", icon: "/images/nav-icon.svg" },
+];
+
+const SideNavBar = ({
   showTemplatePanel,
   setShowTemplatePanel,
-}) => {
+}: SideNavBarProps) => {
   const [selectedIdx, setSelectedIdx] = React.useState(0);
+
+  console.log(selectedIdx);
   const [openPanel, setOpenPanel] = React.useState<PanelType>(null);
   const sidebarHeight = "88.5vh";
   return (

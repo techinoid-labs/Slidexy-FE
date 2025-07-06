@@ -29,4 +29,4 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useThemeContext = () => useContext(ThemeContext); 
+export const useSlideThemeContext = () => useContext(ThemeContext);

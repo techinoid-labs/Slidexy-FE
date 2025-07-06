@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { Stage, Layer } from "react-konva";
+import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
+import useImage from "use-image";
 import { Box } from "@mui/material";
 import SlideImage from "./KonvaComponents/KonvaSlideImage";
 import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor";
 import { dummyData } from "./dummy";
+import { useSlideThemeContext } from "@/app/context/ThemeContext";
 
 const SLIDE_WIDTH = 1000;
 const SLIDE_HEIGHT = 480;
@@ -26,7 +28,10 @@ interface EditingState {
 const SlideEditor = ({ slides = [] }: any) => {
   const stageRefs = useRef<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { selectedTheme } = useSlideThemeContext();
+  const [bgImage] = useImage(selectedTheme?.image_url || "", "anonymous");
 
+  console.log(selectedTheme, bgImage);
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [inputValue, setInputValue] = useState("");
 
@@ -61,7 +66,7 @@ const SlideEditor = ({ slides = [] }: any) => {
           alignItems: "center",
         }}
       >
-        {slides.map((slide: any, index: number) => {
+        {dummyData.map((slide: any, index: number) => {
           const title = slide.slide_title;
           const titleProps = title.properties;
           const titleY = 25;
@@ -85,6 +90,42 @@ const SlideEditor = ({ slides = [] }: any) => {
                 ref={(ref: any) => (stageRefs.current[index] = ref)}
               >
                 <Layer>
+                  {/* Theme Background */}
+                  {/* {selectedTheme?.image_url && bgImage ? (
+                    <KonvaImage
+                      image={bgImage}
+                      x={0}
+                      y={0}
+                      width={SLIDE_WIDTH}
+                      height={SLIDE_HEIGHT}
+                    />
+                  ) : (
+                    <Rect
+                      x={0}
+                      y={0}
+                      width={SLIDE_WIDTH}
+                      height={SLIDE_HEIGHT}
+                      fill={selectedTheme?.backgroundColor || "#fff"}
+                    />
+                  )} */}
+                  {selectedTheme?.image_url && bgImage ? (
+                    <KonvaImage
+                      image={bgImage}
+                      x={0}
+                      y={0}
+                      width={SLIDE_WIDTH}
+                      height={SLIDE_HEIGHT}
+                    />
+                  ) : (
+                    <Rect
+                      x={0}
+                      y={0}
+                      width={SLIDE_WIDTH}
+                      height={SLIDE_HEIGHT}
+                      fill={selectedTheme?.backgroundColor || "#fff"}
+                    />
+                  )}
+
                   {/* Title */}
                   <KonvaTextEditor
                     id={`title-${slide.slide_id}`}
@@ -94,8 +135,8 @@ const SlideEditor = ({ slides = [] }: any) => {
                     width={textMaxWidth}
                     wrap="word"
                     fontSize={titleProps.fontSize}
-                    fontFamily={titleProps.fontFamily}
-                    fill={titleProps.fill}
+                    fontFamily={selectedTheme?.font || titleProps.fontFamily}
+                    fill={selectedTheme?.primaryColor || titleProps.fill}
                     fontStyle={titleProps.fontStyle}
                     onDblClick={() =>
                       handleTextDoubleClick(
@@ -123,8 +164,10 @@ const SlideEditor = ({ slides = [] }: any) => {
                         width={textMaxWidth - 20}
                         wrap="word"
                         fontSize={el.properties.fontSize}
-                        fontFamily={el.properties.fontFamily}
-                        fill={el.properties.fill}
+                        fontFamily={
+                          selectedTheme?.font || el.properties.fontFamily
+                        }
+                        fill={selectedTheme?.primaryColor || el.properties.fill}
                         fontStyle={el.properties.fontStyle}
                         onDblClick={() =>
                           handleTextDoubleClick(
