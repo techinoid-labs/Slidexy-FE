@@ -23,14 +23,14 @@ const Page = () => {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100%",
+        height: "100vh",
         backgroundColor: "#FBFAFF",
         maxWidth: "100%",
-        maxHeight: "100%",
+        overflow: "hidden",
       }}
     >
       <UpperNavBar />
-      <div className="" style={{ display: "flex", flex: 1 }}>
+      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <SideNavBar
           showTemplatePanel={showTemplatePanel}
           setShowTemplatePanel={setShowTemplatePanel}
@@ -38,17 +38,23 @@ const Page = () => {
         <main
           style={{
             flexGrow: 1,
-            padding: 16,
-            overflow: "auto",
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
+            overflow: "hidden",
           }}
         >
           {/* <CentralEditor templatePanelOpen={showTemplatePanel} /> */}
-          {/* <App /> */}
-          <SlideEditor slides={slides} />
+          <div
+            style={{
+              flexGrow: 1,
+              overflowY: "auto",
+              padding: 16,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <SlideEditor slides={slides} />
+          </div>
         </main>
         {/* <ThemePanel /> */}
       </div>
