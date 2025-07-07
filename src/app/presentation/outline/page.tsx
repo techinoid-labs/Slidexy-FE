@@ -409,6 +409,16 @@ export default function OutlinePage() {
                             slideIndex={idx}
                             slidesState={slidesState}
                             isInfographicMode={isInfographicMode}
+                            // ✅ Add this line to fix the error:
+                            onUpdateSlideImages={(slideIndex, newImages) => {
+                              setCards((prev) =>
+                                prev.map((card, i) =>
+                                  i === slideIndex
+                                    ? { ...card, images: [...newImages] }
+                                    : card
+                                )
+                              );
+                            }}
                           />
 
                           {expandedIdx === idx && (

@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Paper, IconButton, Box, Typography } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -40,6 +41,7 @@ interface OutlineCardProps {
   slideIndex: number;
   slidesState: Slide[];
   isInfographicMode: boolean;
+  onUpdateSlideImages: (slideIndex: number, images: string[]) => void;
 }
 
 const OutlineCard: React.FC<OutlineCardProps> = (props) => {
@@ -70,27 +72,27 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     slideIndex,
     slidesState,
     isInfographicMode,
+    onUpdateSlideImages,
   } = props;
 
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const [largeImageIdx, setLargeImageIdx] = React.useState<number | null>(null);
+  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
+  const [suggestedImages, setSuggestedImages] = React.useState<{
+    imageIndex: number;
+    suggestions: string[];
+  } | null>(null);
+  const [imageList, setImageList] = React.useState<string[]>(images || []);
   const [loadingImageIndex, setLoadingImageIndex] = React.useState<
     number | null
   >(null);
 
   React.useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
+    setImageList(images || []);
+  }, [images]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      onTitleEditSave && onTitleEditSave();
-    } else if (e.key === "Escape") {
-      onTitleEditCancel && onTitleEditCancel();
-    }
+    if (e.key === "Enter") onTitleEditSave?.();
+    else if (e.key === "Escape") onTitleEditCancel?.();
   };
 
   const handleRegenerateImage = async (
@@ -98,18 +100,15 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
-
     if (loadingImageIndex !== null) return;
-    setLoadingImageIndex(imageIndex);
 
+    setLoadingImageIndex(imageIndex);
     const currentSlide = slidesState[slideIndex];
-    const imagePrompt = `Generate a high-quality, professional, illustrative image for a presentation slide with the title "${
+    const imagePrompt = `Generate a high-quality, professional image for slide titled "${
       currentSlide.slide_title.text
-    }". The image should visually represent the core concept of the title and its key points, which are: ${currentSlide.elements
-      .map((el: any) => el.text)
-      .join(
-        ", "
-      )}. Focus on clarity and professional aesthetics. DO NOT include any text, labels, words, or captions *within the image itself*.`;
+    }" with points: ${currentSlide.elements
+      .map((el) => el.text)
+      .join(", ")}. No text or labels inside the image.`;
 
     try {
       const res = await fetch(
@@ -126,25 +125,14 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
       );
 
       const data = await res.json();
-
       if (data.imageUrls?.length > 0) {
-        const rect = (e.target as HTMLElement).getBoundingClientRect();
-        const x = rect.left;
-        const y = rect.bottom + window.scrollY;
-
-        onSetImageSuggestionsBox({
-          x,
-          y,
-          slideIndex,
-          imageIndex,
-          suggestions: data.imageUrls,
-        });
+        setSuggestedImages({ imageIndex, suggestions: data.imageUrls });
       } else {
         alert("Failed to generate image suggestions.");
       }
     } catch (err) {
-      console.error("Regenerate image error:", err);
-      alert("An error occurred while generating image suggestions.");
+      console.error("Image regeneration error:", err);
+      alert("Error generating image suggestions.");
     } finally {
       setLoadingImageIndex(null);
     }
@@ -159,36 +147,18 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         bgcolor: "#F2F0FF",
         boxShadow: isDragging ? 4 : 0,
         transition: "box-shadow 0.2s",
-        p: 0,
-        m: 0,
-        cursor: "pointer",
         overflow: "hidden",
-        position: "relative",
       }}
     >
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 56,
-          bgcolor: "#F2F0FF",
-          borderTopLeftRadius: "20px",
-          borderTopRightRadius: "20px",
-        }}
-      >
+      <Box sx={{ display: "flex", alignItems: "center", minHeight: 56 }}>
         <Box
           {...dragHandleProps}
           sx={{
             color: "#8E2DE2",
             fontWeight: 700,
             fontSize: 20,
-            minWidth: 48,
-            textAlign: "center",
-            pl: 2,
-            pr: 1,
+            px: 2,
             display: "flex",
-            alignItems: "center",
             gap: 1.5,
           }}
         >
@@ -228,23 +198,20 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             sx={{
               fontWeight: 500,
               color: "#18181B",
-              fontSize: { xs: 14, sm: 16, md: 18 },
+              fontSize: 16,
               flex: 1,
               pl: 1,
-              display: "flex",
-              alignItems: "center",
-              cursor: editable ? "pointer" : "default",
             }}
             noWrap
+            title={title}
             onClick={
               editable
                 ? (e) => {
                     e.stopPropagation();
-                    onTitleEditStart && onTitleEditStart();
+                    onTitleEditStart?.();
                   }
                 : undefined
             }
-            title={title}
           >
             {title}
           </Typography>
@@ -262,68 +229,127 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
       {expanded && (
         <Box
           sx={{
-            bgcolor: "#fff",
-            px: { xs: 2, sm: 3 },
+            px: 3,
             pt: 2,
-            pb: 1.5,
-            borderBottomLeftRadius: "20px",
-            borderBottomRightRadius: "20px",
+            pb: 2,
+            bgcolor: "#fff",
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
           }}
         >
-          {bullets?.length > 0 && (
-            <Box sx={{ mb: 2 }}>
-              <ul
-                style={{
-                  margin: 0,
-                  paddingLeft: 20,
-                  color: "#757575",
-                  fontSize: 16,
-                }}
-              >
-                {bullets.map((b, i) => (
-                  <li
-                    key={i}
-                    onClick={
-                      editable
-                        ? (e) => {
-                            e.stopPropagation();
-                            onBulletsEditStart && onBulletsEditStart();
-                          }
-                        : undefined
-                    }
-                    style={{ cursor: editable ? "pointer" : "default" }}
-                    title={b}
-                  >
-                    {b}
-                  </li>
-                ))}
-              </ul>
-            </Box>
-          )}
-
-          {images.length > 0 && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                flexWrap: "wrap",
-                mb: 2,
+          {bullets.length > 0 && (
+            <ul
+              style={{
+                paddingLeft: 20,
+                margin: 0,
+                color: "#757575",
+                fontSize: 16,
               }}
             >
-              {images.map((src, i) => (
-                <span key={i}>
+              {bullets.map((b, i) => (
+                <li key={i}>{b}</li>
+              ))}
+            </ul>
+          )}
+
+          <Box
+            sx={{ display: "flex", justifyContent: "space-between", gap: 3 }}
+          >
+            {/* Left: Image list with suggestions */}
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, flex: 1 }}>
+              {imageList.map((src, i) => (
+                <Box key={i}>
                   <ImageWithClick
                     src={src}
                     alt={`img-${i}`}
-                    onShowLarge={() => setLargeImageIdx(i)}
                     onRegenerate={(e) => handleRegenerateImage(i, e)}
+                    onPreviewImage={() => setPreviewImage(src)}
                     isLoading={loadingImageIndex === i}
                   />
-                </span>
+
+                  {suggestedImages?.imageIndex === i && (
+                    <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
+                      {suggestedImages.suggestions.map((suggestedSrc, j) => (
+                        <Box
+                          key={j}
+                          sx={{
+                            width: 64,
+                            height: 64,
+                            borderRadius: 1,
+                            overflow: "hidden",
+                            cursor: "pointer",
+                            border: "1px solid #ccc",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newImages = [...imageList];
+                            newImages[i] = suggestedSrc;
+                            setImageList(newImages);
+                            onUpdateSlideImages(slideIndex, newImages);
+                            setPreviewImage(suggestedSrc);
+                            setSuggestedImages(null);
+                          }}
+                        >
+                          <Image
+                            src={suggestedSrc}
+                            alt={`Suggested ${j}`}
+                            width={64}
+                            height={64}
+                            style={{
+                              objectFit: "cover",
+                              width: "100%",
+                              height: "100%",
+                            }}
+                          />
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
               ))}
             </Box>
-          )}
+
+            {/* Right: Preview image */}
+            {previewImage && (
+              <Box
+                sx={{
+                  minWidth: 200,
+                  maxWidth: 240,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Image
+                  src={previewImage}
+                  alt="Preview"
+                  width={240}
+                  height={240}
+                  style={{
+                    objectFit: "contain",
+                    maxWidth: "100%",
+                    borderRadius: 8,
+                  }}
+                />
+                <Typography
+                  sx={{
+                    fontSize: 12,
+                    color: "#666",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewImage(null);
+                  }}
+                >
+                  Close Preview
+                </Typography>
+              </Box>
+            )}
+          </Box>
         </Box>
       )}
     </Paper>

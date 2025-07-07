@@ -14,6 +14,7 @@ interface KonvaComponent {
 }
 
 export interface Slide {
+  [x: string]: any;
   slide_id: string;
   slide_title: KonvaComponent;
   elements: KonvaComponent[];
@@ -36,9 +37,16 @@ const slidesSlice = createSlice({
     setSlides: (state, action: PayloadAction<Slide[]>) => {
       state.slides = action.payload;
     },
+    updateSlideImages: (
+      state,
+      action: PayloadAction<{ slideIndex: number; updatedImages: string[] }>
+    ) => {
+      state.slides[action.payload.slideIndex].images =
+        action.payload.updatedImages;
+    },
   },
 });
 
 // Export actions and reducer
-export const { setSlides } = slidesSlice.actions;
+export const { setSlides, updateSlideImages } = slidesSlice.actions;
 export default slidesSlice.reducer;
