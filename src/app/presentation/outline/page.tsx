@@ -72,8 +72,17 @@ function mapCardsToSlides(cards: any[]): Slide[] {
 
 export default function OutlinePage() {
   const { slides }: any = useSlides();
+  const slidesState = slides; // or use a better name if you like
+  const isInfographicMode = false; // replace with actual logic if available
   const dispatch = useDispatch();
   const router = useRouter();
+  const [imageSuggestionsBox, setImageSuggestionsBox] = React.useState<{
+    slideIndex: number;
+    imageIndex: number;
+    x: number;
+    y: number;
+    suggestions: string[];
+  } | null>(null);
 
   const [cards, setCards] = useState(() =>
     slides && slides.length > 0 ? mapApiSlidesToCards(slides) : []
@@ -177,8 +186,7 @@ export default function OutlinePage() {
     const mapped = mapCardsToSlides(cards);
     dispatch(setSlides(mapped));
     console.log("[OutlinePage] Slides sent to Redux:", mapped);
-    router.push('/editor');
-      
+    router.push("/editor");
   };
 
   return (
@@ -370,6 +378,7 @@ export default function OutlinePage() {
                             index={idx}
                             title={card.title}
                             onDelete={() => handleDelete(idx)}
+                            onSetImageSuggestionsBox={setImageSuggestionsBox}
                             dragHandleProps={provided.dragHandleProps}
                             isDragging={snapshot.isDragging}
                             expanded={expandedIdx === idx}
@@ -397,8 +406,11 @@ export default function OutlinePage() {
                             onBulletsEditChange={handleBulletsEditChange}
                             onBulletsEditSave={() => handleBulletsEditSave(idx)}
                             onBulletsEditCancel={handleBulletsEditCancel}
-                            onImageClick={(e) => e.stopPropagation()}
+                            slideIndex={idx}
+                            slidesState={slidesState}
+                            isInfographicMode={isInfographicMode}
                           />
+
                           {expandedIdx === idx && (
                             <EditMenuCard
                               open={
@@ -460,6 +472,65 @@ export default function OutlinePage() {
           Continue
         </Button>
       </Box>
+
+      {imageSuggestionsBox && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: imageSuggestionsBox.y,
+            left: imageSuggestionsBox.x,
+            zIndex: 1300,
+            backgroundColor: "#fff",
+            border: "1px solid #ddd",
+            borderRadius: 2,
+            boxShadow: 3,
+            p: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+          }}
+        >
+          {imageSuggestionsBox.suggestions.map((url, i) => (
+            <Box
+              key={i}
+              sx={{
+                width: 120,
+                height: 120,
+                cursor: "pointer",
+                overflow: "hidden",
+                borderRadius: 1,
+                border: "1px solid #eee",
+                "&:hover": { borderColor: "#8E2DE2" },
+              }}
+              onClick={() => {
+                setCards((prev) =>
+                  prev.map((card, idx) =>
+                    idx === imageSuggestionsBox.slideIndex
+                      ? {
+                          ...card,
+                          images: [
+                            ...(card.images || []).map((img, j) =>
+                              j === imageSuggestionsBox.imageIndex ? url : img
+                            ),
+                          ],
+                        }
+                      : card
+                  )
+                );
+                setImageSuggestionsBox(null);
+              }}
+            >
+              <Image
+                src={url}
+                alt={`suggested-${i}`}
+                width={120}
+                height={120}
+                style={{ objectFit: "cover", width: "100%", height: "100%" }}
+              />
+            </Box>
+          ))}
+        </Box>
+      )}
     </Box>
   );
 }
