@@ -27,7 +27,16 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch(setSlides(newSlides));
   };
 
-    console.log("Slides Data:", slides);
+  console.log("Slides Data:", slides);
+
+  // const setSlides = (slides: SlidesType) => {
+  //   console.log("[SlidesContext] Setting slides:", slides);
+  //   setSlidesState(slides);
+  // };
+
+  // useEffect(() => {
+  //   console.log("[SlidesContext] Current slides:", slides);
+  // }, [slides]);
 
   return (
     <SlidesContext.Provider value={{ slides, setSlides: handleSetSlides }}>

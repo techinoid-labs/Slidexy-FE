@@ -5,6 +5,7 @@ import { Box, Container, Typography, TextField, Button, Chip, IconButton, Fab, u
 import { KeyboardArrowDown } from "@mui/icons-material"
 import ResponsivePageWrapper from "@/lib/responsive-page-wrapper"
 import Image from "next/image"
+import Link from "next/link"
 
 
 export default function HeroSection() {
@@ -31,17 +32,20 @@ export default function HeroSection() {
                 <Box
                     sx={{
                         position: "absolute",
-                        top: { xs: 30, md: 70 },
-                        left: { xs: 50, md: 200 },
+                        top: { xs: 10, md: 30 },
+                        left: { xs: 10, md: 200 },
                         animation: "sparkle 2s ease-in-out infinite",
-                        "@keyframes sparkle": {
-                            "0%, 100%": {
+                        width: { xs: 24, md: 72 },
+                        height: { xs: 24, md: 72 },
+                        display: { xs: 'none', md: 'block' },
+                        '@keyframes sparkle': {
+                            '0%, 100%': {
                                 opacity: 0.7,
-                                transform: "scale(1)",
+                                transform: 'scale(1)',
                             },
-                            "50%": {
+                            '50%': {
                                 opacity: 1,
-                                transform: "scale(1.1)",
+                                transform: 'scale(1.1)',
                             },
                         },
                     }}
@@ -51,6 +55,7 @@ export default function HeroSection() {
                         alt="Icon"
                         width={72}
                         height={72}
+                        style={{ width: '100%', height: '100%' }}
                     />
                 </Box>
                 <Box
@@ -59,9 +64,11 @@ export default function HeroSection() {
                         top: 0,
                         left: "50%",
                         transform: "translateX(-50%)",
-                        mt: -16,
+                        mt: { xs: -6, md: -16 },
                         opacity: 0.6,
                         pointerEvents: "none",
+                        width: { xs: 120, md: 450 },
+                        height: { xs: 120, md: 450 },
                     }}
                 >
                     <Image
@@ -69,9 +76,7 @@ export default function HeroSection() {
                         alt="Checkered Background"
                         width={450}
                         height={450}
-                        style={{
-                            objectFit: "contain",
-                        }}
+                        style={{ objectFit: "contain", width: '100%', height: '100%' }}
                     />
                 </Box>
 
@@ -86,21 +91,21 @@ export default function HeroSection() {
                                     alt="Icon"
                                     width={18}
                                     height={18}
-                                    style={{ marginRight: "4px" }}
+                                    style={{ marginRight: "4px", width: 18, height: 18 }}
                                 />
                             }
                             label="No sign-up needed for the first deck."
                             sx={{
                                 px: 1.5,
                                 py: 0.7,
-                                fontSize: "0.95rem",
+                                fontSize: { xs: "0.8rem", md: "0.95rem" },
                                 height: "auto",
                                 borderRadius: "600px",
                                 backgroundColor: "#E8E4FF",
                                 color: "#4A00E0",
                                 boxShadow: "0 2px 6px rgba(0, 0, 0, 0.06)",
                                 border: "none",
-                                "& .MuiChip-icon": {
+                                '& .MuiChip-icon': {
                                     color: "#4A00E0",
                                     marginRight: "6px",
                                 },
@@ -117,12 +122,12 @@ export default function HeroSection() {
                             variant="h1"
                             noWrap
                             sx={{
-                                fontSize: { xs: "2.5rem", md: "4 rem", lg: "4.8rem" },
+                                fontSize: { xs: "2rem", md: "4rem", lg: "4.8rem" },
                                 fontWeight: 600,
                                 mb: 3,
                                 lineHeight: 1.1,
                                 color: "#000000",
-                                whiteSpace: "nowrap",
+                                whiteSpace: { xs: 'normal', md: 'nowrap' },
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                             }}
@@ -153,9 +158,9 @@ export default function HeroSection() {
                     </Box>
 
                     {/* Input Section */}
-                    <Box sx={{ display: "flex", justifyContent: "center", mb: 8, mt: -5 }}>
+                    <Box sx={{ display: "flex", justifyContent: "center", mb: 8, mt: { xs: 1, md: -5 } }}>
                         <Box sx={{ position: "relative", maxWidth: 700, width: "100%" }}>
-                            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: -9, mb: 2 }}>
+                            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: -9, mb: 2, flexDirection: { xs: 'column', md: 'row' } }}>
                                 {/* Input Field with Voice Icon */}
                                 <Box
                                     sx={{
@@ -167,8 +172,9 @@ export default function HeroSection() {
                                         paddingRight: 0.5,
                                         border: "2px solid #8E2DE2",
                                         boxShadow: "4px 5px 0px 0px #8E2DE2",
-                                        width: { xs: "100%", md: 660 },
-                                        height: 72,
+                                        width: { xs: "90vw", sm: "100%", md: 660 },
+                                        maxWidth: { xs: 320, md: 660 },
+                                        height: { xs: 48, md: 72 },
                                     }}
                                 >
                                     <TextField
@@ -178,12 +184,12 @@ export default function HeroSection() {
                                         value={inputValue}
                                         onChange={(e) => setInputValue(e.target.value)}
                                         sx={{
-                                            "& .MuiOutlinedInput-root": {
-                                                border: "none",
-                                                "& fieldset": { border: "none" },
-                                                fontSize: "1.125rem",
-                                                px: 3,
-                                                py: 2,
+                                            '& .MuiOutlinedInput-root': {
+                                                border: 'none',
+                                                '& fieldset': { border: 'none' },
+                                                fontSize: { xs: '1rem', md: '1.125rem' },
+                                                px: 2,
+                                                py: 1,
                                             },
                                         }}
                                     />
@@ -191,19 +197,19 @@ export default function HeroSection() {
                                         color="primary"
                                         sx={{
                                             p: 1,
-                                            "&:hover": {
+                                            '&:hover': {
                                                 backgroundColor: alpha(theme.palette.primary.main, 0.1),
                                             },
+                                            width: { xs: 28, md: 38 },
+                                            height: { xs: 28, md: 38 },
                                         }}
                                     >
-                                        <Image src="/images/voice-icon.svg" alt="Voice Icon" width={38} height={38} />
+                                        <Image src="/images/voice-icon.svg" alt="Voice Icon" width={38} height={38} style={{ width: '100%', height: '100%' }} />
                                     </IconButton>
                                 </Box>
-
-
-                                {/* Try for Free Arrow */}
-                                <Box sx={{ display: "flex", alignItems: "center" }}>
-                                    <Button sx={{ p: 0, minWidth: "auto", ml: 2, mt: 1 }}>
+                                {/* Try for Free Arrow - hide on mobile */}
+                                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: "center" }}>
+                                    <Button component={Link} href="/presentation/create" sx={{ p: 0, minWidth: "auto", ml: 2, mt: 1 }}>
                                         <Image
                                             src="/images/try-for-free-arrow.svg"
                                             alt="Try for free Icon"
@@ -213,20 +219,19 @@ export default function HeroSection() {
                                     </Button>
                                 </Box>
                             </Box>
-
+                            {/* Try for Free text - hide on mobile */}
                             <Box
                                 sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "flex-end",
-                                    justifyContent: "center",
+                                    display: { xs: 'none', md: 'flex' },
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-end',
+                                    justifyContent: 'center',
                                     mt: -23,
                                     mb: 4,
                                     ml: { xs: 0, md: 100 },
                                     mr: { xs: 2, md: 20 },
                                     px: 2,
                                     position: "relative",
-
                                 }}
                             >
                                 <Typography
@@ -242,10 +247,11 @@ export default function HeroSection() {
                                     Try for Free
                                 </Typography>
                             </Box>
+                            {/* Try for Free vector - hide on mobile */}
                             <Box
                                 sx={{
                                     mt: -3,
-                                    display: "flex",
+                                    display: { xs: 'none', md: 'flex' },
                                     justifyContent: "flex-end",
                                     width: "100%",
                                     ml: 10,
@@ -268,21 +274,21 @@ export default function HeroSection() {
                             justifyContent: { xs: "center", md: "flex-end" },
                             px: { xs: 2, md: 8 },
                             mt: 4,
-                            ml: 60, mr: 100,
+                            ml: { xs: 0, md: 60 }, mr: { xs: 0, md: 100 },
                         }}
                     >
                         <Button
                             color="primary"
                             endIcon={<KeyboardArrowDown />}
                             sx={{
-                                fontSize: { xs: "1.5rem", sm: "1.5rem", md: "1.5rem" },
+                                fontSize: { xs: "1.1rem", sm: "1.5rem", md: "1.5rem" },
                                 color: "#4A00E0",
                                 whiteSpace: "nowrap",
                                 textTransform: "none",
-                                "&:hover": {
+                                '&:hover': {
                                     backgroundColor: "transparent",
                                     color: "primary.dark",
-                                }, mb: 11, mt: -1, ml: 60, fontWeight: 500, px: 3, py: 1.5,
+                                }, mb: 4, mt: { xs: 0, md: -1 }, ml: { xs: 0, md: 60 }, fontWeight: 500, px: 2, py: 1,
                             }}
                         >
                             Learn More

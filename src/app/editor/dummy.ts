@@ -1,0 +1,122 @@
+export const dummyData = [
+  {
+    slide_id: "slide-1",
+    slide_title: {
+      text: "World War 3: A Hypothetical Global Conflict",
+      konva_component: "Konva.Text",
+      properties: {
+        fontSize: 38,
+        fontFamily: "Inter",
+        fill: "#333",
+        fontStyle: "bold",
+      },
+    },
+    elements: [
+      {
+        element_type: "bullet_point",
+        text: "Examining the concept of World War 3.",
+        konva_component: "Konva.Text",
+        properties: {
+          fontSize: 18,
+          fontFamily: "Inter",
+          fill: "#444",
+          fontStyle: "normal",
+        },
+      },
+      {
+        element_type: "bullet_point",
+        text: "Understanding potential triggers and consequences.",
+        konva_component: "Konva.Text",
+        properties: {
+          fontSize: 18,
+          fontFamily: "Inter",
+          fill: "#444",
+          fontStyle: "normal",
+        },
+      },
+    ],
+    image_url:
+      "https://images.unsplash.com/photo-1749740429722-fed0e4e9cf15?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image_caption: "img",
+  },
+  {
+    slide_id: "slide-2",
+    slide_title: {
+      text: "Potential Scenarios for Global Escalation",
+      konva_component: "Konva.Text",
+      properties: {
+        fontSize: 38,
+        fontFamily: "Inter",
+        fill: "#333",
+        fontStyle: "bold",
+      },
+    },
+    elements: [
+      {
+        element_type: "bullet_point",
+        text: "Geopolitical tensions as a contributing factor.",
+        konva_component: "Konva.Text",
+        properties: {
+          fontSize: 18,
+          fontFamily: "Inter",
+          fill: "#444",
+          fontStyle: "normal",
+        },
+      },
+      {
+        element_type: "bullet_point",
+        text: "Resource scarcity could be a trigger.",
+        konva_component: "Konva.Text",
+        properties: {
+          fontSize: 18,
+          fontFamily: "Inter",
+          fill: "#444",
+          fontStyle: "normal",
+        },
+      },
+    ],
+    image_url:
+      "https://images.unsplash.com/photo-1750797636255-8c939940bcad?q=80&w=1112&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image_caption: "bird",
+  },
+  {
+    slide_id: "slide-3",
+    slide_title: {
+      text: "The Impact of a Global Conflict",
+      konva_component: "Konva.Text",
+      properties: {
+        fontSize: 38,
+        fontFamily: "Inter",
+        fill: "#333",
+        fontStyle: "bold",
+      },
+    },
+    elements: [
+      {
+        element_type: "bullet_point",
+        text: "Devastating human cost and economic disruption.",
+        konva_component: "Konva.Text",
+        properties: {
+          fontSize: 18,
+          fontFamily: "Inter",
+          fill: "#444",
+          fontStyle: "normal",
+        },
+      },
+      {
+        element_type: "bullet_point",
+        text: "Long-term global instability to follow.",
+        konva_component: "Konva.Text",
+        properties: {
+          fontSize: 18,
+          fontFamily: "Inter",
+          fill: "#444",
+          fontStyle: "normal",
+        },
+      },
+    ],
+    image_url:
+      "https://images.unsplash.com/photo-1751182475956-1ced7a5f474f?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image_caption: "mountain",
+  },
+];

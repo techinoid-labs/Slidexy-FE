@@ -5,8 +5,8 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import Image from "next/image";
 import InputModeSelector from "./InputModeSelector";
 import PromptAttributeSelector from "./PromptAttributeSelector";
-import { useSlides } from "@/app/context/SlidesContext";
 import { useRouter } from "next/navigation";
+import { useSlides } from "@/app/context/SlidesContext";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 console.log("[SlidesX] API_BASE_URL:", API_BASE_URL);
@@ -52,7 +52,6 @@ export default function PresentationMaker({
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
-    setSlides([]);
 
     if (inputMode === "Website") {
       try {
@@ -93,7 +92,7 @@ export default function PresentationMaker({
       console.log("[SlidesX] Raw response:", res);
 
       if (!res.ok) {
-        let errorData = {};
+        let errorData: any = {};
         try {
           errorData = await res.json();
         } catch (e) {
@@ -106,7 +105,8 @@ export default function PresentationMaker({
       const data = await res.json();
       console.log("[SlidesX] Parsed slides data:", data);
       setSlides(data.slides);
-      router.push("/presentation/outline");
+      localStorage.setItem("slides", JSON.stringify(data.slides)); // Ensure persistence before navigation
+      router.push(`/presentation/outline`);
     } catch (err: any) {
       console.error("[SlidesX] Exception in handleSubmit:", err);
       setError(err.message || "Something went wrong");
@@ -119,7 +119,7 @@ export default function PresentationMaker({
     <Box sx={{ mx: "auto", mt: 6, width: { xs: "100%", md: "70%" } }}>
       <InputModeSelector onModeChange={setInputMode} />
 
-      <PromptAttributeSelector
+      {/* <PromptAttributeSelector
         goal={goal}
         tone={tone}
         audience={audience}
@@ -128,7 +128,7 @@ export default function PresentationMaker({
         setTone={setTone}
         setAudience={setAudience}
         setLength={setLength}
-      />
+      /> */}
 
       <Box
         sx={{

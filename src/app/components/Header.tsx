@@ -113,24 +113,26 @@ export default function Header() {
                             </Typography>
 
                             {/* Try for Free button */}
-                            <Button
-                                variant="contained"
-                                sx={{
-                                    mt: 0.5,
-                                    backgroundColor: "#4A00E0",
-                                    color: "#fff",
-                                    borderRadius: "999px",
-                                    px: 3,
-                                    textTransform: "none",
-                                    fontWeight: 600,
-                                    whiteSpace: "nowrap",
-                                    "&:hover": {
-                                        backgroundColor: "#3a00b8",
-                                    },
-                                }}
-                            >
-                                Try for Free →
-                            </Button>
+                            <Link href="/presentation/create" passHref legacyBehavior>
+                                <Button
+                                    variant="contained"
+                                    sx={{
+                                        mt: 0.5,
+                                        backgroundColor: "#4A00E0",
+                                        color: "#fff",
+                                        borderRadius: "999px",
+                                        px: 3,
+                                        textTransform: "none",
+                                        fontWeight: 600,
+                                        whiteSpace: "nowrap",
+                                        "&:hover": {
+                                            backgroundColor: "#3a00b8",
+                                        },
+                                    }}
+                                >
+                                    Try for Free →
+                                </Button>
+                            </Link>
                         </>
                     )}
 
@@ -157,7 +159,7 @@ export default function Header() {
                                     </MenuItem>
                                 ))}
                                 <MenuItem onClick={handleMenuClose}>Login</MenuItem>
-                                <MenuItem onClick={handleMenuClose}>Try for Free</MenuItem>
+                                <MenuItem component={Link} href="/presentation/create" onClick={handleMenuClose}>Try for Free</MenuItem>
                             </Menu>
                         </>
                     )}

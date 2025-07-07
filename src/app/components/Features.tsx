@@ -14,21 +14,27 @@ export default function FeaturesSection() {
           background: "#FBFAFF",
           py: { xs: 8, md: 12 },
         }}
+        className="flex flex-col items-center w-full"
       >
         {/* Decorative Star */}
         <Box
           sx={{
             position: "absolute",
-            top: { xs: 24, md: 40 },
-            left: { xs: 24, md: 80 },
-            zIndex: 0,
+            top: { xs: 30, md: 60 },
+            left: { xs: 50, md: 200 },
+            display: { xs: 'none', md: 'block' },
           }}
         >
-          <Image src="/images/side-star-light-purple.svg" alt="Icon" width={72} height={72} />
+          <Image
+            src="/images/side-star-light-purple.svg"
+            alt="Icon"
+            width={68}
+            height={68}
+          />
         </Box>
-        <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+        <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }} className="flex flex-col items-center w-full">
           {/* Badge */}
-          <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }} className="w-full flex justify-center">
             <Chip
               icon={
                 <Image
@@ -62,7 +68,7 @@ export default function FeaturesSection() {
             variant="h3"
             align="center"
             sx={{
-              fontWeight: 700,
+              fontWeight: 500,
               fontSize: { xs: "2rem", md: "2.8rem" },
               mb: 2,
               color: "#18181B",
@@ -89,7 +95,7 @@ export default function FeaturesSection() {
               display: "flex",
               flexDirection: { xs: "column", md: "row" },
               justifyContent: "center",
-              alignItems: "stretch",
+              alignItems: "center",
               gap: { xs: 3, md: 4 },
               mb: 2,
               position: "relative",
@@ -98,34 +104,44 @@ export default function FeaturesSection() {
               mx: 'auto',
               py: { xs: 3, md: 5 },
             }}
+            className="flex flex-col md:flex-row items-center justify-center w-full"
           >
             {/* Checkered Background */}
             <Box
               sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 0,
-                opacity: 0.13,
-                pointerEvents: 'none',
+                position: "absolute",
+                top: 0,
+                left: "50%",
+                transform: "translateX(-50%)",
+                mt: -30,
+                opacity: 0.6,
+                pointerEvents: "none",
               }}
             >
               <Image
                 src="/images/checkered-lines.svg"
                 alt="Checkered Background"
-                width={400}
-                height={400}
-                style={{ objectFit: 'contain' }}
+                width={300}
+                height={300}
+                style={{
+                  objectFit: "contain",
+                }}
               />
             </Box>
             {/* Feature 1 */}
-            <Box sx={{ flex: 1, minWidth: 200, maxWidth: 320, textAlign: "center", px: 2, position: 'relative', zIndex: 1 }}>
-              <Image src="/images/side-star-purple.svg" alt="Voice-to-Deck" width={40} height={40} />
-              <Typography sx={{ mt: 2, mb: 1, fontWeight: 600, color: "#18181B", fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
+            <Box sx={{ flex: 1, minWidth: 200, maxWidth: 320, textAlign: "center", px: 2, position: 'relative', zIndex: 1 }} className="flex flex-col items-center justify-center text-center">
+              <Image
+                src="/images/voice-to-deck.svg"
+                alt="Voice-to-Deck"
+                width={40}
+                height={40}
+                style={{ width: '40px', height: '40px' }}
+                className="md:w-[60px] md:h-[60px]"
+              />
+              <Typography sx={{ mt: 1, mb: 7, fontWeight: 400, color: "#18181B", fontSize: { xs: '1.1rem', md: '1.8rem' } }}>
                 Voice-to-Deck
               </Typography>
-              <Typography sx={{ color: "#757575", fontSize: { xs: '0.98rem', md: '1.05rem' }, lineHeight: 1.6 }}>
+              <Typography sx={{ color: "#757575", fontSize: { xs: '0.8rem', md: '1.05rem' }, lineHeight: 1.6 }}>
                 AI transcribes and analyzes spoken ideas to auto-generate slides with key points and speaker notes.
               </Typography>
             </Box>
@@ -134,19 +150,26 @@ export default function FeaturesSection() {
               display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
               mx: 0,
-              height: 70,
+              height: 300,
               alignSelf: 'center',
-              zIndex: 1,
+              
             }}>
-              <Box sx={{ width: '1px', height: 70, background: '#E9E9FF', borderRadius: 1 }} />
+              <Box sx={{ width: '2px', height: 200, background: '#E9E9FF', borderRadius: 1 }} />
             </Box>
             {/* Feature 2 */}
-            <Box sx={{ flex: 1, minWidth: 200, maxWidth: 320, textAlign: "center", px: 2, position: 'relative', zIndex: 1 }}>
-              <Image src="/images/side-star-light-purple.svg" alt="Smart Prompt Generator" width={40} height={40} />
-              <Typography sx={{ mt: 2, mb: 1, fontWeight: 600, color: "#18181B", fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
+            <Box sx={{ flex: 1, minWidth: 200, maxWidth: 320, textAlign: "center", px: 2, position: 'relative', zIndex: 1 }} className="flex flex-col items-center justify-center text-center">
+              <Image
+                src="/images/smart-icon.svg"
+                alt="Smart Prompt Generator"
+                width={40}
+                height={40}
+                style={{ width: '40px', height: '40px' }}
+                className="md:w-[60px] md:h-[60px]"
+              />
+              <Typography sx={{ mt: 1, mb: 2, fontWeight: 400, color: "#18181B", fontSize: { xs: '1.1rem', md: '1.8rem' } }}>
                 Smart Prompt Generator
               </Typography>
-              <Typography sx={{ color: "#757575", fontSize: { xs: '0.98rem', md: '1.05rem' }, lineHeight: 1.6 }}>
+              <Typography sx={{ color: "#757575", fontSize: { xs: '0.9rem', md: '1rem' }, lineHeight: 1.6 }}>
                 AI turns a prompt into a styled presentation with sections, tone, goals, keywords, and a smart title.
               </Typography>
             </Box>
@@ -155,19 +178,26 @@ export default function FeaturesSection() {
               display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
               mx: 0,
-              height: 70,
+              height: 300,
               alignSelf: 'center',
-              zIndex: 1,
+              
             }}>
-              <Box sx={{ width: '1px', height: 70, background: '#E9E9FF', borderRadius: 1 }} />
+              <Box sx={{ width: '2px', height: 200, background: '#E9E9FF', borderRadius: 1 }} />
             </Box>
             {/* Feature 3 */}
-            <Box sx={{ flex: 1, minWidth: 200, maxWidth: 320, textAlign: "center", px: 2, position: 'relative', zIndex: 1 }}>
-              <Image src="/images/side-star-purple.svg" alt="Video-to-Deck Summarizer" width={40} height={40} />
-              <Typography sx={{ mt: 2, mb: 1, fontWeight: 600, color: "#18181B", fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
+            <Box sx={{ flex: 1, minWidth: 200, maxWidth: 320, textAlign: "center", px: 2, position: 'relative', zIndex: 1 }} className="flex flex-col items-center justify-center text-center">
+              <Image
+                src="/images/video-to-deck.svg"
+                alt="Video-to-Deck Summarizer"
+                width={40}
+                height={40}
+                style={{ width: '40px', height: '40px' }}
+                className="md:w-[60px] md:h-[60px]"
+              />
+              <Typography sx={{ mt: 1, mb: 2, fontWeight: 400, color: "#18181B", fontSize: { xs: '1.1rem', md: '1.8rem' } }}>
                 Video-to-Deck Summarizer
               </Typography>
-              <Typography sx={{ color: "#757575", fontSize: { xs: '0.98rem', md: '1.05rem' }, lineHeight: 1.6 }}>
+              <Typography sx={{ color: "#757575", fontSize: { xs: '0.8rem', md: '1.05rem' }, lineHeight: 1.6 }}>
                 Upload a video, and AI generates narrative slides by extracting speech, visuals, and key highlights.
               </Typography>
             </Box>

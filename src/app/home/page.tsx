@@ -9,6 +9,7 @@ import WorkingSection from "../components/Working";
 import TestimonialSection from "../components/Testimonial";
 import PricingSection from "../components/Pricing";
 import CommunitySection from "../components/Community";
+import Footer from "../components/Footer";
 export default function Home() {
   return (
     <Box
@@ -45,6 +46,7 @@ export default function Home() {
       <TestimonialSection />
       <PricingSection />
       <CommunitySection />
+      <Footer />
     </Box>
   );
 }
