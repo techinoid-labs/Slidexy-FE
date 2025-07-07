@@ -30,7 +30,7 @@ export interface SlideApiResponse {
   }>;
 }
 
-export function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
+function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
   return apiSlides.map((slide) => ({
     title: slide.slide_title.text,
     bullets: slide.elements

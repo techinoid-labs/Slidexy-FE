@@ -20,7 +20,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import dynamic from "next/dynamic";
-import { useThemeContext } from "../context/ThemeContext";
+import { useSlideThemeContext } from "../context/ThemeContext";
 
 const TextPanel = dynamic(() => import("./TextPanel"), { ssr: false });
 const ThemePanel = dynamic(() => import("./Theme"), { ssr: false });
@@ -62,7 +62,7 @@ const CentralEditor = ({ templatePanelOpen }: any) => {
   const [editing, setEditing] = useState<number | null>(null); // which slide is being edited
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up("lg"));
-  const { selectedTheme } = useThemeContext();
+  const { selectedTheme } = useSlideThemeContext();
 
   // Dynamically set maxWidth based on sidebar and screen size
   const cardMaxWidth = isLargeScreen ? 1600 : "100%";
@@ -143,80 +143,51 @@ const CentralEditor = ({ templatePanelOpen }: any) => {
     >
       {/* Main content */}
       <Box sx={{ flex: 1, minWidth: 0 }}>
-      {/* Top Card: Editable Slide Preview */}
-      <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
-        <Card
-          sx={{
-            borderRadius: 2.5,
-            boxShadow: "0 4px 24px 0 rgba(123,74,226,0.08)",
-            p: 5,
-            mb: 4,
-            border: "2px solid #D4CDFF",
-            bgcolor: selectedTheme?.backgroundColor || "#F9F9FB",
-            minHeight: 520,
-            maxWidth: cardMaxWidth,
-            width: "100%",
-          }}
-        >
-          {/* Editable Title */}
-          <InputBase
-            value={slides[0]?.title}
-            onChange={e => handleTitleChange(0, e.target.value)}
-            onFocus={() => setEditing(0)}
-            onBlur={() => setEditing(null)}
-            sx={{
-              fontWeight: 600,
-              fontSize: 32,
-              width: '100%',
-              mb: 3,
-              bgcolor: '#F8F8FA',
-              borderRadius: 2,
-              px: 2,
-              py: 1,
-              fontFamily: selectedTheme?.font || undefined,
-              color: selectedTheme?.primaryColor || undefined,
-            }}
-            placeholder="Slide Title"
-          />
-          {/* Editable Bullets */}
-          <List sx={{ pl: 4, mb: 4, color: selectedTheme?.secondaryColor || "#444", fontSize: 21, fontFamily: selectedTheme?.font || undefined }}>
-            {slides[0]?.bullets?.map((b, i) => (
-              <ListItem key={i} sx={{ py: 0.5, px: 0 }} disableGutters>
-                <InputBase
-                  value={b}
-                  onChange={e => handleBulletChange(0, i, e.target.value)}
-                  onFocus={() => setEditing(0)}
-                  onBlur={() => setEditing(null)}
-                  sx={{ fontSize: 19, width: '90%', bgcolor: '#F8F8FA', borderRadius: 1, px: 1.5, mr: 1, fontFamily: selectedTheme?.font || undefined, color: selectedTheme?.secondaryColor || undefined }}
-                  placeholder={`Bullet ${i + 1}`}
-                />
-                <Button size="small" color="error" sx={{ minWidth: 0, px: 1 }} onClick={() => handleRemoveBullet(0, i)}>-</Button>
-              </ListItem>
-            ))}
-            <ListItem sx={{ py: 0.5, px: 0 }} disableGutters>
-              <Button size="small" onClick={() => handleAddBullet(0)} sx={{ fontSize: 16, color: '#7B4AE2', textTransform: 'none' }}>+ Add bullet</Button>
-            </ListItem>
-          </List>
-          <Box
+        {/* Top Card: Editable Slide Preview */}
+        <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
+          <Card
             sx={{
               borderRadius: 2.5,
               boxShadow: "0 4px 24px 0 rgba(123,74,226,0.08)",
               p: 5,
               mb: 4,
               border: "2px solid #D4CDFF",
-              bgcolor: "#F9F9FB",
+              bgcolor: selectedTheme?.backgroundColor || "#F9F9FB",
               minHeight: 520,
               maxWidth: cardMaxWidth,
               width: "100%",
             }}
           >
-            <img
-              src={selectedTheme?.image_url || slides[0]?.image}
-              alt="slide preview"
-              style={{ width: "200%", maxHeight: 380, objectFit: "cover", borderRadius: 29 }}
+            {/* Editable Title */}
+            <InputBase
+              value={slides[0]?.title}
+              onChange={(e) => handleTitleChange(0, e.target.value)}
+              onFocus={() => setEditing(0)}
+              onBlur={() => setEditing(null)}
+              sx={{
+                fontWeight: 600,
+                fontSize: 32,
+                width: "100%",
+                mb: 3,
+                bgcolor: "#F8F8FA",
+                borderRadius: 2,
+                px: 2,
+                py: 1,
+                fontFamily: selectedTheme?.font || undefined,
+                color: selectedTheme?.primaryColor || undefined,
+              }}
+              placeholder="Slide Title"
             />
             {/* Editable Bullets */}
-            <List sx={{ pl: 4, mb: 4, color: "#444", fontSize: 21 }}>
+            <List
+              sx={{
+                pl: 4,
+                mb: 4,
+                color: selectedTheme?.secondaryColor || "#444",
+                fontSize: 21,
+                fontFamily: selectedTheme?.font || undefined,
+              }}
+            >
               {slides[0]?.bullets?.map((b, i) => (
                 <ListItem key={i} sx={{ py: 0.5, px: 0 }} disableGutters>
                   <InputBase
@@ -231,6 +202,8 @@ const CentralEditor = ({ templatePanelOpen }: any) => {
                       borderRadius: 1,
                       px: 1.5,
                       mr: 1,
+                      fontFamily: selectedTheme?.font || undefined,
+                      color: selectedTheme?.secondaryColor || undefined,
                     }}
                     placeholder={`Bullet ${i + 1}`}
                   />
@@ -254,6 +227,73 @@ const CentralEditor = ({ templatePanelOpen }: any) => {
                 </Button>
               </ListItem>
             </List>
+            <Box
+              sx={{
+                borderRadius: 2.5,
+                boxShadow: "0 4px 24px 0 rgba(123,74,226,0.08)",
+                p: 5,
+                mb: 4,
+                border: "2px solid #D4CDFF",
+                bgcolor: "#F9F9FB",
+                minHeight: 520,
+                maxWidth: cardMaxWidth,
+                width: "100%",
+              }}
+            >
+              <img
+                src={selectedTheme?.image_url || slides[0]?.image}
+                alt="slide preview"
+                style={{
+                  width: "200%",
+                  maxHeight: 380,
+                  objectFit: "cover",
+                  borderRadius: 29,
+                }}
+              />
+              {/* Editable Bullets */}
+              <List sx={{ pl: 4, mb: 4, color: "#444", fontSize: 21 }}>
+                {slides[0]?.bullets?.map((b, i) => (
+                  <ListItem key={i} sx={{ py: 0.5, px: 0 }} disableGutters>
+                    <InputBase
+                      value={b}
+                      onChange={(e) => handleBulletChange(0, i, e.target.value)}
+                      onFocus={() => setEditing(0)}
+                      onBlur={() => setEditing(null)}
+                      sx={{
+                        fontSize: 19,
+                        width: "90%",
+                        bgcolor: "#F8F8FA",
+                        borderRadius: 1,
+                        px: 1.5,
+                        mr: 1,
+                      }}
+                      placeholder={`Bullet ${i + 1}`}
+                    />
+                    <Button
+                      size="small"
+                      color="error"
+                      sx={{ minWidth: 0, px: 1 }}
+                      onClick={() => handleRemoveBullet(0, i)}
+                    >
+                      -
+                    </Button>
+                  </ListItem>
+                ))}
+                <ListItem sx={{ py: 0.5, px: 0 }} disableGutters>
+                  <Button
+                    size="small"
+                    onClick={() => handleAddBullet(0)}
+                    sx={{
+                      fontSize: 16,
+                      color: "#7B4AE2",
+                      textTransform: "none",
+                    }}
+                  >
+                    + Add bullet
+                  </Button>
+                </ListItem>
+              </List>
+            </Box>
             <Box
               sx={{
                 width: "100%",

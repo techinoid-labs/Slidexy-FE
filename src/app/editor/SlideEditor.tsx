@@ -29,7 +29,7 @@ const SlideEditor = ({ slides = [], setSlides, stageRefs }: any) => {
   const { selectedTheme } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "", "anonymous");
 
-  const [useDummy] = useState(true);
+  const [useDummy] = useState(false);
   const [currentSlides, updateSlides] = useState<any[]>(
     useDummy ? dummyData : slides
   );

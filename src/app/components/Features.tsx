@@ -22,7 +22,7 @@ export default function FeaturesSection() {
             position: "absolute",
             top: { xs: 30, md: 60 },
             left: { xs: 50, md: 200 },
-            display: { xs: 'none', md: 'block' },
+            display: { xs: "none", md: "block" },
           }}
         >
           <Image
@@ -32,9 +32,16 @@ export default function FeaturesSection() {
             height={68}
           />
         </Box>
-        <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }} className="flex flex-col items-center w-full">
+        <Container
+          maxWidth="lg"
+          sx={{ position: "relative", zIndex: 1 }}
+          className="flex flex-col items-center w-full"
+        >
           {/* Badge */}
-          <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }} className="w-full flex justify-center">
+          <Box
+            sx={{ display: "flex", justifyContent: "center", mb: 3 }}
+            className="w-full flex justify-center"
+          >
             <Chip
               icon={
                 <Image
@@ -87,7 +94,8 @@ export default function FeaturesSection() {
               mx: "auto",
             }}
           >
-            Turn any thought into a polished, on-brand presentation —<br />powered by AI
+            Turn any thought into a polished, on-brand presentation —<br />
+            powered by AI
           </Typography>
           {/* Features Flex Layout */}
           <Box
@@ -100,8 +108,8 @@ export default function FeaturesSection() {
               mb: 2,
               position: "relative",
               minHeight: { xs: 350, md: 400 },
-              maxWidth: { xs: '100%', md: 1100 },
-              mx: 'auto',
+              maxWidth: { xs: "100%", md: 1100 },
+              mx: "auto",
               py: { xs: 3, md: 5 },
             }}
             className="flex flex-col md:flex-row items-center justify-center w-full"
@@ -129,76 +137,170 @@ export default function FeaturesSection() {
               />
             </Box>
             {/* Feature 1 */}
-            <Box sx={{ flex: 1, minWidth: 200, maxWidth: 320, textAlign: "center", px: 2, position: 'relative', zIndex: 1 }} className="flex flex-col items-center justify-center text-center">
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 200,
+                maxWidth: 320,
+                textAlign: "center",
+                px: 2,
+                position: "relative",
+                zIndex: 1,
+              }}
+              className="flex flex-col items-center justify-center text-center"
+            >
               <Image
                 src="/images/voice-to-deck.svg"
                 alt="Voice-to-Deck"
                 width={40}
                 height={40}
-                style={{ width: '40px', height: '40px' }}
+                style={{ width: "40px", height: "40px" }}
                 className="md:w-[60px] md:h-[60px]"
               />
-              <Typography sx={{ mt: 1, mb: 7, fontWeight: 400, color: "#18181B", fontSize: { xs: '1.1rem', md: '1.8rem' } }}>
+              <Typography
+                sx={{
+                  mt: 1,
+                  mb: 7,
+                  fontWeight: 400,
+                  color: "#18181B",
+                  fontSize: { xs: "1.1rem", md: "1.8rem" },
+                }}
+              >
                 Voice-to-Deck
               </Typography>
-              <Typography sx={{ color: "#757575", fontSize: { xs: '0.8rem', md: '1.05rem' }, lineHeight: 1.6 }}>
-                AI transcribes and analyzes spoken ideas to auto-generate slides with key points and speaker notes.
+              <Typography
+                sx={{
+                  color: "#757575",
+                  fontSize: { xs: "0.8rem", md: "1.05rem" },
+                  lineHeight: 1.6,
+                }}
+              >
+                AI transcribes and analyzes spoken ideas to auto-generate slides
+                with key points and speaker notes.
               </Typography>
             </Box>
             {/* Divider 1 */}
-            <Box sx={{
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'center',
-              mx: 0,
-              height: 300,
-              alignSelf: 'center',
-              
-            }}>
-              <Box sx={{ width: '2px', height: 200, background: '#E9E9FF', borderRadius: 1 }} />
+            <Box
+              sx={{
+                display: { xs: "none", md: "flex" },
+                alignItems: "center",
+                mx: 0,
+                height: 300,
+                alignSelf: "center",
+              }}
+            >
+              <Box
+                sx={{
+                  width: "2px",
+                  height: 200,
+                  background: "#E9E9FF",
+                  borderRadius: 1,
+                }}
+              />
             </Box>
             {/* Feature 2 */}
-            <Box sx={{ flex: 1, minWidth: 200, maxWidth: 320, textAlign: "center", px: 2, position: 'relative', zIndex: 1 }} className="flex flex-col items-center justify-center text-center">
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 200,
+                maxWidth: 320,
+                textAlign: "center",
+                px: 2,
+                position: "relative",
+                zIndex: 1,
+              }}
+              className="flex flex-col items-center justify-center text-center"
+            >
               <Image
                 src="/images/smart-icon.svg"
                 alt="Smart Prompt Generator"
                 width={40}
                 height={40}
-                style={{ width: '40px', height: '40px' }}
+                style={{ width: "40px", height: "40px" }}
                 className="md:w-[60px] md:h-[60px]"
               />
-              <Typography sx={{ mt: 1, mb: 2, fontWeight: 400, color: "#18181B", fontSize: { xs: '1.1rem', md: '1.8rem' } }}>
+              <Typography
+                sx={{
+                  mt: 1,
+                  mb: 2,
+                  fontWeight: 400,
+                  color: "#18181B",
+                  fontSize: { xs: "1.1rem", md: "1.8rem" },
+                }}
+              >
                 Smart Prompt Generator
               </Typography>
-              <Typography sx={{ color: "#757575", fontSize: { xs: '0.9rem', md: '1rem' }, lineHeight: 1.6 }}>
-                AI turns a prompt into a styled presentation with sections, tone, goals, keywords, and a smart title.
+              <Typography
+                sx={{
+                  color: "#757575",
+                  fontSize: { xs: "0.9rem", md: "1rem" },
+                  lineHeight: 1.6,
+                }}
+              >
+                AI turns a prompt into a styled presentation with sections,
+                tone, goals, keywords, and a smart title.
               </Typography>
             </Box>
             {/* Divider 2 */}
-            <Box sx={{
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'center',
-              mx: 0,
-              height: 300,
-              alignSelf: 'center',
-              
-            }}>
-              <Box sx={{ width: '2px', height: 200, background: '#E9E9FF', borderRadius: 1 }} />
+            <Box
+              sx={{
+                display: { xs: "none", md: "flex" },
+                alignItems: "center",
+                mx: 0,
+                height: 300,
+                alignSelf: "center",
+              }}
+            >
+              <Box
+                sx={{
+                  width: "2px",
+                  height: 200,
+                  background: "#E9E9FF",
+                  borderRadius: 1,
+                }}
+              />
             </Box>
             {/* Feature 3 */}
-            <Box sx={{ flex: 1, minWidth: 200, maxWidth: 320, textAlign: "center", px: 2, position: 'relative', zIndex: 1 }} className="flex flex-col items-center justify-center text-center">
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 200,
+                maxWidth: 320,
+                textAlign: "center",
+                px: 2,
+                position: "relative",
+                zIndex: 1,
+              }}
+              className="flex flex-col items-center justify-center text-center"
+            >
               <Image
                 src="/images/video-to-deck.svg"
                 alt="Video-to-Deck Summarizer"
                 width={40}
                 height={40}
-                style={{ width: '40px', height: '40px' }}
+                style={{ width: "40px", height: "40px" }}
                 className="md:w-[60px] md:h-[60px]"
               />
-              <Typography sx={{ mt: 1, mb: 2, fontWeight: 400, color: "#18181B", fontSize: { xs: '1.1rem', md: '1.8rem' } }}>
+              <Typography
+                sx={{
+                  mt: 1,
+                  mb: 2,
+                  fontWeight: 400,
+                  color: "#18181B",
+                  fontSize: { xs: "1.1rem", md: "1.8rem" },
+                }}
+              >
                 Video-to-Deck Summarizer
               </Typography>
-              <Typography sx={{ color: "#757575", fontSize: { xs: '0.8rem', md: '1.05rem' }, lineHeight: 1.6 }}>
-                Upload a video, and AI generates narrative slides by extracting speech, visuals, and key highlights.
+              <Typography
+                sx={{
+                  color: "#757575",
+                  fontSize: { xs: "0.8rem", md: "1.05rem" },
+                  lineHeight: 1.6,
+                }}
+              >
+                Upload a video, and AI generates narrative slides by extracting
+                speech, visuals, and key highlights.
               </Typography>
             </Box>
           </Box>

@@ -13,4 +13,25 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 
+// .eslintrc.js
+module.exports = {
+  extends: [
+    "next",
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+  ],
+  rules: {
+    // Ignore all non-breaking TypeScript errors
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+
+    // Ignore Next.js image optimization warnings
+    "@next/next/no-img-element": "off",
+
+    // (Optional) disable react-hooks/exhaustive-deps warning
+    "react-hooks/exhaustive-deps": "off",
+  },
+};
+
 export default eslintConfig;
