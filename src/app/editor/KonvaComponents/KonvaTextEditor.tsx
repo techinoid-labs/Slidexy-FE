@@ -16,6 +16,7 @@ interface KonvaTextEditorProps {
   width?: number; // 👈 NEW
   wrap?: "word" | "char"; // 👈 NEW
   onDblClick?: () => void;
+  onClick?: () => void;
 }
 
 const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
@@ -30,6 +31,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   width,
   wrap = "word",
   onDblClick,
+  onClick,
 }) => {
   return (
     <Text
@@ -44,6 +46,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
       width={width}
       wrap={wrap}
       draggable
+      onClick={onClick}
       onDblClick={onDblClick}
     />
   );
