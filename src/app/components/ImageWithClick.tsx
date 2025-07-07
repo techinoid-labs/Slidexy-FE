@@ -1,11 +1,12 @@
-// ImageWithClick.tsx
+"use client";
 import React from "react";
 import {
   IconButton,
   Box,
-  Menu,
+  Popover,
   MenuItem,
   CircularProgress,
+  Typography,
 } from "@mui/material";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Image from "next/image";
@@ -25,24 +26,26 @@ export default function ImageWithClick({
   onPreviewImage?: (src: string) => void;
   isLoading?: boolean;
 }) {
-  const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onPreviewImage?.(src);
   };
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
-    setMenuAnchor(event.currentTarget);
+    setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = () => setMenuAnchor(null);
+  const handlePopoverClose = () => setAnchorEl(null);
 
-  const handleRegenerateClick = (event: React.MouseEvent<HTMLLIElement>) => {
+  const handleRegenerateClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    onRegenerate?.(event, handleMenuClose);
+    onRegenerate?.(event, handlePopoverClose);
   };
+
+  const open = Boolean(anchorEl);
 
   return (
     <>
@@ -75,6 +78,7 @@ export default function ImageWithClick({
             maxHeight: "100%",
           }}
         />
+
         <Box
           className="overlay"
           sx={{
@@ -89,38 +93,47 @@ export default function ImageWithClick({
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <IconButton
-            size="small"
-            sx={{ p: 0.5 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setMenuAnchor(e.currentTarget);
-            }}
-          >
+          <IconButton size="small" sx={{ p: 0.5 }} onClick={handlePopoverOpen}>
             <MoreHorizIcon fontSize="small" />
           </IconButton>
         </Box>
       </Box>
 
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={handleMenuClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        disablePortal // ✅ Correct usage here
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handlePopoverClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        disablePortal
+        PaperProps={{
+          sx: {
+            p: 1,
+            minWidth: 160,
+          },
+        }}
       >
-        <MenuItem onClick={handleRegenerateClick} disabled={isLoading}>
+        <MenuItem
+          onClick={handleRegenerateClick}
+          disabled={isLoading}
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+        >
           {isLoading ? (
             <>
-              <CircularProgress size={16} sx={{ mr: 1 }} color="inherit" />
-              Generating...
+              <CircularProgress size={16} color="inherit" />
+              <Typography variant="body2">Generating...</Typography>
             </>
           ) : (
-            "Regenerate Image"
+            <Typography variant="body2">Regenerate Image</Typography>
           )}
         </MenuItem>
-      </Menu>
+      </Popover>
     </>
   );
 }

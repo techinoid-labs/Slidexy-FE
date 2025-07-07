@@ -105,7 +105,7 @@ export default function PresentationMaker({
       const data = await res.json();
       console.log("[SlidesX] Parsed slides data:", data);
       setSlides(data.slides);
-      localStorage.setItem("slides", JSON.stringify(data.slides)); // Ensure persistence before navigation
+      // localStorage.setItem("slides", JSON.stringify(data.slides)); // Ensure persistence before navigation
       router.push(`/presentation/outline`);
     } catch (err: any) {
       console.error("[SlidesX] Exception in handleSubmit:", err);

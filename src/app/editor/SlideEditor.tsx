@@ -415,6 +415,7 @@ const SlideEditor = ({ slides = [], setSlides }: any) => {
               padding: "2px 6px",
               background: "white",
               zIndex: 100,
+              width:50
             }}
           />
         )}

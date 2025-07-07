@@ -287,7 +287,7 @@ export default function OutlinePage() {
             >
               Personal portfolio outline
             </Typography>
-            <Button
+            {/* <Button
               onClick={handleRegenerate}
               variant="contained"
               endIcon={
@@ -321,7 +321,7 @@ export default function OutlinePage() {
               className="w-full md:w-auto"
             >
               Regenerate Outline
-            </Button>
+            </Button> */}
           </Box>
           <Typography
             sx={{

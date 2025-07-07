@@ -147,7 +147,8 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         bgcolor: "#F2F0FF",
         boxShadow: isDragging ? 4 : 0,
         transition: "box-shadow 0.2s",
-        overflow: "hidden",
+        overflow: "visible", // ✅ Fix: allow popover to display properly
+        position: "relative", // ✅ Important for correct positioning context
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", minHeight: 56 }}>
@@ -158,6 +159,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             fontWeight: 700,
             fontSize: 20,
             px: 2,
+            py: 2,
             display: "flex",
             gap: 1.5,
           }}
@@ -165,6 +167,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
           <Image
             src="/images/left-grid.svg"
             alt="Card Icon"
+            className="mt-[20px]"
             width={12}
             height={12}
           />
@@ -263,9 +266,11 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                   <ImageWithClick
                     src={src}
                     alt={`img-${i}`}
-                    onRegenerate={(e) => handleRegenerateImage(i, e)}
-                    onPreviewImage={() => setPreviewImage(src)}
                     isLoading={loadingImageIndex === i}
+                    onPreviewImage={() => setPreviewImage(src)}
+                    onRegenerate={(e, closeMenu) => {
+                      handleRegenerateImage(i, e).then(closeMenu); // ✅ Close menu after done
+                    }}
                   />
 
                   {suggestedImages?.imageIndex === i && (
@@ -323,30 +328,17 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                 }}
               >
                 <Image
+                  onClick={(e) => e.stopPropagation()}
                   src={previewImage}
                   alt="Preview"
-                  width={240}
-                  height={240}
+                  width={72}
+                  height={72}
                   style={{
                     objectFit: "contain",
                     maxWidth: "100%",
                     borderRadius: 8,
                   }}
                 />
-                <Typography
-                  sx={{
-                    fontSize: 12,
-                    color: "#666",
-                    textDecoration: "underline",
-                    cursor: "pointer",
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPreviewImage(null);
-                  }}
-                >
-                  Close Preview
-                </Typography>
               </Box>
             )}
           </Box>

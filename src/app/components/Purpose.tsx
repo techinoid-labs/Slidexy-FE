@@ -8,7 +8,7 @@ export default function PurposeSection() {
     <Box sx={{ width: '100%', background: '#fff', py: { xs: 6, md: 10 }, px: { xs: 2, md: 0 } }}>
       {/* Top Row */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexDirection: { xs: 'column', md: 'row' }, maxWidth: 1200, mx: 'auto', mb: 4 }}>
-        <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+        <Box sx={{margin:"auto"}}>
           <Chip
             icon={
               <img
@@ -20,7 +20,7 @@ export default function PurposeSection() {
               />
             }
             label={
-              <span style={{ fontWeight: 500, fontSize: '1rem', color: '#4A00E0' }}>
+              <span  style={{ fontWeight: 500, fontSize: '1rem', color: '#4A00E0' }}>
                 Platform
               </span>
             }
@@ -47,6 +47,7 @@ export default function PurposeSection() {
             color: '#18181B',
             mb: 0.5,
             ml: { xs: 0, md: -8 },
+            textAlign:{xs:"center", md:"left"}
           }}>
             Why
             <br />
