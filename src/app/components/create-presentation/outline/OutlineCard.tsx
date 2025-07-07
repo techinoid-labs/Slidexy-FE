@@ -1,159 +1,10 @@
+"use client";
 import React from "react";
-import {
-  Paper,
-  IconButton,
-  Box,
-  Typography,
-  Menu,
-  MenuItem,
-} from "@mui/material";
+import { Paper, IconButton, Box, Typography } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Image from "next/image";
-
-
-
- function ImageWithClick({
-  src,
-  alt,
-  onShowLarge,
-  onRegenerate,
-}: {
-  src: string;
-  alt: string;
-  onShowLarge?: () => void;
-  onRegenerate?: () => void;
-}) {
-  const [open, setOpen] = React.useState(false);
-  const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
-  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 768;
-
-  const handleClick = () => {
-    if (isDesktop && onShowLarge) {
-      onShowLarge();
-    } else {
-      setOpen(true);
-    }
-  };
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-    setMenuAnchor(event.currentTarget);
-  };
-
-  const handleMenuClose = () => setMenuAnchor(null);
-
-  const handleRegenerateClick = () => {
-    handleMenuClose();
-    onRegenerate?.();
-  };
-
-  return (
-    <>
-      <Box
-        sx={{
-          position: "relative",
-          width: { xs: 48, sm: 56, md: 64 },
-          height: { xs: 48, sm: 56, md: 64 },
-          borderRadius: 2,
-          bgcolor: "#F2F0FF",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          cursor: "pointer",
-          "&:hover .overlay": {
-            display: "flex",
-          },
-        }}
-        onClick={handleClick}
-      >
-        <Image
-          src={src}
-          alt={alt}
-          width={32}
-          height={32}
-          style={{
-            objectFit: "contain",
-            maxWidth: "100%",
-            maxHeight: "100%",
-          }}
-        />
-        {/* Hover-triggered overlay */}
-        <Box
-          className="overlay"
-          sx={{
-            display: "none",
-            position: "absolute",
-            top: 2,
-            right: 2,
-            backgroundColor: "rgba(255, 255, 255, 0.85)",
-            borderRadius: "50%",
-            zIndex: 2,
-          }}
-          onClick={handleMenuOpen}
-        >
-          <IconButton size="small" sx={{ p: 0.5 }}>
-            <MoreHorizIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      </Box>
-
-      {/* Menu for regenerate */}
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={handleMenuClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <MenuItem onClick={handleRegenerateClick}>Regenerate Image</MenuItem>
-      </Menu>
-
-      {/* Mobile enlarged view */}
-      {!isDesktop && open && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            bgcolor: "rgba(0,0,0,0.4)",
-            zIndex: 2000,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onClick={() => setOpen(false)}
-        >
-          <Box
-            sx={{
-              bgcolor: "white",
-              borderRadius: 2,
-              boxShadow: 4,
-              p: 2,
-              width: { xs: 180, sm: 220 },
-              height: { xs: 180, sm: 220 },
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={src}
-              alt={alt}
-              width={160}
-              height={160}
-              style={{ objectFit: "contain" }}
-            />
-          </Box>
-        </Box>
-      )}
-    </>
-  );
-}
+import type { Slide } from "@/app/slice/slidesSlice";
+import ImageWithClick from "../../ImageWithClick";
 
 interface OutlineCardProps {
   index: number;
@@ -172,14 +23,25 @@ interface OutlineCardProps {
   onTitleEditChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onTitleEditSave?: () => void;
   onTitleEditCancel?: () => void;
-  // Bullets paragraph editing
   editingBulletsIdx?: number | null;
   editingBulletsValue?: string;
   onBulletsEditStart?: () => void;
   onBulletsEditChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onBulletsEditSave?: () => void;
   onBulletsEditCancel?: () => void;
-  onImageClick?: (e: React.MouseEvent) => void;
+  onSetImageSuggestionsBox: React.Dispatch<
+    React.SetStateAction<{
+      slideIndex: number;
+      imageIndex: number;
+      x: number;
+      y: number;
+      suggestions: string[];
+    } | null>
+  >;
+  slideIndex: number;
+  slidesState: Slide[];
+  isInfographicMode: boolean;
+  onUpdateSlideImages: (slideIndex: number, images: string[]) => void;
 }
 
 const OutlineCard: React.FC<OutlineCardProps> = (props) => {
@@ -206,25 +68,75 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     onBulletsEditChange,
     onBulletsEditSave,
     onBulletsEditCancel,
+    onSetImageSuggestionsBox,
+    slideIndex,
+    slidesState,
+    isInfographicMode,
+    onUpdateSlideImages,
   } = props;
+
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const [largeImageIdx, setLargeImageIdx] = React.useState<number | null>(null);
+  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
+  const [suggestedImages, setSuggestedImages] = React.useState<{
+    imageIndex: number;
+    suggestions: string[];
+  } | null>(null);
+  const [imageList, setImageList] = React.useState<string[]>(images || []);
+  const [loadingImageIndex, setLoadingImageIndex] = React.useState<
+    number | null
+  >(null);
 
   React.useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
+    setImageList(images || []);
+  }, [images]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      onTitleEditSave && onTitleEditSave();
-    } else if (e.key === "Escape") {
-      onTitleEditCancel && onTitleEditCancel();
-    }
+    if (e.key === "Enter") onTitleEditSave?.();
+    else if (e.key === "Escape") onTitleEditCancel?.();
   };
 
+  const handleRegenerateImage = async (
+    imageIndex: number,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    if (loadingImageIndex !== null) return;
+
+    setLoadingImageIndex(imageIndex);
+    const currentSlide = slidesState[slideIndex];
+    const imagePrompt = `Generate a high-quality, professional image for slide titled "${
+      currentSlide.slide_title.text
+    }" with points: ${currentSlide.elements
+      .map((el) => el.text)
+      .join(", ")}. No text or labels inside the image.`;
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/generate-image-suggestions`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: imagePrompt,
+            count: 3,
+            isInfographicMode,
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (data.imageUrls?.length > 0) {
+        setSuggestedImages({ imageIndex, suggestions: data.imageUrls });
+      } else {
+        alert("Failed to generate image suggestions.");
+      }
+    } catch (err) {
+      console.error("Image regeneration error:", err);
+      alert("Error generating image suggestions.");
+    } finally {
+      setLoadingImageIndex(null);
+    }
+  };
 
   return (
     <Paper
@@ -235,53 +147,33 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         bgcolor: "#F2F0FF",
         boxShadow: isDragging ? 4 : 0,
         transition: "box-shadow 0.2s",
-        p: 0,
-        m: 0,
-        cursor: "pointer",
-        overflow: "hidden",
-        position: "relative",
+        overflow: "visible", // ✅ Fix: allow popover to display properly
+        position: "relative", // ✅ Important for correct positioning context
       }}
     >
-      {/* Top Bar */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          minHeight: 56,
-          bgcolor: "#F2F0FF",
-          borderTopLeftRadius: "20px",
-          borderTopRightRadius: "20px",
-        }}
-      >
-        {/* Drag handle and number */}
+      <Box sx={{ display: "flex", alignItems: "center", minHeight: 56 }}>
         <Box
           {...dragHandleProps}
           sx={{
             color: "#8E2DE2",
             fontWeight: 700,
             fontSize: 20,
-            minWidth: 48,
-            textAlign: "center",
-            letterSpacing: 1,
-            pl: 2,
-            pr: 1,
-            userSelect: "none",
+            px: 2,
+            py: 2,
             display: "flex",
-            alignItems: "center",
             gap: 1.5,
           }}
         >
-          {/* Icon on the left of title and count */}
           <Image
             src="/images/left-grid.svg"
             alt="Card Icon"
+            className="mt-[20px]"
             width={12}
             height={12}
-            style={{ marginRight: 1 }}
           />
           {index < 9 ? `0${index + 1}` : index + 1}
         </Box>
-        {/* Title */}
+
         {editable && isEditing ? (
           <input
             ref={inputRef}
@@ -302,7 +194,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               minWidth: 0,
               maxWidth: "90%",
             }}
-            className="text-sm sm:text-base md:text-lg"
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
@@ -310,32 +201,25 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             sx={{
               fontWeight: 500,
               color: "#18181B",
-              fontSize: { xs: 14, sm: 16, md: 18 },
+              fontSize: 16,
               flex: 1,
-              textAlign: "left",
               pl: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              cursor: editable ? "pointer" : "default",
             }}
-            className="text-sm sm:text-base md:text-lg"
             noWrap
+            title={title}
             onClick={
               editable
                 ? (e) => {
                     e.stopPropagation();
-                    onTitleEditStart && onTitleEditStart();
+                    onTitleEditStart?.();
                   }
                 : undefined
             }
-            title={title}
           >
             {title}
           </Typography>
         )}
-        {/* Vertical divider before edit/delete icons */}
-        {/* Delete icon */}
+
         <IconButton
           onClick={onDelete}
           size="small"
@@ -344,211 +228,120 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
           <DeleteIcon fontSize="small" />
         </IconButton>
       </Box>
-      {/* Expanded Content */}
+
       {expanded && (
         <Box
           sx={{
-            bgcolor: "#fff",
-            px: { xs: 2, sm: 3 },
+            px: 3,
             pt: 2,
-            pb: 1.5,
-            borderBottomLeftRadius: "20px",
-            borderBottomRightRadius: "20px",
-            position: "relative",
+            pb: 2,
+            bgcolor: "#fff",
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
           }}
         >
-          {/* Bullets */}
-          {bullets && bullets.length > 0 && (
-            <Box sx={{ mb: 2 }}>
-              {editable && editingBulletsIdx === index ? (
-                <Box sx={{ position: "relative", width: "100%" }}>
-                  <textarea
-                    value={editingBulletsValue}
-                    onChange={onBulletsEditChange}
-                    onBlur={onBulletsEditSave}
-                    style={{
-                      width: "100%",
-                      minHeight: 80,
-                      fontSize: 16,
-                      color: "#18181B",
-                      border: "1px solid #8E2DE2",
-                      borderRadius: 6,
-                      outline: "none",
-                      padding: "8px",
-                      resize: "vertical",
-                    }}
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        onBulletsEditSave && onBulletsEditSave();
-                      } else if (e.key === "Escape") {
-                        onBulletsEditCancel && onBulletsEditCancel();
-                      }
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 1,
-                      mt: 1,
-                      justifyContent: "flex-end",
-                    }}
-                  >
-                    <button
-                      onClick={onBulletsEditSave}
-                      style={{
-                        background: "#8E2DE2",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: 4,
-                        padding: "4px 12px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={onBulletsEditCancel}
-                      style={{
-                        background: "#eee",
-                        color: "#333",
-                        border: "none",
-                        borderRadius: 4,
-                        padding: "4px 12px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </Box>
-                </Box>
-              ) : (
-                <Box
-                  sx={{ display: "flex", alignItems: "center", width: "100%" }}
-                >
-                  <ul
-                    style={{
-                      margin: 0,
-                      paddingLeft: 20,
-                      color: "#757575",
-                      fontSize: 16,
-                      lineHeight: 1.7,
-                      flex: 1,
-                    }}
-                  >
-                    {bullets.map((b, i) => (
-                      <li
-                        key={i}
-                        onClick={
-                          editable
-                            ? (e) => {
-                                e.stopPropagation();
-                                onBulletsEditStart && onBulletsEditStart();
-                              }
-                            : undefined
-                        }
-                        style={{ cursor: editable ? "pointer" : "default" }}
-                        title={b}
-                      >
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-                </Box>
-              )}
-            </Box>
-          )}
-          {/* Horizontal divider after outline points */}
-          {/* Images Row */}
-          {images.length > 0 && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                flexWrap: "wrap",
-                mb: 2,
+          {bullets.length > 0 && (
+            <ul
+              style={{
+                paddingLeft: 20,
+                margin: 0,
+                color: "#757575",
+                fontSize: 16,
               }}
             >
-              {images.map((src, i) => (
-                <span key={i} style={{ display: "inline-flex" }}>
+              {bullets.map((b, i) => (
+                <li key={i}>{b}</li>
+              ))}
+            </ul>
+          )}
+
+          <Box
+            sx={{ display: "flex", justifyContent: "space-between", gap: 3 }}
+          >
+            {/* Left: Image list with suggestions */}
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, flex: 1 }}>
+              {imageList.map((src, i) => (
+                <Box key={i}>
                   <ImageWithClick
                     src={src}
                     alt={`img-${i}`}
-                    onShowLarge={() => setLargeImageIdx(i)}
-                    onRegenerate={() => {
-                      console.log("Regenerate image at index", i);
-                      // You can call your regenerate function here and pass index/image ID
+                    isLoading={loadingImageIndex === i}
+                    onPreviewImage={() => setPreviewImage(src)}
+                    onRegenerate={(e, closeMenu) => {
+                      handleRegenerateImage(i, e).then(closeMenu); // ✅ Close menu after done
                     }}
                   />
-                </span>
+
+                  {suggestedImages?.imageIndex === i && (
+                    <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
+                      {suggestedImages.suggestions.map((suggestedSrc, j) => (
+                        <Box
+                          key={j}
+                          sx={{
+                            width: 64,
+                            height: 64,
+                            borderRadius: 1,
+                            overflow: "hidden",
+                            cursor: "pointer",
+                            border: "1px solid #ccc",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newImages = [...imageList];
+                            newImages[i] = suggestedSrc;
+                            setImageList(newImages);
+                            onUpdateSlideImages(slideIndex, newImages);
+                            setPreviewImage(suggestedSrc);
+                            setSuggestedImages(null);
+                          }}
+                        >
+                          <Image
+                            src={suggestedSrc}
+                            alt={`Suggested ${j}`}
+                            width={64}
+                            height={64}
+                            style={{
+                              objectFit: "cover",
+                              width: "100%",
+                              height: "100%",
+                            }}
+                          />
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
               ))}
             </Box>
-          )}
-          {/* Desktop large image preview */}
-          {typeof window !== "undefined" &&
-            window.innerWidth >= 768 &&
-            largeImageIdx !== null &&
-            images[largeImageIdx] && (
+
+            {/* Right: Preview image */}
+            {previewImage && (
               <Box
                 sx={{
-                  position: "absolute",
-                  right: 200, // move further to the left
-                  bottom: 40, // move a little further down
-                  zIndex: 3,
-                  bgcolor: "#fff",
-                  borderRadius: 1, // less rounded
-                  boxShadow: 4,
-                  p: 0.5,
+                  minWidth: 200,
+                  maxWidth: 240,
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
-                  width: 130, // increased more
-                  height: 130, // increased more
-                  cursor: "pointer",
+                  gap: 1,
                 }}
-                onClick={() => setLargeImageIdx(null)}
               >
                 <Image
-                  src={images[largeImageIdx]}
-                  alt={`large-img-${largeImageIdx}`}
-                  width={120}
-                  height={120}
+                  onClick={(e) => e.stopPropagation()}
+                  src={previewImage}
+                  alt="Preview"
+                  width={72}
+                  height={72}
                   style={{
                     objectFit: "contain",
                     maxWidth: "100%",
-                    maxHeight: "100%",
-                    borderRadius: 6,
+                    borderRadius: 8,
                   }}
                 />
               </Box>
             )}
-        </Box>
-      )}
-      {/* Edit icon bottom right - only show when expanded */}
-      {expanded && (
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: 38, // move it a little above the bottom
-            right: 20,
-            zIndex: 2,
-          }}
-        >
-          <IconButton
-            size="small"
-            sx={{ p: 0 }} // remove background and shadow
-            onClick={onEdit}
-          >
-            <Image
-              src="/images/regenerate-card.svg"
-              alt="Edit"
-              width={20}
-              height={20}
-              style={{ display: "block" }}
-            />
-          </IconButton>
+          </Box>
         </Box>
       )}
     </Paper>
