@@ -1,10 +1,21 @@
 "use client";
 import React from "react";
-import { Paper, IconButton, Box, Typography } from "@mui/material";
+import {
+  Paper,
+  IconButton,
+  Box,
+  Typography,
+  Menu,
+  MenuItem,
+  CircularProgress,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Image from "next/image";
 import type { Slide } from "@/app/slice/slidesSlice";
 import ImageWithClick from "../../ImageWithClick";
+import AIicon from "../../../../../public/images/AIcon-08.svg";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 interface OutlineCardProps {
   index: number;
@@ -15,7 +26,6 @@ interface OutlineCardProps {
   expanded?: boolean;
   bullets?: string[];
   images?: string[];
-  onEdit?: (event: React.MouseEvent<HTMLElement>) => void;
   editable?: boolean;
   isEditing?: boolean;
   editingTitle?: string;
@@ -29,6 +39,9 @@ interface OutlineCardProps {
   onBulletsEditChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onBulletsEditSave?: () => void;
   onBulletsEditCancel?: () => void;
+  slideIndex: number;
+  slidesState: Slide[];
+  isInfographicMode: boolean;
   onSetImageSuggestionsBox: React.Dispatch<
     React.SetStateAction<{
       slideIndex: number;
@@ -38,10 +51,13 @@ interface OutlineCardProps {
       suggestions: string[];
     } | null>
   >;
-  slideIndex: number;
-  slidesState: Slide[];
-  isInfographicMode: boolean;
   onUpdateSlideImages: (slideIndex: number, images: string[]) => void;
+  onUpdateSlide?: (
+    slideIndex: number,
+    updated: Partial<{ title: string; bullets: string[] }>
+  ) => void;
+  onToggleExpand?: () => void;
+  onEdit?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
 const OutlineCard: React.FC<OutlineCardProps> = (props) => {
@@ -49,12 +65,12 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     index,
     title,
     onDelete,
+    onEdit,
     dragHandleProps,
     isDragging = false,
     expanded = false,
     bullets = [],
     images = [],
-    onEdit,
     editable = false,
     isEditing = false,
     editingTitle = "",
@@ -62,17 +78,13 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     onTitleEditChange,
     onTitleEditSave,
     onTitleEditCancel,
-    editingBulletsIdx,
-    editingBulletsValue,
-    onBulletsEditStart,
-    onBulletsEditChange,
-    onBulletsEditSave,
-    onBulletsEditCancel,
     onSetImageSuggestionsBox,
     slideIndex,
     slidesState,
     isInfographicMode,
     onUpdateSlideImages,
+    onUpdateSlide,
+    onToggleExpand,
   } = props;
 
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -81,10 +93,30 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     imageIndex: number;
     suggestions: string[];
   } | null>(null);
+
   const [imageList, setImageList] = React.useState<string[]>(images || []);
   const [loadingImageIndex, setLoadingImageIndex] = React.useState<
     number | null
   >(null);
+
+  const [aiEditMenuAnchorEl, setAiEditMenuAnchorEl] =
+    React.useState<null | HTMLElement>(null);
+  const [loadingSuggestionsAction, setLoadingSuggestionsAction] =
+    React.useState<string | null>(null);
+  const [textSuggestions, setTextSuggestions] = React.useState<
+    { title: string; bullets: string[] }[]
+  >([]);
+  const [showSuggestionsBox, setShowSuggestionsBox] = React.useState(false);
+
+  const textEditActions = [
+    { label: "Longer", value: "longer" },
+    { label: "Shorter", value: "shorter" },
+    { label: "Rewrite Slides", value: "rewriteSlide" },
+    { label: "Bullets Format", value: "bulletsFormat" },
+    { label: "List Format", value: "listFormat" },
+    { label: "Regenerate Images", value: "regenerateImages" },
+    { label: "New Custom Suggestions", value: "custom" },
+  ];
 
   React.useEffect(() => {
     setImageList(images || []);
@@ -111,18 +143,15 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
       .join(", ")}. No text or labels inside the image.`;
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/generate-image-suggestions`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: imagePrompt,
-            count: 3,
-            isInfographicMode,
-          }),
-        }
-      );
+      const res = await fetch(`${API_BASE_URL}/generate-image-suggestions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: imagePrompt,
+          count: 3,
+          isInfographicMode,
+        }),
+      });
 
       const data = await res.json();
       if (data.imageUrls?.length > 0) {
@@ -147,9 +176,10 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         bgcolor: "#F2F0FF",
         boxShadow: isDragging ? 4 : 0,
         transition: "box-shadow 0.2s",
-        overflow: "visible", // ✅ Fix: allow popover to display properly
-        position: "relative", // ✅ Important for correct positioning context
+        overflow: "hidden",
+        position: "relative",
       }}
+      onClick={() => onToggleExpand?.()}
     >
       <Box sx={{ display: "flex", alignItems: "center", minHeight: 56 }}>
         <Box
@@ -167,7 +197,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
           <Image
             src="/images/left-grid.svg"
             alt="Card Icon"
-            className="mt-[20px]"
             width={12}
             height={12}
           />
@@ -248,10 +277,15 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                 margin: 0,
                 color: "#757575",
                 fontSize: 16,
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
               }}
             >
               {bullets.map((b, i) => (
-                <li key={i}>{b}</li>
+                <li key={i} style={{ listStyle: "disc", paddingRight: 8 }}>
+                  {b}
+                </li>
               ))}
             </ul>
           )}
@@ -259,7 +293,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
           <Box
             sx={{ display: "flex", justifyContent: "space-between", gap: 3 }}
           >
-            {/* Left: Image list with suggestions */}
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, flex: 1 }}>
               {imageList.map((src, i) => (
                 <Box key={i}>
@@ -269,10 +302,9 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     isLoading={loadingImageIndex === i}
                     onPreviewImage={() => setPreviewImage(src)}
                     onRegenerate={(e, closeMenu) => {
-                      handleRegenerateImage(i, e).then(closeMenu); // ✅ Close menu after done
+                      handleRegenerateImage(i, e).then(closeMenu);
                     }}
                   />
-
                   {suggestedImages?.imageIndex === i && (
                     <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
                       {suggestedImages.suggestions.map((suggestedSrc, j) => (
@@ -315,7 +347,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               ))}
             </Box>
 
-            {/* Right: Preview image */}
             {previewImage && (
               <Box
                 sx={{
@@ -344,8 +375,138 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
           </Box>
         </Box>
       )}
+
+      {/* AI Icon */}
+      {expanded && (
+        <>
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 8,
+              right: 8,
+              width: 36,
+              height: 36,
+              cursor: "pointer",
+              zIndex: 2,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setAiEditMenuAnchorEl(e.currentTarget);
+            }}
+          >
+            <Image
+              src={AIicon}
+              alt="AI Edit Icon"
+              width={10}
+              height={10}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </Box>
+
+          {aiEditMenuAnchorEl && (
+            <Menu
+              open={!!aiEditMenuAnchorEl}
+              anchorEl={aiEditMenuAnchorEl}
+              onClose={() => {
+                setAiEditMenuAnchorEl(null);
+                setLoadingSuggestionsAction(null);
+              }}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+              transformOrigin={{ vertical: "bottom", horizontal: "right" }}
+              disablePortal
+            >
+              {textEditActions.map((action) => (
+                <MenuItem
+                  key={action.value}
+                  onClick={async () => {
+                    setLoadingSuggestionsAction(action.value);
+                    try {
+                      const res = await fetch(`${API_BASE_URL}/edit-text`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          title,
+                          bullets,
+                          action: action.value,
+                        }),
+                      });
+                      const data = await res.json();
+                      if (Array.isArray(data.suggestions)) {
+                        setTextSuggestions(data.suggestions);
+                        setShowSuggestionsBox(true);
+                      }
+                    } catch (err) {
+                      console.error("Suggestion fetch error:", err);
+                    } finally {
+                      setLoadingSuggestionsAction(null);
+                      setAiEditMenuAnchorEl(null);
+                    }
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <span>{action.label}</span>
+                    {loadingSuggestionsAction === action.value && (
+                      <CircularProgress size={16} color="inherit" />
+                    )}
+                  </Box>
+                </MenuItem>
+              ))}
+            </Menu>
+          )}
+
+          {showSuggestionsBox && textSuggestions.length > 0 && (
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 52,
+                right: 8,
+                bgcolor: "#fff",
+                boxShadow: 3,
+                borderRadius: 2,
+                zIndex: 5,
+                width: 300,
+                maxHeight: 240,
+                overflowY: "auto",
+                p: 1,
+              }}
+            >
+              {textSuggestions.map((sug, idx) => (
+                <Box
+                  key={idx}
+                  sx={{
+                    p: 1,
+                    mb: 1,
+                    border: "1px solid #ccc",
+                    borderRadius: 1,
+                    cursor: "pointer",
+                    "&:hover": { bgcolor: "#f0f0f0" },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUpdateSlide?.(slideIndex, {
+                      title: sug.title,
+                      bullets: sug.bullets,
+                    });
+                    setShowSuggestionsBox(false);
+                  }}
+                >
+                  <Typography fontWeight={600}>{sug.title}</Typography>
+                  <ul style={{ paddingLeft: 16, margin: "4px 0" }}>
+                    {sug.bullets.map((b, i) => (
+                      <li key={i} style={{ fontSize: 14 }}>
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </>
+      )}
     </Paper>
   );
 };
 
 export default OutlineCard;
+  

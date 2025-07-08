@@ -372,7 +372,6 @@ export default function OutlinePage() {
                             cursor: "pointer",
                             zIndex: snapshot.isDragging ? 100 : "auto",
                           }}
-                          onClick={() => handleCardClick(idx)}
                         >
                           <OutlineCard
                             index={idx}
@@ -384,9 +383,10 @@ export default function OutlinePage() {
                             expanded={expandedIdx === idx}
                             bullets={card.bullets}
                             images={card.images}
+                            onToggleExpand={() => handleCardClick(idx)}
                             onEdit={
                               expandedIdx === idx
-                                ? (e) => handleEditClick(e, idx)
+                                ? (e:any) => handleEditClick(e, idx)
                                 : undefined
                             }
                             editable
@@ -415,6 +415,15 @@ export default function OutlinePage() {
                                 prev.map((card, i) =>
                                   i === slideIndex
                                     ? { ...card, images: [...newImages] }
+                                    : card
+                                )
+                              );
+                            }}
+                            onUpdateSlide={(slideIndex, updated) => {
+                              setCards((prev) =>
+                                prev.map((card, i) =>
+                                  i === slideIndex
+                                    ? { ...card, ...updated }
                                     : card
                                 )
                               );
