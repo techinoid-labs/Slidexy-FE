@@ -4,10 +4,10 @@ import React from "react";
 import Image from "next/image";
 import { Box, Tooltip, IconButton } from "@mui/material";
 import { useRouter } from "next/navigation";
-import TemplatePanel from "./Template";
-import TextEditorPanel from "./TextEditor";
-import MediaPanel from "./Media";
-import ShapesPanel from "./Shapes";
+import TemplatePanel from "../Template";
+import TextEditorPanel from "../TextEditor";
+import MediaPanel from "../Media";
+import ShapesPanel from "../Shapes";
 
 type PanelType = null | "template" | "text" | "media" | "shapes";
 

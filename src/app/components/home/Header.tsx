@@ -71,7 +71,6 @@ export default function Header() {
             />
           </Box>
         </Link>
-
         {/* Desktop Navigation */}
         {!isMobile && (
           <Box

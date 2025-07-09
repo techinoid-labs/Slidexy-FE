@@ -1,4 +1,3 @@
-
 import Header from "@/app/components/create-presentation/create/Header";
 import PresentationMaker from "@/app/components/create-presentation/create/PresentationMaker";
 import { Box, Container, Typography } from "@mui/material";
@@ -39,7 +38,9 @@ const CreatePresentationPage = () => {
           }}
         >
           <Container maxWidth="lg">
-            <Box sx={{ textAlign: "center", mt: 1, mb: 6, position: "relative" }}>
+            <Box
+              sx={{ textAlign: "center", mt: 1, mb: 6, position: "relative" }}
+            >
               <Box sx={{ display: "inline-block", position: "relative" }}>
                 <Typography
                   variant="h1"

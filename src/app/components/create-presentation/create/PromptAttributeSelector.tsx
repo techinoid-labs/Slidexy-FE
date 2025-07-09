@@ -36,19 +36,19 @@ export default function PromptAttributeSelector({
     flex: { xs: "1 1 100%", sm: "1 1 0" },
     backgroundColor: "#fff",
     borderRadius: "12px",
-    px: 2,
+    px: 1,
     py: 1,
-    fontSize: "0.95rem", // << Font size of the select box label (adjust here)
+    fontSize: 9,
     minWidth: 160,
-    fontWeight: 500,
+    fontWeight: 400,
     border: `1px solid ${theme.palette.grey[200]}`,
-    color: theme.palette.grey[600], // << Font color inside the select box (adjust here)
+    color: theme.palette.grey[600],
     boxShadow: "0 2px 6px rgba(0, 0, 0, 0.03)",
     "& .MuiSelect-select": {
-      py: 1.2,
+      py: 0.2,
     },
     "& .MuiSelect-icon": {
-      color: theme.palette.grey[400], // << Dropdown arrow color
+      color: theme.palette.grey[400],
     },
     "& fieldset": {
       border: "none",
@@ -65,11 +65,10 @@ export default function PromptAttributeSelector({
       value={value}
       sx={{
         fontWeight: value === selectedValue ? 600 : 400,
-        fontSize: "0.925rem", // << Font size inside dropdown menu items (adjust here)
         color:
           value === selectedValue
             ? theme.palette.secondary.main
-            : theme.palette.grey[700], // << Menu text color
+            : theme.palette.grey[700],
         display: "flex",
         justifyContent: "space-between",
         py: 1,
@@ -79,7 +78,7 @@ export default function PromptAttributeSelector({
         },
       }}
     >
-      <ListItemText>{label}</ListItemText>
+      <ListItemText sx={{ fontSize: 14, pt: 0.2 }}>{label}</ListItemText>
       {value === selectedValue && (
         <ListItemIcon
           sx={{
@@ -107,6 +106,7 @@ export default function PromptAttributeSelector({
       <FormControl fullWidth sx={dropdownStyles}>
         <Select
           value={goal}
+          sx={{ fontSize: 14, pt: 0.2 }}
           displayEmpty
           onChange={(e) => setGoal(e.target.value)}
           renderValue={(selected) => selected || "Select Goal"}
@@ -122,6 +122,7 @@ export default function PromptAttributeSelector({
       <FormControl fullWidth sx={dropdownStyles}>
         <Select
           value={tone}
+          sx={{ fontSize: 14, pt: 0.2 }}
           displayEmpty
           onChange={(e) => setTone(e.target.value)}
           renderValue={(selected) => selected || "Select Tone"}
@@ -136,6 +137,7 @@ export default function PromptAttributeSelector({
       <FormControl fullWidth sx={dropdownStyles}>
         <Select
           value={audience}
+          sx={{ fontSize: 14, pt: 0.2 }}
           displayEmpty
           onChange={(e) => setAudience(e.target.value)}
           renderValue={(selected) => selected || "Select Audience"}
@@ -150,6 +152,7 @@ export default function PromptAttributeSelector({
       <FormControl fullWidth sx={dropdownStyles}>
         <Select
           value={length}
+          sx={{ fontSize: 14, pt: 0.2 }}
           displayEmpty
           onChange={(e) => setLength(e.target.value)}
           renderValue={(selected) => selected || "Length Slider"}

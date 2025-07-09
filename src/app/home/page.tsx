@@ -1,15 +1,15 @@
-import Header from "@/app/components/Header";
-import HeroSection from "@/app/components/HeroSection";
+import Header from "@/app/components/home/Header";
+import HeroSection from "@/app/components/home/HeroSection";
 import { Box } from "@mui/material";
 import Image from "next/image";
-import FeaturesSection from "@/app/components/Features";
-import PurposeSection from "../components/Purpose";
-import PresentationStyleSection from "../components/PresentationStyle";
-import WorkingSection from "../components/Working";
-import TestimonialSection from "../components/Testimonial";
-import PricingSection from "../components/Pricing";
-import CommunitySection from "../components/Community";
-import Footer from "../components/Footer";
+import FeaturesSection from "@/app/components/home/Features";
+import PurposeSection from "../components/home/Purpose";
+import PresentationStyleSection from "../components/home/PresentationStyle";
+import WorkingSection from "../components/home/Working";
+import TestimonialSection from "../components/home/Testimonial";
+import PricingSection from "../components/home/Pricing";
+import CommunitySection from "../components/home/Community";
+import Footer from "../components/home/Footer";
 export default function Home() {
   return (
     <Box

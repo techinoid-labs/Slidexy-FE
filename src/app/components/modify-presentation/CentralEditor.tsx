@@ -20,10 +20,18 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import dynamic from "next/dynamic";
-import { useSlideThemeContext } from "../context/ThemeContext";
+import { useSlideThemeContext } from "@/app/context/ThemeContext";
 
-const TextPanel = dynamic(() => import("./TextPanel"), { ssr: false });
-const ThemePanel = dynamic(() => import("./Theme"), { ssr: false });
+const TextPanel = dynamic(
+  () => import("@/app/components/modify-presentation/TextPanel"),
+  { ssr: false }
+);
+const ThemePanel = dynamic(
+  () => import("@/app/components/modify-presentation/Theme"),
+  {
+    ssr: false,
+  }
+);
 
 // Sample slides data
 const CentralEditor = ({ templatePanelOpen }: any) => {

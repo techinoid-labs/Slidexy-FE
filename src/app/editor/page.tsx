@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import SideNavBar from "../components/Side-NavBar";
-import UpperNavBar from "../components/Upper-NavBar";
-import ThemePanel from "../components/Theme";
-import CentralEditor from "../components/CentralEditor";
+import SideNavBar from "../components/modify-presentation/Side-NavBar";
+import UpperNavBar from "../components/modify-presentation/Upper-NavBar";
+import ThemePanel from "../components/modify-presentation/Theme";
+import CentralEditor from "../components/modify-presentation/CentralEditor";
 import SlideEditor from "./SlideEditor";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useDispatch } from "react-redux";
@@ -21,7 +21,6 @@ const Page = () => {
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
 
   const handleExportPDF = () => exportSlidesAsPDF(stageRefs.current);
-  // const handleExportPPT = () => exportSlidesAsPPT(stageRefs.current);
   return (
     <div
       style={{
@@ -33,10 +32,7 @@ const Page = () => {
         overflow: "hidden",
       }}
     >
-      <UpperNavBar
-        onExportPDF={handleExportPDF}
-        // onExportPPT={handleExportPPT}
-      />
+      <UpperNavBar onExportPDF={handleExportPDF} />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <SideNavBar
           showTemplatePanel={showTemplatePanel}

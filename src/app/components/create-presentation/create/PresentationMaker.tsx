@@ -7,6 +7,7 @@ import InputModeSelector from "./InputModeSelector";
 import PromptAttributeSelector from "./PromptAttributeSelector";
 import { useRouter } from "next/navigation";
 import { useSlides } from "@/app/context/SlidesContext";
+import { useSearchParams } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 console.log("[SlidesX] API_BASE_URL:", API_BASE_URL);
@@ -26,8 +27,8 @@ export default function PresentationMaker({
   const [loading, setLoading] = useState(false);
   const { setSlides } = useSlides();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // New: Prompt metadata state
   const [goal, setGoal] = useState("");
   const [tone, setTone] = useState("");
   const [audience, setAudience] = useState("");
@@ -79,10 +80,11 @@ export default function PresentationMaker({
       length,
     };
 
-    // const payload = { ...base, ...promptMeta };
-    const payload = { ...base };
+    const payload = { ...base, meta: promptMeta };
+    // const payload = { ...base };
     console.log("[SlidesX] Payload to backend:", payload);
-    console.log("[SlidesX] Prompt meta (not sent):", promptMeta);
+    // console.log("[SlidesX] Prompt meta (not sent):", promptMeta);
+    // return;
     try {
       const res = await fetch(`${API_BASE_URL}/generate-slides`, {
         method: "POST",
@@ -105,7 +107,6 @@ export default function PresentationMaker({
       const data = await res.json();
       console.log("[SlidesX] Parsed slides data:", data);
       setSlides(data.slides);
-      // localStorage.setItem("slides", JSON.stringify(data.slides)); // Ensure persistence before navigation
       router.push(`/presentation/outline`);
     } catch (err: any) {
       console.error("[SlidesX] Exception in handleSubmit:", err);
@@ -115,11 +116,29 @@ export default function PresentationMaker({
     }
   };
 
+  useEffect(() => {
+    const prompt = searchParams.get("prompt");
+
+    if (prompt) {
+      setInputValue(prompt);
+
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      params.delete("prompt");
+
+      const newQuery = params.toString();
+      const pathname = window.location.pathname;
+
+      const newUrl = newQuery ? `${pathname}?${newQuery}` : pathname;
+
+      router.replace(newUrl, { scroll: false });
+    }
+  }, []);
+
   return (
     <Box sx={{ mx: "auto", mt: 6, width: { xs: "100%", md: "70%" } }}>
       <InputModeSelector onModeChange={setInputMode} />
 
-      {/* <PromptAttributeSelector
+      <PromptAttributeSelector
         goal={goal}
         tone={tone}
         audience={audience}
@@ -128,7 +147,7 @@ export default function PresentationMaker({
         setTone={setTone}
         setAudience={setAudience}
         setLength={setLength}
-      /> */}
+      />
 
       <Box
         sx={{
@@ -162,13 +181,13 @@ export default function PresentationMaker({
         />
       </Box>
 
-      <Button        
+      <Button
         fullWidth
         variant="contained"
         onClick={handleSubmit}
         disabled={loading}
         sx={{
-          textTransform: "none",          
+          textTransform: "none",
           background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
           borderRadius: "999px",
           px: 6,
@@ -209,7 +228,7 @@ export default function PresentationMaker({
         <Box
           sx={{
             display: "flex",
-            flexDirection: "row",
+            flexDirection: { xs: "col", md: "row" },
             gap: 2,
             flexWrap: { xs: "wrap", sm: "nowrap" },
           }}
@@ -218,12 +237,19 @@ export default function PresentationMaker({
             <Box
               key={index}
               sx={{
+                ":hover": {
+                  scale: "1.1 ",
+                },
+                cursor: "pointer",
                 backgroundColor: "#F7F5FD",
                 borderRadius: "16px",
                 padding: 2,
-                flex: "1 1 30%",
+                flex: "col",
+                flexWrap: "wrap",
+
                 position: "relative",
               }}
+              onClick={() => handlePromptClick(card.description)}
             >
               <Typography variant="subtitle1" fontWeight={600} mt={3} mb={3}>
                 {card.title}
@@ -238,7 +264,6 @@ export default function PresentationMaker({
                   right: 16,
                   cursor: "pointer",
                 }}
-                onClick={() => handlePromptClick(card.description)}
               >
                 <Image
                   src={card.icon}
