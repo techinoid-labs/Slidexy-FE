@@ -36,7 +36,7 @@ export default function Header() {
     >
       <Toolbar
         sx={{
-          justifyContent: "space-between",
+          justifyContent: "center",
           alignItems: "center",
           px: { xs: 6, md: 8 },
           minHeight: 64,

@@ -1,38 +1,41 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
-import { ThemeProvider as MuiThemeProvider, createTheme } from "@mui/material/styles"
+import type React from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import {
+  ThemeProvider as MuiThemeProvider,
+  createTheme,
+} from "@mui/material/styles";
 
-type ThemeMode = "light" | "dark"
+type ThemeMode = "light" | "dark";
 
 interface ThemeContextType {
-  mode: ThemeMode
-  toggleTheme: () => void
+  mode: ThemeMode;
+  toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const useTheme = () => {
-  const context = useContext(ThemeContext)
+  const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider")
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
-  return context
-}
+  return context;
+};
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>("light")
-  const [mounted, setMounted] = useState(false)
+  const [mode, setMode] = useState<ThemeMode>("light");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   const toggleTheme = () => {
-    const newMode = mode === "light" ? "dark" : "light"
-    setMode(newMode)
-  }
+    const newMode = mode === "light" ? "dark" : "light";
+    setMode(newMode);
+  };
 
   const theme = createTheme({
     palette: {
@@ -112,15 +115,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         },
       },
     },
-  })
+  });
 
   if (!mounted) {
-    return null
+    return null;
   }
 
   return (
     <ThemeContext.Provider value={{ mode, toggleTheme }}>
       <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>
     </ThemeContext.Provider>
-  )
+  );
 }

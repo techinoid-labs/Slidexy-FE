@@ -81,7 +81,6 @@ export default function PresentationMaker({
     };
 
     const payload = { ...base, meta: promptMeta };
-    // const payload = { ...base };
     console.log("[SlidesX] Payload to backend:", payload);
     // console.log("[SlidesX] Prompt meta (not sent):", promptMeta);
     // return;
