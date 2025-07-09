@@ -56,7 +56,7 @@ const TemplatePanel = ({
   const mockThemes: Theme[] = [
     {
       font: "Inter",
-      primaryColor: "#222222",
+      primaryColor: "#fff",
       secondaryColor: "#007AFF",
       backgroundColor: "#E0F7FA",
       image_url: themeImageUrls[0],
@@ -70,28 +70,28 @@ const TemplatePanel = ({
     },
     {
       font: "Open Sans",
-      primaryColor: "#1A237E",
+      primaryColor: "#ffa",
       secondaryColor: "#00BCD4",
       backgroundColor: "#E3F2FD",
       image_url: themeImageUrls[2],
     },
     {
       font: "Poppins",
-      primaryColor: "#2E7D32",
+      primaryColor: "#9E7e12",
       secondaryColor: "#FFD600",
       backgroundColor: "#F1F8E9",
       image_url: themeImageUrls[3],
     },
     {
       font: "Lato",
-      primaryColor: "#37474F",
+      primaryColor: "#fff",
       secondaryColor: "#FF7043",
       backgroundColor: "#ECEFF1",
       image_url: themeImageUrls[4],
     },
     {
       font: "Montserrat",
-      primaryColor: "#880E4F",
+      primaryColor: "#F7D9EC		",
       secondaryColor: "#FF8A65",
       backgroundColor: "#FFF3E0",
       image_url: themeImageUrls[5],

@@ -52,7 +52,7 @@ const SideNavBar = ({
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 2.5,
+            gap: 1,
             width: "100%",
           }}
         >
@@ -97,9 +97,8 @@ const SideNavBar = ({
                 <Image
                   src={item.icon}
                   alt={item.label}
-                  width={35}
-                  height={35}
-                  style={{ width: 35, height: 35 }}
+                  width={23}
+                  height={23}
                 />
               </IconButton>
             </Tooltip>

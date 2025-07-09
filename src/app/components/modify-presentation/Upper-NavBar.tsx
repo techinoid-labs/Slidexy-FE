@@ -11,13 +11,14 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 const UpperNavBar: React.FC<{
   onExportPDF: () => void;
   onExportPPT?: () => void;
 }> = ({ onExportPDF, onExportPPT }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
+  const router = useRouter();
   return (
     <AppBar
       position="static"
@@ -27,13 +28,13 @@ const UpperNavBar: React.FC<{
         color: "#18181B",
         borderBottom: "1px solid #E0E0E0",
         width: "100%",
-        height: 80, // Increased from 64 to 80
+        height: 80,
         boxSizing: "border-box",
       }}
     >
       <Toolbar
         sx={{
-          minHeight: 80, // Match AppBar height
+          minHeight: 80,
           height: 80,
           display: "flex",
           flexDirection: "row",
@@ -43,13 +44,13 @@ const UpperNavBar: React.FC<{
         }}
       >
         {/* Left icons */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, ml: -2 }}>
-          <IconButton sx={{ p: 1.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, ml: -1 }}>
+          <IconButton onClick={() => router.push("/home")} sx={{ p: 1 }}>
             <Image
               src="/images/home-icon.svg"
               alt="Home"
-              width={40} // increased from 32
-              height={40}
+              width={25} // increased from 32
+              height={25}
             />
           </IconButton>
           <Box
@@ -66,16 +67,16 @@ const UpperNavBar: React.FC<{
             <Image
               src="/images/list-icon.svg"
               alt="List"
-              width={40}
-              height={40}
+              width={25}
+              height={25}
             />
           </IconButton>
           <IconButton sx={{ p: 1.5 }}>
             <Image
               src="/images/ai-star.svg"
               alt="Star"
-              width={35}
-              height={35}
+              width={25}
+              height={25}
             />
           </IconButton>
 
@@ -89,13 +90,13 @@ const UpperNavBar: React.FC<{
           >
             <Typography
               variant="subtitle1"
-              sx={{ fontWeight: 600, fontSize: 20 }}
+              sx={{ fontWeight: 600, fontSize: 16 }}
             >
               File Name Here
             </Typography>
             <Typography
               variant="caption"
-              sx={{ color: "#888", mt: -0.5, fontSize: 14 }}
+              sx={{ color: "#888", mt: -0.5, fontSize: 12 }}
             >
               File Type
             </Typography>

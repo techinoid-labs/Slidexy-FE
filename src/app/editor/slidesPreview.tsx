@@ -91,7 +91,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                   maxWidth: "100%",
                 }}
               >
-                {slide.slide_title.text}
+                {slide.slide_title.text || "New Slide Title"}
               </Typography>
               <Typography variant="caption" color="#667085">
                 {slide.elements.length > 0

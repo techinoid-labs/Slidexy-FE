@@ -25,11 +25,64 @@ interface EditingState {
   fontSize: number;
 }
 
+const getRandomSlide = () => {
+  const titles = [
+    "5 Ways to Boost Productivity",
+    "Understanding AI in 2025",
+    "Why Design Thinking Works",
+    "Top Marketing Trends This Year",
+    "The Future of Remote Work",
+  ];
+
+  const bullets = [
+    "Keep tasks short and focused",
+    "Automate where possible",
+    "Use data to drive decisions",
+    "Stay aligned with team goals",
+    "Prioritize clarity over complexity",
+    "Break problems into smaller chunks",
+    "Embrace flexible tooling",
+    "Focus on outcomes, not outputs",
+    "Be user-first in every decision",
+  ];
+
+  const getRandomBullets = (count: number) =>
+    Array.from({ length: count }, () => {
+      const text = bullets[Math.floor(Math.random() * bullets.length)];
+      return {
+        element_type: "bullet_point",
+        text,
+        konva_component: "Konva.Text",
+        properties: {
+          fontSize: 18,
+          fontFamily: "Inter",
+          fill: "#444",
+          fontStyle: "normal",
+        },
+      };
+    });
+
+  return {
+    slide_id: `slide-${Date.now()}`,
+    slide_title: {
+      text: titles[Math.floor(Math.random() * titles.length)],
+      properties: {
+        fontSize: 24,
+        fontFamily: "Arial",
+        fill: "#000",
+        fontStyle: "normal",
+      },
+    },
+    elements: getRandomBullets(3),
+    image_url: "/images/create-presentation/new-slide-img.png",
+  };
+};
+
 const SlideEditor = ({ slides = [], setSlides, stageRefs }: any) => {
   const { selectedTheme } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "", "anonymous");
 
-  const [useDummy] = useState(false);
+  const [useDummy] = useState(true);
   const [currentSlides, updateSlides] = useState<any[]>(
     useDummy ? dummyData : slides
   );
@@ -76,20 +129,55 @@ const SlideEditor = ({ slides = [], setSlides, stageRefs }: any) => {
   };
 
   const handleAddSlide = () => {
-    const newSlide = {
-      slide_id: `slide-${Date.now()}`,
-      slide_title: {
-        text: "New Slide Title",
-        properties: {
-          fontSize: 24,
-          fontFamily: "Arial",
-          fill: "#000",
-          fontStyle: "normal",
-        },
-      },
-      elements: [],
-      image_url: "",
-    };
+    // const newSlide = {
+    //   slide_id: `slide-${Date.now()}`,
+    //   slide_title: {
+    //     text: "New Slide Title",
+    //     properties: {
+    //       fontSize: 24,
+    //       fontFamily: "Arial",
+    //       fill: "#000",
+    //       fontStyle: "normal",
+    //     },
+    //   },
+    //   elements: [
+    //     {
+    //       element_type: "bullet_point",
+    //       text: "Bullet 1",
+    //       konva_component: "Konva.Text",
+    //       properties: {
+    //         fontSize: 18,
+    //         fontFamily: "Inter",
+    //         fill: "#444",
+    //         fontStyle: "normal",
+    //       },
+    //     },
+    //     {
+    //       element_type: "bullet_point",
+    //       text: "Bullet 2",
+    //       konva_component: "Konva.Text",
+    //       properties: {
+    //         fontSize: 18,
+    //         fontFamily: "Inter",
+    //         fill: "#444",
+    //         fontStyle: "normal",
+    //       },
+    //     },
+    //     {
+    //       element_type: "bullet_point",
+    //       text: "Bullet 3",
+    //       konva_component: "Konva.Text",
+    //       properties: {
+    //         fontSize: 18,
+    //         fontFamily: "Inter",
+    //         fill: "#444",
+    //         fontStyle: "normal",
+    //       },
+    //     },
+    //   ],
+    //   image_url: "/images/create-presentation/new-slide-img.png",
+    // };
+    const newSlide = getRandomSlide();
     const newSlides = [...currentSlides, newSlide];
     updateSlides(newSlides);
     setSelectedIndex(newSlides.length - 1);
