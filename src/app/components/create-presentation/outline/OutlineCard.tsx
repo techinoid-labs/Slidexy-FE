@@ -394,7 +394,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     // Add a visual cue and ensure clickability of individual image boxes
                     sx={{
                       border: "1px solid transparent", // Default
-                       
+
                       cursor: "pointer",
                       // Ensure images themselves also have a relative z-index if needed
                       position: "relative",
@@ -404,7 +404,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     <ImageWithClick
                       src={src}
                       alt={`img-${i}`}
-                      isLoading={loadingImageIndex === i}                     
+                      isLoading={loadingImageIndex === i}
                       onPreviewImage={() => {
                         console.log(
                           "ImageWithClick clicked, setting previewImage:",
@@ -412,10 +412,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                         );
                         setPreviewImage(src);
                       }}
-                      // onRegenerate={(e, closeMenu) => {
-                      //   // e.stopPropagation() is already inside handleRegenerateImage
-                      //   handleRegenerateImage(i, e).then(closeMenu);
-                      // }}
                     />
                     {suggestedImages?.imageIndex === i && (
                       <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
@@ -584,7 +580,9 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                       alert("Error generating suggestions.");
                     } finally {
                       setLoadingSuggestionsAction(null);
-                      setAiEditMenuAnchorEl(null);
+                      // Don't set aiEditMenuAnchorEl to null here immediately for text suggestions
+                      // as the suggestion box will take its position from this anchor.
+                      // It will be set to null when the suggestions box closes.
                     }
                   }}
                 >
@@ -599,42 +597,27 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             </Menu>
           )}
 
+          {/* Text Suggestions Box - MODIFIED */}
           {showSuggestionsBox &&
             textSuggestions.length > 0 &&
-            aiIconPosition && (
-              <Box
-                sx={{
-                  position: "fixed",
-                  top: aiIconPosition.y - 10,
-                  left: aiIconPosition.x - 300,
-                  bgcolor: "#fff",
-                  boxShadow: 3,
-                  borderRadius: 2,
-                  zIndex: 8, // HIGHEST Z-INDEX for the suggestions box
-                  width: 300,
-                  maxHeight: 240,
-                  overflowY: "auto",
-                  p: 1,
-                  right: "unset",
-                  transform: "translateX(-100%)",
-                  ...(aiIconPosition.x - 300 < 0 && {
-                    left: aiIconPosition.x + 36,
-                    transform: "translateX(0)",
-                  }),
+            aiEditMenuAnchorEl && (
+              <Menu
+                open={showSuggestionsBox}
+                anchorEl={aiEditMenuAnchorEl} // Anchor to the same element as the AI menu
+                onClose={() => {
+                  setShowSuggestionsBox(false);
+                  setTextSuggestions([]);
+                  setCurrentSuggestionAction(null);
+                  setAiEditMenuAnchorEl(null); // Close the AI menu when suggestions are closed
                 }}
-                onClick={(e) => e.stopPropagation()} // Crucial to prevent clicks inside from affecting parent
+                anchorOrigin={{ vertical: "top", horizontal: "right" }} // Align relative to the anchor
+                transformOrigin={{ vertical: "bottom", horizontal: "right" }} // Where the menu 'grows' from
+                disablePortal
+                sx={{ zIndex: 8 }} // HIGHEST Z-INDEX for the suggestions box
               >
                 {textSuggestions.map((sug, idx) => (
-                  <Box
+                  <MenuItem
                     key={idx}
-                    sx={{
-                      p: 1,
-                      mb: 1,
-                      border: "1px solid #ccc",
-                      borderRadius: 1,
-                      cursor: "pointer",
-                      "&:hover": { bgcolor: "#f0f0f0" },
-                    }}
                     onClick={(e) => {
                       e.stopPropagation();
 
@@ -666,70 +649,82 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                       });
                       setShowSuggestionsBox(false);
                       setCurrentSuggestionAction(null);
+                      setAiEditMenuAnchorEl(null); // Close the AI menu after applying a suggestion
                     }}
                   >
-                    <Typography fontWeight={600}>{sug.title}</Typography>
-                    {/* Conditional Rendering of Bullets in the SUGGESTIONS BOX */}
-                    {currentSuggestionAction === "longer" ||
-                    currentSuggestionAction === "shorter" ||
-                    currentSuggestionAction === "rewriteSlide" ||
-                    currentSuggestionAction === "custom" ? (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 0.5,
-                          mt: 0.5,
-                        }}
-                      >
-                        {sug.bullets.map((b, i) => (
-                          <Typography
-                            key={i}
-                            variant="body2"
-                            sx={{ fontSize: 14 }}
-                          >
-                            {b}
-                          </Typography>
-                        ))}
-                      </Box>
-                    ) : currentSuggestionAction === "listFormat" ? (
-                      <List
-                        dense
-                        sx={{ listStyleType: "decimal", pl: 2, mt: 0.5 }}
-                      >
-                        {sug.bullets.map((b, i) => (
-                          <ListItem
-                            key={i}
-                            sx={{ display: "list-item", py: 0, px: 0 }}
-                          >
-                            <Typography variant="body2" sx={{ fontSize: 14 }}>
+                    <Box
+                      sx={{
+                        p: 1,
+                        border: "1px solid #ccc",
+                        borderRadius: 1,
+                        cursor: "pointer",
+                        "&:hover": { bgcolor: "#f0f0f0" },
+                        width: "100%", // Ensure it takes full width of the MenuItem
+                      }}
+                    >
+                      <Typography fontWeight={600}>{sug.title}</Typography>
+                      {/* Conditional Rendering of Bullets in the SUGGESTIONS BOX */}
+                      {currentSuggestionAction === "longer" ||
+                      currentSuggestionAction === "shorter" ||
+                      currentSuggestionAction === "rewriteSlide" ||
+                      currentSuggestionAction === "custom" ? (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 0.5,
+                            mt: 0.5,
+                          }}
+                        >
+                          {sug.bullets.map((b, i) => (
+                            <Typography
+                              key={i}
+                              variant="body2"
+                              sx={{ fontSize: 14 }}
+                            >
                               {b}
                             </Typography>
-                          </ListItem>
-                        ))}
-                      </List>
-                    ) : (
-                      <ul
-                        style={{
-                          paddingLeft: 16,
-                          margin: "4px 0",
-                          color: "#7575775",
-                          fontSize: 14,
-                        }}
-                      >
-                        {sug.bullets.map((b, i) => (
-                          <li
-                            key={i}
-                            style={{ listStyle: "disc", paddingRight: 8 }}
-                          >
-                            {b}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </Box>
+                          ))}
+                        </Box>
+                      ) : currentSuggestionAction === "listFormat" ? (
+                        <List
+                          dense
+                          sx={{ listStyleType: "decimal", pl: 2, mt: 0.5 }}
+                        >
+                          {sug.bullets.map((b, i) => (
+                            <ListItem
+                              key={i}
+                              sx={{ display: "list-item", py: 0, px: 0 }}
+                            >
+                              <Typography variant="body2" sx={{ fontSize: 14 }}>
+                                {b}
+                              </Typography>
+                            </ListItem>
+                          ))}
+                        </List>
+                      ) : (
+                        <ul
+                          style={{
+                            paddingLeft: 16,
+                            margin: "4px 0",
+                            color: "#7575775",
+                            fontSize: 14,
+                          }}
+                        >
+                          {sug.bullets.map((b, i) => (
+                            <li
+                              key={i}
+                              style={{ listStyle: "disc", paddingRight: 8 }}
+                            >
+                              {b}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </Box>
+                  </MenuItem>
                 ))}
-              </Box>
+              </Menu>
             )}
         </>
       )}
