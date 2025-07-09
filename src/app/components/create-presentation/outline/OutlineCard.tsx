@@ -8,6 +8,8 @@ import {
   Menu,
   MenuItem,
   CircularProgress,
+  List, // Import List for list format
+  ListItem, // Import ListItem for list format
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Image from "next/image";
@@ -54,10 +56,15 @@ interface OutlineCardProps {
   onUpdateSlideImages: (slideIndex: number, images: string[]) => void;
   onUpdateSlide?: (
     slideIndex: number,
-    updated: Partial<{ title: string; bullets: string[] }>
+    updated: Partial<{
+      title: string;
+      bullets: string[];
+      bulletFormat?: "bullets" | "paragraphs" | "list" | null;
+    }> // ADDED bulletFormat
   ) => void;
   onToggleExpand?: () => void;
   onEdit?: (event: React.MouseEvent<HTMLElement>) => void;
+  currentBulletFormat?: "bullets" | "paragraphs" | "list" | null; // NEW PROP
 }
 
 const OutlineCard: React.FC<OutlineCardProps> = (props) => {
@@ -65,7 +72,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     index,
     title,
     onDelete,
-    onEdit,
+    onEdit, // This prop is not used in the component's JSX
     dragHandleProps,
     isDragging = false,
     expanded = false,
@@ -85,6 +92,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     onUpdateSlideImages,
     onUpdateSlide,
     onToggleExpand,
+    currentBulletFormat = "paragraphs", // Destructure with a default
   } = props;
 
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -108,6 +116,17 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
   >([]);
   const [showSuggestionsBox, setShowSuggestionsBox] = React.useState(false);
 
+  // New state to store the position of the AI icon
+  const [aiIconPosition, setAiIconPosition] = React.useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  // NEW STATE: To store the action type that generated the suggestions
+  const [currentSuggestionAction, setCurrentSuggestionAction] = React.useState<
+    string | null
+  >(null);
+
   const textEditActions = [
     { label: "Longer", value: "longer" },
     { label: "Shorter", value: "shorter" },
@@ -122,6 +141,14 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     setImageList(images || []);
   }, [images]);
 
+  // FIXED: Moved console.log out of JSX
+  React.useEffect(() => {
+    console.log("OutlineCard re-rendered. Current imageList state:", imageList);
+    console.log("OutlineCard re-rendered. Current previewImage state:", previewImage);
+    // You can add more states here if you suspect they are causing re-renders that clear image states
+  }, [imageList, previewImage, expanded, showSuggestionsBox, aiEditMenuAnchorEl]);
+
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") onTitleEditSave?.();
     else if (e.key === "Escape") onTitleEditCancel?.();
@@ -129,9 +156,9 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
 
   const handleRegenerateImage = async (
     imageIndex: number,
-    e: React.MouseEvent
+    e: React.MouseEvent // Keep this as it is already being passed
   ) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Essential to stop propagation here
     if (loadingImageIndex !== null) return;
 
     setLoadingImageIndex(imageIndex);
@@ -179,7 +206,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         overflow: "hidden",
         position: "relative",
       }}
-      onClick={() => onToggleExpand?.()}
+      onClick={() => onToggleExpand?.()} // Keep this as is for now
     >
       <Box sx={{ display: "flex", alignItems: "center", minHeight: 56 }}>
         <Box
@@ -268,40 +295,119 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             display: "flex",
             flexDirection: "column",
             gap: 2,
+            position: "relative", // Ensure relative positioning for child z-indexing
+            zIndex: 1, // Give this section a base z-index
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSuggestedImages(null);
+            setShowSuggestionsBox(false);
+            setAiEditMenuAnchorEl(null);
+            setCurrentSuggestionAction(null);
           }}
         >
           {bullets.length > 0 && (
-            <ul
-              style={{
-                paddingLeft: 20,
-                margin: 0,
-                color: "#757575",
-                fontSize: 16,
+            <Box
+              sx={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 4,
+                gap: 0.5,
+                color: "#757575",
+                fontSize: 16,
               }}
             >
-              {bullets.map((b, i) => (
-                <li key={i} style={{ listStyle: "disc", paddingRight: 8 }}>
-                  {b}
-                </li>
-              ))}
-            </ul>
+              {/* MODIFIED: Conditional rendering for the main bullets based on currentBulletFormat */}
+              {currentBulletFormat === "list" ? (
+                <List dense sx={{ listStyleType: "decimal", pl: 2, mt: 0.5 }}>
+                  {bullets.map((b, i) => (
+                    <ListItem
+                      key={i}
+                      sx={{ display: "list-item", py: 0, px: 0 }}
+                    >
+                      <Typography variant="body1" sx={{ fontSize: 16 }}>
+                        {b}
+                      </Typography>
+                    </ListItem>
+                  ))}
+                </List>
+              ) : currentBulletFormat === "bullets" ? (
+                <ul
+                  style={{
+                    paddingLeft: 16,
+                    margin: "4px 0",
+                    color: "#757575",
+                    fontSize: 16,
+                  }}
+                >
+                  {bullets.map((b, i) => (
+                    <li key={i} style={{ listStyle: "disc", paddingRight: 8 }}>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                // Default to paragraphs (including 'paragraphs' and null/undefined)
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 0.5,
+                    color: "#757575",
+                    fontSize: 16,
+                  }}
+                >
+                  {bullets.map((b, i) => (
+                    <Typography key={i} variant="body1" sx={{ fontSize: 16 }}>
+                      {b}
+                    </Typography>
+                  ))}
+                </Box>
+              )}
+            </Box>
           )}
 
+          {/* This is the container for your small images and preview image */}
           <Box
-            sx={{ display: "flex", justifyContent: "space-between", gap: 3 }}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 3,
+              // IMPORTANT: Ensure this section has a z-index higher than other floating elements like Menu
+              // but not so high that it covers the SuggestionsBox if it's supposed to.
+              zIndex: 3, // Increased z-index
+              position: "relative", // Needed for z-index to take effect
+            }}
           >
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, flex: 1 }}>
-              {imageList.map((src, i) => (
-                <Box key={i}>
+              {imageList.map((src, i) => {
+                // FIXED: Moved console.log outside of JSX, before the return of the map callback
+                console.log(`Rendering ImageWithClick for index ${i}:`, src);
+                return (
+                <Box key={i}
+                     // Add a visual cue and ensure clickability of individual image boxes
+                     sx={{
+                        border: '1px solid transparent', // Default
+                        '&:hover': {
+                            borderColor: '#8E2DE2', // Highlight on hover
+                        },
+                        cursor: 'pointer',
+                        // Ensure images themselves also have a relative z-index if needed
+                        position: 'relative',
+                        zIndex: 1, // Individual images within their flex container
+                     }}
+                >
                   <ImageWithClick
                     src={src}
                     alt={`img-${i}`}
                     isLoading={loadingImageIndex === i}
-                    onPreviewImage={() => setPreviewImage(src)}
+                    // IMPORTANT: Ensure onPreviewImage allows stopping propagation within ImageWithClick
+                    // If ImageWithClick doesn't expose the event, the stopPropagation needs to be on its parent Box (added above)
+                    onPreviewImage={() => {
+                        console.log("ImageWithClick clicked, setting previewImage:", src);
+                        setPreviewImage(src);
+                    }}
                     onRegenerate={(e, closeMenu) => {
+                      // e.stopPropagation() is already inside handleRegenerateImage
                       handleRegenerateImage(i, e).then(closeMenu);
                     }}
                   />
@@ -317,6 +423,8 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                             overflow: "hidden",
                             cursor: "pointer",
                             border: "1px solid #ccc",
+                            position: 'relative', // For z-index
+                            zIndex: 4, // Higher z-index for suggested images
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -344,7 +452,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     </Box>
                   )}
                 </Box>
-              ))}
+              )})} {/* End of imageList.map */}
             </Box>
 
             {previewImage && (
@@ -356,10 +464,12 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                   flexDirection: "column",
                   alignItems: "center",
                   gap: 1,
+                  position: 'relative', // Needed for z-index
+                  zIndex: 2, // Ensure preview image is above basic content
                 }}
               >
                 <Image
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()} // Keep this for the preview image
                   src={previewImage}
                   alt="Preview"
                   width={72}
@@ -387,11 +497,13 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               width: 36,
               height: 36,
               cursor: "pointer",
-              zIndex: 2,
+              zIndex: 6, // Increased AI icon z-index to be clearly clickable
             }}
             onClick={(e) => {
               e.stopPropagation();
               setAiEditMenuAnchorEl(e.currentTarget);
+              const rect = e.currentTarget.getBoundingClientRect();
+              setAiIconPosition({ x: rect.left, y: rect.top });
             }}
           >
             <Image
@@ -410,16 +522,21 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               onClose={() => {
                 setAiEditMenuAnchorEl(null);
                 setLoadingSuggestionsAction(null);
+                setShowSuggestionsBox(false); // Close suggestions box when menu closes
+                setCurrentSuggestionAction(null); // Reset action on menu close
               }}
               anchorOrigin={{ vertical: "top", horizontal: "right" }}
               transformOrigin={{ vertical: "bottom", horizontal: "right" }}
               disablePortal
+              sx={{ zIndex: 7 }} // Explicitly set Menu z-index higher than everything else
             >
               {textEditActions.map((action) => (
                 <MenuItem
                   key={action.value}
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.stopPropagation();
                     setLoadingSuggestionsAction(action.value);
+                    setCurrentSuggestionAction(action.value);
                     try {
                       const res = await fetch(`${API_BASE_URL}/edit-text`, {
                         method: "POST",
@@ -428,6 +545,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                           title,
                           bullets,
                           action: action.value,
+                          currentFormat: currentBulletFormat,
                         }),
                       });
                       const data = await res.json();
@@ -437,6 +555,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                       }
                     } catch (err) {
                       console.error("Suggestion fetch error:", err);
+                      alert("Error generating suggestions.");
                     } finally {
                       setLoadingSuggestionsAction(null);
                       setAiEditMenuAnchorEl(null);
@@ -454,54 +573,138 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             </Menu>
           )}
 
-          {showSuggestionsBox && textSuggestions.length > 0 && (
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: 52,
-                right: 8,
-                bgcolor: "#fff",
-                boxShadow: 3,
-                borderRadius: 2,
-                zIndex: 5,
-                width: 300,
-                maxHeight: 240,
-                overflowY: "auto",
-                p: 1,
-              }}
-            >
-              {textSuggestions.map((sug, idx) => (
-                <Box
-                  key={idx}
-                  sx={{
-                    p: 1,
-                    mb: 1,
-                    border: "1px solid #ccc",
-                    borderRadius: 1,
-                    cursor: "pointer",
-                    "&:hover": { bgcolor: "#f0f0f0" },
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onUpdateSlide?.(slideIndex, {
-                      title: sug.title,
-                      bullets: sug.bullets,
-                    });
-                    setShowSuggestionsBox(false);
-                  }}
-                >
-                  <Typography fontWeight={600}>{sug.title}</Typography>
-                  <ul style={{ paddingLeft: 16, margin: "4px 0" }}>
-                    {sug.bullets.map((b, i) => (
-                      <li key={i} style={{ fontSize: 14 }}>
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-                </Box>
-              ))}
-            </Box>
-          )}
+          {showSuggestionsBox &&
+            textSuggestions.length > 0 &&
+            aiIconPosition && (
+              <Box
+                sx={{
+                  position: "fixed",
+                  top: aiIconPosition.y - 10,
+                  left: aiIconPosition.x - 300,
+                  bgcolor: "#fff",
+                  boxShadow: 3,
+                  borderRadius: 2,
+                  zIndex: 8, // HIGHEST Z-INDEX for the suggestions box
+                  width: 300,
+                  maxHeight: 240,
+                  overflowY: "auto",
+                  p: 1,
+                  right: "unset",
+                  transform: "translateX(-100%)",
+                  ...(aiIconPosition.x - 300 < 0 && {
+                    left: aiIconPosition.x + 36,
+                    transform: "translateX(0)",
+                  }),
+                }}
+                onClick={(e) => e.stopPropagation()} // Crucial to prevent clicks inside from affecting parent
+              >
+                {textSuggestions.map((sug, idx) => (
+                  <Box
+                    key={idx}
+                    sx={{
+                      p: 1,
+                      mb: 1,
+                      border: "1px solid #ccc",
+                      borderRadius: 1,
+                      cursor: "pointer",
+                      "&:hover": { bgcolor: "#f0f0f0" },
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+
+                      let newBulletFormat:
+                        | "bullets"
+                        | "paragraphs"
+                        | "list"
+                        | null = null;
+
+                      if (currentSuggestionAction === "bulletsFormat") {
+                        newBulletFormat = "bullets";
+                      } else if (currentSuggestionAction === "listFormat") {
+                        newBulletFormat = "list";
+                      } else if (
+                        currentSuggestionAction === "longer" ||
+                        currentSuggestionAction === "shorter" ||
+                        currentSuggestionAction === "rewriteSlide" ||
+                        currentSuggestionAction === "custom"
+                      ) {
+                        newBulletFormat = "paragraphs";
+                      } else {
+                        newBulletFormat = currentBulletFormat;
+                      }
+
+                      onUpdateSlide?.(slideIndex, {
+                        title: sug.title,
+                        bullets: sug.bullets,
+                        bulletFormat: newBulletFormat,
+                      });
+                      setShowSuggestionsBox(false);
+                      setCurrentSuggestionAction(null);
+                    }}
+                  >
+                    <Typography fontWeight={600}>{sug.title}</Typography>
+                    {/* Conditional Rendering of Bullets in the SUGGESTIONS BOX */}
+                    {currentSuggestionAction === "longer" ||
+                    currentSuggestionAction === "shorter" ||
+                    currentSuggestionAction === "rewriteSlide" ||
+                    currentSuggestionAction === "custom" ? (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 0.5,
+                          mt: 0.5,
+                        }}
+                      >
+                        {sug.bullets.map((b, i) => (
+                          <Typography
+                            key={i}
+                            variant="body2"
+                            sx={{ fontSize: 14 }}
+                          >
+                            {b}
+                          </Typography>
+                        ))}
+                      </Box>
+                    ) : currentSuggestionAction === "listFormat" ? (
+                      <List
+                        dense
+                        sx={{ listStyleType: "decimal", pl: 2, mt: 0.5 }}
+                      >
+                        {sug.bullets.map((b, i) => (
+                          <ListItem
+                            key={i}
+                            sx={{ display: "list-item", py: 0, px: 0 }}
+                          >
+                            <Typography variant="body2" sx={{ fontSize: 14 }}>
+                              {b}
+                            </Typography>
+                          </ListItem>
+                        ))}
+                      </List>
+                    ) : (
+                      <ul
+                        style={{
+                          paddingLeft: 16,
+                          margin: "4px 0",
+                          color: "#7575775",
+                          fontSize: 14,
+                        }}
+                      >
+                        {sug.bullets.map((b, i) => (
+                          <li
+                            key={i}
+                            style={{ listStyle: "disc", paddingRight: 8 }}
+                          >
+                            {b}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            )}
         </>
       )}
     </Paper>
@@ -509,4 +712,3 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
 };
 
 export default OutlineCard;
-  
