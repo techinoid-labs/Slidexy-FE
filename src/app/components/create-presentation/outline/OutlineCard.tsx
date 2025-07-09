@@ -132,7 +132,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     { label: "Bullets Format", value: "bulletsFormat" },
     { label: "List Format", value: "listFormat" },
     { label: "Regenerate Images", value: "regenerateImages" },
-    { label: "New Custom Suggestions", value: "custom" },
+    // { label: "New Custom Suggestions", value: "custom" },
   ];
 
   React.useEffect(() => {
