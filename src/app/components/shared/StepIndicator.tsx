@@ -31,7 +31,11 @@ export default function StepIndicator({ activeStep }: StepIndicatorProps) {
   return (
     <Box
       sx={{
-        display: "flex",
+        display: {
+          xs: "none",
+          sm: "none",
+          md: "flex",
+        },
         justifyContent: "center",
         mt: 4,
         mb: 4,
