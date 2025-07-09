@@ -500,6 +500,8 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     objectFit: "contain",
                     maxWidth: "100%",
                     borderRadius: 8,
+                    position: "relative",
+                    bottom: "70px"
                   }}
                 />
               </Box>
