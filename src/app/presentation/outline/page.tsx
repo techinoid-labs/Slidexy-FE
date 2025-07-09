@@ -11,6 +11,8 @@ import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import type { Slide } from "@/app/slice/slidesSlice";
+import StepIndicator from "@/app/components/shared/StepIndicator";
+import Header from "@/app/components/create-presentation/create/Header";
 
 // API response type and map helper
 export interface SlideApiResponse {
@@ -199,7 +201,10 @@ export default function OutlinePage() {
         overflowX: "hidden",
       }}
     >
-      <GeneralHeader />
+      <Header />
+      <Box sx={{ mt: 4 }}>
+        <StepIndicator activeStep={1} />
+      </Box>
       <Box
         sx={{
           width: "100%",
@@ -222,7 +227,7 @@ export default function OutlinePage() {
             pb: { xs: 1, md: 2 },
           }}
         >
-          <Box
+          {/* <Box
             sx={{
               display: { xs: "none", md: "block" },
               position: "absolute",
@@ -236,7 +241,7 @@ export default function OutlinePage() {
               width={60}
               height={60}
             />
-          </Box>
+          </Box> */}
           <Typography
             variant="h3"
             sx={{
@@ -386,7 +391,7 @@ export default function OutlinePage() {
                             onToggleExpand={() => handleCardClick(idx)}
                             onEdit={
                               expandedIdx === idx
-                                ? (e:any) => handleEditClick(e, idx)
+                                ? (e: any) => handleEditClick(e, idx)
                                 : undefined
                             }
                             editable
