@@ -72,7 +72,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     index,
     title,
     onDelete,
-    onEdit, // This prop is not used in the component's JSX
     dragHandleProps,
     isDragging = false,
     expanded = false,
@@ -85,7 +84,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     onTitleEditChange,
     onTitleEditSave,
     onTitleEditCancel,
-    onSetImageSuggestionsBox,
     slideIndex,
     slidesState,
     isInfographicMode,
@@ -144,10 +142,18 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
   // FIXED: Moved console.log out of JSX
   React.useEffect(() => {
     console.log("OutlineCard re-rendered. Current imageList state:", imageList);
-    console.log("OutlineCard re-rendered. Current previewImage state:", previewImage);
+    console.log(
+      "OutlineCard re-rendered. Current previewImage state:",
+      previewImage
+    );
     // You can add more states here if you suspect they are causing re-renders that clear image states
-  }, [imageList, previewImage, expanded, showSuggestionsBox, aiEditMenuAnchorEl]);
-
+  }, [
+    imageList,
+    previewImage,
+    expanded,
+    showSuggestionsBox,
+    aiEditMenuAnchorEl,
+  ]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") onTitleEditSave?.();
@@ -383,76 +389,78 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                 // FIXED: Moved console.log outside of JSX, before the return of the map callback
                 console.log(`Rendering ImageWithClick for index ${i}:`, src);
                 return (
-                <Box key={i}
-                     // Add a visual cue and ensure clickability of individual image boxes
-                     sx={{
-                        border: '1px solid transparent', // Default
-                        '&:hover': {
-                            borderColor: '#8E2DE2', // Highlight on hover
-                        },
-                        cursor: 'pointer',
-                        // Ensure images themselves also have a relative z-index if needed
-                        position: 'relative',
-                        zIndex: 1, // Individual images within their flex container
-                     }}
-                >
-                  <ImageWithClick
-                    src={src}
-                    alt={`img-${i}`}
-                    isLoading={loadingImageIndex === i}
-                    // IMPORTANT: Ensure onPreviewImage allows stopping propagation within ImageWithClick
-                    // If ImageWithClick doesn't expose the event, the stopPropagation needs to be on its parent Box (added above)
-                    onPreviewImage={() => {
-                        console.log("ImageWithClick clicked, setting previewImage:", src);
+                  <Box
+                    key={i}
+                    // Add a visual cue and ensure clickability of individual image boxes
+                    sx={{
+                      border: "1px solid transparent", // Default
+                       
+                      cursor: "pointer",
+                      // Ensure images themselves also have a relative z-index if needed
+                      position: "relative",
+                      zIndex: 1, // Individual images within their flex container
+                    }}
+                  >
+                    <ImageWithClick
+                      src={src}
+                      alt={`img-${i}`}
+                      isLoading={loadingImageIndex === i}                     
+                      onPreviewImage={() => {
+                        console.log(
+                          "ImageWithClick clicked, setting previewImage:",
+                          src
+                        );
                         setPreviewImage(src);
-                    }}
-                    onRegenerate={(e, closeMenu) => {
-                      // e.stopPropagation() is already inside handleRegenerateImage
-                      handleRegenerateImage(i, e).then(closeMenu);
-                    }}
-                  />
-                  {suggestedImages?.imageIndex === i && (
-                    <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
-                      {suggestedImages.suggestions.map((suggestedSrc, j) => (
-                        <Box
-                          key={j}
-                          sx={{
-                            width: 64,
-                            height: 64,
-                            borderRadius: 1,
-                            overflow: "hidden",
-                            cursor: "pointer",
-                            border: "1px solid #ccc",
-                            position: 'relative', // For z-index
-                            zIndex: 4, // Higher z-index for suggested images
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const newImages = [...imageList];
-                            newImages[i] = suggestedSrc;
-                            setImageList(newImages);
-                            onUpdateSlideImages(slideIndex, newImages);
-                            setPreviewImage(suggestedSrc);
-                            setSuggestedImages(null);
-                          }}
-                        >
-                          <Image
-                            src={suggestedSrc}
-                            alt={`Suggested ${j}`}
-                            width={64}
-                            height={64}
-                            style={{
-                              objectFit: "cover",
-                              width: "100%",
-                              height: "100%",
+                      }}
+                      // onRegenerate={(e, closeMenu) => {
+                      //   // e.stopPropagation() is already inside handleRegenerateImage
+                      //   handleRegenerateImage(i, e).then(closeMenu);
+                      // }}
+                    />
+                    {suggestedImages?.imageIndex === i && (
+                      <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
+                        {suggestedImages.suggestions.map((suggestedSrc, j) => (
+                          <Box
+                            key={j}
+                            sx={{
+                              width: 64,
+                              height: 64,
+                              borderRadius: 1,
+                              overflow: "hidden",
+                              cursor: "pointer",
+                              border: "1px solid #ccc",
+                              position: "relative", // For z-index
+                              zIndex: 4, // Higher z-index for suggested images
                             }}
-                          />
-                        </Box>
-                      ))}
-                    </Box>
-                  )}
-                </Box>
-              )})} {/* End of imageList.map */}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const newImages = [...imageList];
+                              newImages[i] = suggestedSrc;
+                              setImageList(newImages);
+                              onUpdateSlideImages(slideIndex, newImages);
+                              setPreviewImage(suggestedSrc);
+                              setSuggestedImages(null);
+                            }}
+                          >
+                            <Image
+                              src={suggestedSrc}
+                              alt={`Suggested ${j}`}
+                              width={64}
+                              height={64}
+                              style={{
+                                objectFit: "cover",
+                                width: "100%",
+                                height: "100%",
+                              }}
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                );
+              })}{" "}
+              {/* End of imageList.map */}
             </Box>
 
             {previewImage && (
@@ -464,7 +472,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                   flexDirection: "column",
                   alignItems: "center",
                   gap: 1,
-                  position: 'relative', // Needed for z-index
+                  position: "relative", // Needed for z-index
                   zIndex: 2, // Ensure preview image is above basic content
                 }}
               >
@@ -537,6 +545,24 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     e.stopPropagation();
                     setLoadingSuggestionsAction(action.value);
                     setCurrentSuggestionAction(action.value);
+
+                    // Handle "Regenerate Images" action specifically
+                    if (action.value === "regenerateImages") {
+                      // Trigger image regeneration for the first image
+                      // You might want to adjust which image is regenerated based on your UX needs.
+                      // For now, it regenerates the first image in the list.
+                      if (imageList.length > 0) {
+                        await handleRegenerateImage(0, e); // Call existing image regeneration logic
+                      } else {
+                        alert("No images available to regenerate.");
+                      }
+                      setLoadingSuggestionsAction(null); // Stop loading indicator
+                      setAiEditMenuAnchorEl(null); // Close the AI menu
+                      setCurrentSuggestionAction(null); // Reset action
+                      return; // Important: Exit to prevent falling into text suggestion logic
+                    }
+
+                    // Original logic for text-based suggestions
                     try {
                       const res = await fetch(`${API_BASE_URL}/edit-text`, {
                         method: "POST",
