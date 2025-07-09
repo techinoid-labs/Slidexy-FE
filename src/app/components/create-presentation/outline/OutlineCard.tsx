@@ -12,6 +12,8 @@ import {
   ListItem, // Import ListItem for list format
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"; // Import the chevron icon
+import ChevronRightIcon from "@mui/icons-material/ChevronRight"; // Import another chevron icon if needed
 import Image from "next/image";
 import type { Slide } from "@/app/slice/slidesSlice";
 import ImageWithClick from "../../ImageWithClick";
@@ -212,7 +214,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         overflow: "hidden",
         position: "relative",
       }}
-      onClick={() => onToggleExpand?.()} // Keep this as is for now
     >
       <Box sx={{ display: "flex", alignItems: "center", minHeight: 56 }}>
         <Box
@@ -285,9 +286,26 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         <IconButton
           onClick={onDelete}
           size="small"
-          sx={{ color: "#A095C6", pr: 2 }}
+          sx={{ color: "#A095C6", pr: 0 }} // Adjusted padding for spacing with new icon
         >
           <DeleteIcon fontSize="small" />
+        </IconButton>
+
+        {/* NEW: Chevron Icon for expand/collapse */}
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent the parent Paper's onClick from firing
+            onToggleExpand?.();
+          }}
+          size="small"
+          sx={{ color: "#A095C6", pr: 2 }}
+          disableRipple
+        >
+          {expanded ? (
+            <ExpandMoreIcon fontSize="small" />
+          ) : (
+            <ChevronRightIcon fontSize="small" />
+          )}
         </IconButton>
       </Box>
 
@@ -513,9 +531,9 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             <Image
               src={AIicon}
               alt="AI Edit Icon"
-              width={10}
-              height={10}
-              style={{ width: "100%", height: "100%" }}
+              width={8}
+              height={8}
+              style={{ width: "20px", height: "100%" }}
             />
           </Box>
 
