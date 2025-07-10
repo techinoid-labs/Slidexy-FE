@@ -1,7 +1,8 @@
 "use client";
 
-import { Box, Button, useTheme } from "@mui/material";
+import { Box, Button, useTheme, TextField, Card, CardMedia, Box as MuiBox } from "@mui/material";
 import { useState } from "react";
+import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 
 const modes = [
   { label: "Prompt-to-Deck", value: "Text" },
