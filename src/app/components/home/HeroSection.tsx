@@ -277,6 +277,31 @@ export default function HeroSection() {
                     />
                   </IconButton>
                 </Box>
+                <Box
+                  sx={{
+                    // display: { xs: "none", md: "flex" },
+                    alignItems: "center",
+                  }}
+                >
+                  <Button
+                    onClick={() => handleRedirect()}
+                    // component={Link}
+                    // href="/presentation/create"
+                    sx={{
+                      p: 0,
+                      minWidth: "auto",
+                      ml: 2,
+                      mt: { xs: 1, md: 6 },
+                    }}
+                  >
+                    <Image
+                      src="/images/try-for-free-arrow.svg"
+                      alt="Try for free Icon"
+                      width={130}
+                      height={130}
+                    />
+                  </Button>
+                </Box>
               </Box>
               {/* Try for Free text - hide on mobile */}
               <Box
