@@ -12,6 +12,12 @@ import { setSlides } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import type { Slide } from "@/app/slice/slidesSlice";
 import { exportSlidesAsPDF } from "../../../utils/exportSlides";
+import dynamic from "next/dynamic";
+
+const TextPanel = dynamic(
+  () => import("@/app/components/modify-presentation/TextPanel"),
+  { ssr: false }
+);
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
@@ -38,7 +44,10 @@ const Page = () => {
           showTemplatePanel={showTemplatePanel}
           setShowTemplatePanel={setShowTemplatePanel}
         />
-        <main
+
+        <SlideEditor slides={slides} stageRefs={stageRefs} />
+
+        {/* <main
           style={{
             flexGrow: 1,
             display: "flex",
@@ -46,7 +55,7 @@ const Page = () => {
             overflow: "hidden",
           }}
         >
-          {/* <CentralEditor templatePanelOpen={showTemplatePanel} /> */}
+          // <CentralEditor templatePanelOpen={showTemplatePanel} /> 
           <div
             style={{
               flexGrow: 1,
@@ -58,7 +67,8 @@ const Page = () => {
           >
             <SlideEditor slides={slides} stageRefs={stageRefs} />
           </div>
-        </main>
+        </main> */}
+        {/* <TextPanel /> */}
         {/* <ThemePanel /> */}
       </div>
     </div>

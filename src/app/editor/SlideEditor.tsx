@@ -9,6 +9,7 @@ import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor";
 import { dummyData } from "./dummy";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import SlidePreviews from "./slidesPreview";
+import ThemePanel from "../components/modify-presentation/Theme";
 
 const SLIDE_WIDTH = 920;
 const SLIDE_HEIGHT = 430;
@@ -86,7 +87,7 @@ const SlideEditor = ({ slides = [], setSlides, stageRefs }: any) => {
     "selectedTheme.image_url:",
     selectedTheme?.image_url?.slice(0, 100)
   );
-  const [useDummy] = useState(true);
+  const [useDummy] = useState(false);
   const [currentSlides, updateSlides] = useState<any[]>(
     useDummy ? dummyData : slides
   );
@@ -201,185 +202,218 @@ const SlideEditor = ({ slides = [], setSlides, stageRefs }: any) => {
   };
 
   return (
-    <Box
-      sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-    >
-      {currentSlides.map((slide, index) => {
-        const title = slide.slide_title;
-        const titleProps = title.properties;
-        const titleY = 25;
-        const bulletGap = 10;
-        const bulletStartY = titleY + titleProps.fontSize + 20;
-
-        return (
+    <>
+      <main
+        style={{
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
+        {/* <CentralEditor templatePanelOpen={showTemplatePanel} /> */}
+        <div
+          style={{
+            flexGrow: 1,
+            overflowY: "auto",
+            padding: 16,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
           <Box
-            key={slide.slide_id}
             sx={{
-              width: `${SLIDE_WIDTH}px`,
-              height: `${SLIDE_HEIGHT}px`,
-              border: "1px solid #ccc",
-              backgroundColor: "#fff",
-              position: "relative",
-              mb: 1,
-              display: index === selectedIndex ? "block" : "none",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
-            <Stage
-              width={SLIDE_WIDTH}
-              height={SLIDE_HEIGHT}
-              ref={(ref: any) => {
-                stageRefs.current[index] =
-                  ref?.getStage()?.content?.querySelector("canvas") || null;
-              }}
-            >
-              <Layer>
-                {selectedTheme?.image_url && bgImage ? (
-                  <KonvaImage
-                    image={bgImage}
-                    x={0}
-                    y={0}
+            {currentSlides.map((slide, index) => {
+              const title = slide.slide_title;
+              const titleProps = title.properties;
+              const titleY = 25;
+              const bulletGap = 10;
+              const bulletStartY = titleY + titleProps.fontSize + 20;
+
+              return (
+                <Box
+                  key={slide.slide_id}
+                  sx={{
+                    width: `${SLIDE_WIDTH}px`,
+                    height: `${SLIDE_HEIGHT}px`,
+                    border: "1px solid #ccc",
+                    backgroundColor: "#fff",
+                    position: "relative",
+                    mb: 1,
+                    display: index === selectedIndex ? "block" : "none",
+                  }}
+                >
+                  <Stage
                     width={SLIDE_WIDTH}
                     height={SLIDE_HEIGHT}
-                  />
-                ) : (
-                  <Rect
-                    x={0}
-                    y={0}
-                    width={SLIDE_WIDTH}
-                    height={SLIDE_HEIGHT}
-                    fill={selectedTheme?.backgroundColor || "#fff"}
-                  />
-                )}
+                    ref={(ref: any) => {
+                      stageRefs.current[index] =
+                        ref?.getStage()?.content?.querySelector("canvas") ||
+                        null;
+                    }}
+                  >
+                    <Layer>
+                      {selectedTheme?.image_url && bgImage ? (
+                        <KonvaImage
+                          image={bgImage}
+                          x={0}
+                          y={0}
+                          width={SLIDE_WIDTH}
+                          height={SLIDE_HEIGHT}
+                        />
+                      ) : (
+                        <Rect
+                          x={0}
+                          y={0}
+                          width={SLIDE_WIDTH}
+                          height={SLIDE_HEIGHT}
+                          fill={selectedTheme?.backgroundColor || "#fff"}
+                        />
+                      )}
 
-                <KonvaTextEditor
-                  id={`title-${slide.slide_id}`}
-                  text={title.text}
-                  x={LEFT_PADDING}
-                  y={titleY}
-                  width={textMaxWidth}
-                  wrap="word"
-                  fontSize={titleProps.fontSize}
-                  fontFamily={selectedTheme?.font || titleProps.fontFamily}
-                  fill={selectedTheme?.primaryColor || titleProps.fill}
-                  fontStyle={titleProps.fontStyle}
-                  onClick={() =>
-                    handleTextDoubleClick(
-                      index,
-                      title.text,
-                      LEFT_PADDING,
-                      titleY,
-                      titleProps.fontSize
-                    )
-                  }
-                />
+                      <KonvaTextEditor
+                        id={`title-${slide.slide_id}`}
+                        text={title.text}
+                        x={LEFT_PADDING}
+                        y={titleY}
+                        width={textMaxWidth}
+                        wrap="word"
+                        fontSize={titleProps.fontSize}
+                        fontFamily={
+                          selectedTheme?.font || titleProps.fontFamily
+                        }
+                        fill={selectedTheme?.primaryColor || titleProps.fill}
+                        fontStyle={titleProps.fontStyle}
+                        onClick={() =>
+                          handleTextDoubleClick(
+                            index,
+                            title.text,
+                            LEFT_PADDING,
+                            titleY,
+                            titleProps.fontSize
+                          )
+                        }
+                      />
 
-                {slide.elements.map((el: any, i: number) => {
-                  const elY =
-                    bulletStartY + i * (el.properties.fontSize + bulletGap);
-                  return (
-                    <KonvaTextEditor
-                      key={`el-${i}`}
-                      id={`el-${i}`}
-                      text={`• ${el.text}`}
-                      x={LEFT_PADDING + 20}
-                      y={elY + 70}
-                      width={textMaxWidth - 20}
-                      wrap="word"
-                      fontSize={el.properties.fontSize}
-                      fontFamily={
-                        selectedTheme?.font || el.properties.fontFamily
+                      {slide.elements.map((el: any, i: number) => {
+                        const elY =
+                          bulletStartY +
+                          i * (el.properties.fontSize + bulletGap);
+                        return (
+                          <KonvaTextEditor
+                            key={`el-${i}`}
+                            id={`el-${i}`}
+                            text={`• ${el.text}`}
+                            x={LEFT_PADDING + 20}
+                            y={elY + 70}
+                            width={textMaxWidth - 20}
+                            wrap="word"
+                            fontSize={el.properties.fontSize}
+                            fontFamily={
+                              selectedTheme?.font || el.properties.fontFamily
+                            }
+                            fill={
+                              selectedTheme?.primaryColor || el.properties.fill
+                            }
+                            fontStyle={el.properties.fontStyle}
+                            onClick={() =>
+                              handleTextDoubleClick(
+                                index,
+                                `• ${el.text}`,
+                                LEFT_PADDING + 20,
+                                elY + 70,
+                                el.properties.fontSize
+                              )
+                            }
+                          />
+                        );
+                      })}
+
+                      <SlideImage
+                        url={
+                          slide.image_url ||
+                          "https://via.placeholder.com/480x480?text=Slide+Image"
+                        }
+                        x={SLIDE_WIDTH - 520}
+                        y={(SLIDE_HEIGHT - 420) / 2}
+                        width={500}
+                        height={420}
+                      />
+                    </Layer>
+                  </Stage>
+
+                  {editing && editing.slideIndex === index && (
+                    <TextField
+                      multiline
+                      autoFocus
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onBlur={handleEditCommit}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && !e.shiftKey && handleEditCommit()
                       }
-                      fill={selectedTheme?.primaryColor || el.properties.fill}
-                      fontStyle={el.properties.fontStyle}
-                      onClick={() =>
-                        handleTextDoubleClick(
-                          index,
-                          `• ${el.text}`,
-                          LEFT_PADDING + 20,
-                          elY + 70,
-                          el.properties.fontSize
-                        )
-                      }
+                      minRows={1}
+                      variant="outlined"
+                      sx={{
+                        position: "absolute",
+                        top: editing.y,
+                        left: editing.x,
+                        fontSize: editing.fontSize,
+                        borderRadius: 1,
+                        fontFamily: selectedTheme?.font || "Arial",
+                        width: measureTextWidth(
+                          inputValue,
+                          editing.fontSize,
+                          selectedTheme?.font || "Arial"
+                        ),
+                        zIndex: 600,
+                        backgroundColor: "white",
+                        "& .MuiOutlinedInput-root": {
+                          padding: "4px 8px",
+                        },
+                        "& textarea": {
+                          lineHeight: 1.2,
+                          padding: 0,
+                        },
+                      }}
+                      inputProps={{
+                        style: {
+                          fontSize: editing.fontSize,
+                          fontFamily: selectedTheme?.font || "Arial",
+                        },
+                      }}
                     />
-                  );
-                })}
+                  )}
+                </Box>
+              );
+            })}
 
-                <SlideImage
-                  url={
-                    slide.image_url ||
-                    "https://via.placeholder.com/480x480?text=Slide+Image"
-                  }
-                  x={SLIDE_WIDTH - 520}
-                  y={(SLIDE_HEIGHT - 420) / 2}
-                  width={500}
-                  height={420}
-                />
-              </Layer>
-            </Stage>
-
-            {editing && editing.slideIndex === index && (
-              <TextField
-                multiline
-                autoFocus
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onBlur={handleEditCommit}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && !e.shiftKey && handleEditCommit()
+            <SlidePreviews
+              slides={currentSlides}
+              selectedIndex={selectedIndex}
+              slide_width={SLIDE_WIDTH}
+              onSelect={setSelectedIndex}
+              onAddSlide={handleAddSlide}
+              onDeleteSlide={(index) => {
+                const newSlides = [...currentSlides];
+                newSlides.splice(index, 1);
+                updateSlides(newSlides);
+                if (!useDummy && setSlides) setSlides(newSlides);
+                if (selectedIndex >= newSlides.length) {
+                  setSelectedIndex(Math.max(0, newSlides.length - 1));
                 }
-                minRows={1}
-                variant="outlined"
-                sx={{
-                  position: "absolute",
-                  top: editing.y,
-                  left: editing.x,
-                  fontSize: editing.fontSize,
-                  borderRadius: 1,
-                  fontFamily: selectedTheme?.font || "Arial",
-                  width: measureTextWidth(
-                    inputValue,
-                    editing.fontSize,
-                    selectedTheme?.font || "Arial"
-                  ),
-                  zIndex: 600,
-                  backgroundColor: "white",
-                  "& .MuiOutlinedInput-root": {
-                    padding: "4px 8px",
-                  },
-                  "& textarea": {
-                    lineHeight: 1.2,
-                    padding: 0,
-                  },
-                }}
-                inputProps={{
-                  style: {
-                    fontSize: editing.fontSize,
-                    fontFamily: selectedTheme?.font || "Arial",
-                  },
-                }}
-              />
-            )}
+              }}
+            />
           </Box>
-        );
-      })}
-
-      <SlidePreviews
-        slides={currentSlides}
-        selectedIndex={selectedIndex}
-        slide_width={SLIDE_WIDTH}
-        onSelect={setSelectedIndex}
-        onAddSlide={handleAddSlide}
-        onDeleteSlide={(index) => {
-          const newSlides = [...currentSlides];
-          newSlides.splice(index, 1);
-          updateSlides(newSlides);
-          if (!useDummy && setSlides) setSlides(newSlides);
-          if (selectedIndex >= newSlides.length) {
-            setSelectedIndex(Math.max(0, newSlides.length - 1));
-          }
-        }}
-      />
-    </Box>
+        </div>
+      </main>
+      {/* <ThemePanel /> */}
+    </>
   );
 };
 
