@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     config.externals = [...config.externals, { canvas: "canvas" }];
     return config;
   },
+  images: {
+    domains: ["source.unsplash.com"],
+  },
 };
 
 export default nextConfig;

@@ -43,7 +43,7 @@ const TemplatePanel = ({
   const [error, setError] = useState("");
   const [imgError, setImgError] = useState(false);
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
-
+  console.log({ themes });
   const themeImageUrls = [
     "/theme-1.jpeg",
     "/theme-2.jpeg",
@@ -150,7 +150,6 @@ const TemplatePanel = ({
   // const handleSearch = async () => {
   //   if (!search.trim()) return;
 
-  //   console.log("Search triggered with prompt:", search);
   //   setLoading(true);
   //   setError("");
 
@@ -161,32 +160,77 @@ const TemplatePanel = ({
   //       body: JSON.stringify({ prompt: search }),
   //     });
 
-  //     console.log("\uD83D\uDCF1 API Response Status:", res.status);
-
   //     if (!res.ok) throw new Error("Failed to fetch themes");
 
   //     const data = await res.json();
-  //     console.log("✅ API Response Data:", data);
+  //     // const cleanedThemes = (data.themes || []).map((theme: any) => {
+  //     //   let imageUrl = theme.image_url;
+
+  //     //   // ✅ Sanitize double "data:image/png;base64," prefixes
+  //     //   if (typeof imageUrl === "string" && imageUrl.startsWith("data:image")) {
+  //     //     const parts = imageUrl.split(",");
+  //     //     if (parts.length > 2) {
+  //     //       imageUrl = parts[0] + "," + parts.pop(); // keep only one prefix and the base64
+  //     //     }
+  //     //   }
+
+  //     //   return {
+  //     //     font: theme.font,
+  //     //     primaryColor: theme.primaryColor,
+  //     //     secondaryColor: theme.secondaryColor,
+  //     //     backgroundColor: theme.backgroundColor,
+  //     //     image_url: imageUrl,
+  //     //   };
+  //     // });
 
   //     const cleanedThemes = (data.themes || []).map(
-  //       (theme: any, index: number) => ({
-  //         font: theme.font,
-  //         primaryColor: theme.primaryColor,
-  //         secondaryColor: theme.secondaryColor,
-  //         backgroundColor: theme.backgroundColor,
-  //         image_url: theme.image_url,
-  //       })
+  //       (theme: any, index: number) => {
+  //         console.log(`Theme ${index}:`, theme); // 👈 See what you're getting
+
+  //         let imageUrl = theme.image_url;
+
+  //         if (!imageUrl) {
+  //           console.warn(`Theme at index ${index} missing image_url`, theme);
+  //           imageUrl = ""; // or fallback
+  //         }
+
+  //         // Optional base64 cleanup logic if needed
+  //         if (
+  //           typeof imageUrl === "string" &&
+  //           imageUrl.startsWith("data:image")
+  //         ) {
+  //           const parts = imageUrl.split(",");
+  //           if (parts.length > 2) {
+  //             imageUrl = parts[0] + "," + parts.pop(); // keep only one prefix and the base64
+  //           }
+  //         }
+
+  //         return {
+  //           font: theme.font || "Inter",
+  //           primaryColor: theme.primaryColor || "#000",
+  //           secondaryColor: theme.secondaryColor || "#888",
+  //           backgroundColor: theme.backgroundColor || "#fff",
+  //           image_url: imageUrl,
+  //         };
+  //       }
   //     );
 
-  //     // Fallback if API returns 0 themes
-  //     setThemes(cleanedThemes.length > 0 ? cleanedThemes : fallbackThemes);
+  //     const newThemes =
+  //       cleanedThemes.length > 0 ? cleanedThemes : fallbackThemes;
+
+  //     console.log({ cleanedThemes });
+  //     setThemes(newThemes);
+
+  //     // ✅ Apply the first theme to context right away
+  //     if (newThemes.length > 0) {
+  //       setSelectedTheme(newThemes[0]);
+  //     }
   //   } catch (e: any) {
-  //     console.error("\uD83D\uDEA8 Error during fetch:", e);
+  //     console.error("Error during fetch:", e);
   //     setError(e.message || "Unknown error");
   //     setThemes(fallbackThemes);
   //   } finally {
   //     setLoading(false);
-  //     console.log("\uD83D\uDD01 Search finished");
   //   }
   // };
 
@@ -206,32 +250,26 @@ const TemplatePanel = ({
       if (!res.ok) throw new Error("Failed to fetch themes");
 
       const data = await res.json();
+      console.log("🎨 API Response Themes:", data.themes);
 
-      const cleanedThemes = (data.themes || []).map((theme: any) => {
-        let imageUrl = theme.image_url;
-
-        // ✅ Sanitize double "data:image/png;base64," prefixes
-        if (typeof imageUrl === "string" && imageUrl.startsWith("data:image")) {
-          const parts = imageUrl.split(",");
-          if (parts.length > 2) {
-            imageUrl = parts[0] + "," + parts.pop(); // keep only one prefix and the base64
-          }
+      const cleanedThemes = (data.themes || []).map(
+        (theme: any, index: number) => {
+          return {
+            font: theme.font || "Inter",
+            primaryColor: theme.primaryColor || "#000",
+            secondaryColor: theme.secondaryColor || "#888",
+            backgroundColor: theme.backgroundColor || "#fff",
+            image_url: theme.image_base64 || "", // use directly without manipulating
+          };
         }
-
-        return {
-          font: theme.font,
-          primaryColor: theme.primaryColor,
-          secondaryColor: theme.secondaryColor,
-          backgroundColor: theme.backgroundColor,
-          image_url: imageUrl,
-        };
-      });
+      );
 
       const newThemes =
         cleanedThemes.length > 0 ? cleanedThemes : fallbackThemes;
+
+      console.log("✅ Cleaned Themes:", newThemes);
       setThemes(newThemes);
 
-      // ✅ Apply the first theme to context right away
       if (newThemes.length > 0) {
         setSelectedTheme(newThemes[0]);
       }

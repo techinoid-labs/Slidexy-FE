@@ -80,9 +80,13 @@ const getRandomSlide = () => {
 
 const SlideEditor = ({ slides = [], setSlides, stageRefs }: any) => {
   const { selectedTheme } = useSlideThemeContext();
-  const [bgImage] = useImage(selectedTheme?.image_url || "", "anonymous");
-
-  const [useDummy] = useState(false);
+  // const [bgImage] = useImage(selectedTheme?.image_url || "", "anonymous");
+  const [bgImage] = useImage(selectedTheme?.image_url || "");
+  console.log(
+    "selectedTheme.image_url:",
+    selectedTheme?.image_url?.slice(0, 100)
+  );
+  const [useDummy] = useState(true);
   const [currentSlides, updateSlides] = useState<any[]>(
     useDummy ? dummyData : slides
   );
