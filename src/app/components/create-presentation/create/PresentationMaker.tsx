@@ -1,13 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, TextField, Button, Typography } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  InputAdornment,
+  Avatar,
+} from "@mui/material";
 import Image from "next/image";
 import InputModeSelector from "./InputModeSelector";
 import PromptAttributeSelector from "./PromptAttributeSelector";
 import { useRouter } from "next/navigation";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useSearchParams } from "next/navigation";
+import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import { Card, CardMedia, Box as MuiBox } from "@mui/material";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 console.log("[SlidesX] API_BASE_URL:", API_BASE_URL);
@@ -49,6 +58,43 @@ export default function PresentationMaker({
     setInputMode("Text");
     setInputValue(description);
   };
+
+  // Helper to extract YouTube video ID
+  const extractVideoId = (inputUrl: string) => {
+    try {
+      const urlObj = new URL(inputUrl);
+      if (urlObj.hostname.includes("youtube.com")) {
+        return urlObj.searchParams.get("v");
+      } else if (urlObj.hostname === "youtu.be") {
+        return urlObj.pathname.slice(1);
+      }
+    } catch (error) {
+      return null;
+    }
+  };
+
+  // Helper to validate YouTube URL
+  const isValidYoutubeUrl = (inputUrl: string) => {
+    const id = extractVideoId(inputUrl);
+    return Boolean(id);
+  };
+
+  // Helper to extract favicon URL for website
+  const getFaviconUrl = (inputUrl: string) => {
+    try {
+      const domain = new URL(inputUrl).hostname;
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    } catch (error) {
+      return "";
+    }
+  };
+
+  const faviconUrl =
+    inputMode === "Website" && inputValue ? getFaviconUrl(inputValue) : "";
+
+  const videoId = inputMode === "Youtube" ? extractVideoId(inputValue) : null;
+  const showYoutubeError =
+    inputMode === "Youtube" && inputValue && !isValidYoutubeUrl(inputValue);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -176,9 +222,65 @@ export default function PresentationMaker({
               fontSize: "1.125rem",
               px: 2,
             },
+            endAdornment:
+              inputMode === "Website" && faviconUrl ? (
+                <InputAdornment position="end">
+                  <Avatar
+                    src={faviconUrl}
+                    alt="Favicon"
+                    sx={{ width: 32, height: 32, bgcolor: "transparent" }}
+                  />
+                </InputAdornment>
+              ) : undefined,
           }}
         />
       </Box>
+
+      {/* Show YouTube thumbnail if mode is Youtube and valid videoId */}
+      {inputMode === "Youtube" && videoId && !showYoutubeError && (
+        <MuiBox
+          sx={{ width: "100%", maxWidth: 600, mx: "auto", mb: 3 }} // Increase maxWidth here for larger card
+        >
+          <Card
+            sx={{ position: "relative", borderRadius: 2, overflow: "hidden" }}
+          >
+            <CardMedia
+              component="img"
+              image={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+              alt="YouTube Thumbnail"
+              sx={{ width: "100%", height: 300, objectFit: "cover" }} // Increase height here for larger image
+            />
+            <MuiBox
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                pointerEvents: "none",
+              }}
+            >
+              <PlayCircleOutlineIcon
+                sx={{
+                  fontSize: 80,
+                  color: "white",
+                  opacity: 0.85,
+                  filter: "drop-shadow(0 2px 8px #000)",
+                }}
+              />
+            </MuiBox>
+          </Card>
+        </MuiBox>
+      )}
+      {/* Show error if YouTube URL is invalid */}
+      {showYoutubeError && (
+        <Typography color="error" sx={{ mt: 1, mb: 2, textAlign: "center" }}>
+          Please enter a valid YouTube URL.
+        </Typography>
+      )}
 
       <Button
         fullWidth
@@ -194,18 +296,28 @@ export default function PresentationMaker({
           fontSize: "1.125rem",
           fontWeight: 600,
           mb: 4,
+          color: "#fff", // Ensure text is white
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 1,
+          "& .MuiButton-label": {
+            color: "#fff !important",
+          },
           "&:hover": {
             background: "linear-gradient(90deg, #7a23c2 0%, #3e00c2 100%)",
           },
         }}
       >
-        {loading ? "Generating..." : "Generate Outlines"}
+        <span style={{ color: "#fff" }}>
+          {loading ? "Generating..." : "Generate Outlines"}
+        </span>
         <Image
-          src="/images/create-presentation/generate-presentation-btn-ico.svg"
+          src="/images/generate.svg"
           alt="Magic Wand"
           width={22}
           height={22}
-          style={{ marginLeft: "8px" }}
+          style={{ marginLeft: "8px", filter: "brightness(0) invert(1)" }} // Make sure icon stays white
         />
       </Button>
 

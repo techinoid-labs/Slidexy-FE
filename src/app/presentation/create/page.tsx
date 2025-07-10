@@ -10,7 +10,7 @@ const CreatePresentationPage = () => {
     {
       title: "Creativity at Work",
       description: "Learn expert negotiation tips to close deals effectively.",
-      icon: "/images/create-presentation/prompt-boxes-ico.svg",
+      icon: "/top-element.svg",
     },
     {
       title: "Healthy diet",
@@ -21,7 +21,7 @@ const CreatePresentationPage = () => {
       title: "UX UI guidelines",
       description:
         "Discover the best marketing strategies to showcase your properties.",
-      icon: "/images/create-presentation/prompt-boxes-ico.svg",
+      icon: "/top-element.svg",
     },
   ];
 
