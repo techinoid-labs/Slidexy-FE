@@ -37,6 +37,7 @@ const slidesSlice = createSlice({
     setSlides: (state, action: PayloadAction<Slide[]>) => {
       state.slides = action.payload;
     },
+
     updateSlideImages: (
       state,
       action: PayloadAction<{ slideIndex: number; updatedImages: string[] }>
@@ -55,10 +56,28 @@ const slidesSlice = createSlice({
       if (!state.slides[slideIndex]) return;
       state.slides[slideIndex].elements.push(newElement);
     },
+
+    updateSlide: (
+      state,
+      action: PayloadAction<{
+        slideIndex: number;
+        updated: Partial<Slide>;
+      }>
+    ) => {
+      const { slideIndex, updated } = action.payload;
+      state.slides[slideIndex] = {
+        ...state.slides[slideIndex],
+        ...updated,
+      };
+    },
   },
 });
 
 // Export actions and reducer
-export const { setSlides, updateSlideImages, addTextElementToSlide } =
-  slidesSlice.actions;
+export const {
+  setSlides,
+  updateSlideImages,
+  addTextElementToSlide,
+  updateSlide,
+} = slidesSlice.actions;
 export default slidesSlice.reducer;
