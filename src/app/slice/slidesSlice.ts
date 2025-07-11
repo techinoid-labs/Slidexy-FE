@@ -44,9 +44,21 @@ const slidesSlice = createSlice({
       state.slides[action.payload.slideIndex].images =
         action.payload.updatedImages;
     },
+    addTextElementToSlide: (
+      state,
+      action: PayloadAction<{
+        slideIndex: number;
+        newElement: KonvaComponent;
+      }>
+    ) => {
+      const { slideIndex, newElement } = action.payload;
+      if (!state.slides[slideIndex]) return;
+      state.slides[slideIndex].elements.push(newElement);
+    },
   },
 });
 
 // Export actions and reducer
-export const { setSlides, updateSlideImages } = slidesSlice.actions;
+export const { setSlides, updateSlideImages, addTextElementToSlide } =
+  slidesSlice.actions;
 export default slidesSlice.reducer;

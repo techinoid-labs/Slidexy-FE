@@ -5,7 +5,8 @@ import Image from "next/image";
 import { Box, Tooltip, IconButton } from "@mui/material";
 import { useRouter } from "next/navigation";
 import TemplatePanel from "../Template";
-import TextEditorPanel from "../TextEditor";
+// import TextEditorPanel from "../TextEditor";
+import TextEditor from "./TextEditor";
 import MediaPanel from "../Media";
 import ShapesPanel from "../Shapes";
 
@@ -112,7 +113,7 @@ const SideNavBar = ({
         />
       )}
       {openPanel === "text" && (
-        <TextEditorPanel
+        <TextEditor
           sidebarHeight={sidebarHeight}
           onClose={() => setOpenPanel(null)}
         />

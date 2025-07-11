@@ -1,45 +1,44 @@
 "use client";
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSlides } from "../slice/slidesSlice";
 import type { Slide } from "../slice/slidesSlice";
-import type { RootState } from "../store/store"; // Assuming you have a typed RootState
+import type { RootState } from "../store/store";
 
-// Use proper typing
 export type SlidesType = Slide[];
 
-const SlidesContext = createContext<{
+interface SlidesContextType {
   slides: SlidesType;
   setSlides: (slides: SlidesType) => void;
-}>({
+  selectedSlideIndex: number;
+  setSelectedSlideIndex: (index: number) => void;
+}
+
+const SlidesContext = createContext<SlidesContextType>({
   slides: [],
   setSlides: () => {},
+  selectedSlideIndex: 0,
+  setSelectedSlideIndex: () => {},
 });
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch();
-
-  // ✅ Directly use Redux state
   const slides = useSelector((state: RootState) => state.slidesData.slides);
+  const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
 
   const handleSetSlides = (newSlides: SlidesType) => {
-    // console.log("[SlidesContext] Setting slides via Redux:", newSlides);
     dispatch(setSlides(newSlides));
   };
 
-  console.log("Slides Data:", slides);
-
-  // const setSlides = (slides: SlidesType) => {
-  //   console.log("[SlidesContext] Setting slides:", slides);
-  //   setSlidesState(slides);
-  // };
-
-  // useEffect(() => {
-  //   console.log("[SlidesContext] Current slides:", slides);
-  // }, [slides]);
-
   return (
-    <SlidesContext.Provider value={{ slides, setSlides: handleSetSlides }}>
+    <SlidesContext.Provider
+      value={{
+        slides,
+        setSlides: handleSetSlides,
+        selectedSlideIndex,
+        setSelectedSlideIndex,
+      }}
+    >
       {children}
     </SlidesContext.Provider>
   );

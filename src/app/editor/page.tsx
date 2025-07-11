@@ -11,7 +11,7 @@ import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import type { Slide } from "@/app/slice/slidesSlice";
-import { exportSlidesAsPDF } from "../../../utils/exportSlides"; 
+import { exportSlidesAsPDF } from "../../../utils/exportSlides";
 import ImageSettingsPanel from "../components/ImagePanel";
 
 import dynamic from "next/dynamic";
@@ -71,7 +71,7 @@ const Page = () => {
           </div>
         </main> */}
         {/* <TextPanel /> */}
-        {/* <ThemePanel /> */}         
+        {/* <ThemePanel /> */}
         {<ImageSettingsPanel />}
       </div>
     </div>
