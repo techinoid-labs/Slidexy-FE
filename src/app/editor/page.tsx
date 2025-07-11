@@ -72,7 +72,7 @@ const Page = () => {
         </main> */}
         {/* <TextPanel /> */}
         {/* <ThemePanel /> */}
-        {<ImageSettingsPanel />}
+        {/* {<ImageSettingsPanel />} */}
       </div>
     </div>
   );
