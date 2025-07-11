@@ -939,6 +939,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                         sug.imageUrl
                       ) {
                         setPreviewImage(sug.imageUrl);
+                        onUpdateSlideImages?.(slideIndex, [sug.imageUrl]); // ✅ FIXED
                       }
                                             
                       setShowSuggestionsBox(false);

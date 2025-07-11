@@ -100,6 +100,8 @@ export default function OutlinePage() {
     null
   );
   const [editMenuCardIdx, setEditMenuCardIdx] = useState<number | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
 
   const handleBulletsEditStart = (idx: number, bullets?: string[]) => {
     setEditingBulletsIdx(idx);
@@ -190,6 +192,21 @@ export default function OutlinePage() {
     console.log("[OutlinePage] Slides sent to Redux:", mapped);
     router.push("/editor");
   };
+
+ 
+  const handleUpdateSlide = (slideIndex: number, updated: Partial<Slide>) => {
+    const updatedSlides = slides.map((s: Slide, i: number) =>
+      i === slideIndex ? { ...s, ...updated } : s
+    );
+
+    dispatch(setSlides(updatedSlides));
+
+    if (updated.image_url) {
+      setPreviewImage(updated.image_url);
+    }
+  };
+  
+ 
 
   return (
     <Box
@@ -424,15 +441,7 @@ export default function OutlinePage() {
                                 )
                               );
                             }}
-                            onUpdateSlide={(slideIndex, updated) => {
-                              setCards((prev) =>
-                                prev.map((card, i) =>
-                                  i === slideIndex
-                                    ? { ...card, ...updated }
-                                    : card
-                                )
-                              );
-                            }}
+                            onUpdateSlide={handleUpdateSlide}
                           />
 
                           {expandedIdx === idx && (
