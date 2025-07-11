@@ -10,6 +10,9 @@ import {
   CircularProgress,
   List,
   ListItem,
+  TextField,
+  Button,
+  Popover,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"; // Import the chevron icon
@@ -26,6 +29,7 @@ import ImageIcon from "@mui/icons-material/Image";
 import Grow from "@mui/material/Grow";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 
 interface OutlineCardProps {
   index: number;
@@ -68,6 +72,7 @@ interface OutlineCardProps {
       title: string;
       bullets: string[];
       bulletFormat?: "bullets" | "paragraphs" | "list" | null;
+      image_url?: string;
     }> // ADDED bulletFormat
   ) => void;
   onToggleExpand?: () => void;
@@ -101,6 +106,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     currentBulletFormat = "paragraphs", // Destructure with a default
   } = props;
 
+  
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [previewImage, setPreviewImage] = React.useState<string | null>(null);
   const [suggestedImages, setSuggestedImages] = React.useState<{
@@ -113,13 +119,26 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     number | null
   >(null);
 
+  const [showCustomPromptInput, setShowCustomPromptInput] =
+    React.useState(false);
+  const [customPromptText, setCustomPromptText] = React.useState("");
+  const [customSuggestionsLoading, setCustomSuggestionsLoading] =
+    React.useState(false);
+  const [customSuggestionsError, setCustomSuggestionsError] =
+    React.useState("");
+
   const [aiEditMenuAnchorEl, setAiEditMenuAnchorEl] =
     React.useState<null | HTMLElement>(null);
   const [loadingSuggestionsAction, setLoadingSuggestionsAction] =
     React.useState<string | null>(null);
-  const [textSuggestions, setTextSuggestions] = React.useState<
-    { title: string; bullets: string[] }[]
-  >([]);
+    const [textSuggestions, setTextSuggestions] = React.useState<
+      {
+        title: string;
+        bullets: string[];
+        image?: string;
+        imageUrl?: string | null;
+      }[]
+    >([]);
   const [showSuggestionsBox, setShowSuggestionsBox] = React.useState(false);
 
   // New state to store the position of the AI icon
@@ -170,33 +189,53 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
       icon: <ImageIcon fontSize="small" />,
       subtitle: "Generate fresh ideas and creative images as per prompt",
     },
-    // {
-    //   label: "New Custom Suggestions",
-    //   value: "custom",
-    //   icon: <TipsAndUpdatesIcon fontSize="small" />,
-    //   subtitle: "Generate fresh ideas and creative content",
-    // },
+    {
+      label: "New Custom Suggestions",
+      value: "custom",
+      icon: <ImageIcon fontSize="small" />,
+      subtitle: "Generate fresh ideas and creative content",
+    },
   ];
 
   React.useEffect(() => {
     setImageList(images || []);
   }, [images]);
 
-  // FIXED: Moved console.log out of JSX
-  React.useEffect(() => {
-    console.log("OutlineCard re-rendered. Current imageList state:", imageList);
-    console.log(
-      "OutlineCard re-rendered. Current previewImage state:",
-      previewImage
-    );
-    // You can add more states here if you suspect they are causing re-renders that clear image states
-  }, [
-    imageList,
-    previewImage,
-    expanded,
-    showSuggestionsBox,
-    aiEditMenuAnchorEl,
-  ]);
+
+  const handleGenerateCustomSuggestions = async () => {
+    setCustomSuggestionsLoading(true);
+    setCustomSuggestionsError("");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/custom-suggestions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          bullets,
+          customPrompt: customPromptText,
+        }),
+      });
+
+      console.log("Custom Suggestion Response:", res.body);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch custom suggestions");
+      }
+
+      const data = await res.json();
+      setTextSuggestions(data.suggestions); // store suggestions
+      setShowSuggestionsBox(true); // 👈 show the suggestion box
+      setShowCustomPromptInput(false);
+      setCustomPromptText("");
+    } catch (err: any) {
+      setCustomSuggestionsError(err.message);
+    } finally {
+      setCustomSuggestionsLoading(false);
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") onTitleEditSave?.();
@@ -505,7 +544,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                           autoFocus
                           style={{
                             fontSize: 16,
-                            height:"150px",
+                            height: "150px",
                             padding: "4px",
                             border: "1px solid #ccc",
                             borderRadius: 4,
@@ -724,6 +763,12 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     setLoadingSuggestionsAction(action.value);
                     setCurrentSuggestionAction(action.value);
 
+                    if (action.value === "custom") {
+                      setShowCustomPromptInput(true);
+                      setLoadingSuggestionsAction(null);
+                      return;
+                    }
+
                     if (action.value === "regenerateImages") {
                       if (imageList.length > 0) {
                         await handleRegenerateImage(0, e);
@@ -785,6 +830,55 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             </Menu>
           )}
 
+          <Popover
+            open={showCustomPromptInput}
+            anchorEl={aiEditMenuAnchorEl}
+            onClose={() => setShowCustomPromptInput(false)}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            transformOrigin={{ vertical: "bottom", horizontal: "right" }}
+            disablePortal
+            sx={{ zIndex: 9999 }}
+          >
+            <Box
+              sx={{
+                backgroundColor: "#fff",
+                border: "1px solid #ccc",
+                borderRadius: 2,
+                p: 2,
+                width: 300,
+              }}
+            >
+              <Typography variant="subtitle2" gutterBottom>
+                Enter Custom Prompt
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                value={customPromptText}
+                onChange={(e) => setCustomPromptText(e.target.value)}
+                placeholder="Describe how you'd like to improve this slide..."
+              />
+              {customSuggestionsError && (
+                <Typography variant="body2" color="error" mt={1}>
+                  {customSuggestionsError}
+                </Typography>
+              )}
+              <Box mt={2} display="flex" justifyContent="flex-end">
+                <Button
+                  variant="contained"
+                  size="small"
+                  disabled={
+                    customSuggestionsLoading || !customPromptText.trim()
+                  }
+                  onClick={handleGenerateCustomSuggestions}
+                >
+                  {customSuggestionsLoading ? "Generating..." : "Generate"}
+                </Button>
+              </Box>
+            </Box>
+          </Popover>
+
           {/* Text Suggestions Box - MODIFIED */}
           {showSuggestionsBox &&
             textSuggestions.length > 0 &&
@@ -834,10 +928,22 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                         title: sug.title,
                         bullets: sug.bullets,
                         bulletFormat: newBulletFormat,
+                        ...(currentSuggestionAction === "custom" && sug.imageUrl
+                          ? { image_url: sug.imageUrl }
+                          : {}),
                       });
+
+
+                      if (
+                        currentSuggestionAction === "custom" &&
+                        sug.imageUrl
+                      ) {
+                        setPreviewImage(sug.imageUrl);
+                      }
+                                            
                       setShowSuggestionsBox(false);
                       setCurrentSuggestionAction(null);
-                      setAiEditMenuAnchorEl(null); // Close the AI menu after applying a suggestion
+                      setAiEditMenuAnchorEl(null);
                     }}
                   >
                     <Box
@@ -846,11 +952,37 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                         border: "1px solid #ccc",
                         borderRadius: 1,
                         cursor: "pointer",
-                        width: "100%", // Ensure it takes full width of the MenuItem
+                        width: "100%",
                       }}
                     >
                       <Typography fontWeight={600}>{sug.title}</Typography>
-                      {/* Conditional Rendering of Bullets in the SUGGESTIONS BOX */}
+
+                      {/* ✅ Render image ONLY for custom suggestions */}
+                      {currentSuggestionAction === "custom" && sug.imageUrl && (
+                        <Box
+                          sx={{
+                            mt: 1,
+                            mb: 1,
+                            borderRadius: 1,
+                            overflow: "hidden",
+                            border: "1px solid #eee",
+                            width: "100%",
+                            height: 140,
+                          }}
+                        >
+                          <img
+                            src={sug.imageUrl}
+                            alt="Suggested visual"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        </Box>
+                      )}
+
+                      {/* ✅ Bullet Formats */}
                       {currentSuggestionAction === "longer" ||
                       currentSuggestionAction === "shorter" ||
                       currentSuggestionAction === "rewriteSlide" ||
@@ -894,7 +1026,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                           style={{
                             paddingLeft: 16,
                             margin: "4px 0",
-                            color: "#7575775",
+                            color: "#757577",
                             fontSize: 14,
                           }}
                         >
