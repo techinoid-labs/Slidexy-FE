@@ -68,7 +68,7 @@ const Page = () => {
             <SlideEditor slides={slides} stageRefs={stageRefs} />
           </div>
         </main> */}
-        {/* <TextPanel /> */}
+        <TextPanel />
         {/* <ThemePanel /> */}
       </div>
     </div>

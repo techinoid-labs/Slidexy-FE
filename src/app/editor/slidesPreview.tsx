@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Typography, IconButton, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useSlides } from "@/app/context/SlidesContext";
 
 interface SlidePreviewsProps {
   slides: any[];
@@ -22,6 +23,47 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
   onAddSlide,
   onDeleteSlide,
 }) => {
+  const {
+    slides: reduxSlides,
+    setSlides,
+    selectedSlideIndex,
+    setSelectedSlideIndex,
+  } = useSlides();
+
+  console.log({ selectedSlideIndex, reduxSlides });
+  useEffect(() => {
+    if (selectedIndex !== selectedSlideIndex) {
+      setSelectedSlideIndex(selectedIndex);
+    }
+  }, [selectedIndex]);
+
+  const handleSelect = (index: number) => {
+    onSelect(index);
+    setSelectedSlideIndex(index);
+  };
+
+  const handleAddSlide = () => {
+    onAddSlide();
+    const newIndex = slides.length;
+    onSelect(newIndex);
+    setSelectedSlideIndex(newIndex);
+  };
+
+  const handleDelete = (indexToDelete: number) => {
+    onDeleteSlide(indexToDelete);
+
+    const isSelected = indexToDelete === selectedSlideIndex;
+    const isBefore = indexToDelete < selectedSlideIndex;
+
+    if (isSelected) {
+      const newIndex = Math.max(0, selectedSlideIndex - 1);
+      onSelect(newIndex);
+      setSelectedSlideIndex(newIndex);
+    } else if (isBefore) {
+      setSelectedSlideIndex(selectedSlideIndex - 1);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -44,7 +86,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
         }}
       >
         {slides.map((slide: any, index: number) => {
-          const isSelected = index === selectedIndex;
+          const isSelected = index === selectedSlideIndex;
 
           return (
             <Box
@@ -72,30 +114,34 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                 flex: "0 0 auto",
                 "&:hover .delete-button": { opacity: 1 },
               }}
-              onClick={() => onSelect(index)}
+              onClick={() => handleSelect(index)}
             >
-              <Typography
-                variant="subtitle2"
-                fontWeight={700}
-                color={isSelected ? "#6941c6" : "#475467"}
-              >
-                {String(index + 1).padStart(2, "0")}
-              </Typography>
               <Typography
                 variant="subtitle2"
                 fontWeight={600}
                 sx={{
-                  whiteSpace: "nowrap",
+                  display: "block",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                   maxWidth: "100%",
                 }}
               >
-                {slide.slide_title.text || "New Slide Title"}
+                {(slide.slide_title?.text || "New Slide Title").trim()}
               </Typography>
-              <Typography variant="caption" color="#667085">
+              <Typography
+                variant="caption"
+                color="#667085"
+                sx={{
+                  display: "block",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: "100%",
+                }}
+              >
                 {slide.elements.length > 0
-                  ? slide.elements[0].text
+                  ? (slide.elements[0].text || "").trim()
                   : "Add description"}
               </Typography>
 
@@ -103,8 +149,8 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                 <Tooltip title="Delete Slide">
                   <IconButton
                     onClick={(e) => {
-                      e.stopPropagation(); // prevent triggering onSelect
-                      onDeleteSlide(index);
+                      e.stopPropagation();
+                      handleDelete(index);
                     }}
                     className="delete-button"
                     size="small"
@@ -128,7 +174,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
         })}
 
         <IconButton
-          onClick={onAddSlide}
+          onClick={handleAddSlide}
           sx={{
             width: 120,
             height: 120,
