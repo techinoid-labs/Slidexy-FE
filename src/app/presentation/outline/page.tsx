@@ -199,6 +199,8 @@ export default function OutlinePage() {
       i === slideIndex ? { ...s, ...updated } : s
     );
 
+    console.log("Updated Slides",updatedSlides);
+
     dispatch(setSlides(updatedSlides));
 
     if (updated.image_url) {
@@ -206,7 +208,6 @@ export default function OutlinePage() {
     }
   };
   
- 
 
   return (
     <Box
@@ -441,7 +442,15 @@ export default function OutlinePage() {
                                 )
                               );
                             }}
-                            onUpdateSlide={handleUpdateSlide}
+                            onUpdateSlide={(slideIndex, updated) => {
+                              setCards((prev) =>
+                                prev.map((card, i) =>
+                                  i === slideIndex
+                                    ? { ...card, ...updated }
+                                    : card
+                                )
+                              );
+                            }}
                           />
 
                           {expandedIdx === idx && (
