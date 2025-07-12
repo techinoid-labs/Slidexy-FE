@@ -3,7 +3,7 @@
 // import React, { useEffect, useState } from "react";
 // import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
 // import useImage from "use-image";
-// import { Box, TextField } from "@mui/material";
+// import { Box } from "@mui/material";
 // import SlideImage from "./KonvaComponents/KonvaSlideImage";
 // import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor";
 // import { dummyData } from "./dummy";
@@ -12,20 +12,14 @@
 // import { useDispatch } from "react-redux";
 // import { setSlides } from "../slice/slidesSlice";
 
+// import { Circle, RegularPolygon, Star } from "react-konva";
+
 // const SLIDE_WIDTH = 920;
 // const SLIDE_HEIGHT = 430;
 // const LEFT_PADDING = 40;
 // const IMAGE_WIDTH = 500;
 // const IMAGE_PADDING = 20;
 // const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
-
-// interface EditingState {
-//   slideIndex: number;
-//   text: string;
-//   x: number;
-//   y: number;
-//   fontSize: number;
-// }
 
 // const getRandomSlide = () => {
 //   const titles = [
@@ -85,53 +79,18 @@
 //   const { selectedTheme } = useSlideThemeContext();
 //   const [bgImage] = useImage(selectedTheme?.image_url || "");
 //   const [selectedIndex, setSelectedIndex] = useState(0);
-//   const [editing, setEditing] = useState<EditingState | null>(null);
-//   const [inputValue, setInputValue] = useState("");
 //   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
 //     null
 //   );
+//   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
 
-//   const [useDummy] = useState(false);
+//   const [useDummy] = useState(true);
+
 //   useEffect(() => {
 //     if (slides.length === 0 && useDummy) {
 //       dispatch(setSlides(dummyData));
 //     }
 //   }, [dispatch, slides.length]);
-
-//   const handleTextDoubleClick = (
-//     slideIndex: number,
-//     text: string,
-//     x: number,
-//     y: number,
-//     fontSize: number
-//   ) => {
-//     setEditing({ slideIndex, text, x, y, fontSize });
-//     setInputValue(text);
-//   };
-
-//   const handleEditCommit = () => {
-//     if (!editing) return;
-
-//     const { slideIndex, text: oldText } = editing;
-//     const newText = inputValue;
-//     const updated = structuredClone(slides);
-//     const slide = updated[slideIndex];
-//     if (!slide) return;
-
-//     if (slide.slide_title.text === oldText) {
-//       slide.slide_title.text = newText;
-//     } else {
-//       const matchIndex = slide.elements.findIndex(
-//         (el: any) => `• ${el.text}` === oldText || el.text === oldText
-//       );
-//       if (matchIndex !== -1) {
-//         slide.elements[matchIndex].text = newText.replace(/^\u2022\s*/, "");
-//       }
-//     }
-
-//     dispatch(setSlides(updated));
-//     setEditing(null);
-//   };
 
 //   const handleAddSlide = () => {
 //     const newSlide = getRandomSlide();
@@ -149,49 +108,6 @@
 //     }
 //   };
 
-//   const measureTextWidth = (
-//     text: string,
-//     fontSize: number,
-//     fontFamily: string
-//   ) => {
-//     const canvas = document.createElement("canvas");
-//     const context = canvas.getContext("2d");
-//     if (!context) return 200;
-//     context.font = `${fontSize}px ${fontFamily}`;
-//     return context.measureText(text).width + 16;
-//   };
-
-//   useEffect(() => {
-//     const handleKeyDown = (e: KeyboardEvent) => {
-//       if (e.key === "Delete" && editing) {
-//         const { slideIndex, text } = editing;
-//         const updated = structuredClone(slides);
-//         const slide = updated[slideIndex];
-
-//         // Check if it's a title
-//         if (slide.slide_title.text === text) {
-//           slide.slide_title.text = "";
-//         } else {
-//           // Remove from elements
-//           const idx = slide.elements.findIndex(
-//             (el: any) => `• ${el.text}` === text || el.text === text
-//           );
-//           if (idx !== -1) {
-//             slide.elements.splice(idx, 1);
-//           }
-//         }
-
-//         dispatch(setSlides(updated));
-//         setEditing(null);
-//       }
-//     };
-
-//     window.addEventListener("keydown", handleKeyDown);
-//     return () => {
-//       window.removeEventListener("keydown", handleKeyDown);
-//     };
-//   }, [editing, slides, dispatch]);
-
 //   return (
 //     <main
 //       style={{
@@ -201,6 +117,11 @@
 //         overflow: "hidden",
 //       }}
 //     >
+//       <div
+//         id="text-editor-layer"
+//         style={{ position: "absolute", top: 0, left: 0 }}
+//       ></div>
+
 //       <div
 //         style={{
 //           flexGrow: 1,
@@ -217,100 +138,93 @@
 //             alignItems: "center",
 //           }}
 //         >
-//           {slides.map(
-//             (
-//               slide: {
-//                 slide_title: any;
-//                 slide_id: React.Key | null | undefined;
-//                 elements: any[];
-//                 image_url: any;
-//               },
-//               index: number
-//             ) => {
-//               const title = slide.slide_title;
-//               const titleProps = title.properties;
-//               const titleY = 25;
-//               const bulletGap = 10;
-//               const bulletStartY = titleY + titleProps.fontSize + 20;
+//           {slides.map((slide: any, index: number) => {
+//             const title = slide.slide_title;
+//             const titleProps = title.properties;
+//             const titleY = 25;
+//             const bulletGap = 10;
+//             const bulletStartY = titleY + titleProps.fontSize + 20;
 
-//               return (
-//                 <Box
-//                   key={slide.slide_id}
-//                   sx={{
-//                     width: `${SLIDE_WIDTH}px`,
-//                     height: `${SLIDE_HEIGHT}px`,
-//                     border: "1px solid #ccc",
-//                     backgroundColor: "#fff",
-//                     position: "relative",
-//                     mb: 1,
-//                     display: index === selectedIndex ? "block" : "none",
+//             return (
+//               <Box
+//                 key={slide.slide_id}
+//                 sx={{
+//                   width: `${SLIDE_WIDTH}px`,
+//                   height: `${SLIDE_HEIGHT}px`,
+//                   border: "1px solid #ccc",
+//                   backgroundColor: "#fff",
+//                   position: "relative",
+//                   mb: 1,
+//                   display: index === selectedIndex ? "block" : "none",
+//                 }}
+//               >
+//                 <Stage
+//                   width={SLIDE_WIDTH}
+//                   height={SLIDE_HEIGHT}
+//                   ref={(ref: any) => {
+//                     stageRefs.current[index] =
+//                       ref?.getStage()?.content?.querySelector("canvas") || null;
+//                   }}
+//                   onMouseDown={(e) => {
+//                     const clickedOnEmpty =
+//                       e.target === e.target.getStage() ||
+//                       e.target.name() === "background";
+//                     if (clickedOnEmpty) {
+//                       setSelectedTextId(null);
+//                       setSelectedImageIndex(null);
+//                     }
 //                   }}
 //                 >
-//                   <Stage
-//                     width={SLIDE_WIDTH}
-//                     height={SLIDE_HEIGHT}
-//                     ref={(ref: any) => {
-//                       stageRefs.current[index] =
-//                         ref?.getStage()?.content?.querySelector("canvas") ||
-//                         null;
-//                     }}
-//                     onMouseDown={(e) => {
-//                       const clickedOnEmpty =
-//                         e.target === e.target.getStage() ||
-//                         e.target.name() === "background";
-//                       if (clickedOnEmpty) {
-//                         setSelectedImageIndex(null);
-//                       }
-//                     }}
-//                   >
-//                     <Layer>
-//                       {selectedTheme?.image_url && bgImage ? (
-//                         <KonvaImage
-//                           image={bgImage}
-//                           x={0}
-//                           y={0}
-//                           width={SLIDE_WIDTH}
-//                           height={SLIDE_HEIGHT}
-//                         />
-//                       ) : (
-//                         <Rect
-//                           name="background"
-//                           x={0}
-//                           y={0}
-//                           width={SLIDE_WIDTH}
-//                           height={SLIDE_HEIGHT}
-//                           fill={selectedTheme?.backgroundColor || "#fff"}
-//                         />
-//                       )}
-
-//                       <KonvaTextEditor
-//                         id={`title-${slide.slide_id}`}
-//                         text={title.text}
-//                         x={LEFT_PADDING}
-//                         y={titleY}
-//                         width={textMaxWidth}
-//                         wrap="word"
-//                         fontSize={titleProps.fontSize}
-//                         fontFamily={
-//                           selectedTheme?.font || titleProps.fontFamily
-//                         }
-//                         fill={selectedTheme?.primaryColor || titleProps.fill}
-//                         fontStyle={titleProps.fontStyle}
-//                         onClick={() =>
-//                           handleTextDoubleClick(
-//                             index,
-//                             title.text,
-//                             LEFT_PADDING,
-//                             titleY,
-//                             titleProps.fontSize
-//                           )
-//                         }
+//                   <Layer>
+//                     {selectedTheme?.image_url && bgImage ? (
+//                       <KonvaImage
+//                         image={bgImage}
+//                         x={0}
+//                         y={0}
+//                         width={SLIDE_WIDTH}
+//                         height={SLIDE_HEIGHT}
 //                       />
+//                     ) : (
+//                       <Rect
+//                         name="background"
+//                         x={0}
+//                         y={0}
+//                         width={SLIDE_WIDTH}
+//                         height={SLIDE_HEIGHT}
+//                         fill={selectedTheme?.backgroundColor || "#fff"}
+//                       />
+//                     )}
 
-//                       {(() => {
-//                         let currentY = bulletStartY + 70;
+// {/* Slide Title */}
+// <KonvaTextEditor
+//   id={`title-${index}`}
+//   text={title.text}
+//   x={LEFT_PADDING}
+//   y={titleY}
+//   width={textMaxWidth}
+//   wrap="word"
+//   fontSize={titleProps.fontSize}
+//   fontFamily={selectedTheme?.font || titleProps.fontFamily}
+//   fill={selectedTheme?.primaryColor || titleProps.fill}
+//   fontStyle={titleProps.fontStyle}
+//   isSelected={selectedTextId === `title-${index}`}
+//   onSelect={() => {
+//     setSelectedTextId(`title-${index}`);
+//     setSelectedImageIndex(null);
+//   }}
+// />
 
-//                         return slide.elements.map((el: any, i: number) => {
+//                     {/* Slide Bullets */}
+//                     {/* {(() => {
+//                       let currentY = bulletStartY + 70;
+
+//                       return slide.elements.map((el: any, i: number) => { */}
+//                     {(() => {
+//                       let currentY = bulletStartY + 70;
+
+//                       return slide.elements
+//                         .filter((el: any) => el.element_type === "bullet_point")
+//                         .map((el: any, i: number) => {
 //                           const isBullet = el.element_type === "bullet_point";
 //                           const fontSize = el.properties.fontSize;
 //                           const fontFamily =
@@ -320,7 +234,6 @@
 //                             ? `• ${el.text}`
 //                             : el.text;
 
-//                           // Estimate wrapped height
 //                           const textWidth = textMaxWidth - (isBullet ? 20 : 0);
 //                           const canvas = document.createElement("canvas");
 //                           const context = canvas.getContext("2d");
@@ -345,8 +258,8 @@
 
 //                           const editor = (
 //                             <KonvaTextEditor
-//                               key={`el-${i}`}
-//                               id={`el-${i}`}
+//                               key={`el-${index}-${i}`}
+//                               id={`el-${index}-${i}`}
 //                               text={bulletText}
 //                               x={LEFT_PADDING + (isBullet ? 20 : 0)}
 //                               y={currentY}
@@ -359,77 +272,91 @@
 //                                 el.properties.fill
 //                               }
 //                               fontStyle={el.properties.fontStyle}
-//                               onClick={() =>
-//                                 handleTextDoubleClick(
-//                                   index,
-//                                   bulletText,
-//                                   LEFT_PADDING + (isBullet ? 20 : 0),
-//                                   currentY,
-//                                   fontSize
-//                                 )
-//                               }
+//                               isSelected={selectedTextId === `el-${index}-${i}`}
+//                               onSelect={() => {
+//                                 setSelectedTextId(`el-${index}-${i}`);
+//                                 setSelectedImageIndex(null);
+//                               }}
 //                             />
 //                           );
 
 //                           currentY += height + bulletGap;
 //                           return editor;
 //                         });
-//                       })()}
+//                     })()}
 
-//                       <SlideImage
-//                         url={
-//                           slide.image_url ||
-//                           "https://via.placeholder.com/480x480?text=Slide+Image"
+//                     {slide.elements.map((el: any, i: number) => {
+//                       if (el.element_type === "shape") {
+//                         switch (el.konva_component) {
+//                           case "Konva.Circle":
+//                             return (
+//                               <Circle
+//                                 key={`shape-${index}-${i}`}
+//                                 x={el.properties.x}
+//                                 y={el.properties.y}
+//                                 radius={el.properties.radius}
+//                                 fill={el.properties.fill}
+//                               />
+//                             );
+//                           case "Konva.Rect":
+//                             return (
+//                               <Rect
+//                                 key={`shape-${index}-${i}`}
+//                                 x={el.properties.x}
+//                                 y={el.properties.y}
+//                                 width={el.properties.width}
+//                                 height={el.properties.height}
+//                                 fill={el.properties.fill}
+//                               />
+//                             );
+//                           case "Konva.RegularPolygon":
+//                             return (
+//                               <RegularPolygon
+//                                 key={`shape-${index}-${i}`}
+//                                 x={el.properties.x}
+//                                 y={el.properties.y}
+//                                 sides={el.properties.sides}
+//                                 radius={el.properties.radius}
+//                                 fill={el.properties.fill}
+//                               />
+//                             );
+//                           case "Konva.Star":
+//                             return (
+//                               <Star
+//                                 key={`shape-${index}-${i}`}
+//                                 x={el.properties.x}
+//                                 y={el.properties.y}
+//                                 numPoints={el.properties.numPoints}
+//                                 innerRadius={el.properties.innerRadius}
+//                                 outerRadius={el.properties.outerRadius}
+//                                 fill={el.properties.fill}
+//                               />
+//                             );
+//                           default:
+//                             return null;
 //                         }
-//                         x={SLIDE_WIDTH - 520}
-//                         y={(SLIDE_HEIGHT - 420) / 2}
-//                         width={500}
-//                         height={420}
-//                         isSelected={selectedImageIndex === index}
-//                         onSelect={() => setSelectedImageIndex(index)}
-//                       />
-//                     </Layer>
-//                   </Stage>
-//                   {editing && editing.slideIndex === index && (
-//                     <textarea
-//                       autoFocus
-//                       value={inputValue}
-//                       onChange={(e) => setInputValue(e.target.value)}
-//                       onBlur={handleEditCommit}
-//                       onKeyDown={(e) => {
-//                         if (e.key === "Enter" && !e.shiftKey) {
-//                           e.preventDefault(); // prevent newline
-//                           handleEditCommit();
-//                         }
-//                       }}
-//                       style={{
-//                         position: "absolute",
-//                         top: `${editing.y}px`,
-//                         left: `${editing.x}px`,
-//                         fontSize: `${editing.fontSize}px`,
-//                         fontFamily: selectedTheme?.font || "Arial",
-//                         color: selectedTheme?.primaryColor || "#000",
-//                         background: "white",
-//                         border: "1px solid #ccc",
-//                         borderRadius: "4px",
-//                         padding: "4px 8px",
-//                         resize: "none",
-//                         lineHeight: 1.2,
-//                         width:
-//                           measureTextWidth(
-//                             inputValue,
-//                             editing.fontSize,
-//                             selectedTheme?.font || "Arial"
-//                           ) + "px",
-//                         zIndex: 600,
-//                         overflow: "hidden",
-//                       }}
+//                       }
+
+//                       return null; // don't double-render text bullets here
+//                     })}
+
+//                     <SlideImage
+//                       url={
+//                         slide.image_url ||
+//                         "https://via.placeholder.com/480x480?text=Slide+Image"
+//                       }
+//                       x={SLIDE_WIDTH - 480}
+//                       y={(SLIDE_HEIGHT - 400) / 2}
+//                       width={480}
+//                       height={400}
+//                       isSelected={selectedImageIndex === index}
+//                       onSelect={() => setSelectedImageIndex(index)}
 //                     />
-//                   )}
-//                 </Box>
-//               );
-//             }
-//           )}
+//                   </Layer>
+//                 </Stage>
+//               </Box>
+//             );
+//           })}
 
 //           <SlidePreviews
 //             slides={slides}
@@ -446,7 +373,6 @@
 // };
 
 // export default SlideEditor;
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -460,6 +386,7 @@ import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import SlidePreviews from "./slidesPreview";
 import { useDispatch } from "react-redux";
 import { setSlides } from "../slice/slidesSlice";
+import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 
 const SLIDE_WIDTH = 920;
 const SLIDE_HEIGHT = 430;
@@ -530,7 +457,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     null
   );
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
-
+  const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
+    null
+  );
   const [useDummy] = useState(false);
 
   useEffect(() => {
@@ -619,6 +548,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     if (clickedOnEmpty) {
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
+                      setSelectedShapeIndex(null);
                     }
                   }}
                 >
@@ -660,68 +590,116 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         setSelectedImageIndex(null);
                       }}
                     />
+                    {/* Generic Text Elements */}
+                    {slide.elements.map((el: any, i: number) => {
+                      if (el.element_type !== "text") return null;
+
+                      return (
+                        <KonvaTextEditor
+                          key={`el-${index}-${i}`}
+                          id={`el-${index}-${i}`}
+                          text={el.text}
+                          x={el.properties.x || LEFT_PADDING}
+                          y={el.properties.y || 300}
+                          width={el.properties.width || textMaxWidth}
+                          wrap="word"
+                          fontSize={el.properties.fontSize}
+                          fontFamily={
+                            selectedTheme?.font || el.properties.fontFamily
+                          }
+                          fill={
+                            selectedTheme?.primaryColor || el.properties.fill
+                          }
+                          fontStyle={el.properties.fontStyle}
+                          // fontWeight={el.properties.fontWeight}
+                          isSelected={selectedTextId === `el-${index}-${i}`}
+                          onSelect={() => {
+                            setSelectedTextId(`el-${index}-${i}`);
+                            setSelectedImageIndex(null);
+                            setSelectedShapeIndex(null);
+                          }}
+                        />
+                      );
+                    })}
 
                     {/* Slide Bullets */}
                     {(() => {
                       let currentY = bulletStartY + 70;
 
-                      return slide.elements.map((el: any, i: number) => {
-                        const isBullet = el.element_type === "bullet_point";
-                        const fontSize = el.properties.fontSize;
-                        const fontFamily =
-                          selectedTheme?.font || el.properties.fontFamily;
-                        const lineHeight = 1.2;
-                        const bulletText = isBullet ? `• ${el.text}` : el.text;
+                      return slide.elements
+                        .filter((el: any) => el.element_type === "bullet_point")
+                        .map((el: any, i: number) => {
+                          const isBullet = el.element_type === "bullet_point";
+                          const fontSize = el.properties.fontSize;
+                          const fontFamily =
+                            selectedTheme?.font || el.properties.fontFamily;
+                          const lineHeight = 1.2;
+                          const bulletText = isBullet
+                            ? `• ${el.text}`
+                            : el.text;
 
-                        const textWidth = textMaxWidth - (isBullet ? 20 : 0);
-                        const canvas = document.createElement("canvas");
-                        const context = canvas.getContext("2d");
-                        context!.font = `${fontSize}px ${fontFamily}`;
-                        const words = bulletText.split(" ");
-                        let lines = [];
-                        let line = "";
+                          const textWidth = textMaxWidth - (isBullet ? 20 : 0);
+                          const canvas = document.createElement("canvas");
+                          const context = canvas.getContext("2d");
+                          context!.font = `${fontSize}px ${fontFamily}`;
+                          const words = bulletText.split(" ");
+                          let lines = [];
+                          let line = "";
 
-                        for (let word of words) {
-                          const testLine = line + word + " ";
-                          const metrics = context!.measureText(testLine);
-                          if (metrics.width > textWidth && line !== "") {
-                            lines.push(line.trim());
-                            line = word + " ";
-                          } else {
-                            line = testLine;
-                          }
-                        }
-                        if (line) lines.push(line.trim());
-
-                        const height = lines.length * fontSize * lineHeight;
-
-                        const editor = (
-                          <KonvaTextEditor
-                            key={`el-${index}-${i}`}
-                            id={`el-${index}-${i}`}
-                            text={bulletText}
-                            x={LEFT_PADDING + (isBullet ? 20 : 0)}
-                            y={currentY}
-                            width={textWidth}
-                            wrap="word"
-                            fontSize={fontSize}
-                            fontFamily={fontFamily}
-                            fill={
-                              selectedTheme?.primaryColor || el.properties.fill
+                          for (let word of words) {
+                            const testLine = line + word + " ";
+                            const metrics = context!.measureText(testLine);
+                            if (metrics.width > textWidth && line !== "") {
+                              lines.push(line.trim());
+                              line = word + " ";
+                            } else {
+                              line = testLine;
                             }
-                            fontStyle={el.properties.fontStyle}
-                            isSelected={selectedTextId === `el-${index}-${i}`}
-                            onSelect={() => {
-                              setSelectedTextId(`el-${index}-${i}`);
-                              setSelectedImageIndex(null);
-                            }}
-                          />
-                        );
+                          }
+                          if (line) lines.push(line.trim());
 
-                        currentY += height + bulletGap;
-                        return editor;
-                      });
+                          const height = lines.length * fontSize * lineHeight;
+
+                          const editor = (
+                            <KonvaTextEditor
+                              key={`el-${index}-${i}`}
+                              id={`el-${index}-${i}`}
+                              text={bulletText}
+                              x={LEFT_PADDING + (isBullet ? 20 : 0)}
+                              y={currentY}
+                              width={textWidth}
+                              wrap="word"
+                              fontSize={fontSize}
+                              fontFamily={fontFamily}
+                              fill={
+                                selectedTheme?.primaryColor ||
+                                el.properties.fill
+                              }
+                              fontStyle={el.properties.fontStyle}
+                              isSelected={selectedTextId === `el-${index}-${i}`}
+                              onSelect={() => {
+                                setSelectedTextId(`el-${index}-${i}`);
+                                setSelectedImageIndex(null);
+                                setSelectedShapeIndex(null);
+                              }}
+                            />
+                          );
+
+                          currentY += height + bulletGap;
+                          return editor;
+                        });
                     })()}
+
+                    {/* Shaped Render */}
+                    <KonvaShapeRenderer
+                      elements={slide.elements}
+                      selectedShapeIndex={selectedShapeIndex}
+                      onSelectShape={(i) => {
+                        setSelectedShapeIndex(i);
+                        setSelectedTextId(null);
+                        setSelectedImageIndex(null);
+                      }}
+                    />
 
                     <SlideImage
                       url={

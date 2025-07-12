@@ -20,8 +20,8 @@ interface SideNavBarProps {
 const navItems = [
   { label: "Themes", icon: "/images/template-icon.svg" },
   { label: "Text", icon: "/images/text-icon.svg" },
-  // { label: "Images", icon: "/images/picture-icon.svg" },
-  // { label: "Shapes", icon: "/images/nav-icon.svg" },
+  { label: "Images", icon: "/images/picture-icon.svg" },
+  { label: "Shapes", icon: "/images/nav-icon.svg" },
 ];
 
 const SideNavBar = ({
