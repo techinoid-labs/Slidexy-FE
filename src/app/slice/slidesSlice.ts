@@ -86,7 +86,6 @@
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-// Support both text and shape props
 interface KonvaTextProperties {
   fontSize?: number;
   fontFamily?: string;
@@ -103,16 +102,21 @@ interface KonvaTextProperties {
   innerRadius?: number;
   outerRadius?: number;
 }
-
-// Unified component type (text + shape)
-interface KonvaComponent {
-  konva_component: string; // e.g., 'Konva.Text', 'Konva.Rect', etc.
-  element_type?: string;
-  properties: KonvaTextProperties;
-  text?: string; // still used for bullet_point/text
+interface KonvaImageProperties {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  imageSrc: string;
 }
 
-// Slide structure (unchanged keys)
+interface KonvaComponent {
+  konva_component: string;
+  element_type?: string;
+  properties: KonvaTextProperties | KonvaImageProperties;
+  text?: string;
+}
+
 export interface Slide {
   [x: string]: any;
   slide_id: string;

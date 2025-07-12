@@ -3,9 +3,11 @@
 import React, { useEffect, useRef } from "react";
 import { Image as KonvaImage, Transformer } from "react-konva";
 import useImage from "use-image";
+import { useSlides } from "@/app/context/SlidesContext";
 
 interface SlideImageProps {
-  url: string;
+  url?: string; // from slide.image_url
+  imageSrc?: string; // from element.properties.imageSrc
   x: number;
   y: number;
   width: number;
@@ -16,6 +18,7 @@ interface SlideImageProps {
 
 const SlideImage = ({
   url,
+  imageSrc,
   x,
   y,
   width,
@@ -23,9 +26,11 @@ const SlideImage = ({
   isSelected,
   onSelect,
 }: SlideImageProps) => {
-  const [image] = useImage(url);
+  const [image] = useImage(imageSrc || url || "");
   const imageRef = useRef<any>(null);
   const trRef = useRef<any>(null);
+
+  const { slides, setSlides, selectedSlideIndex } = useSlides();
 
   useEffect(() => {
     if (isSelected && trRef.current && imageRef.current) {
@@ -33,6 +38,37 @@ const SlideImage = ({
       trRef.current.getLayer()?.batchDraw();
     }
   }, [isSelected]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === "Delete" || e.key === "Backspace") && isSelected) {
+        const newSlides = JSON.parse(JSON.stringify(slides));
+        const currentSlide = newSlides[selectedSlideIndex];
+
+        // Case 1: remove image_url
+        if (url && !imageSrc) {
+          currentSlide.image_url = null;
+        }
+
+        // Case 2: remove matching image element
+        if (imageSrc) {
+          currentSlide.elements = currentSlide.elements.filter(
+            (el: any) =>
+              !(
+                el.element_type === "image" &&
+                el.konva_component === "Konva.Image" &&
+                el.properties.imageSrc === imageSrc
+              )
+          );
+        }
+
+        setSlides(newSlides);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSelected, slides, url, imageSrc, selectedSlideIndex, setSlides]);
 
   return (
     <>
@@ -61,13 +97,13 @@ const SlideImage = ({
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
-            if (newBox.width < 50 || newBox.height < 50) {
-              return oldBox;
-            }
+            if (newBox.width < 50 || newBox.height < 50) return oldBox;
             return newBox;
           }}
-          rotateEnabled={true}
+          rotateEnabled
           enabledAnchors={[
+            "middle-left",
+            "middle-right",
             "top-left",
             "top-right",
             "bottom-left",
