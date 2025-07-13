@@ -12,6 +12,7 @@ import SlidePreviews from "./slidesPreview";
 import { useDispatch } from "react-redux";
 import { setSlides } from "../slice/slidesSlice";
 import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
+import { useSlides } from "../context/SlidesContext";
 
 const SLIDE_WIDTH = 920;
 const SLIDE_HEIGHT = 430;
@@ -75,23 +76,26 @@ const getRandomSlide = () => {
 
 const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const dispatch = useDispatch();
+  const {
+    selectedImageIndex,
+    setSelectedImageIndex,
+    selectedImage,
+    setSelectedImage,
+  } = useSlides();
   const { selectedTheme } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
-    null
-  );
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
   const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
     null
   );
   const [useDummy] = useState(false);
 
-  useEffect(() => {
-    if (slides.length === 0 && useDummy) {
-      dispatch(setSlides(dummyData));
-    }
-  }, [dispatch, slides.length]);
+  // useEffect(() => {
+  //   if (slides.length === 0 && useDummy) {
+  //     dispatch(setSlides(dummyData));
+  //   }
+  // }, [dispatch, slides.length]);
 
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
@@ -108,6 +112,45 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       setSelectedIndex(Math.max(0, newSlides.length - 1));
     }
   };
+
+  useEffect(() => {
+    if (!slides || slides.length === 0) return; // ⛔️ Skip if no slides
+
+    const normalizedSlides = slides.map((slide: any) => {
+      if (
+        slide.image_url &&
+        !slide.elements?.some(
+          (el: any) =>
+            el.element_type === "image" &&
+            el.konva_component === "Konva.Image" &&
+            el.properties.imageSrc === slide.image_url
+        )
+      ) {
+        const defaultImageElement = {
+          element_type: "image",
+          konva_component: "Konva.Image",
+          properties: {
+            imageSrc: slide.image_url,
+            x: SLIDE_WIDTH - 480,
+            y: (SLIDE_HEIGHT - 400) / 2,
+            width: 480,
+            height: 400,
+          },
+        };
+        return {
+          ...slide,
+          elements: [...(slide.elements || []), defaultImageElement],
+          image_url: null,
+        };
+      }
+      return slide;
+    });
+
+    if (JSON.stringify(slides) !== JSON.stringify(normalizedSlides)) {
+      dispatch(setSlides(normalizedSlides));
+    }
+  }, [slides, dispatch]);
+
   return (
     <main
       style={{
@@ -173,6 +216,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
                       setSelectedShapeIndex(null);
+                      setSelectedImage(null);
                     }
                   }}
                 >
@@ -215,6 +259,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         onSelect={() => {
                           setSelectedTextId(`title-${index}`);
                           setSelectedImageIndex(null);
+                          setSelectedShapeIndex(null);
+                          setSelectedImage(null);
                         }}
                       />
                     )}
@@ -245,6 +291,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                             setSelectedTextId(`el-${index}-${i}`);
                             setSelectedImageIndex(null);
                             setSelectedShapeIndex(null);
+                            setSelectedImage(null);
                           }}
                         />
                       );
@@ -309,6 +356,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                                 setSelectedTextId(`el-${index}-${i}`);
                                 setSelectedImageIndex(null);
                                 setSelectedShapeIndex(null);
+                                setSelectedImage(null);
                               }}
                             />
                           );
@@ -326,6 +374,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         setSelectedShapeIndex(i);
                         setSelectedTextId(null);
                         setSelectedImageIndex(null);
+                        setSelectedImage(null);
                       }}
                     />
                     {slide.elements.map((el: any, i: number) => {
@@ -339,29 +388,18 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                             imageSrc={el.properties.imageSrc}
                             x={el.properties.x}
                             y={el.properties.y}
+                            flipHorizontal={el.properties.flipHorizontal} // ✅ add this
                             width={el.properties.width}
                             height={el.properties.height}
                             isSelected={selectedImageIndex === i}
-                            onSelect={() => setSelectedImageIndex(i)}
+                            onSelect={() => {
+                              setSelectedImage({ ...el });
+                              setSelectedImageIndex(i);
+                            }}
                           />
                         );
                       }
                     })}
-
-                    {slide.image_url && (
-                      <SlideImage
-                        url={
-                          slide.image_url ||
-                          "https://via.placeholder.com/480x480?text=Slide+Image"
-                        }
-                        x={SLIDE_WIDTH - 480}
-                        y={(SLIDE_HEIGHT - 400) / 2}
-                        width={480}
-                        height={400}
-                        isSelected={selectedImageIndex === index}
-                        onSelect={() => setSelectedImageIndex(index)}
-                      />
-                    )}
                   </Layer>
                 </Stage>
               </Box>

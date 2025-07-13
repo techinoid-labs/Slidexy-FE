@@ -49,7 +49,13 @@ const Media: React.FC<MediaPanelProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { slides, setSlides, selectedSlideIndex } = useSlides();
+  const {
+    slides,
+    setSlides,
+    selectedSlideIndex,
+    setSelectedImageIndex,
+    setSelectedImage,
+  } = useSlides();
 
   const insertImageIntoRedux = (base64: string, width = 400, height = 400) => {
     const SLIDE_WIDTH = 920;
@@ -71,9 +77,16 @@ const Media: React.FC<MediaPanelProps> = ({
 
     const updatedSlides = [...slides];
     const slide = { ...updatedSlides[selectedSlideIndex] };
+
     slide.elements = [...(slide.elements || []), newImageElement];
     updatedSlides[selectedSlideIndex] = slide;
+
     setSlides(updatedSlides);
+
+    // ✅ Set selection to newly added image
+    const newIndex = slide.elements.length - 1;
+    setSelectedImage(newImageElement);
+    setSelectedImageIndex(newIndex);
   };
 
   const handleFile = (file: File) => {

@@ -12,8 +12,7 @@ import { setSlides } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import type { Slide } from "@/app/slice/slidesSlice";
 import { exportSlidesAsPDF } from "../../../utils/exportSlides";
-import ImageSettingsPanel from "../components/ImagePanel";
-
+import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
 import dynamic from "next/dynamic";
 
 const TextPanel = dynamic(
@@ -72,7 +71,7 @@ const Page = () => {
         </main> */}
         {/* <TextPanel /> */}
         {/* <ThemePanel /> */}
-        {/* {<ImageSettingsPanel />} */}
+        {<ImageSettingsPanel />}
       </div>
     </div>
   );

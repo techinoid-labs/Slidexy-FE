@@ -14,6 +14,7 @@ interface SlideImageProps {
   height: number;
   isSelected: boolean;
   onSelect: () => void;
+  flipHorizontal?: boolean; // ✅ new
 }
 
 const SlideImage = ({
@@ -25,12 +26,19 @@ const SlideImage = ({
   height,
   isSelected,
   onSelect,
+  flipHorizontal,
 }: SlideImageProps) => {
   const [image] = useImage(imageSrc || url || "");
   const imageRef = useRef<any>(null);
   const trRef = useRef<any>(null);
 
-  const { slides, setSlides, selectedSlideIndex } = useSlides();
+  const {
+    slides,
+    setSlides,
+    selectedSlideIndex,
+    selectedImage,
+    setSelectedImage,
+  } = useSlides();
 
   useEffect(() => {
     if (isSelected && trRef.current && imageRef.current) {
@@ -41,16 +49,26 @@ const SlideImage = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isTyping =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable;
+
+      if (isTyping) return;
+
       if ((e.key === "Delete" || e.key === "Backspace") && isSelected) {
+        if (!slides?.length || selectedSlideIndex < 0) return;
+
         const newSlides = JSON.parse(JSON.stringify(slides));
         const currentSlide = newSlides[selectedSlideIndex];
 
-        // Case 1: remove image_url
+        if (!currentSlide) return;
+
         if (url && !imageSrc) {
           currentSlide.image_url = null;
         }
 
-        // Case 2: remove matching image element
         if (imageSrc) {
           currentSlide.elements = currentSlide.elements.filter(
             (el: any) =>
@@ -62,7 +80,8 @@ const SlideImage = ({
           );
         }
 
-        setSlides(newSlides);
+        setSlides(newSlides); // ✅ Use dispatch here, not setSlides from context
+        setSelectedImage(null);
       }
     };
 
@@ -81,16 +100,61 @@ const SlideImage = ({
         width={width}
         height={height}
         draggable
-        onClick={onSelect}
-        onTap={onSelect}
+        // onClick={onSelect}
+        // onTap={onSelect}
+        onMouseDown={onSelect}
+        onTouchStart={onSelect}
         onTransformEnd={(e) => {
           const node = imageRef.current;
           const scaleX = node.scaleX();
           const scaleY = node.scaleY();
+
           node.scaleX(1);
           node.scaleY(1);
-          node.width(Math.max(50, node.width() * scaleX));
-          node.height(Math.max(50, node.height() * scaleY));
+
+          const newWidth = Math.max(50, node.width() * scaleX);
+          const newHeight = Math.max(50, node.height() * scaleY);
+          const newX = node.x();
+          const newY = node.y();
+
+          const newSlides = JSON.parse(JSON.stringify(slides));
+          const currentSlide = newSlides[selectedSlideIndex];
+
+          // Case 1: update slide.image_url (treated like a normal image)
+          if (url && !imageSrc && currentSlide.image_url === url) {
+            currentSlide.image_url = url; // keep image URL the same
+            setSlides(newSlides);
+            setSelectedImage({
+              element_type: "image",
+              konva_component: "Konva.Image",
+              properties: {
+                x: newX,
+                y: newY,
+                width: newWidth,
+                height: newHeight,
+                imageSrc: url,
+              },
+            });
+            return;
+          }
+
+          // Case 2: update image element
+          const imageElement = currentSlide.elements.find(
+            (el: any) =>
+              el.element_type === "image" &&
+              el.konva_component === "Konva.Image" &&
+              el.properties.imageSrc === imageSrc
+          );
+
+          if (imageElement) {
+            imageElement.properties.width = newWidth;
+            imageElement.properties.height = newHeight;
+            imageElement.properties.x = newX;
+            imageElement.properties.y = newY;
+
+            setSlides(newSlides);
+            setSelectedImage(imageElement);
+          }
         }}
       />
       {isSelected && (

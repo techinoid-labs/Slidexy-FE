@@ -74,10 +74,16 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     dispatch(setSlides(updatedSlides));
   };
 
+  // const commitEdit = useCallback(() => {
+  //   updateSlides(inputValue);
+  //   setIsEditing(false);
+  // }, [inputValue]);
   const commitEdit = useCallback(() => {
-    updateSlides(inputValue);
+    if (inputValue.trim() !== text.trim()) {
+      updateSlides(inputValue);
+    }
     setIsEditing(false);
-  }, [inputValue]);
+  }, [inputValue, text]);
 
   const handleDelete = useCallback(() => {
     if (slideIndex === -1) return;
@@ -123,11 +129,17 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  useEffect(() => {
+    setInputValue(text);
+  }, [text]);
+
   return (
     <>
       <Text
         onClick={onSelect}
         onTap={onSelect}
+        onMouseDown={onSelect}
+        onTouchStart={onSelect}
         ref={textRef}
         text={text}
         x={x}

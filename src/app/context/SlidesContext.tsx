@@ -12,6 +12,10 @@ interface SlidesContextType {
   setSlides: (slides: SlidesType) => void;
   selectedSlideIndex: number;
   setSelectedSlideIndex: (index: number) => void;
+  selectedImage: any | null;
+  setSelectedImage: (image: any | null) => void;
+  selectedImageIndex: null | number;
+  setSelectedImageIndex: (index: number | null) => void;
 }
 
 const SlidesContext = createContext<SlidesContextType>({
@@ -19,12 +23,20 @@ const SlidesContext = createContext<SlidesContextType>({
   setSlides: () => {},
   selectedSlideIndex: 0,
   setSelectedSlideIndex: () => {},
+  selectedImage: null,
+  setSelectedImage: () => {},
+  selectedImageIndex: null,
+  setSelectedImageIndex: () => {},
 });
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch();
   const slides = useSelector((state: RootState) => state.slidesData.slides);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<any | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<any | null>(
+    null
+  );
 
   const handleSetSlides = (newSlides: SlidesType) => {
     dispatch(setSlides(newSlides));
@@ -37,6 +49,10 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setSlides: handleSetSlides,
         selectedSlideIndex,
         setSelectedSlideIndex,
+        selectedImage,
+        setSelectedImage,
+        selectedImageIndex,
+        setSelectedImageIndex,
       }}
     >
       {children}
