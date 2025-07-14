@@ -17,6 +17,9 @@ interface KonvaTextEditorProps {
   fontFamily?: string;
   fill?: string;
   fontStyle?: string;
+  fontWeight?: string;
+  align?: 'left' | 'center' | 'right' | 'justify';
+  opacity?: number;
   width?: number;
   wrap?: "word" | "char";
   draggable?: boolean;
@@ -33,6 +36,9 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   fontFamily = "Arial",
   fill = "#000",
   fontStyle = "normal",
+  fontWeight = "normal",
+  align = "left",
+  opacity = 1,
   width = 300,
   wrap = "word",
   draggable = true,
@@ -137,6 +143,9 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
         fontFamily={selectedTheme?.font || fontFamily}
         fill={selectedTheme?.primaryColor || fill}
         fontStyle={fontStyle}
+        fontWeight={fontWeight === '600' ? 'bold' : fontWeight}
+        align={align}
+        opacity={opacity}
         width={width}
         wrap={wrap}
         draggable={draggable}

@@ -27,7 +27,7 @@ const TextPanel = dynamic(
   { ssr: false }
 );
 const ThemePanel = dynamic(
-  () => import("@/app/components/modify-presentation/Theme"),
+  () => import("@/app/components/modify-presentation/ThemePallete"),
   {
     ssr: false,
   }

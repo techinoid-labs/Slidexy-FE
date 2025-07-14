@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import SideNavBar from "../components/modify-presentation/Side-NavBar";
 import UpperNavBar from "../components/modify-presentation/Upper-NavBar";
-import ThemePanel from "../components/modify-presentation/Theme";
+import ThemePanel from "../components/modify-presentation/ThemePallete";
 import CentralEditor from "../components/modify-presentation/CentralEditor";
 import SlideEditor from "./SlideEditor";
 import { useSlides } from "@/app/context/SlidesContext";
@@ -27,6 +27,16 @@ const Page = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
+  const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
+
+  // Store initial slides state for full reset
+  const [initialSlides] = useState(() => structuredClone(slides));
+
+  // Reset all slides to initial state
+  const resetAll = () => {
+    dispatch(setSlides(structuredClone(initialSlides)));
+    setSelectedTextId(null);
+  };
 
   const handleExportPDF = () => exportSlidesAsPDF(stageRefs.current);
   return (
@@ -47,8 +57,18 @@ const Page = () => {
           setShowTemplatePanel={setShowTemplatePanel}
         />
 
-        <SlideEditor slides={slides} stageRefs={stageRefs} />
+        <SlideEditor
+          slides={slides}
+          stageRefs={stageRefs}
+          selectedTextId={selectedTextId}
+          setSelectedTextId={setSelectedTextId}
+        />
 
+        {selectedTextId ? (
+          <TextPanel selectedTextId={selectedTextId} setSelectedTextId={setSelectedTextId} resetAll={resetAll} />
+        ) : (
+          <ThemePanel resetAll={resetAll} />
+        )}
         {/* <main
           style={{
             flexGrow: 1,
