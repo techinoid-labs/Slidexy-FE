@@ -38,6 +38,7 @@ export interface Slide {
   elements: KonvaComponent[];
   image_url: string | null;
   image_caption: string;
+  _initialState?: Slide;
 }
 
 interface SlidesState {

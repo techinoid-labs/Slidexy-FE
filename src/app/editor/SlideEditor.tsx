@@ -14,11 +14,11 @@ import { setSlides } from "../slice/slidesSlice";
 import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 
-const SLIDE_WIDTH = 920;
-const SLIDE_HEIGHT = 430;
-const LEFT_PADDING = 40;
-const IMAGE_WIDTH = 500;
-const IMAGE_PADDING = 20;
+const SLIDE_WIDTH = 1280;
+const SLIDE_HEIGHT = 720;
+const LEFT_PADDING = 60;
+const IMAGE_WIDTH = 700;
+const IMAGE_PADDING = 40;
 const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
 
 const getRandomSlide = () => {
@@ -74,7 +74,19 @@ const getRandomSlide = () => {
   };
 };
 
-const SlideEditor = ({ slides = [], stageRefs }: any) => {
+interface SlideEditorProps {
+  slides: any[];
+  stageRefs: any;
+  selectedTextId: string | null;
+  setSelectedTextId: (id: string | null) => void;
+}
+
+const SlideEditor = ({
+  slides = [],
+  stageRefs,
+  selectedTextId,
+  setSelectedTextId,
+}: SlideEditorProps) => {
   const dispatch = useDispatch();
   const {
     selectedImageIndex,
@@ -82,10 +94,18 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     selectedImage,
     setSelectedImage,
   } = useSlides();
-  const { selectedTheme } = useSlideThemeContext();
+  const { selectedTheme, selectedLayout } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
+  // const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
+  // =======
+  //   const { selectedTheme, selectedLayout } = useSlideThemeContext();
+  //   const [bgImage] = useImage(selectedTheme?.image_url || "");
+  //   const [selectedIndex, setSelectedIndex] = useState(0);
+  //   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+  //     null
+  //   );
+  // >>>>>>> ui/right-side/panels
   const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
     null
   );
@@ -99,6 +119,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
 
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
+    // Store initial state for this slide
+    // newSlide._initialState = structuredClone(newSlide);
     const newSlides = [...slides, newSlide];
     dispatch(setSlides(newSlides));
     setSelectedIndex(newSlides.length - 1);
@@ -150,6 +172,64 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       dispatch(setSlides(normalizedSlides));
     }
   }, [slides, dispatch]);
+  // Layout logic
+  const getLayoutProps = (layout: number) => {
+    // Returns { image: {x, y, width, height}, title: {x, y}, bullets: {x, y} }
+    switch (layout) {
+      case 0: // image down, text above
+        return {
+          image: { x: 100, y: 500, width: 700, height: 220 },
+          title: { x: LEFT_PADDING, y: 60 },
+          bullets: { x: LEFT_PADDING, y: 180 },
+        };
+      case 1: // image up, text below
+        return {
+          image: { x: 100, y: 60, width: 700, height: 220 },
+          title: { x: LEFT_PADDING, y: 350 },
+          bullets: { x: LEFT_PADDING, y: 420 },
+        };
+      case 2: // image right, text left
+        return {
+          image: { x: 900, y: 100, width: 320, height: 520 },
+          title: { x: LEFT_PADDING, y: 100 },
+          bullets: { x: LEFT_PADDING, y: 200 },
+        };
+      case 3: // image left, text right
+        return {
+          image: { x: 60, y: 100, width: 320, height: 520 },
+          title: { x: 500, y: 100 },
+          bullets: { x: 500, y: 200 },
+        };
+      case 4: // image center, title above, bullets below
+        return {
+          image: {
+            x: (SLIDE_WIDTH - 500) / 2,
+            y: 300,
+            width: 500,
+            height: 200,
+          },
+          title: { x: (SLIDE_WIDTH - 900) / 2, y: 80 },
+          bullets: { x: (SLIDE_WIDTH - 900) / 2, y: 540 },
+        };
+      case 5: // text only
+        return {
+          image: null,
+          title: { x: LEFT_PADDING, y: 100 },
+          bullets: { x: LEFT_PADDING, y: 200 },
+        };
+      default:
+        return {
+          image: {
+            x: SLIDE_WIDTH - 700,
+            y: (SLIDE_HEIGHT - 600) / 2,
+            width: 700,
+            height: 600,
+          },
+          title: { x: LEFT_PADDING, y: 60 },
+          bullets: { x: LEFT_PADDING, y: 180 },
+        };
+    }
+  };
 
   return (
     <main
@@ -184,9 +264,39 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           {slides.map((slide: any, index: number) => {
             const title = slide.slide_title;
             const titleProps = title.properties;
-            const titleY = 25;
+            const layoutProps = getLayoutProps(selectedLayout);
             const bulletGap = 10;
-            const bulletStartY = titleY + titleProps.fontSize + 20;
+            let currentY = layoutProps.bullets.y;
+            const textMaxWidth =
+              selectedLayout === 2 || selectedLayout === 3
+                ? 250
+                : SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
+
+            // Helper to calculate x based on align
+            const getAlignedX = (align: string | undefined, width: number) => {
+              if (align === "center") {
+                return (SLIDE_WIDTH - width) / 2;
+              } else if (align === "right") {
+                return SLIDE_WIDTH - width - LEFT_PADDING;
+              } else {
+                return LEFT_PADDING;
+              }
+            };
+
+            // Helper to calculate y based on verticalAlign
+            const getAlignedY = (
+              verticalAlign: string | undefined,
+              height: number,
+              defaultY: number
+            ) => {
+              if (verticalAlign === "middle") {
+                return (SLIDE_HEIGHT - height) / 2;
+              } else if (verticalAlign === "bottom") {
+                return SLIDE_HEIGHT - height - LEFT_PADDING;
+              } else {
+                return defaultY;
+              }
+            };
 
             return (
               <Box
@@ -245,8 +355,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       <KonvaTextEditor
                         id={`title-${index}`}
                         text={title.text}
-                        x={LEFT_PADDING}
-                        y={titleY}
+                        x={getAlignedX(titleProps.align, textMaxWidth)}
+                        y={getAlignedY(
+                          titleProps.verticalAlign,
+                          50,
+                          layoutProps.title.y
+                        )}
                         width={textMaxWidth}
                         wrap="word"
                         fontSize={titleProps.fontSize}
@@ -255,6 +369,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         }
                         fill={selectedTheme?.primaryColor || titleProps.fill}
                         fontStyle={titleProps.fontStyle}
+                        fontWeight={titleProps.fontWeight}
+                        align={titleProps.align}
+                        opacity={titleProps.opacity}
                         isSelected={selectedTextId === `title-${index}`}
                         onSelect={() => {
                           setSelectedTextId(`title-${index}`);
@@ -264,93 +381,41 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         }}
                       />
                     )}
-                    {/* Generic Text Elements */}
-                    {slide.elements.map((el: any, i: number) => {
-                      if (el.element_type !== "text") return null;
 
-                      return (
-                        <KonvaTextEditor
-                          key={`el-${index}-${i}`}
-                          id={`el-${index}-${i}`}
-                          text={el.text}
-                          x={el.properties.x || LEFT_PADDING}
-                          y={el.properties.y || 300}
-                          width={el.properties.width || textMaxWidth}
-                          wrap="word"
-                          fontSize={el.properties.fontSize}
-                          fontFamily={
-                            selectedTheme?.font || el.properties.fontFamily
-                          }
-                          fill={
-                            selectedTheme?.primaryColor || el.properties.fill
-                          }
-                          fontStyle={el.properties.fontStyle}
-                          // fontWeight={el.properties.fontWeight}
-                          isSelected={selectedTextId === `el-${index}-${i}`}
-                          onSelect={() => {
-                            setSelectedTextId(`el-${index}-${i}`);
-                            setSelectedImageIndex(null);
-                            setSelectedShapeIndex(null);
-                            setSelectedImage(null);
-                          }}
-                        />
-                      );
-                    })}
-
-                    {/* Slide Bullets */}
-                    {(() => {
-                      let currentY = bulletStartY + 70;
-
-                      return slide.elements
-                        .filter((el: any) => el.element_type === "bullet_point")
+                    {/* Bullets/Text Elements */}
+                    {slide.elements &&
+                      slide.elements
+                        .filter(
+                          (el: any) =>
+                            el.element_type === "bullet_point" ||
+                            el.element_type === "text"
+                        )
                         .map((el: any, i: number) => {
-                          const isBullet = el.element_type === "bullet_point";
-                          const fontSize = el.properties.fontSize;
-                          const fontFamily =
-                            selectedTheme?.font || el.properties.fontFamily;
-                          const lineHeight = 1.2;
-                          const bulletText = isBullet
-                            ? `• ${el.text}`
-                            : el.text;
-
-                          const textWidth = textMaxWidth - (isBullet ? 20 : 0);
-                          const canvas = document.createElement("canvas");
-                          const context = canvas.getContext("2d");
-                          context!.font = `${fontSize}px ${fontFamily}`;
-                          const words = bulletText.split(" ");
-                          let lines = [];
-                          let line = "";
-
-                          for (let word of words) {
-                            const testLine = line + word + " ";
-                            const metrics = context!.measureText(testLine);
-                            if (metrics.width > textWidth && line !== "") {
-                              lines.push(line.trim());
-                              line = word + " ";
-                            } else {
-                              line = testLine;
-                            }
-                          }
-                          if (line) lines.push(line.trim());
-
-                          const height = lines.length * fontSize * lineHeight;
-
+                          const y = currentY;
+                          const elAlign = el.properties.align;
+                          const elWidth = el.properties.width || textMaxWidth;
+                          const elVerticalAlign = el.properties.verticalAlign;
                           const editor = (
                             <KonvaTextEditor
                               key={`el-${index}-${i}`}
                               id={`el-${index}-${i}`}
-                              text={bulletText}
-                              x={LEFT_PADDING + (isBullet ? 20 : 0)}
-                              y={currentY}
-                              width={textWidth}
+                              text={el.text}
+                              x={getAlignedX(elAlign, elWidth)}
+                              y={getAlignedY(elVerticalAlign, 50, y)}
+                              width={elWidth}
                               wrap="word"
-                              fontSize={fontSize}
-                              fontFamily={fontFamily}
+                              fontSize={el.properties.fontSize}
+                              fontFamily={
+                                selectedTheme?.font || el.properties.fontFamily
+                              }
                               fill={
                                 selectedTheme?.primaryColor ||
                                 el.properties.fill
                               }
                               fontStyle={el.properties.fontStyle}
+                              fontWeight={el.properties.fontWeight}
+                              align={el.properties.align}
+                              opacity={el.properties.opacity}
                               isSelected={selectedTextId === `el-${index}-${i}`}
                               onSelect={() => {
                                 setSelectedTextId(`el-${index}-${i}`);
@@ -360,13 +425,25 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                               }}
                             />
                           );
-
-                          currentY += height + bulletGap;
+                          currentY +=
+                            (el.properties.fontSize || 18) + bulletGap;
                           return editor;
-                        });
-                    })()}
+                        })}
 
-                    {/* Shaped Render */}
+                    {/* Image Layouts */}
+                    {/* {layoutProps.image && slide.image_url && selectedLayout !== 5 && (
+                      <SlideImage
+                        url={slide.image_url}
+                        x={layoutProps.image.x}
+                        y={layoutProps.image.y}
+                        width={layoutProps.image.width}
+                        height={layoutProps.image.height}
+                        isSelected={selectedImageIndex === index}
+                        onSelect={() => setSelectedImageIndex(index)}
+                            />
+                    )} */}
+
+                    {/* Shapes */}
                     <KonvaShapeRenderer
                       elements={slide.elements}
                       selectedShapeIndex={selectedShapeIndex}
