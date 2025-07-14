@@ -238,6 +238,7 @@ const Shapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
     };
 
     setSlides(updatedSlides);
+    onClose();
   };
 
   return (

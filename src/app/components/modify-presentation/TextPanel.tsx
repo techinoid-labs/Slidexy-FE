@@ -30,18 +30,21 @@ const weightOptions = ["Regular", "Semibold", "Bold"];
 const textTypeOptions = ["Title", "Headline", "Body"];
 
 interface TextSettingsPanelProps {
-  selectedTextId: string | null;
-  setSelectedTextId: (id: string | null) => void;
   sidebarHeight?: string | number;
   resetAll?: () => void;
 }
 
-const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, setSelectedTextId, sidebarHeight = '100vh', resetAll }) => {
+const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
+  sidebarHeight = "100vh",
+  resetAll,
+}) => {
   const dispatch = useDispatch();
-  const { slides } = useSlides();
+  const { slides, selectedTextId } = useSlides();
 
   // Parse selectedTextId
-  const parsed = selectedTextId ? selectedTextId.match(/(?:title|el)-(\d+)(?:-(\d+))?/) : null;
+  const parsed = selectedTextId
+    ? selectedTextId.match(/(?:title|el)-(\d+)(?:-(\d+))?/)
+    : null;
   const slideIndex = parsed ? parseInt(parsed[1], 10) : -1;
   const elementIndex = parsed?.[2] ? parseInt(parsed[2], 10) : null;
 
@@ -50,7 +53,10 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, s
   if (slideIndex !== -1 && slides[slideIndex]) {
     if (selectedTextId?.startsWith("title")) {
       textObj = slides[slideIndex].slide_title;
-    } else if (elementIndex !== null && slides[slideIndex].elements[elementIndex]) {
+    } else if (
+      elementIndex !== null &&
+      slides[slideIndex].elements[elementIndex]
+    ) {
       textObj = slides[slideIndex].elements[elementIndex];
     }
   }
@@ -100,22 +106,22 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, s
 
   // Alignment handler
   const handleAlign = (alignValue: string) => {
-    updateTextProperty('align', alignValue);
+    updateTextProperty("align", alignValue);
   };
 
   // Vertical alignment handler
   const handleVerticalAlign = (vertical: string) => {
-    updateTextProperty('verticalAlign', vertical);
+    updateTextProperty("verticalAlign", vertical);
   };
 
   // Font weight handler
   const handleFontWeight = (weight: string) => {
-    updateTextProperty('fontWeight', weight);
+    updateTextProperty("fontWeight", weight);
   };
 
   // Opacity handler
   const handleOpacity = (value: number) => {
-    updateTextProperty('opacity', value / 100);
+    updateTextProperty("opacity", value / 100);
   };
 
   // Bring Forward/Send Backward
@@ -162,30 +168,22 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, s
       updatedSlides[slideIndex].slide_title.properties = { ...defaultProps };
       // Do not reset text
     } else if (elementIndex !== null) {
-      updatedSlides[slideIndex].elements[elementIndex].properties = { ...defaultProps };
+      updatedSlides[slideIndex].elements[elementIndex].properties = {
+        ...defaultProps,
+      };
       // Do not reset text
     }
     dispatch(setSlides(updatedSlides));
   };
 
   return (
-    <Box
-      sx={{
-        width: 500,
-        bgcolor: '#fff',
-        height: sidebarHeight,
-        display: 'flex',
-        flexDirection: 'column',
-        p: 0,
-        borderRight: '1px solid #E0E0E0',
-      }}
-    >
+    <Box className="w-[410px] min-w-[350px] md:min-w-[410px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
       {/* Tabs */}
-      <Box sx={{ display: 'flex', alignItems: 'center', px: 2, pt: 2, pb: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
         <Box
           sx={{
-            bgcolor: '#F5F5F5',
-            color: '#222',
+            bgcolor: "#F5F5F5",
+            color: "#222",
             fontWeight: 600,
             borderRadius: 2,
             px: 2.5,
@@ -196,16 +194,31 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, s
         >
           Settings
         </Box>
-        <Box sx={{ color: '#888', fontWeight: 500, fontSize: 15, mr: 2, py: 1, cursor: 'pointer' }}>
+        <Box
+          sx={{
+            color: "#888",
+            fontWeight: 500,
+            fontSize: 15,
+            mr: 2,
+            py: 1,
+            cursor: "pointer",
+          }}
+        >
           Animate
         </Box>
         <Box sx={{ flex: 1 }} />
         <Select
           value={50}
           size="small"
-          sx={{ fontSize: 15, bgcolor: '#F5F5F5', borderRadius: 2, width: 70, height: 32 }}
+          sx={{
+            fontSize: 15,
+            bgcolor: "#F5F5F5",
+            borderRadius: 2,
+            width: 70,
+            height: 32,
+          }}
           displayEmpty
-          inputProps={{ 'aria-label': 'Percentage' }}
+          inputProps={{ "aria-label": "Percentage" }}
         >
           <MenuItem value={50}>50%</MenuItem>
           <MenuItem value={75}>75%</MenuItem>
@@ -215,108 +228,206 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, s
       <Divider sx={{ my: 2 }} />
       {/* Text Section */}
       <Box sx={{ px: 3, mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>Text</Typography>
-          <IconButton size="small"><SettingsIcon /></IconButton>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+            Text
+          </Typography>
+          <IconButton size="small">
+            <SettingsIcon />
+          </IconButton>
         </Box>
         <InputBase
           value={textObj.text}
-          onChange={e => updateTextContent(e.target.value)}
+          onChange={(e) => updateTextContent(e.target.value)}
           fullWidth
-          sx={{ mb: 1, borderRadius: 2, bgcolor: '#F8F8FA', fontWeight: 500, fontSize: 15, height: 44, px: 2 }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            bgcolor: "#F8F8FA",
+            fontWeight: 500,
+            fontSize: 15,
+            height: 44,
+            px: 2,
+          }}
         />
         <Select
           value={fontFamily}
           size="small"
           fullWidth
-          sx={{ mb: 1, borderRadius: 2, bgcolor: '#F8F8FA', fontWeight: 500, fontSize: 15, height: 44 }}
-          onChange={e => updateTextProperty('fontFamily', e.target.value)}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            bgcolor: "#F8F8FA",
+            fontWeight: 500,
+            fontSize: 15,
+            height: 44,
+          }}
+          onChange={(e) => updateTextProperty("fontFamily", e.target.value)}
         >
-          {fontOptions.map(opt => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
+          {fontOptions.map((opt) => (
+            <MenuItem key={opt} value={opt}>
+              {opt}
+            </MenuItem>
+          ))}
         </Select>
-        <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+        <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
           <Select
             value={fontSize}
             size="small"
-            sx={{ borderRadius: 2, bgcolor: '#F8F8FA', fontWeight: 500, fontSize: 15, width: 80, height: 44 }}
-            onChange={e => updateTextProperty('fontSize', Number(e.target.value))}
+            sx={{
+              borderRadius: 2,
+              bgcolor: "#F8F8FA",
+              fontWeight: 500,
+              fontSize: 15,
+              width: 80,
+              height: 44,
+            }}
+            onChange={(e) =>
+              updateTextProperty("fontSize", Number(e.target.value))
+            }
           >
-            {[16, 18, 20, 24, 28, 32, 36].map(size => <MenuItem key={size} value={size}>{size}</MenuItem>)}
+            {[16, 18, 20, 24, 28, 32, 36].map((size) => (
+              <MenuItem key={size} value={size}>
+                {size}
+              </MenuItem>
+            ))}
           </Select>
           <Select
             value={fontWeight}
             size="small"
-            sx={{ borderRadius: 2, bgcolor: '#F8F8FA', fontWeight: 500, fontSize: 15, width: 120, height: 44 }}
-            onChange={e => handleFontWeight(e.target.value)}
+            sx={{
+              borderRadius: 2,
+              bgcolor: "#F8F8FA",
+              fontWeight: 500,
+              fontSize: 15,
+              width: 120,
+              height: 44,
+            }}
+            onChange={(e) => handleFontWeight(e.target.value)}
           >
             <MenuItem value="normal">Regular</MenuItem>
             <MenuItem value="600">Semibold</MenuItem>
             <MenuItem value="bold">Bold</MenuItem>
           </Select>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
-          <IconButton sx={{ bgcolor: align === 'left' ? '#E0E0E0' : '#F8F8FA', borderRadius: 2, width: 48, height: 48 }} onClick={() => handleAlign('left')}><FormatAlignLeftIcon sx={{ fontSize: 32 }} /></IconButton>
-          <IconButton sx={{ bgcolor: align === 'center' ? '#E0E0E0' : '#F8F8FA', borderRadius: 2, width: 48, height: 48 }} onClick={() => handleAlign('center')}><FormatAlignCenterIcon sx={{ fontSize: 32 }} /></IconButton>
-          <IconButton sx={{ bgcolor: align === 'right' ? '#E0E0E0' : '#F8F8FA', borderRadius: 2, width: 48, height: 48 }} onClick={() => handleAlign('right')}><FormatAlignRightIcon sx={{ fontSize: 32 }} /></IconButton>
-          <IconButton sx={{ bgcolor: align === 'justify' ? '#E0E0E0' : '#F8F8FA', borderRadius: 2, width: 48, height: 48 }} onClick={() => handleAlign('justify')}><FormatAlignJustifyIcon sx={{ fontSize: 32 }} /></IconButton>
-         {/* Inner vertical alignment */}
-         <Box sx={{ display: 'flex', gap: 1, ml: 2, bgcolor: '#F8F8FA', borderRadius: 2, px: 1 }}>
-           <IconButton sx={{ bgcolor: verticalAlign === 'top' ? '#E0E0E0' : 'transparent', borderRadius: 2, width: 38, height: 38 }} onClick={() => handleVerticalAlign('top')}><VerticalAlignTopIcon sx={{ fontSize: 28 }} /></IconButton>
-           <IconButton sx={{ bgcolor: verticalAlign === 'middle' ? '#E0E0E0' : 'transparent', borderRadius: 2, width: 38, height: 38 }} onClick={() => handleVerticalAlign('middle')}><VerticalAlignCenterIcon sx={{ fontSize: 28 }} /></IconButton>
-           <IconButton sx={{ bgcolor: verticalAlign === 'bottom' ? '#E0E0E0' : 'transparent', borderRadius: 2, width: 38, height: 38 }} onClick={() => handleVerticalAlign('bottom')}><VerticalAlignBottomIcon sx={{ fontSize: 28 }} /></IconButton>
-         </Box>
+        <Box className="flex flex-wrap gap-x-2 gap-y-2 mb-2">
+          {/* Horizontal alignment buttons */}
+          {[
+            { icon: <FormatAlignLeftIcon />, value: "left" },
+            { icon: <FormatAlignCenterIcon />, value: "center" },
+            { icon: <FormatAlignRightIcon />, value: "right" },
+            { icon: <FormatAlignJustifyIcon />, value: "justify" },
+          ].map(({ icon, value }) => (
+            <IconButton
+              key={value}
+              onClick={() => handleAlign(value)}
+              className={`rounded-md w-11 h-11 ${
+                align === value ? "bg-gray-300" : "bg-[#F8F8FA]"
+              }`}
+            >
+              {icon}
+            </IconButton>
+          ))}
+
+          {/* Vertical alignment buttons */}
+          <Box className="flex gap-1 bg-[#F8F8FA] rounded-md px-1 ml-2">
+            {[
+              { icon: <VerticalAlignTopIcon />, value: "top" },
+              { icon: <VerticalAlignCenterIcon />, value: "middle" },
+              { icon: <VerticalAlignBottomIcon />, value: "bottom" },
+            ].map(({ icon, value }) => (
+              <IconButton
+                key={value}
+                onClick={() => handleVerticalAlign(value)}
+                className={`w-9 h-9 rounded-md ${
+                  verticalAlign === value ? "bg-gray-300" : "bg-transparent"
+                }`}
+              >
+                {icon}
+              </IconButton>
+            ))}
+          </Box>
         </Box>
       </Box>
       <Divider sx={{ my: 2 }} />
       {/* Color Section */}
       <Box sx={{ px: 3, mb: 2 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1 }}>Color</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+        <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1 }}>
+          Color
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
           <Box
             sx={{
               width: 32,
               height: 32,
-              borderRadius: '50%',
-              bgcolor: '#6C2CF8',
-              border: '1px solid #E0E0E0',
+              borderRadius: "50%",
+              bgcolor: "#6C2CF8",
+              border: "1px solid #E0E0E0",
             }}
           />
           <Select
-            value={''}
+            value={""}
             displayEmpty
             size="small"
-            sx={{ flex: 1, bgcolor: '#F5F5F5', borderRadius: 2, height: 40 }}
-            inputProps={{ 'aria-label': 'Choose Style' }}
+            sx={{ flex: 1, bgcolor: "#F5F5F5", borderRadius: 2, height: 40 }}
+            inputProps={{ "aria-label": "Choose Style" }}
           >
-            <MenuItem value={''} disabled>Choose Style</MenuItem>
-            <MenuItem value={'style1'}>Style 1</MenuItem>
-            <MenuItem value={'style2'}>Style 2</MenuItem>
+            <MenuItem value={""} disabled>
+              Choose Style
+            </MenuItem>
+            <MenuItem value={"style1"}>Style 1</MenuItem>
+            <MenuItem value={"style2"}>Style 2</MenuItem>
           </Select>
         </Box>
       </Box>
       <Divider sx={{ my: 2 }} />
       {/* Effects Section */}
       <Box sx={{ px: 3, mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>Effects</Typography>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+            Effects
+          </Typography>
           <Select
             value={"Opacity"}
             size="small"
-            sx={{ fontSize: 15, bgcolor: '#F5F5F5', borderRadius: 2, width: 90, height: 32 }}
+            sx={{
+              fontSize: 15,
+              bgcolor: "#F5F5F5",
+              borderRadius: 2,
+              width: 90,
+              height: 32,
+            }}
             displayEmpty
-            inputProps={{ 'aria-label': 'Effect Type' }}
+            inputProps={{ "aria-label": "Effect Type" }}
           >
             <MenuItem value={"Opacity"}>Opacity</MenuItem>
           </Select>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Slider value={Math.round(opacity * 100)} onChange={(_, v) => handleOpacity(Number(v))} sx={{ color: '#7B4AE2', flex: 1 }} />
-          <InputBase value={`${Math.round(opacity * 100)}%`} sx={{ width: 54, fontWeight: 600, fontSize: 16, bgcolor: '#F8F8FA', borderRadius: 2, px: 1.5, py: 0.5, textAlign: 'center' }} readOnly />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Slider
+            value={Math.round(opacity * 100)}
+            onChange={(_, v) => handleOpacity(Number(v))}
+            sx={{ color: "#7B4AE2", flex: 1 }}
+          />
+          <InputBase
+            value={`${Math.round(opacity * 100)}%`}
+            sx={{
+              width: 54,
+              fontWeight: 600,
+              fontSize: 16,
+              bgcolor: "#F8F8FA",
+              borderRadius: 2,
+              px: 1.5,
+              py: 0.5,
+              textAlign: "center",
+            }}
+            readOnly
+          />
         </Box>
       </Box>
       <Divider sx={{ my: 2 }} />
       {/* Layer Order Section */}
-      <Box sx={{ px: 3, mb: 2, display: 'flex', gap: 2 }}>
+      <Box sx={{ px: 3, mb: 2, display: "flex", gap: 2 }}>
         <Button
           variant="outlined"
           startIcon={<ArrowUpwardIcon />}
@@ -324,12 +435,16 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, s
             borderRadius: 2,
             fontWeight: 600,
             fontSize: 15,
-            bgcolor: '#F8F8FA',
-            borderColor: '#E0E0E0',
-            color: '#222',
+            bgcolor: "#F8F8FA",
+            borderColor: "#E0E0E0",
+            color: "#222",
             flex: 1,
-            textTransform: 'none',
-            '&:hover': { bgcolor: '#F3EDFF', borderColor: '#7B4AE2', color: '#7B4AE2' },
+            textTransform: "none",
+            "&:hover": {
+              bgcolor: "#F3EDFF",
+              borderColor: "#7B4AE2",
+              color: "#7B4AE2",
+            },
           }}
           onClick={bringForward}
         >
@@ -342,12 +457,16 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, s
             borderRadius: 2,
             fontWeight: 600,
             fontSize: 15,
-            bgcolor: '#F8F8FA',
-            borderColor: '#E0E0E0',
-            color: '#222',
+            bgcolor: "#F8F8FA",
+            borderColor: "#E0E0E0",
+            color: "#222",
             flex: 1,
-            textTransform: 'none',
-            '&:hover': { bgcolor: '#F3EDFF', borderColor: '#7B4AE2', color: '#7B4AE2' },
+            textTransform: "none",
+            "&:hover": {
+              bgcolor: "#F3EDFF",
+              borderColor: "#7B4AE2",
+              color: "#7B4AE2",
+            },
           }}
           onClick={sendBackward}
         >
@@ -359,17 +478,17 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, s
         <Button
           fullWidth
           sx={{
-            bgcolor: 'linear-gradient(90deg, #7B4AE2 0%, #5F2EEA 100%)',
-            color: '#fff',
+            bgcolor: "linear-gradient(90deg, #7B4AE2 0%, #5F2EEA 100%)",
+            color: "#fff",
             fontWeight: 600,
             fontSize: 18,
             borderRadius: 8,
             py: 1.5,
-            textTransform: 'none',
-            boxShadow: '0 2px 8px 0 rgba(123,74,226,0.15)',
-            background: 'linear-gradient(90deg, #7B4AE2 0%, #5F2EEA 100%)',
-            '&:hover': {
-              background: 'linear-gradient(90deg, #5F2EEA 0%, #7B4AE2 100%)',
+            textTransform: "none",
+            boxShadow: "0 2px 8px 0 rgba(123,74,226,0.15)",
+            background: "linear-gradient(90deg, #7B4AE2 0%, #5F2EEA 100%)",
+            "&:hover": {
+              background: "linear-gradient(90deg, #5F2EEA 0%, #7B4AE2 100%)",
             },
           }}
           onClick={() => {
@@ -377,8 +496,12 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, s
             if (slideIndex === -1 || !slides[slideIndex]?._initialState) return;
             const updatedSlides = structuredClone(slides);
             // Don't copy _initialState itself to avoid infinite nesting
-            const { _initialState, ...rest } = updatedSlides[slideIndex]._initialState as Slide;
-            updatedSlides[slideIndex] = { ...rest, _initialState: updatedSlides[slideIndex]._initialState };
+            const { _initialState, ...rest } = updatedSlides[slideIndex]
+              ._initialState as Slide;
+            updatedSlides[slideIndex] = {
+              ...rest,
+              _initialState: updatedSlides[slideIndex]._initialState,
+            };
             dispatch(setSlides(updatedSlides));
           }}
         >
@@ -389,4 +512,4 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({ selectedTextId, s
   );
 };
 
-export default TextSettingsPanel; 
+export default TextSettingsPanel;

@@ -5,6 +5,7 @@ import Providers from "./provider/Provider";
 import { ThemeProvider } from "@/lib/theme-provider";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider as ThemeContextProvider } from "./context/ThemeContext";
+import "./globals.css";
 
 const raleway = Raleway({
   subsets: ["latin"],

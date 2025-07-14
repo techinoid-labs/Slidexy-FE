@@ -6,15 +6,15 @@ import useImage from "use-image";
 import { useSlides } from "@/app/context/SlidesContext";
 
 interface SlideImageProps {
-  url?: string; // from slide.image_url
-  imageSrc?: string; // from element.properties.imageSrc
+  url?: string;
+  imageSrc?: string;
   x: number;
   y: number;
   width: number;
   height: number;
   isSelected: boolean;
   onSelect: () => void;
-  flipHorizontal?: boolean; // ✅ new
+  flipHorizontal?: boolean;
 }
 
 const SlideImage = ({

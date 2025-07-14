@@ -9,9 +9,8 @@ import {
   IconButton,
 } from "@mui/material";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
-import { ChromePicker } from 'react-color';
-import Popover from '@mui/material/Popover';
-
+import { ChromePicker } from "react-color";
+import Popover from "@mui/material/Popover";
 
 // PaletteStack: renders a stack of overlapping color circles
 interface PaletteStackProps {
@@ -56,6 +55,7 @@ const PaletteStack: React.FC<PaletteStackProps> = ({
 
 // Sample palettes (replace with API data later)
 const palettes = [
+  ["#fff", "black", "black", "black"],
   ["#E09B4B", "#F5D7A1", "#F9EEDB", "#3C2B1C"],
   ["#B6D44A", "#1B5E20", "#3DE1C1", "#00695C"],
   ["#7B4AE2", "#B39DDB", "#E1BEE7", "#9575CD"],
@@ -70,13 +70,15 @@ const paletteToTheme = (palette: string[]) => ({
   image_url: "",
 });
 
-const ThemePanel: React.FC = () => {
-  const { selectedTheme, setSelectedTheme, selectedLayout, setSelectedLayout } = useSlideThemeContext();
+const ThemePanel = ({ resetAll }: any) => {
+  const { selectedTheme, setSelectedTheme, selectedLayout, setSelectedLayout } =
+    useSlideThemeContext();
   // Find selected palette index
   const [customPalettes, setCustomPalettes] = useState<string[][]>([]);
   const [customColors, setCustomColors] = useState<string[]>([]);
   const colorInputRef = useRef<HTMLInputElement>(null);
-  const [colorPickerAnchor, setColorPickerAnchor] = useState<null | HTMLElement>(null);
+  const [colorPickerAnchor, setColorPickerAnchor] =
+    useState<null | HTMLElement>(null);
 
   const handleColorButtonClick = (event: React.MouseEvent<HTMLElement>) => {
     setColorPickerAnchor(event.currentTarget);
@@ -121,19 +123,7 @@ const ThemePanel: React.FC = () => {
   };
 
   return (
-    <Box
-      sx={{
-        width: { xs: '100%', sm: 360 },
-        minWidth: 570,
-        maxWidth: '100vw',
-        bgcolor: "#fff",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        p: 0,
-        borderRight: "1px solid #E0E0E0",
-      }}
-    >
+    <Box className="w-[410px] min-w-[350px] md:min-w-[410px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
       {/* Tabs */}
       <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
         <Box
@@ -192,13 +182,13 @@ const ThemePanel: React.FC = () => {
         <Box
           sx={{
             display: "flex",
-            flexWrap: 'wrap',
+            flexWrap: "wrap",
             gap: 2,
             justifyContent: "flex-start",
             alignItems: "center",
             mb: 2,
-            width: '100%',
-            maxWidth: '100%',
+            width: "100%",
+            maxWidth: "100%",
           }}
         >
           {allPalettes.map((colors, idx) => (
@@ -231,55 +221,27 @@ const ThemePanel: React.FC = () => {
         <Typography sx={{ fontWeight: 500, fontSize: 16, mb: 1 }}>
           Presentation Layout
         </Typography>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 1,
-            mb: 2,
-            borderColor: "#FFFFFF"
-          }}
-        >
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
           {[...Array(6)].map((_, i) => (
-            <IconButton
+            <button
               key={i}
               onClick={() => setSelectedLayout(i as any)}
-              sx={{
-                width: 150,
-                height: 85,
-                p: 0,
-                borderRadius: 1,
-                backgroundColor: "#FBFAFF",
-                overflow: 'hidden',
-                borderColor: "#FFFFFF", 
-                boxShadow: selectedLayout === i
-                  ? '0 0 0 2px #7B4AE2'
-                  : '0 0 0 1px #ECECEC',
-                transition: 'box-shadow 0.2s',
-                bgcolor: '#FFFFFF',
-                mb: 1,
-                '&:hover': {
-                  bgcolor: '#FBFAFF',
-                },
-              }}
               aria-label={`Select layout ${i + 1}`}
+              className={`w-[150px] h-[85px] p-0 overflow-hidden bg-white mb-2 transition-shadow rounded-sm
+        ${
+          selectedLayout === i
+            ? "shadow-[0_0_0_2px_#7B4AE2]"
+            : "shadow-[0_0_0_1px_#ECECEC]"
+        } hover:bg-[#FBFAFF]`}
             >
               <img
                 src={`/layout-${i}.svg`}
                 alt={`Layout ${i + 1}`}
-                style={{
-                  display: 'block',
-                  width: "100px",
-                  height: "50px",
-                  objectFit: 'cover',
-                  
-                }}
+                className="block w-[100px] h-[50px] object-cover mx-auto"
               />
-            </IconButton>
-
-
+            </button>
           ))}
-        </Box>
+        </div>
       </Box>
       <Divider />
       {/* Custom Background Color Section */}
@@ -338,10 +300,10 @@ const ThemePanel: React.FC = () => {
             open={Boolean(colorPickerAnchor)}
             anchorEl={colorPickerAnchor}
             onClose={handleColorPickerClose}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
           >
             <ChromePicker
-              color={customColors[customColors.length - 1] || '#fff'}
+              color={customColors[customColors.length - 1] || "#fff"}
               onChangeComplete={(color) => {
                 handleAddColor(color.hex);
                 handleColorPickerClose();

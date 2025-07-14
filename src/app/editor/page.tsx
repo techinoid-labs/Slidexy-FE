@@ -22,16 +22,14 @@ const TextPanel = dynamic(
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
-  const { slides } = useSlides();
+  const { slides, setSelectedTextId, selectedTextId, selectedImageIndex } =
+    useSlides();
   const dispatch = useDispatch();
   const router = useRouter();
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
-  const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
 
-  // Store initial slides state for full reset
   const [initialSlides] = useState(() => structuredClone(slides));
 
-  // Reset all slides to initial state
   const resetAll = () => {
     dispatch(setSlides(structuredClone(initialSlides)));
     setSelectedTextId(null);
@@ -56,42 +54,15 @@ const Page = () => {
           setShowTemplatePanel={setShowTemplatePanel}
         />
 
-        <SlideEditor
-          slides={slides}
-          stageRefs={stageRefs}
-          selectedTextId={selectedTextId}
-          setSelectedTextId={setSelectedTextId}
-        />
+        <SlideEditor slides={slides} stageRefs={stageRefs} />
 
         {selectedTextId ? (
-          <TextPanel selectedTextId={selectedTextId} setSelectedTextId={setSelectedTextId} resetAll={resetAll} />
+          <TextPanel resetAll={resetAll} />
+        ) : selectedImageIndex ? (
+          <ImageSettingsPanel />
         ) : (
           <ThemePanel resetAll={resetAll} />
         )}
-        {/* <main
-          style={{
-            flexGrow: 1,
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-          }}
-        >
-          // <CentralEditor templatePanelOpen={showTemplatePanel} /> 
-          <div
-            style={{
-              flexGrow: 1,
-              overflowY: "auto",
-              padding: 16,
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <SlideEditor slides={slides} stageRefs={stageRefs} />
-          </div>
-        </main> */}
-        {/* <TextPanel /> */}
-        {/* <ThemePanel /> */}
-        {<ImageSettingsPanel />}
       </div>
     </div>
   );

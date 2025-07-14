@@ -13,7 +13,6 @@ import {
   Wedge,
   Transformer,
 } from "react-konva";
-import { useDispatch } from "react-redux";
 import { useSlides } from "@/app/context/SlidesContext";
 
 interface KonvaShapeRendererProps {
@@ -29,10 +28,8 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
 }) => {
   const shapeRefs = useRef<(any | null)[]>([]);
   const trRef = useRef<any>(null);
-  const dispatch = useDispatch();
   const { slides, setSlides, selectedSlideIndex: slideIdx } = useSlides();
 
-  // --- DELETE KEY HANDLER ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -133,23 +130,104 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
 
         switch (el.konva_component) {
           case "Konva.Circle":
-            return <Circle key={`shape-${i}`} {...commonProps} />;
+            return (
+              <Circle
+                onClick={onSelectShape}
+                onTap={onSelectShape}
+                onMouseDown={onSelectShape}
+                onTouchStart={onSelectShape}
+                key={`shape-${i}`}
+                {...commonProps}
+              />
+            );
           case "Konva.Rect":
-            return <Rect key={`shape-${i}`} {...commonProps} />;
+            return (
+              <Rect
+                onClick={onSelectShape}
+                onTap={onSelectShape}
+                onMouseDown={onSelectShape}
+                onTouchStart={onSelectShape}
+                key={`shape-${i}`}
+                {...commonProps}
+              />
+            );
           case "Konva.RegularPolygon":
-            return <RegularPolygon key={`shape-${i}`} {...commonProps} />;
+            return (
+              <RegularPolygon
+                onClick={onSelectShape}
+                onTap={onSelectShape}
+                onMouseDown={onSelectShape}
+                onTouchStart={onSelectShape}
+                key={`shape-${i}`}
+                {...commonProps}
+              />
+            );
           case "Konva.Star":
-            return <Star key={`shape-${i}`} {...commonProps} />;
+            return (
+              <Star
+                onClick={onSelectShape}
+                onTap={onSelectShape}
+                onMouseDown={onSelectShape}
+                onTouchStart={onSelectShape}
+                key={`shape-${i}`}
+                {...commonProps}
+              />
+            );
           case "Konva.Line":
-            return <Line key={`shape-${i}`} {...commonProps} />;
+            return (
+              <Line
+                onClick={onSelectShape}
+                onTap={onSelectShape}
+                onMouseDown={onSelectShape}
+                onTouchStart={onSelectShape}
+                key={`shape-${i}`}
+                {...commonProps}
+              />
+            );
           case "Konva.Arrow":
-            return <Arrow key={`shape-${i}`} {...commonProps} />;
+            return (
+              <Arrow
+                onClick={onSelectShape}
+                onTap={onSelectShape}
+                onMouseDown={onSelectShape}
+                onTouchStart={onSelectShape}
+                key={`shape-${i}`}
+                {...commonProps}
+              />
+            );
           case "Konva.Ellipse":
-            return <Ellipse key={`shape-${i}`} {...commonProps} />;
+            return (
+              <Ellipse
+                onClick={onSelectShape}
+                onTap={onSelectShape}
+                onMouseDown={onSelectShape}
+                onTouchStart={onSelectShape}
+                key={`shape-${i}`}
+                {...commonProps}
+              />
+            );
           case "Konva.Arc":
-            return <Arc key={`shape-${i}`} {...commonProps} />;
+            return (
+              <Arc
+                onClick={onSelectShape}
+                onTap={onSelectShape}
+                onMouseDown={onSelectShape}
+                onTouchStart={onSelectShape}
+                key={`shape-${i}`}
+                {...commonProps}
+              />
+            );
           case "Konva.Wedge":
-            return <Wedge key={`shape-${i}`} {...commonProps} />;
+            return (
+              <Wedge
+                onClick={onSelectShape}
+                onTap={onSelectShape}
+                onMouseDown={onSelectShape}
+                onTouchStart={onSelectShape}
+                key={`shape-${i}`}
+                {...commonProps}
+              />
+            );
           default:
             return null;
         }
