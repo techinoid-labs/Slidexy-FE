@@ -116,8 +116,8 @@ export default function PresentationMaker({
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
-        ? { source: "website", inputWebsiteUrl: inputValue }
-        : { source: "text", textContent: inputValue };
+          ? { source: "website", inputWebsiteUrl: inputValue }
+          : { source: "text", textContent: inputValue };
 
     const promptMeta = {
       goal,
@@ -296,7 +296,7 @@ export default function PresentationMaker({
           fontSize: "1.125rem",
           fontWeight: 600,
           mb: 4,
-          color: "#fff", // Ensure text is white
+          color: "#fff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -339,9 +339,12 @@ export default function PresentationMaker({
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "col", md: "row" },
+            flexDirection: { xs: "column", md: "row" }, // Stack in column on mobile, row on desktop
             gap: 2,
             flexWrap: { xs: "wrap", sm: "nowrap" },
+            width: { xs: "100%", md: 1000 }, // Responsive width
+            //justifyContent: "center", // Center children horizontally
+            alignItems: "center",     // Center children vertically (for column)
           }}
         >
           {promptCards.map((card, index) => (
@@ -349,42 +352,46 @@ export default function PresentationMaker({
               key={index}
               sx={{
                 ":hover": {
-                  scale: "1.1 ",
+                  transform: "scale(1.05)",
+                  transition: "0.3s ease",
                 },
                 cursor: "pointer",
                 backgroundColor: "#F7F5FD",
                 borderRadius: "16px",
                 padding: 2,
-                flex: "col",
-                flexWrap: "wrap",
-
                 position: "relative",
+                minHeight: 160,
+                width: {
+                  xs: "300px",
+                  sm:
+                    index === 0 ? 250 :
+                      index === 1 ? 250 :
+                        index === 2 ? 250 :
+                          200,
+
+                },
               }}
               onClick={() => handlePromptClick(card.description)}
             >
-              <Typography variant="subtitle1" fontWeight={600} mt={3} mb={3}>
+              <Typography variant="subtitle1" fontWeight={600} mt={1} mb={1}>
                 {card.title}
               </Typography>
-              <Typography variant="body2" color="text.secondary" mb={6}>
+              <Typography variant="body2" color="text.secondary" mb={4}>
                 {card.description}
               </Typography>
               <Box
                 sx={{
                   position: "absolute",
-                  top: 43,
+                  top: 16,
                   right: 16,
                   cursor: "pointer",
                 }}
               >
-                <Image
-                  src={card.icon}
-                  alt="Prompt icon"
-                  width={20}
-                  height={20}
-                />
+                <Image src={card.icon} alt="Prompt icon" width={20} height={20} />
               </Box>
             </Box>
           ))}
+
         </Box>
       </Box>
     </Box>

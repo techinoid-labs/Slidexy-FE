@@ -25,7 +25,7 @@ export default function PurposeSection() {
           mb: 4,
         }}
       >
-        <Box sx={{ margin: "auto" }}>
+        <Box sx={{ margin: "auto" , }}>
           <Chip
             icon={
               <img
@@ -55,8 +55,9 @@ export default function PurposeSection() {
               "& .MuiChip-icon": {
                 marginRight: "6px",
               },
-              ml: { xs: 0, md: -9 },
+              ml: { xs: 3, md: -9 },
               display: "inline-flex",
+              alignItems: 'center',
             }}
           />
 
@@ -67,7 +68,7 @@ export default function PurposeSection() {
               fontSize: { xs: "2rem", md: "3rem" },
               color: "#18181B",
               mb: 0.5,
-              ml: { xs: 0, md: -8 },
+              ml: { xs: 0, md: -10 },
               textAlign: { xs: "center", md: "left" },
             }}
           >
@@ -113,8 +114,10 @@ export default function PurposeSection() {
             background: "linear-gradient(180deg, #EEF1F7 0%, #FFFFFF 100%)",
             borderRadius: 2,
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
-            p: { xs: 3, md: 4 },
-            minHeight: 370,
+            p: { xs: 1.5, md: 2 },
+            minHeight: 180,
+            maxWidth: 800,
+            ml: { xs: 0, md: 5 },
             display: "flex",
             flexDirection: "column",
             position: "relative",
@@ -125,12 +128,14 @@ export default function PurposeSection() {
         >
           <Box
             sx={{
-              width: { xs: 24, md: 40 },
-              height: { xs: 24, md: 40 },
+              width: { xs: 24, md: 35 },
+              height: { xs: 24, md: 35 },
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              mt: 5,
               mb: 2,
+              ml: { sx: 0, md: 3 },
             }}
           >
             <img
@@ -140,25 +145,28 @@ export default function PurposeSection() {
               height={40}
               style={{
                 objectFit: "contain",
-                maxWidth: "24px",
-                maxHeight: "24px",
+                maxWidth: "45px",
+                maxHeight: "45px",
               }}
             />
           </Box>
           <Typography
             sx={{
               fontWeight: 500,
-              fontSize: { xs: "1.5rem", md: "2rem" },
+              fontSize: { xs: "1.5rem", md: "1.6rem" },
               color: "#18181B",
               mb: 1,
+              ml: { sx: 0, md: 3 },
             }}
           >
             Context-aware content generation
           </Typography>
           <Typography
-            sx={{ color: "#757575", fontSize: { xs: "1rem", md: "1.05rem" } }}
+            sx={{ color: "#757575", fontSize: { xs: "0.9rem", md: "0.9rem" }, ml: { sx: 0, md: 3 }, }}
           >
-            AI turns a prompt into a styled presentation with sections, tone,
+            AI turns a prompt into a styled presentation with sections,
+            <br />
+            tone,
             goals, keywords, and a smart title.
           </Typography>
 
@@ -189,7 +197,9 @@ export default function PurposeSection() {
             borderRadius: 4,
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
             p: { xs: 4, md: 5 },
-            minHeight: 220,
+            minHeight: 180,
+            maxWidth: 570,
+            mr: { xs: 0, md: 2 },
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
@@ -201,23 +211,24 @@ export default function PurposeSection() {
         >
           <Box
             sx={{
-              width: { xs: 24, md: 50 },
-              height: { xs: 24, md: 50 },
+              width: { xs: 24, md: 60 },
+              height: { xs: 24, md: 60 },
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              mb: 2,
+              mt: { xs: 0, md: -1 },
+              mb: {xs : 2, md: 0},
             }}
           >
             <img
               src="/images/light-purple-star.svg"
               alt="Star Icon"
-              width={50}
-              height={50}
+              width={60}
+              height={60}
               style={{
                 objectFit: "contain",
-                maxWidth: "24px",
-                maxHeight: "24px",
+                maxWidth: "40px",
+                maxHeight: "40px",
               }}
             />
           </Box>
@@ -236,11 +247,14 @@ export default function PurposeSection() {
           <Typography
             sx={{
               color: "#757575",
-              fontSize: { xs: "1rem", md: "1.05rem" },
+              fontSize: { xs: "0.9rem", md: "0.9rem" },
               mb: 2,
             }}
           >
-            AI transcribes and analyzes spoken ideas to auto-generate slides
+            AI transcribes and analyzes
+            <br />
+            spoken ideas to auto-generate slides
+            <br />
             with key points and speaker notes.
           </Typography>
 
@@ -254,8 +268,8 @@ export default function PurposeSection() {
               position: "absolute",
               bottom: -10,
               right: 0,
-              width: 300,
-              height: 300,
+              width: 200,
+              height: 200,
               objectFit: "contain",
               zIndex: 1,
             }}
@@ -272,6 +286,8 @@ export default function PurposeSection() {
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
             p: { xs: 4, md: 5 },
             minHeight: 180,
+            maxWidth: 570,
+            mr: { xs: 0, md: 2 },
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
@@ -281,8 +297,8 @@ export default function PurposeSection() {
         >
           <Box
             sx={{
-              width: { xs: 24, md: 50 },
-              height: { xs: 24, md: 50 },
+              width: { xs: 24, md: 70 },
+              height: { xs: 24, md: 70 },
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -292,19 +308,19 @@ export default function PurposeSection() {
             <img
               src="/images/natural-lang-star.svg"
               alt="Star Icon"
-              width={50}
-              height={50}
+              width={70}
+              height={70}
               style={{
                 objectFit: "contain",
-                maxWidth: "24px",
-                maxHeight: "24px",
+                maxWidth: "40px",
+                maxHeight: "40px",
               }}
             />
           </Box>
           <Typography
             sx={{
               fontWeight: 500,
-              fontSize: { xs: "1.5rem", md: "2rem" },
+              fontSize: { xs: "1.5rem", md: "1.6rem" },
               color: "#18181B",
               mb: 1,
             }}
@@ -314,7 +330,7 @@ export default function PurposeSection() {
           <Typography
             sx={{
               color: "#757575",
-              fontSize: { xs: "1rem", md: "1.05rem" },
+              fontSize: { xs: "0.9rem", md: "0.9rem" },
               mb: 2,
             }}
           >
@@ -327,7 +343,7 @@ export default function PurposeSection() {
       {/* Full-width Bottom Card */}
       <Box
         sx={{
-          maxWidth: 1350,
+          //maxWidth: 1350,
           mx: "auto",
           mt: { xs: 3, md: 4 },
           bgcolor: "transparent",
@@ -336,7 +352,8 @@ export default function PurposeSection() {
           borderRadius: 4,
           boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
           p: { xs: 4, md: 5 },
-          minHeight: 350,
+          minHeight: 300,
+          maxWidth: 1300,
           display: "flex",
           flexDirection: "column",
           alignItems: { xs: "center", md: "flex-start" },
@@ -361,15 +378,15 @@ export default function PurposeSection() {
             height={50}
             style={{
               objectFit: "contain",
-              maxWidth: "24px",
-              maxHeight: "24px",
+              maxWidth: "40px",
+              maxHeight: "40px",
             }}
           />
         </Box>
         <Typography
           sx={{
             fontWeight: 500,
-            fontSize: { xs: "1.5rem", md: "2rem" },
+           fontSize: { xs: "1.5rem", md: "1.6rem" },
             color: "#18181B",
             mb: 0.5,
           }}

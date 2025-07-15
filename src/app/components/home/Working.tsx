@@ -234,12 +234,12 @@ export default function WorkingSection() {
         {/* Right Image */}
         <Box
           sx={{
-            width: { xs: "100%", md: 620 },
-            height: { xs: 250, md: 500 },
+            width: { xs: "100%", md: 500 },
+            height: { xs: 250, md: 400 },
             borderRadius: "50px",
             border: "0.78px solid #E9E9FF",
             background: "#F8F8FF",
-            mt: { xs: 4, md: -10 },
+            mt: { xs: 4, md: -4 },
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

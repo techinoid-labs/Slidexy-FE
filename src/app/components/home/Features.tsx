@@ -124,6 +124,7 @@ export default function FeaturesSection() {
                 mt: -30,
                 opacity: 0.6,
                 pointerEvents: "none",
+                zIndex: -1,
               }}
             >
               <Image
@@ -145,15 +146,15 @@ export default function FeaturesSection() {
                 textAlign: "center",
                 px: 2,
                 position: "relative",
-                zIndex: 1,
+                zIndex: 1, // Ensure content is above background
               }}
               className="flex flex-col items-center justify-center text-center"
             >
               <Image
                 src="/images/voice-to-deck.svg"
                 alt="Voice-to-Deck"
-                width={40}
-                height={40}
+                width={45}
+                height={45}
                 style={{ width: "40px", height: "40px" }}
                 className="md:w-[60px] md:h-[60px]"
               />

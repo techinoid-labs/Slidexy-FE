@@ -179,8 +179,8 @@ export default function PresentationStyleSection() {
         {/* Right Image Placeholder (hidden on mobile) */}
         <Box
           sx={{
-            width: 546,
-            height: 422,
+            width: 400,
+            height: 322,
             borderRadius: "30px",
             background: "#F6F6F6",
             ml: { xs: 0, md: 6 },

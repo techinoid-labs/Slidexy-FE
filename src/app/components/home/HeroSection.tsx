@@ -162,10 +162,10 @@ export default function HeroSection() {
               variant="h1"
               noWrap
               sx={{
-                fontSize: { xs: "2rem", md: "4rem", lg: "4.8rem" },
-                fontWeight: 600,
-                mb: 3,
-                lineHeight: 1.1,
+                fontSize: { xs: "2rem", md: "3rem", lg: "3.2rem" },
+                fontWeight: 550,
+                mb: 4,
+                lineHeight: 1.3,
                 color: "#000000",
                 whiteSpace: { xs: "normal", md: "nowrap" },
                 overflow: "hidden",
@@ -188,8 +188,9 @@ export default function HeroSection() {
                 color: "text.secondary",
                 maxWidth: 600,
                 mx: "auto",
-                lineHeight: 1.6,
-                fontSize: { xs: "1.1rem", md: "1.25rem" },
+                lineHeight: 1.3,
+                fontSize: { xs: "0.9rem", md: "1.1rem" },
+                fontWeight : 350
               }}
             >
               Turn any thought into a polished, on-brand presentation —<br />
@@ -232,6 +233,7 @@ export default function HeroSection() {
                     width: { xs: "90vw", sm: "100%", md: 660 },
                     maxWidth: { xs: 320, md: 660 },
                     height: { xs: 48, md: 72 },
+                    
                   }}
                 >
                   <TextField
@@ -250,9 +252,10 @@ export default function HeroSection() {
                       "& .MuiOutlinedInput-root": {
                         border: "none",
                         "& fieldset": { border: "none" },
-                        fontSize: { xs: "1rem", md: "1.125rem" },
+                        fontSize: { xs: "0.4rem", md: "1.125rem" },
                         px: 2,
                         py: 1,
+
                       },
                     }}
                   />
@@ -264,15 +267,15 @@ export default function HeroSection() {
                       "&:hover": {
                         backgroundColor: alpha(theme.palette.primary.main, 0.1),
                       },
-                      width: { xs: 28, md: 38 },
-                      height: { xs: 28, md: 38 },
+                      width: { xs: 34, md: 40 },
+                      height: { xs: 34, md: 40 },
                     }}
                   >
                     <Image
                       src="/images/voice-icon.svg"
                       alt="Voice Icon"
-                      width={38}
-                      height={38}
+                      width={40}
+                      height={40}
                       style={{ width: "100%", height: "100%" }}
                     />
                   </IconButton>
@@ -280,6 +283,7 @@ export default function HeroSection() {
                 <Box
                   sx={{
                     // display: { xs: "none", md: "flex" },
+                    mb: {xs: -10, md: 0},
                     alignItems: "center",
                   }}
                 >
@@ -356,14 +360,15 @@ export default function HeroSection() {
             sx={{
               display: "flex",
               justifyContent: "center",
-              mt: 2,
+              mt: {sx: -20, md: 0},
+              mb: {sx: 10, md: 0},
             }}
           >
             <Button
               color="primary"
               endIcon={<KeyboardArrowDown />}
               sx={{
-                fontSize: { xs: "1.1rem", sm: "1.5rem", md: "1.5rem" },
+                fontSize: { xs: "1.1rem", sm: "1.2rem", md: "1.2rem" },
                 color: "#4A00E0",
                 whiteSpace: "nowrap",
                 textTransform: "none",
@@ -371,7 +376,7 @@ export default function HeroSection() {
                   backgroundColor: "transparent",
                   color: "primary.dark",
                 },
-                fontWeight: 500,
+                fontWeight: 450,
                 px: 2,
                 py: 1,
               }}
