@@ -73,6 +73,8 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
           draggable: true,
           onClick: () => onSelectShape(i),
           onTap: () => onSelectShape(i),
+          onMouseDown: () => onSelectShape(i),
+          onTouchStart: () => onSelectShape(i),
           onTransformEnd: () => {
             const node = shapeRefs.current[i];
             if (!node) return;

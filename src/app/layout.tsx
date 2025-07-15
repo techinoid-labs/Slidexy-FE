@@ -7,6 +7,10 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider as ThemeContextProvider } from "./context/ThemeContext";
 import "./globals.css";
 
+<link
+  href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap"
+  rel="stylesheet"
+/>;
 const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",

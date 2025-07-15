@@ -30,7 +30,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
     setSelectedSlideIndex,
   } = useSlides();
 
-  console.log({ selectedSlideIndex, reduxSlides });
+  // console.log({ selectedSlideIndex, reduxSlides });
   useEffect(() => {
     if (selectedIndex !== selectedSlideIndex) {
       setSelectedSlideIndex(selectedIndex);

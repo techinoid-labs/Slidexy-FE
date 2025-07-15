@@ -266,7 +266,8 @@ const ThemePanel = ({ resetAll }: any) => {
           {/* + Button for color picker */}
           {customColors.length < 3 && (
             <IconButton
-              onClick={() => colorInputRef.current?.click()}
+              // onClick={() => colorInputRef.current?.click()}
+              onClick={handleColorButtonClick}
               sx={{
                 width: 48,
                 height: 45,
@@ -289,13 +290,13 @@ const ThemePanel = ({ resetAll }: any) => {
             </IconButton>
           )}
           {/* Color palette button */}
-          <Button
+          {/* <Button
             variant="outlined"
             onClick={handleColorButtonClick}
             sx={{ height: 40 }}
           >
             Color
-          </Button>
+          </Button> */}
           <Popover
             open={Boolean(colorPickerAnchor)}
             anchorEl={colorPickerAnchor}

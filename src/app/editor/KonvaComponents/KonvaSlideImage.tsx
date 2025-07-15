@@ -14,7 +14,6 @@ interface SlideImageProps {
   height: number;
   isSelected: boolean;
   onSelect: () => void;
-  flipHorizontal?: boolean;
 }
 
 const SlideImage = ({
@@ -26,7 +25,6 @@ const SlideImage = ({
   height,
   isSelected,
   onSelect,
-  flipHorizontal,
 }: SlideImageProps) => {
   const [image] = useImage(imageSrc || url || "");
   const imageRef = useRef<any>(null);
@@ -80,7 +78,7 @@ const SlideImage = ({
           );
         }
 
-        setSlides(newSlides); // ✅ Use dispatch here, not setSlides from context
+        setSlides(newSlides);
         setSelectedImage(null);
       }
     };
