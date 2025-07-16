@@ -98,8 +98,8 @@ export default function HeroSection() {
             mt: { xs: -6, md: -16 },
             opacity: 0.6,
             pointerEvents: "none",
-            width: { xs: 120, md: 450 },
-            height: { xs: 120, md: 450 },
+            width: { xs: 250, md: 450 },
+            height: { xs: 200, md: 450 },
           }}
         >
           <Image
@@ -127,7 +127,7 @@ export default function HeroSection() {
           }}
         >
           {/* Badge */}
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 7, mb: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", mt: {xs: 2, md:7}, mb: 2 }}>
             <Chip
               icon={
                 <Image
@@ -157,12 +157,12 @@ export default function HeroSection() {
             />
           </Box>
           {/* Main Heading */}
-          <Box sx={{ textAlign: "center", mt: 1, mb: 6, zIndex: 100 }}>
+          <Box sx={{ textAlign: "center", mt: 1, mb: 2, zIndex: 100 }}>
             <Typography
               variant="h1"
               noWrap
               sx={{
-                fontSize: { xs: "2rem", md: "3rem", lg: "3.2rem" },
+                fontSize: { xs: 30, md: 50, lg: 50 },
                 fontWeight: 550,
                 mb: 4,
                 lineHeight: 1.3,
@@ -189,12 +189,20 @@ export default function HeroSection() {
                 maxWidth: 600,
                 mx: "auto",
                 lineHeight: 1.3,
-                fontSize: { xs: "0.9rem", md: "1.1rem" },
-                fontWeight : 350
+                fontSize: { xs: "0.8rem", md: "1.1rem" },
+                fontWeight: 350,
+                textAlign: "center", // Ensure text is centered
               }}
             >
-              Turn any thought into a polished, on-brand presentation —<br />
-              powered by AI, styled by designers.
+              <span>Turn any thought into a polished, on-brand presentation </span>
+              <Box
+                component="span"
+                sx={{
+                  display: { xs: "block", md: "inline" },
+                }}
+              >
+                powered by AI, styled by designers.
+              </Box>
             </Typography>
           </Box>
 
@@ -226,14 +234,14 @@ export default function HeroSection() {
                     backgroundColor: "#fff",
                     borderRadius: "999px",
                     paddingLeft: 2,
-                    mt: 5,
+                    mt: 0.5,
                     paddingRight: 0.5,
                     border: "2px solid #8E2DE2",
                     boxShadow: "4px 5px 0px 0px #8E2DE2",
                     width: { xs: "90vw", sm: "100%", md: 660 },
-                    maxWidth: { xs: 320, md: 660 },
-                    height: { xs: 48, md: 72 },
-                    
+                    maxWidth: { xs: 370, md: 500 },
+                    height: { xs: 60, md: 65 },
+
                   }}
                 >
                   <TextField
@@ -252,8 +260,8 @@ export default function HeroSection() {
                       "& .MuiOutlinedInput-root": {
                         border: "none",
                         "& fieldset": { border: "none" },
-                        fontSize: { xs: "0.4rem", md: "1.125rem" },
-                        px: 2,
+                        fontSize: { xs: "0.9rem", md: "1.1rem" },
+                        px: 0.5,
                         py: 1,
 
                       },
@@ -267,15 +275,15 @@ export default function HeroSection() {
                       "&:hover": {
                         backgroundColor: alpha(theme.palette.primary.main, 0.1),
                       },
-                      width: { xs: 34, md: 40 },
-                      height: { xs: 34, md: 40 },
+                      width: { xs: 36, md: 38 },
+                      height: { xs: 36, md: 38 },
                     }}
                   >
                     <Image
                       src="/images/voice-icon.svg"
                       alt="Voice Icon"
-                      width={40}
-                      height={40}
+                      width={35}
+                      height={35}
                       style={{ width: "100%", height: "100%" }}
                     />
                   </IconButton>
@@ -283,8 +291,9 @@ export default function HeroSection() {
                 <Box
                   sx={{
                     // display: { xs: "none", md: "flex" },
-                    mb: {xs: -10, md: 0},
+                    mb: { xs: -10, md: 5 },
                     alignItems: "center",
+                    mt: 0,
                   }}
                 >
                   <Button
@@ -298,12 +307,21 @@ export default function HeroSection() {
                       mt: { xs: 1, md: 6 },
                     }}
                   >
-                    <Image
-                      src="/images/try-for-free-arrow.svg"
-                      alt="Try for free Icon"
-                      width={130}
-                      height={130}
-                    />
+                    <Box
+                      sx={{
+                        width: { xs: 90, md: 130 }, // Responsive width
+                        height: { xs: 90, md: 130 }, // Fixed height to match Image
+                        display: "flex",
+                      }}
+                    >
+                      <Image
+                        src="/images/try-for-free-arrow.svg"
+                        alt="Try for free Icon"
+                        width={130}
+                        height={130}
+                        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                      />
+                    </Box>
                   </Button>
                 </Box>
               </Box>
@@ -314,8 +332,7 @@ export default function HeroSection() {
                   flexDirection: "column",
                   alignItems: "flex-end",
                   justifyContent: "center",
-                  mt: -23,
-                  mb: 4,
+                  mt: -27,
                   ml: { xs: 0, md: 100 },
                   mr: { xs: 2, md: 20 },
                   px: 2,
@@ -330,6 +347,7 @@ export default function HeroSection() {
                     color: "#454545",
                     whiteSpace: "nowrap",
                     textAlign: "right",
+
                   }}
                 >
                   Try for Free
@@ -338,11 +356,12 @@ export default function HeroSection() {
               {/* Try for Free vector - hide on mobile */}
               <Box
                 sx={{
-                  mt: -3,
+
                   display: { xs: "none", md: "flex" },
                   justifyContent: "flex-end",
                   width: "100%",
                   ml: 10,
+                  md: 5,
                 }}
               >
                 <Image
@@ -360,8 +379,8 @@ export default function HeroSection() {
             sx={{
               display: "flex",
               justifyContent: "center",
-              mt: {sx: -20, md: 0},
-              mb: {sx: 10, md: 0},
+              mt: { sx: -20, md: 0 },
+              mb: { sx: 10, md: 0 },
             }}
           >
             <Button

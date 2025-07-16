@@ -40,7 +40,7 @@ export default function Header() {
           justifyContent: "space-between",
           alignItems: "center",
           px: { xs: 2, md: 8 },
-          minHeight: 64,
+          minHeight: 60,
           mt: 1,
           flexDirection: "row", 
         }}
@@ -58,15 +58,15 @@ export default function Header() {
               <Image
                 src="/arrow-left.svg"
                 alt="Back"
-                width={20}
-                height={20}
+                width={19}
+                height={19}
               />
             }
             sx={{
               textTransform: "none",
               fontWeight: 500,
               color: "#1A1A1A",
-              fontSize: { xs: "1rem", md: "1.2rem" },
+              fontSize: { xs: "0.8rem", md: "1rem" },
               backgroundColor: "#F6F6F6",
               "&:hover": {
                 backgroundColor: "#f3f0ff",
@@ -85,8 +85,8 @@ export default function Header() {
             <Image
               src="/app-icon.svg"
               alt="Slides Logo"
-              width={44}
-              height={44}
+              width={40}
+              height={40}
             />
           </Box>
         </Link>

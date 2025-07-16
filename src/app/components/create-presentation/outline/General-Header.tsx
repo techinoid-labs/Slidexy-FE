@@ -1,51 +1,99 @@
-import Image from "next/image";
+"use client";
 
+import React from "react";
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  useMediaQuery,
+  useTheme as useMuiTheme,
+} from "@mui/material";
+import { KeyboardArrowDown, Menu as MenuIcon } from "@mui/icons-material";
+import Image from "next/image";
+import Link from "next/link";
+import { ThemeToggle } from "@/lib/theme-toggle";
+import { Typography } from "@mui/material";
+import { useRouter } from "next/navigation";
 export default function Header() {
-  // Detect if running in a web browser
-  const isWeb =
-    typeof window !== "undefined" &&
-    window?.navigator?.userAgent?.includes("Mozilla");
+  const theme = useMuiTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const router = useRouter();
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: 1440,
-        height: 92,
-        display: "flex",
-        alignItems: "flex-center",
-        position: "relative",
-        justifyContent: isWeb ? "flex-start" : "center",
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        background: "#FBFAFF",
+        minHeight: 80,
+        boxShadow: "none",
+        color: "#FBFAFF",
       }}
     >
-      <div
-        style={{
-          marginTop: 24,
-          marginLeft: isWeb ? 180 : 0,
-          width: isWeb ? "fit-content" : "100vw",
+      <Toolbar
+        sx={{
           display: "flex",
-          justifyContent: "center",
+          justifyContent: "space-between",
+          alignItems: "center",
+          px: { xs: 2, md: 8 },
+          minHeight: 64,
+          mt: 1,
+          flexDirection: "row", 
+          color: "#FBFAFF",
         }}
-        className="header-logo-container"
       >
-        <Image
-          src="/images/icon.png"
-          alt="Slides Logo"
-          width={44}
-          height={44}
-        />
-      </div>
-      <style jsx>{`
-        @media (max-width: 600px) {
-          div[style*="height: 92px"] {
-            justify-content: center !important;
-          }
-          .header-logo-container {
-            margin-left: 0 !important;
-            width: 100vw !important;
-            justify-content: center !important;
-          }
-        }
-      `}</style>
-    </div>
+        {/* Go Back Button */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <Button
+            onClick={() => router.push("/presentation/create")}
+            startIcon={
+              <Image
+                src="/arrow-left.svg"
+                alt="Back"
+                width={20}
+                height={20}
+              />
+            }
+            sx={{
+              textTransform: "none",
+              fontWeight: 500,
+              color: "#1A1A1A",
+              fontSize: { xs: "1rem", md: "1.2rem" },
+              backgroundColor: "#F6F6F6",
+              "&:hover": {
+                backgroundColor: "#f3f0ff",
+              },
+              px: 2,
+              py: 1,
+            }}
+          >
+            Go back
+          </Button>
+        </Box>
+
+        {/* Logo */}
+        <Link href="/" style={{ textDecoration: "none" }}>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Image
+              src="/app-icon.svg"
+              alt="Slides Logo"
+              width={44}
+              height={44}
+            />
+          </Box>
+        </Link>
+      </Toolbar>
+
+
+    </AppBar>
   );
 }

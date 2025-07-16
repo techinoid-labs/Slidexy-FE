@@ -65,11 +65,12 @@ export default function PurposeSection() {
             variant="h1"
             sx={{
               fontWeight: 520,
-              fontSize: { xs: "2rem", md: "3rem" },
+              fontSize: { xs: "1.9rem", md: "2.5rem" },
               color: "#18181B",
-              mb: 0.5,
+              mb: {xs: 1, md: 0.5},
               ml: { xs: 0, md: -10 },
               textAlign: { xs: "center", md: "left" },
+              lineHeight: 1.2,
             }}
           >
             Why
@@ -80,13 +81,15 @@ export default function PurposeSection() {
         <Typography
           sx={{
             color: "#757575",
-            fontSize: { xs: "1.3rem", md: "1.3rem" },
+            fontSize: { xs: "0.9rem", md: "1.3rem" },
             maxWidth: 600,
             mt: { xs: 2, md: 2 },
+            ml: { xs: 5},
+            mr: { xs: 5},
             textAlign: { xs: "center", md: "right" },
           }}
         >
-          Turn any thought into a polished, on-brand presentation —
+          Turn any thought into a polished, on-brand presentation
           <br />
           powered by AI, styled by designers.
         </Typography>
@@ -115,8 +118,8 @@ export default function PurposeSection() {
             borderRadius: 2,
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
             p: { xs: 1.5, md: 2 },
-            minHeight: 180,
-            maxWidth: 800,
+            minHeight: {xs: 180, md: 180},
+            maxWidth: {xs: 820, md: 800},
             ml: { xs: 0, md: 5 },
             display: "flex",
             flexDirection: "column",
@@ -155,14 +158,14 @@ export default function PurposeSection() {
               fontWeight: 500,
               fontSize: { xs: "1.5rem", md: "1.6rem" },
               color: "#18181B",
-              mb: 1,
-              ml: { sx: 0, md: 3 },
+              mb: {xs: 1, md: 1},
+              ml: { xs: 0, md: 3 },
             }}
           >
             Context-aware content generation
           </Typography>
           <Typography
-            sx={{ color: "#757575", fontSize: { xs: "0.9rem", md: "0.9rem" }, ml: { sx: 0, md: 3 }, }}
+            sx={{ color: "#757575", fontSize: { xs: "0.9rem", md: "0.9rem" }, ml: { sx: 0, md: 3 },mb: {xs: 3, md: 1}, }}
           >
             AI turns a prompt into a styled presentation with sections,
             <br />
