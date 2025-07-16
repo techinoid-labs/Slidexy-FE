@@ -116,8 +116,8 @@ export default function PresentationMaker({
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
-        ? { source: "website", inputWebsiteUrl: inputValue }
-        : { source: "text", textContent: inputValue };
+          ? { source: "website", inputWebsiteUrl: inputValue }
+          : { source: "text", textContent: inputValue };
 
     const promptMeta = {
       goal,
@@ -202,7 +202,7 @@ export default function PresentationMaker({
           borderRadius: "999px",
           border: "2px solid #8E2DE2",
           boxShadow: "4px 5px 0px 0px #8E2DE2",
-          height: 72,
+          height: {xs: 57, md: 70},
           px: 2,
           mb: 3,
         }}
@@ -219,7 +219,7 @@ export default function PresentationMaker({
               height: "100%",
               border: "none",
               "& fieldset": { border: "none" },
-              fontSize: "1.125rem",
+              fontSize: {xs: "1rem", md:"1rem"},
               px: 2,
             },
             endAdornment:
@@ -284,42 +284,72 @@ export default function PresentationMaker({
 
       <Button
         fullWidth
-        variant="contained"
         onClick={handleSubmit}
         disabled={loading}
         sx={{
+          position: "relative",
+          overflow: "hidden",
           textTransform: "none",
-          background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
           borderRadius: "999px",
           px: 6,
           py: 1.75,
           fontSize: "1.125rem",
           fontWeight: 600,
           mb: 4,
-          color: "#fff", // Ensure text is white
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 1,
-          "& .MuiButton-label": {
-            color: "#fff !important",
-          },
+          height: {xs: 57, md: 70},
+          border: "2px solid #8E2DE2",
+          backgroundColor: "#fff",
+          color: loading ? "#fff" : "#8E2DE2",
+          transition: "color 0.6s ease",
+
           "&:hover": {
-            background: "linear-gradient(90deg, #7a23c2 0%, #3e00c2 100%)",
+            backgroundColor: "#f3eaff",
+          },
+
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            height: "100%",
+            width: loading ? "100%" : "0%",
+            background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+            transition: "width 1.8s ease-in-out", // slowed down fill animation
+            zIndex: 0,
+          },
+
+          "& span, & .icon": {
+            position: "relative",
+            zIndex: 1,
           },
         }}
       >
-        <span style={{ color: "#fff" }}>
+        <span style={{ color: loading ? "#fff" : "#8E2DE2", transition: "color 0.6s ease" }}>
           {loading ? "Generating..." : "Generate Outlines"}
         </span>
-        <Image
-          src="/images/generate.svg"
-          alt="Magic Wand"
-          width={22}
-          height={22}
-          style={{ marginLeft: "8px", filter: "brightness(0) invert(1)" }} // Make sure icon stays white
+
+        <Box
+          className="icon"
+          sx={{
+            width: 22,
+            height: 22,
+            ml: 1,
+            background: loading
+              ? "#fff" 
+              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)", 
+            maskImage: 'url("/images/generate.svg")',
+            WebkitMaskImage: 'url("/images/generate.svg")',
+            maskSize: "cover",
+            WebkitMaskSize: "cover",
+            maskRepeat: "no-repeat",
+            WebkitMaskRepeat: "no-repeat",
+            maskPosition: "center",
+            WebkitMaskPosition: "center",
+            transition: "background 1s ease",
+          }}
         />
       </Button>
+
 
       {error && (
         <Typography color="error" sx={{ mt: 2 }}>
@@ -329,19 +359,51 @@ export default function PresentationMaker({
 
       {/* Prompt Cards */}
       <Box sx={{ px: 2 }}>
-        <Typography
-          variant="subtitle1"
-          sx={{ fontWeight: 600, mb: 2, color: "#333" }}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            mb: 2,
+            gap: 70,
+          }}
         >
-          Quick Prompt Generator:
-        </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 500,
+              color: "#333",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              fontSize: 15,
+            }}
+          >
+            Quick Prompt Generator:
+          </Typography>
+
+          <Image
+            src="/quick-generate.svg"
+            alt="Generator Icon"
+            width={35}
+            height={30}
+            style={{ marginTop: 0, marginBottom: 4 }}
+          />
+        </Box>
+
 
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "col", md: "row" },
+            flexDirection: { xs: "column", md: "row" }, // Stack in column on mobile, row on desktop
             gap: 2,
             flexWrap: { xs: "wrap", sm: "nowrap" },
+            width: { xs: "100%", md: 1000 }, // Responsive width
+            //justifyContent: "center", // Center children horizontally
+            alignItems: "center",     // Center children vertically (for column)
           }}
         >
           {promptCards.map((card, index) => (
@@ -349,42 +411,49 @@ export default function PresentationMaker({
               key={index}
               sx={{
                 ":hover": {
-                  scale: "1.1 ",
+                  transform: "scale(1.05)",
+                  transition: "0.3s ease",
                 },
                 cursor: "pointer",
                 backgroundColor: "#F7F5FD",
                 borderRadius: "16px",
                 padding: 2,
-                flex: "col",
-                flexWrap: "wrap",
-
                 position: "relative",
+                minHeight: {xs: 100, sm: 180},
+                width: {
+                  xs: index === 0 ? 270 :
+                      index === 1 ? 270 :
+                        index === 2 ? 270 :
+                          100,
+                  sm:
+                    index === 0 ? 250 :
+                      index === 1 ? 250 :
+                        index === 2 ? 250 :
+                          200,
+
+                },
               }}
               onClick={() => handlePromptClick(card.description)}
             >
-              <Typography variant="subtitle1" fontWeight={600} mt={3} mb={3}>
+              <Typography variant="subtitle1" fontWeight={600} mt={1} mb={1}>
                 {card.title}
               </Typography>
-              <Typography variant="body2" color="text.secondary" mb={6}>
+              <Typography variant="body2" color="text.secondary" mb={4}>
                 {card.description}
               </Typography>
               <Box
                 sx={{
                   position: "absolute",
-                  top: 43,
+                  top: 16,
                   right: 16,
                   cursor: "pointer",
                 }}
               >
-                <Image
-                  src={card.icon}
-                  alt="Prompt icon"
-                  width={20}
-                  height={20}
-                />
+                <Image src={card.icon} alt="Prompt icon" width={20} height={20} />
               </Box>
             </Box>
           ))}
+
         </Box>
       </Box>
     </Box>

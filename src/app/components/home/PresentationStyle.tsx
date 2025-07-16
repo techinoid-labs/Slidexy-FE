@@ -56,7 +56,7 @@ export default function PresentationStyleSection() {
           variant="h1"
           sx={{
             fontWeight: 500,
-            fontSize: { xs: "2rem", md: "3.5rem" },
+            fontSize: { xs: "1.6rem", md: "2.9rem" },
             color: "#18181B",
             mb: 2,
           }}
@@ -66,14 +66,14 @@ export default function PresentationStyleSection() {
         <Typography
           sx={{
             color: "#757575",
-            fontSize: { xs: "1.2rem", md: "1.5rem" },
-            mb: 2,
+            fontSize: { xs: "0.9rem", md: "1rem" },
+            mb: {xs: 0, md: 2},
             maxWidth: 700,
             mx: { xs: "auto", md: 0 },
           }}
         >
-          Turn any thought into a polished, on-brand presentation —
-          <br />powered by AI, styled by designers.
+          Turn any thought into a polished, on-brand presentation
+                    <br />powered by AI, styled by designers.
         </Typography>
       </Box>
 
@@ -84,7 +84,7 @@ export default function PresentationStyleSection() {
           justifyContent: { xs: "center", md: "flex-end" },
           alignItems: "center",
           gap: 1,
-          mt: { xs: 0, md: -6 },
+          mt: { xs: -3, md: -6 },
           mb: 2,
         }}
       >
@@ -135,7 +135,7 @@ export default function PresentationStyleSection() {
           <Typography
             sx={{
               fontWeight: 500,
-              fontSize: { xs: "2rem", md: "2.3rem" },
+              fontSize: { xs: "1.7rem", md: "2.3rem" },
               color: "#18181B",
               mb: 2,
             }}
@@ -145,12 +145,12 @@ export default function PresentationStyleSection() {
           <Typography
             sx={{
               color: "#757575",
-              fontSize: { xs: "1rem", md: "1.18rem" },
+              fontSize: { xs: "0.9rem", md: "1.18rem" },
               mb: 4,
               maxWidth: 500,
             }}
           >
-            Turn any thought into a polished, on-brand presentation —
+            Turn any thought into a polished, on-brand presentation
             <br />powered by AI, styled by designers.
           </Typography>
           <Button
@@ -159,10 +159,10 @@ export default function PresentationStyleSection() {
               background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
               color: "#fff",
               borderRadius: "999px",
-              px: 4,
-              py: 1.5,
+              px: {xs: 3, md: 4},
+              py: {xs: 1, md:1.5},
               fontWeight: 600,
-              fontSize: "1.1rem",
+              fontSize: {xs: "0.9rem", md: "1.1rem"},
               textTransform: "none",
               width: "fit-content",
               boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
@@ -179,8 +179,8 @@ export default function PresentationStyleSection() {
         {/* Right Image Placeholder (hidden on mobile) */}
         <Box
           sx={{
-            width: 546,
-            height: 422,
+            width: 400,
+            height: 322,
             borderRadius: "30px",
             background: "#F6F6F6",
             ml: { xs: 0, md: 6 },

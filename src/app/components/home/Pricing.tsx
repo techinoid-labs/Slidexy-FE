@@ -67,8 +67,8 @@ export default function PricingSection() {
         {/* Heading */}
         <Typography
           sx={{
-            fontWeight: 600,
-            fontSize: { xs: '1.75rem', md: '2.8rem' },
+            fontWeight: 500,
+            fontSize: { xs: '1.75rem', md: '1.8rem' },
             color: '#222',
             mb: 2,
             textAlign: 'center'

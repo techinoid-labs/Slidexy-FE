@@ -12,7 +12,7 @@ import { setSlides } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import type { Slide } from "@/app/slice/slidesSlice";
 import StepIndicator from "@/app/components/shared/StepIndicator";
-import Header from "@/app/components/create-presentation/create/Header";
+//import Header from "@/app/components/create-presentation/create/Header";
 
 // API response type and map helper
 export interface SlideApiResponse {
@@ -219,7 +219,7 @@ export default function OutlinePage() {
         overflowX: "hidden",
       }}
     >
-      <Header />
+      <GeneralHeader />
       <Box sx={{ mt: 4 }}>
         <StepIndicator activeStep={1} />
       </Box>

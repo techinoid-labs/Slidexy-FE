@@ -1,16 +1,14 @@
 "use client";
 import React from "react";
-import {  
-  Box,
-} from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import Image from "next/image";
 
 export default function ImageWithClick({
   src,
   alt,
-  onShowLarge, // Still available if needed for other functionality
+  onShowLarge,
   onPreviewImage,
-  isLoading = false, // Still available for the main image loading state
+  isLoading = false,
 }: {
   src: string;
   alt: string;
@@ -18,54 +16,71 @@ export default function ImageWithClick({
   onPreviewImage?: (src: string) => void;
   isLoading?: boolean;
 }) {
+  const [imgError, setImgError] = React.useState(false);
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onPreviewImage?.(src);
+    if (!isLoading && !imgError) {
+      onPreviewImage?.(src);
+    }
   };
 
   return (
-    <>
-      <Box
-        sx={{
-          position: "relative",
-          width: { xs: 48, sm: 56, md: 64 },
-          height: { xs: 48, sm: 56, md: 64 },
-          borderRadius: 2,
-          bgcolor: "#F2F0FF",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          cursor: "pointer",
-        }}
-        onClick={handleClick}
-      >
-        {isLoading ? (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-              height: "100%",
-            }}
-          >
-            {/* Re-added CircularProgress import just for this */}
-          </Box>
-        ) : (
-          <Image
-            src={src}
-            alt={alt || "Slide image"}
-            width={32}
-            height={32}
-            style={{
-              objectFit: "contain",
-              maxWidth: "100%",
-              maxHeight: "100%",
-            }}
-          />
-        )}
-      </Box>
-    </>
+    <Box
+      sx={{
+        position: "relative",
+        width: { xs: 62, sm: 80 },
+        height: { xs: 59, sm: 80 },
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        cursor: isLoading ? "default" : "pointer",
+      }}
+      onClick={handleClick}
+    >
+      {isLoading ? (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          <CircularProgress size={24} />
+        </Box>
+      ) : imgError ? (
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#f8d7da",
+            color: "#721c24",
+            fontSize: 12,
+            border: "1px solid #f5c6cb",
+            borderRadius: 2,
+          }}
+        >
+          Image not found
+        </Box>
+      ) : (
+        <Image
+          src={src}
+          alt={alt || "Slide image"}
+          width={70}
+          height={70}
+          style={{
+            objectFit: "cover",
+            width: "100%",
+            height: "100%",
+          }}
+          onError={() => setImgError(true)}
+        />
+      )}
+    </Box>
   );
 }

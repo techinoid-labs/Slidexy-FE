@@ -84,7 +84,7 @@ export default function TestimonialSection() {
             sx={{
               color: '#444',
               fontWeight: 400,
-              fontSize: { xs: '1.2rem', md: '2rem' },
+              fontSize: { xs: '1.2rem', md: '1.2rem' },
               textAlign: 'center',
               mb: { xs: 3, md: 4 },
               maxWidth: 700,

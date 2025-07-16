@@ -13,23 +13,27 @@ import {
   TextField,
   Button,
   Popover,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  InputAdornment,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"; // Import the chevron icon
-import ChevronRightIcon from "@mui/icons-material/ChevronRight"; // Import another chevron icon if needed
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Image from "next/image";
-import type { Slide } from "@/app/slice/slidesSlice";
-import ImageWithClick from "../../ImageWithClick";
-import AIicon from "../../../../../public/images/AIcon-08.svg";
 import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import ImageIcon from "@mui/icons-material/Image";
 import Grow from "@mui/material/Grow";
+import CloseIcon from "@mui/icons-material/Close";
+import AIicon from "../../../../../public/images/AIcon-08.svg";
+import type { Slide } from "@/app/slice/slidesSlice";
+import ImageWithClick from "../../ImageWithClick";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
 
 interface OutlineCardProps {
   index: number;
@@ -73,11 +77,11 @@ interface OutlineCardProps {
       bullets: string[];
       bulletFormat?: "bullets" | "paragraphs" | "list" | null;
       image_url?: string;
-    }> // ADDED bulletFormat
+    }>
   ) => void;
   onToggleExpand?: () => void;
   onEdit?: (event: React.MouseEvent<HTMLElement>) => void;
-  currentBulletFormat?: "bullets" | "paragraphs" | "list" | null; // NEW PROP
+  currentBulletFormat?: "bullets" | "paragraphs" | "list" | null;
 }
 
 const OutlineCard: React.FC<OutlineCardProps> = (props) => {
@@ -103,54 +107,32 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     onUpdateSlideImages,
     onUpdateSlide,
     onToggleExpand,
-    currentBulletFormat = "paragraphs", // Destructure with a default
+    currentBulletFormat = "paragraphs",
   } = props;
 
-  
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const expandClickedRef = React.useRef(false);
   const [previewImage, setPreviewImage] = React.useState<string | null>(null);
   const [suggestedImages, setSuggestedImages] = React.useState<{
     imageIndex: number;
     suggestions: string[];
   } | null>(null);
-
   const [imageList, setImageList] = React.useState<string[]>(images || []);
-  const [loadingImageIndex, setLoadingImageIndex] = React.useState<
-    number | null
-  >(null);
-
-  const [showCustomPromptInput, setShowCustomPromptInput] =
-    React.useState(false);
+  const [loadingImageIndex, setLoadingImageIndex] = React.useState<number | null>(null);
+  const [showCustomPromptInput, setShowCustomPromptInput] = React.useState(false);
   const [customPromptText, setCustomPromptText] = React.useState("");
-  const [customSuggestionsLoading, setCustomSuggestionsLoading] =
-    React.useState(false);
-  const [customSuggestionsError, setCustomSuggestionsError] =
-    React.useState("");
-
-  const [aiEditMenuAnchorEl, setAiEditMenuAnchorEl] =
-    React.useState<null | HTMLElement>(null);
-  const [loadingSuggestionsAction, setLoadingSuggestionsAction] =
-    React.useState<string | null>(null);
-    const [textSuggestions, setTextSuggestions] = React.useState<
-      {
-        title: string;
-        bullets: string[];
-        image?: string;
-        imageUrl?: string | null;
-      }[]
-    >([]);
+  const [customSuggestionsLoading, setCustomSuggestionsLoading] = React.useState(false);
+  const [customSuggestionsError, setCustomSuggestionsError] = React.useState("");
+  const [aiEditMenuAnchorEl, setAiEditMenuAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [loadingSuggestionsAction, setLoadingSuggestionsAction] = React.useState<string | null>(null);
+  const [textSuggestions, setTextSuggestions] = React.useState<
+    { title: string; bullets: string[]; image?: string; imageUrl?: string | null }[]
+  >([]);
   const [showSuggestionsBox, setShowSuggestionsBox] = React.useState(false);
-
-  // New state to store the position of the AI icon
-  const [aiIconPosition, setAiIconPosition] = React.useState<{
-    x: number;
-    y: number;
-  } | null>(null);
-
-  // NEW STATE: To store the action type that generated the suggestions
-  const [currentSuggestionAction, setCurrentSuggestionAction] = React.useState<
-    string | null
-  >(null);
+  const [aiIconPosition, setAiIconPosition] = React.useState<{ x: number; y: number } | null>(null);
+  const [currentSuggestionAction, setCurrentSuggestionAction] = React.useState<string | null>(null);
+  const [showImageModal, setShowImageModal] = React.useState(false);
+  const [modalImageSrc, setModalImageSrc] = React.useState<string | null>(null);
 
   const textEditActions = [
     {
@@ -201,11 +183,9 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     setImageList(images || []);
   }, [images]);
 
-
   const handleGenerateCustomSuggestions = async () => {
     setCustomSuggestionsLoading(true);
     setCustomSuggestionsError("");
-
     try {
       const res = await fetch(`${API_BASE_URL}/custom-suggestions`, {
         method: "POST",
@@ -218,16 +198,12 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
           customPrompt: customPromptText,
         }),
       });
-
-      console.log("Custom Suggestion Response:", res.body);
-
       if (!res.ok) {
         throw new Error("Failed to fetch custom suggestions");
       }
-
       const data = await res.json();
-      setTextSuggestions(data.suggestions); // store suggestions
-      setShowSuggestionsBox(true); // 👈 show the suggestion box
+      setTextSuggestions(data.suggestions);
+      setShowSuggestionsBox(true);
       setShowCustomPromptInput(false);
       setCustomPromptText("");
     } catch (err: any) {
@@ -242,41 +218,37 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     else if (e.key === "Escape") onTitleEditCancel?.();
   };
 
-  const handleRegenerateImage = async (
-    imageIndex: number,
-    e: React.MouseEvent // Keep this as it is already being passed
-  ) => {
-    e.stopPropagation(); // Essential to stop propagation here
+  const handleInputBlur = () => {
+    onTitleEditSave?.();
+    if (expandClickedRef.current) {
+      onToggleExpand?.();
+      expandClickedRef.current = false;
+    }
+  };
+
+  const SAMPLE_IMAGES = [
+    "/sample-image-content.svg",
+    "/images/sample-image.svg",
+    "/images/sample-image.svg",
+  ];
+
+  const handleRegenerateImage = async (imageIndex: number, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (loadingImageIndex !== null) return;
-
     setLoadingImageIndex(imageIndex);
-    const currentSlide = slidesState[slideIndex];
-    const imagePrompt = `Generate a high-quality, professional image for slide titled "${
-      currentSlide.slide_title.text
-    }" with points: ${currentSlide.elements
-      .map((el) => el.text)
-      .join(", ")}. No text or labels inside the image.`;
-
     try {
-      const res = await fetch(`${API_BASE_URL}/generate-image-suggestions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: imagePrompt,
-          count: 3,
-          isInfographicMode,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.imageUrls?.length > 0) {
-        setSuggestedImages({ imageIndex, suggestions: data.imageUrls });
-      } else {
-        alert("Failed to generate image suggestions.");
+      setSuggestedImages({ imageIndex, suggestions: SAMPLE_IMAGES });
+      // Always update imageList and slide images with fallbacks if imageList is empty
+      if (imageList.length === 0) {
+        setImageList(SAMPLE_IMAGES);
+        onUpdateSlideImages(slideIndex, SAMPLE_IMAGES);
       }
     } catch (err) {
-      console.error("Image regeneration error:", err);
-      alert("Error generating image suggestions.");
+      setSuggestedImages({ imageIndex, suggestions: SAMPLE_IMAGES });
+      if (imageList.length === 0) {
+        setImageList(SAMPLE_IMAGES);
+        onUpdateSlideImages(slideIndex, SAMPLE_IMAGES);
+      }
     } finally {
       setLoadingImageIndex(null);
     }
@@ -291,104 +263,189 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         bgcolor: "#F2F0FF",
         boxShadow: isDragging ? 4 : 0,
         transition: "box-shadow 0.2s",
-        overflow: "hidden",
+        overflow: "visible",
         position: "relative",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", minHeight: 56 }}>
-        <Box
-          {...dragHandleProps}
-          sx={{
-            color: "#8E2DE2",
-            fontWeight: 700,
-            fontSize: 20,
-            px: 2,
-            py: 2,
-            display: "flex",
-            gap: 1.5,
-          }}
-        >
-          <Image
-            src="/images/left-grid.svg"
-            alt="Card Icon"
-            width={12}
-            height={12}
-          />
-          {index < 9 ? `0${index + 1}` : index + 1}
-        </Box>
-
-        {editable && isEditing ? (
-          <input
-            ref={inputRef}
-            value={editingTitle}
-            onChange={onTitleEditChange}
-            onBlur={onTitleEditSave}
-            onKeyDown={handleKeyDown}
-            style={{
-              fontWeight: 500,
-              color: "#18181B",
-              fontSize: 16,
-              flex: 1,
-              textAlign: "left",
-              paddingLeft: 8,
-              border: "1px solid #8E2DE2",
-              borderRadius: 6,
-              outline: "none",
-              minWidth: 0,
-              maxWidth: "90%",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          />
-        ) : (
-          <Typography
-            sx={{
-              fontWeight: 500,
-              color: "#18181B",
-              fontSize: 16,
-              flex: 1,
-              pl: 1,
-            }}
-            noWrap
-            title={title}
-            onClick={
-              editable
-                ? (e) => {
-                    e.stopPropagation();
-                    onTitleEditStart?.();
-                  }
-                : undefined
-            }
-          >
-            {title}
-          </Typography>
-        )}
-
-        <IconButton
-          onClick={onDelete}
-          size="small"
-          sx={{ color: "#A095C6", pr: 0 }} // Adjusted padding for spacing with new icon
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-
-        {/* NEW: Chevron Icon for expand/collapse */}
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation(); // Prevent the parent Paper's onClick from firing
-            onToggleExpand?.();
-          }}
-          size="small"
-          sx={{ color: "#A095C6", pr: 2 }}
-          disableRipple
-        >
-          {expanded ? (
-            <ExpandMoreIcon fontSize="small" />
+      <Box sx={{ display: "flex", alignItems: "center", minHeight: 56, justifyContent: "space-between", width: "100%" }}>
+        <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+          {editable && isEditing ? (
+            <TextField
+              inputRef={inputRef}
+              value={editingTitle}
+              onChange={onTitleEditChange}
+              onBlur={handleInputBlur}
+              onKeyDown={handleKeyDown}
+              onClick={(e) => e.stopPropagation()}
+              autoFocus
+              fullWidth
+              variant="outlined"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Box
+                      {...dragHandleProps}
+                      sx={{
+                        color: "#8E2DE2",
+                        fontWeight: 700,
+                        fontSize: 19,
+                        display: "flex",
+                        gap: 1.2,
+                        alignItems: "center",
+                        pr: 1,
+                      }}
+                    >
+                      <Image
+                        src="/images/left-grid.svg"
+                        alt="Card Icon"
+                        width={12}
+                        height={12}
+                        style={{ marginTop: 2 }}
+                      />
+                      {index < 9 ? `0${index + 1}` : index + 1}
+                    </Box>
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                      }}
+                      size="small"
+                      sx={{ color: "#A095C6" }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        expandClickedRef.current = true;
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleExpand?.();
+                      }}
+                      size="small"
+                      sx={{ color: "#A095C6" }}
+                      disableRipple
+                    >
+                      {expanded ? (
+                        <ExpandMoreIcon fontSize="small" />
+                      ) : (
+                        <ChevronRightIcon fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 6,
+                  fontWeight: 500,
+                  color: "#18181B",
+                  fontSize: 13,
+                  "& fieldset": {
+                    borderColor: "#8E2DE2",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#8E2DE2",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#8E2DE2",
+                  },
+                  "& .MuiInputBase-input": {
+                    padding: "8px 8px 8px 0",
+                  },
+                },
+              }}
+            />
           ) : (
-            <ChevronRightIcon fontSize="small" />
+            <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+              <Box
+                {...dragHandleProps}
+                sx={{
+                  color: "#8E2DE2",
+                  fontWeight: 700,
+                  fontSize: 19,
+                  px: 2,
+                  py: 2,
+                  display: "flex",
+                  gap: 1.2,
+                }}
+              >
+                <Image
+                  src="/images/left-grid.svg"
+                  alt="Card Icon"
+                  width={12}
+                  height={12}
+                  style={{ marginTop: 10, marginLeft: 2 }}
+                />
+                {index < 9 ? `0${index + 1}` : index + 1}
+              </Box>
+              <Typography
+                sx={{
+                  fontWeight: 500,
+                  color: "#18181B",
+                  fontSize: { xs: 13, md: 20 },
+                  flex: 1,
+                  pl: 1,
+                  minWidth: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: { xs: "normal", md: "nowrap" },
+                }}
+                noWrap={false}
+                title={title}
+                onClick={
+                  editable
+                    ? (e) => {
+                        e.stopPropagation();
+                        onTitleEditStart?.();
+                      }
+                    : undefined
+                }
+              >
+                {title}
+              </Typography>
+            </Box>
           )}
-        </IconButton>
+        </Box>
+        {!isEditing && (
+          <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              size="small"
+              sx={{ color: "#A095C6", pr: 0 }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                expandClickedRef.current = true;
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleExpand?.();
+              }}
+              size="small"
+              sx={{ color: "#A095C6", pr: 2 }}
+              disableRipple
+            >
+              {expanded ? (
+                <ExpandMoreIcon fontSize="small" />
+              ) : (
+                <ChevronRightIcon fontSize="small" />
+              )}
+            </IconButton>
+          </Box>
+        )}
       </Box>
-
       {expanded && (
         <Box
           sx={{
@@ -399,15 +456,15 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             display: "flex",
             flexDirection: "column",
             gap: 2,
-            position: "relative", // Ensure relative positioning for child z-indexing
-            zIndex: 1, // Give this section a base z-index
+            position: "relative",
+            zIndex: 1,
           }}
           onClick={(e) => {
             e.stopPropagation();
-            setSuggestedImages(null);
             setShowSuggestionsBox(false);
             setAiEditMenuAnchorEl(null);
             setCurrentSuggestionAction(null);
+            setPreviewImage(null);
           }}
         >
           {bullets.length > 0 && (
@@ -547,7 +604,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                             height: "150px",
                             padding: "4px",
                             border: "1px solid #ccc",
-                            borderRadius: 4,
+                            borderRadius: 1,
                             width: "100%",
                           }}
                         />
@@ -571,7 +628,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               )}
             </Box>
           )}
-
           <Box
             sx={{
               display: "flex",
@@ -581,41 +637,68 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               position: "relative",
             }}
           >
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, flex: 1 }}>
-              {imageList.map((src, i) => {
-                console.log(`Rendering ImageWithClick for index ${i}:`, src);
-                return (
-                  <Box
-                    key={i}
-                    sx={{
-                      border: "1px solid transparent", // Default
-
-                      cursor: "pointer",
-                      position: "relative",
-                      zIndex: 1,
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 2,
+                flex: 1,
+                bgcolor: "#fff",
+                borderRadius: 2,
+                p: { xs: "1rem 2rem 1rem 1rem", sm: 1 },
+                mt: { xs: 1, md: 0.5 },
+                overflow: "visible",
+              }}
+            >
+              {imageList.map((src, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    border: "1px solid transparent",
+                    borderRadius: 1,
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                >
+                  <ImageWithClick
+                    src={src}
+                    alt={`img-${i}`}
+                    isLoading={loadingImageIndex === i}
+                    onPreviewImage={(imgSrc) => {
+                      setModalImageSrc(imgSrc);
+                      setShowImageModal(true);
                     }}
-                  >
-                    <ImageWithClick
-                      src={src}
-                      alt={`img-${i}`}
-                      isLoading={loadingImageIndex === i}
-                      onPreviewImage={() => {
-                        console.log(
-                          "ImageWithClick clicked, setting previewImage:",
-                          src
-                        );
-                        setPreviewImage(src);
-                      }}
-                    />
-                    {suggestedImages?.imageIndex === i && (
-                      <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
+                  />
+                  {suggestedImages?.imageIndex === i && (
+                    <Box sx={{ mt: 1, position: "relative", overflow: "visible" }}>
+                      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: { xs: -3, md: -6 }, ml: { xs: 26, md: 34 }, mt: { xs: 2, md: 5 } }}>
+                        <IconButton
+                          size="small"
+                          sx={{
+                            background: "#E8E4FF",
+                            border: "1px solid #ccc",
+                            width: 30,
+                            height: 30,
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSuggestedImages(null);
+                          }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                      <Box sx={{ display: "flex", gap: 1 }}>
                         {suggestedImages.suggestions.map((suggestedSrc, j) => (
                           <Box
                             key={j}
                             sx={{
-                              width: 64,
-                              height: 64,
-                              borderRadius: 1,
+                              width: { xs: 60, sm: 70 },
+                              height: { xs: 60, sm: 70 },
+                              borderRadius: 0.5,
                               overflow: "hidden",
                               cursor: "pointer",
                               border: "1px solid #ccc",
@@ -635,48 +718,57 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                             <Image
                               src={suggestedSrc}
                               alt={`Suggested ${j}`}
-                              width={64}
-                              height={64}
+                              width={70}
+                              height={70}
                               style={{
                                 objectFit: "cover",
                                 width: "100%",
                                 height: "100%",
                               }}
+                              onError={(e) => {
+                                console.error(`Failed to load image: ${suggestedSrc}`);
+                              }}
                             />
                           </Box>
                         ))}
                       </Box>
-                    )}
-                  </Box>
-                );
-              })}{" "}
+                    </Box>
+                  )}
+                </Box>
+              ))}
             </Box>
-
             {previewImage && (
               <Box
                 sx={{
-                  minWidth: 200,
+                  minWidth: { xs: 150, sm: 200 },
                   maxWidth: 240,
-                  display: "flex",
+                  display: { xs: "none", sm: "flex" },
                   flexDirection: "column",
                   alignItems: "center",
                   gap: 1,
                   position: "relative",
                   zIndex: 2,
+                  mr: { sm: -2 },
                 }}
               >
                 <Image
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setModalImageSrc(previewImage);
+                    setShowImageModal(true);
+                  }}
                   src={previewImage}
                   alt="Preview"
-                  width={72}
-                  height={72}
+                  width={150}
+                  height={150}
                   style={{
                     objectFit: "contain",
                     maxWidth: "100%",
                     borderRadius: 8,
-                    position: "relative",
-                    bottom: "70px",
+                    cursor: "pointer",
+                  }}
+                  onError={(e) => {
+                    console.error(`Failed to load preview image: ${previewImage}`);
                   }}
                 />
               </Box>
@@ -684,17 +776,15 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
           </Box>
         </Box>
       )}
-
-      {/* AI Icon */}
       {expanded && (
         <>
           <Box
             sx={{
               position: "absolute",
-              bottom: 8,
-              right: 8,
-              width: 36,
-              height: 36,
+              bottom: 20,
+              right: 19,
+              width: 20,
+              height: 20,
               cursor: "pointer",
               zIndex: 6,
             }}
@@ -708,12 +798,11 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             <Image
               src={AIicon}
               alt="AI Edit Icon"
-              width={8}
-              height={8}
-              style={{ width: "20px", height: "100%" }}
+              width={20}
+              height={20}
+              style={{ width: "100%", height: "100%" }}
             />
           </Box>
-
           {aiEditMenuAnchorEl && (
             <Menu
               open={!!aiEditMenuAnchorEl}
@@ -762,25 +851,23 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     e.stopPropagation();
                     setLoadingSuggestionsAction(action.value);
                     setCurrentSuggestionAction(action.value);
-
                     if (action.value === "custom") {
                       setShowCustomPromptInput(true);
                       setLoadingSuggestionsAction(null);
                       return;
                     }
-
                     if (action.value === "regenerateImages") {
                       if (imageList.length > 0) {
                         await handleRegenerateImage(0, e);
                       } else {
-                        alert("No images available to regenerate.");
+                        console.log("No images to regenerate, using fallback images");
+                        setSuggestedImages({ imageIndex: 0, suggestions: SAMPLE_IMAGES });
                       }
                       setLoadingSuggestionsAction(null);
                       setAiEditMenuAnchorEl(null);
                       setCurrentSuggestionAction(null);
                       return;
                     }
-
                     try {
                       const res = await fetch(`${API_BASE_URL}/edit-text`, {
                         method: "POST",
@@ -829,7 +916,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               ))}
             </Menu>
           )}
-
           <Popover
             open={showCustomPromptInput}
             anchorEl={aiEditMenuAnchorEl}
@@ -842,7 +928,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             <Box
               sx={{
                 backgroundColor: "#fff",
-                border: "1px solid #ccc",
                 borderRadius: 2,
                 p: 2,
                 width: 300,
@@ -878,176 +963,188 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               </Box>
             </Box>
           </Popover>
-
-          {/* Text Suggestions Box - MODIFIED */}
-          {showSuggestionsBox &&
-            textSuggestions.length > 0 &&
-            aiEditMenuAnchorEl && (
-              <Menu
-                open={showSuggestionsBox}
-                anchorEl={aiEditMenuAnchorEl}
-                onClose={() => {
-                  setShowSuggestionsBox(false);
-                  setTextSuggestions([]);
-                  setCurrentSuggestionAction(null);
-                  setAiEditMenuAnchorEl(null);
-                }}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                transformOrigin={{ vertical: "bottom", horizontal: "right" }}
-                disablePortal
-                sx={{ zIndex: 8 }}
-              >
-                {textSuggestions.map((sug, idx) => (
-                  <MenuItem
-                    key={idx}
-                    onClick={(e) => {
-                      e.stopPropagation();
-
-                      let newBulletFormat:
-                        | "bullets"
-                        | "paragraphs"
-                        | "list"
-                        | null = null;
-
-                      if (currentSuggestionAction === "bulletsFormat") {
-                        newBulletFormat = "bullets";
-                      } else if (currentSuggestionAction === "listFormat") {
-                        newBulletFormat = "list";
-                      } else if (
-                        currentSuggestionAction === "longer" ||
-                        currentSuggestionAction === "shorter" ||
-                        currentSuggestionAction === "rewriteSlide" ||
-                        currentSuggestionAction === "custom"
-                      ) {
-                        newBulletFormat = "paragraphs";
-                      } else {
-                        newBulletFormat = currentBulletFormat;
-                      }
-
-                      onUpdateSlide?.(slideIndex, {
-                        title: sug.title,
-                        bullets: sug.bullets,
-                        bulletFormat: newBulletFormat,
-                        ...(currentSuggestionAction === "custom" && sug.imageUrl
-                          ? { image_url: sug.imageUrl }
-                          : {}),
-                      });
-
-
-                      if (
-                        currentSuggestionAction === "custom" &&
-                        sug.imageUrl
-                      ) {
-                        setPreviewImage(sug.imageUrl);
-                        onUpdateSlideImages?.(slideIndex, [sug.imageUrl]); // ✅ FIXED
-                      }
-                                            
-                      setShowSuggestionsBox(false);
-                      setCurrentSuggestionAction(null);
-                      setAiEditMenuAnchorEl(null);
+          {showSuggestionsBox && textSuggestions.length > 0 && aiEditMenuAnchorEl && (
+            <Menu
+              open={showSuggestionsBox}
+              anchorEl={aiEditMenuAnchorEl}
+              onClose={() => {
+                setShowSuggestionsBox(false);
+                setTextSuggestions([]);
+                setCurrentSuggestionAction(null);
+                setAiEditMenuAnchorEl(null);
+              }}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+              transformOrigin={{ vertical: "bottom", horizontal: "right" }}
+              disablePortal
+              sx={{ zIndex: 8 }}
+            >
+              {textSuggestions.map((sug, idx) => (
+                <MenuItem
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    let newBulletFormat:
+                      | "bullets"
+                      | "paragraphs"
+                      | "list"
+                      | null = null;
+                    if (currentSuggestionAction === "bulletsFormat") {
+                      newBulletFormat = "bullets";
+                    } else if (currentSuggestionAction === "listFormat") {
+                      newBulletFormat = "list";
+                    } else if (
+                      currentSuggestionAction === "longer" ||
+                      currentSuggestionAction === "shorter" ||
+                      currentSuggestionAction === "rewriteSlide" ||
+                      currentSuggestionAction === "custom"
+                    ) {
+                      newBulletFormat = "paragraphs";
+                    } else {
+                      newBulletFormat = currentBulletFormat;
+                    }
+                    onUpdateSlide?.(slideIndex, {
+                      title: sug.title,
+                      bullets: sug.bullets,
+                      bulletFormat: newBulletFormat,
+                      ...(currentSuggestionAction === "custom" && sug.imageUrl
+                        ? { image_url: sug.imageUrl }
+                        : {}),
+                    });
+                    if (currentSuggestionAction === "custom" && sug.imageUrl) {
+                      setPreviewImage(sug.imageUrl);
+                      onUpdateSlideImages?.(slideIndex, [sug.imageUrl]);
+                    }
+                    setShowSuggestionsBox(false);
+                    setCurrentSuggestionAction(null);
+                    setAiEditMenuAnchorEl(null);
+                  }}
+                >
+                  <Box
+                    sx={{
+                      p: 1,
+                      border: "1px solid #ccc",
+                      borderRadius: 1,
+                      cursor: "pointer",
+                      width: "100%",
                     }}
                   >
-                    <Box
-                      sx={{
-                        p: 1,
-                        border: "1px solid #ccc",
-                        borderRadius: 1,
-                        cursor: "pointer",
-                        width: "100%",
-                      }}
-                    >
-                      <Typography fontWeight={600}>{sug.title}</Typography>
-
-                      {/* ✅ Render image ONLY for custom suggestions */}
-                      {currentSuggestionAction === "custom" && sug.imageUrl && (
-                        <Box
-                          sx={{
-                            mt: 1,
-                            mb: 1,
-                            borderRadius: 1,
-                            overflow: "hidden",
-                            border: "1px solid #eee",
+                    <Typography fontWeight={600}>{sug.title}</Typography>
+                    {currentSuggestionAction === "custom" && sug.imageUrl && (
+                      <Box
+                        sx={{
+                          mt: 1,
+                          mb: 1,
+                          borderRadius: 1,
+                          overflow: "hidden",
+                          border: "1px solid #eee",
+                          width: "100%",
+                          height: 140,
+                        }}
+                      >
+                        <img
+                          src={sug.imageUrl}
+                          alt="Suggested visual"
+                          style={{
                             width: "100%",
-                            height: 140,
+                            height: "100%",
+                            objectFit: "cover",
                           }}
-                        >
-                          <img
-                            src={sug.imageUrl}
-                            alt="Suggested visual"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
-                          />
-                        </Box>
-                      )}
-
-                      {/* ✅ Bullet Formats */}
-                      {currentSuggestionAction === "longer" ||
+                          onError={(e) => {
+                            console.error(`Failed to load custom suggestion image: ${sug.imageUrl}`);
+                          }}
+                        />
+                      </Box>
+                    )}
+                    {currentSuggestionAction === "longer" ||
                       currentSuggestionAction === "shorter" ||
                       currentSuggestionAction === "rewriteSlide" ||
                       currentSuggestionAction === "custom" ? (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 0.5,
-                            mt: 0.5,
-                          }}
-                        >
-                          {sug.bullets.map((b, i) => (
-                            <Typography
-                              key={i}
-                              variant="body2"
-                              sx={{ fontSize: 14 }}
-                            >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 0.5,
+                          mt: 0.5,
+                        }}
+                      >
+                        {sug.bullets.map((b, i) => (
+                          <Typography
+                            key={i}
+                            variant="body2"
+                            sx={{ fontSize: 14 }}
+                          >
+                            {b}
+                          </Typography>
+                        ))}
+                      </Box>
+                    ) : currentSuggestionAction === "listFormat" ? (
+                      <List
+                        dense
+                        sx={{ listStyleType: "decimal", pl: 2, mt: 0.5 }}
+                      >
+                        {sug.bullets.map((b, i) => (
+                          <ListItem
+                            key={i}
+                            sx={{ display: "list-item", py: 0, px: 0 }}
+                          >
+                            <Typography variant="body2" sx={{ fontSize: 14 }}>
                               {b}
                             </Typography>
-                          ))}
-                        </Box>
-                      ) : currentSuggestionAction === "listFormat" ? (
-                        <List
-                          dense
-                          sx={{ listStyleType: "decimal", pl: 2, mt: 0.5 }}
-                        >
-                          {sug.bullets.map((b, i) => (
-                            <ListItem
-                              key={i}
-                              sx={{ display: "list-item", py: 0, px: 0 }}
-                            >
-                              <Typography variant="body2" sx={{ fontSize: 14 }}>
-                                {b}
-                              </Typography>
-                            </ListItem>
-                          ))}
-                        </List>
-                      ) : (
-                        <ul
-                          style={{
-                            paddingLeft: 16,
-                            margin: "4px 0",
-                            color: "#757577",
-                            fontSize: 14,
-                          }}
-                        >
-                          {sug.bullets.map((b, i) => (
-                            <li
-                              key={i}
-                              style={{ listStyle: "disc", paddingRight: 8 }}
-                            >
-                              {b}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Menu>
-            )}
+                          </ListItem>
+                        ))}
+                      </List>
+                    ) : (
+                      <ul
+                        style={{
+                          paddingLeft: 16,
+                          margin: "4px 0",
+                          color: "#757577",
+                          fontSize: 14,
+                        }}
+                      >
+                        {sug.bullets.map((b, i) => (
+                          <li
+                            key={i}
+                            style={{ listStyle: "disc", paddingRight: 8 }}
+                          >
+                            {b}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </Box>
+                </MenuItem>
+              ))}
+            </Menu>
+          )}
         </>
       )}
+      <Dialog
+        open={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogContent sx={{ p: 2, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <img
+            src={modalImageSrc || ""}
+            alt="Preview"
+            style={{ maxWidth: "100%", maxHeight: "80vh", borderRadius: 8 }}
+            onError={(e) => {
+              console.error(`Failed to load modal image: ${modalImageSrc}`);
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "flex-end", pr: 3 }}>
+          <Button
+            onClick={() => setShowImageModal(false)}
+            variant="contained"
+            size="small"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

@@ -51,8 +51,14 @@ export default function WorkingSection() {
         />
       </Box>
 
-      {/* Try for Free Button */}
-      <Box sx={{ textAlign: { xs: "center", md: "right" }, mb: { xs: 2, md: 10 } }}>
+      {/* Try for Free Button - Desktop View (above heading) */}
+      <Box
+        sx={{
+          textAlign: "right",
+          mb: { xs: 0, md: 10 },
+          display: { xs: "none", md: "block" }, // Show only in md and above
+        }}
+      >
         <Button
           variant="contained"
           sx={{
@@ -76,20 +82,51 @@ export default function WorkingSection() {
       </Box>
 
       {/* Heading */}
-      <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
+      <Box sx={{ textAlign: { xs: "center", md: "left" }, mt: { xs: -5, md: -24 } }}>
         <Typography
           variant="h1"
           sx={{
             fontWeight: 500,
-            fontSize: { xs: "2.2rem", md: "3.5rem" },
+            fontSize: { xs: "2rem", md: "2.5rem" },
             color: "#18181B",
-            mb: 0,
+            mb: { xs: 2, md: 0 }, // Add margin below heading in mobile view for button
           }}
         >
           From Idea to
           <br />
           Stunning Deck
         </Typography>
+      </Box>
+
+      {/* Try for Free Button - Mobile View (below heading) */}
+      <Box
+        sx={{
+          textAlign: "center",
+          mb: 2,
+          mt: {xs: -5},
+          display: { xs: "block", md: "none" }, // Show only in xs
+        }}
+      >
+        <Button
+          variant="contained"
+          sx={{
+            background: "#6C2BD7",
+            color: "#fff",
+            borderRadius: "999px",
+            px: {xs: 3, md: 4},
+            py: {xs: 1, md: 1.5},
+            fontWeight: 600,
+            fontSize: {xs: "0.9rem", md:"1.1rem"},
+            textTransform: "none",
+            boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
+            "&:hover": {
+              background: "#8E2DE2",
+            },
+          }}
+          endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
+        >
+          Try for Free
+        </Button>
       </Box>
 
       {/* Main Content */}
@@ -234,12 +271,12 @@ export default function WorkingSection() {
         {/* Right Image */}
         <Box
           sx={{
-            width: { xs: "100%", md: 620 },
-            height: { xs: 250, md: 500 },
+            width: { xs: "100%", md: 500 },
+            height: { xs: 250, md: 400 },
             borderRadius: "50px",
             border: "0.78px solid #E9E9FF",
             background: "#F8F8FF",
-            mt: { xs: 4, md: -10 },
+            mt: { xs: 0, md: -4 },
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
