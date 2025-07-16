@@ -63,9 +63,7 @@ const Page = () => {
           setShowTemplatePanel={setShowTemplatePanel}
         />
         <SlideEditor slides={slides} stageRefs={stageRefs} />
-
-        {/* {isTextSelected || isShapeSelected ? ( */}
-        {isTextSelected ? (
+        {isTextSelected || isShapeSelected ? (
           <TextSettingsPanel resetAll={resetAll} />
         ) : isImageSelected ? (
           <ImageSettingsPanel />
