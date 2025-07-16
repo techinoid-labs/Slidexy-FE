@@ -118,19 +118,36 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     suggestions: string[];
   } | null>(null);
   const [imageList, setImageList] = React.useState<string[]>(images || []);
-  const [loadingImageIndex, setLoadingImageIndex] = React.useState<number | null>(null);
-  const [showCustomPromptInput, setShowCustomPromptInput] = React.useState(false);
+  const [loadingImageIndex, setLoadingImageIndex] = React.useState<
+    number | null
+  >(null);
+  const [showCustomPromptInput, setShowCustomPromptInput] =
+    React.useState(false);
   const [customPromptText, setCustomPromptText] = React.useState("");
-  const [customSuggestionsLoading, setCustomSuggestionsLoading] = React.useState(false);
-  const [customSuggestionsError, setCustomSuggestionsError] = React.useState("");
-  const [aiEditMenuAnchorEl, setAiEditMenuAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [loadingSuggestionsAction, setLoadingSuggestionsAction] = React.useState<string | null>(null);
+  const [customSuggestionsLoading, setCustomSuggestionsLoading] =
+    React.useState(false);
+  const [customSuggestionsError, setCustomSuggestionsError] =
+    React.useState("");
+  const [aiEditMenuAnchorEl, setAiEditMenuAnchorEl] =
+    React.useState<null | HTMLElement>(null);
+  const [loadingSuggestionsAction, setLoadingSuggestionsAction] =
+    React.useState<string | null>(null);
   const [textSuggestions, setTextSuggestions] = React.useState<
-    { title: string; bullets: string[]; image?: string; imageUrl?: string | null }[]
+    {
+      title: string;
+      bullets: string[];
+      image?: string;
+      imageUrl?: string | null;
+    }[]
   >([]);
   const [showSuggestionsBox, setShowSuggestionsBox] = React.useState(false);
-  const [aiIconPosition, setAiIconPosition] = React.useState<{ x: number; y: number } | null>(null);
-  const [currentSuggestionAction, setCurrentSuggestionAction] = React.useState<string | null>(null);
+  const [aiIconPosition, setAiIconPosition] = React.useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [currentSuggestionAction, setCurrentSuggestionAction] = React.useState<
+    string | null
+  >(null);
   const [showImageModal, setShowImageModal] = React.useState(false);
   const [modalImageSrc, setModalImageSrc] = React.useState<string | null>(null);
 
@@ -232,23 +249,65 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     "/images/sample-image.svg",
   ];
 
-  const handleRegenerateImage = async (imageIndex: number, e: React.MouseEvent) => {
-    e.stopPropagation();
+  // const handleRegenerateImage = async (
+  //   imageIndex: number,
+  //   e: React.MouseEvent
+  // ) => {
+  //   e.stopPropagation();
+  //   if (loadingImageIndex !== null) return;
+  //   setLoadingImageIndex(imageIndex);
+  //   try {
+  //     setSuggestedImages({ imageIndex, suggestions: SAMPLE_IMAGES });
+  //     // Always update imageList and slide images with fallbacks if imageList is empty
+  //     if (imageList.length === 0) {
+  //       setImageList(SAMPLE_IMAGES);
+  //       onUpdateSlideImages(slideIndex, SAMPLE_IMAGES);
+  //     }
+  //   } catch (err) {
+  //     setSuggestedImages({ imageIndex, suggestions: SAMPLE_IMAGES });
+  //     if (imageList.length === 0) {
+  //       setImageList(SAMPLE_IMAGES);
+  //       onUpdateSlideImages(slideIndex, SAMPLE_IMAGES);
+  //     }
+  //   } finally {
+  //     setLoadingImageIndex(null);
+  //   }
+  // };
+  const handleRegenerateImage = async (
+    imageIndex: number,
+    e: React.MouseEvent // Keep this as it is already being passed
+  ) => {
+    e.stopPropagation(); // Essential to stop propagation here
     if (loadingImageIndex !== null) return;
+
     setLoadingImageIndex(imageIndex);
+    const currentSlide = slidesState[slideIndex];
+    const imagePrompt = `Generate a high-quality, professional image for slide titled "${
+      currentSlide.slide_title.text
+    }" with points: ${currentSlide.elements
+      .map((el) => el.text)
+      .join(", ")}. No text or labels inside the image.`;
+
     try {
-      setSuggestedImages({ imageIndex, suggestions: SAMPLE_IMAGES });
-      // Always update imageList and slide images with fallbacks if imageList is empty
-      if (imageList.length === 0) {
-        setImageList(SAMPLE_IMAGES);
-        onUpdateSlideImages(slideIndex, SAMPLE_IMAGES);
+      const res = await fetch(`${API_BASE_URL}/generate-image-suggestions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: imagePrompt,
+          count: 3,
+          isInfographicMode,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.imageUrls?.length > 0) {
+        setSuggestedImages({ imageIndex, suggestions: data.imageUrls });
+      } else {
+        alert("Failed to generate image suggestions.");
       }
     } catch (err) {
-      setSuggestedImages({ imageIndex, suggestions: SAMPLE_IMAGES });
-      if (imageList.length === 0) {
-        setImageList(SAMPLE_IMAGES);
-        onUpdateSlideImages(slideIndex, SAMPLE_IMAGES);
-      }
+      console.error("Image regeneration error:", err);
+      alert("Error generating image suggestions.");
     } finally {
       setLoadingImageIndex(null);
     }
@@ -267,8 +326,18 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         position: "relative",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", minHeight: 56, justifyContent: "space-between", width: "100%" }}>
-        <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          minHeight: 56,
+          justifyContent: "space-between",
+          width: "100%",
+        }}
+      >
+        <Box
+          sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}
+        >
           {editable && isEditing ? (
             <TextField
               inputRef={inputRef}
@@ -362,7 +431,14 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               }}
             />
           ) : (
-            <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               <Box
                 {...dragHandleProps}
                 sx={{
@@ -673,8 +749,18 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     }}
                   />
                   {suggestedImages?.imageIndex === i && (
-                    <Box sx={{ mt: 1, position: "relative", overflow: "visible" }}>
-                      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: { xs: -3, md: -6 }, ml: { xs: 26, md: 34 }, mt: { xs: 2, md: 5 } }}>
+                    <Box
+                      sx={{ mt: 1, position: "relative", overflow: "visible" }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          mb: { xs: -3, md: -6 },
+                          ml: { xs: 26, md: 34 },
+                          mt: { xs: 2, md: 5 },
+                        }}
+                      >
                         <IconButton
                           size="small"
                           sx={{
@@ -726,7 +812,9 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                                 height: "100%",
                               }}
                               onError={(e) => {
-                                console.error(`Failed to load image: ${suggestedSrc}`);
+                                console.error(
+                                  `Failed to load image: ${suggestedSrc}`
+                                );
                               }}
                             />
                           </Box>
@@ -768,7 +856,9 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     cursor: "pointer",
                   }}
                   onError={(e) => {
-                    console.error(`Failed to load preview image: ${previewImage}`);
+                    console.error(
+                      `Failed to load preview image: ${previewImage}`
+                    );
                   }}
                 />
               </Box>
@@ -860,8 +950,13 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                       if (imageList.length > 0) {
                         await handleRegenerateImage(0, e);
                       } else {
-                        console.log("No images to regenerate, using fallback images");
-                        setSuggestedImages({ imageIndex: 0, suggestions: SAMPLE_IMAGES });
+                        console.log(
+                          "No images to regenerate, using fallback images"
+                        );
+                        setSuggestedImages({
+                          imageIndex: 0,
+                          suggestions: SAMPLE_IMAGES,
+                        });
                       }
                       setLoadingSuggestionsAction(null);
                       setAiEditMenuAnchorEl(null);
@@ -963,160 +1058,167 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               </Box>
             </Box>
           </Popover>
-          {showSuggestionsBox && textSuggestions.length > 0 && aiEditMenuAnchorEl && (
-            <Menu
-              open={showSuggestionsBox}
-              anchorEl={aiEditMenuAnchorEl}
-              onClose={() => {
-                setShowSuggestionsBox(false);
-                setTextSuggestions([]);
-                setCurrentSuggestionAction(null);
-                setAiEditMenuAnchorEl(null);
-              }}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }}
-              transformOrigin={{ vertical: "bottom", horizontal: "right" }}
-              disablePortal
-              sx={{ zIndex: 8 }}
-            >
-              {textSuggestions.map((sug, idx) => (
-                <MenuItem
-                  key={idx}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    let newBulletFormat:
-                      | "bullets"
-                      | "paragraphs"
-                      | "list"
-                      | null = null;
-                    if (currentSuggestionAction === "bulletsFormat") {
-                      newBulletFormat = "bullets";
-                    } else if (currentSuggestionAction === "listFormat") {
-                      newBulletFormat = "list";
-                    } else if (
-                      currentSuggestionAction === "longer" ||
-                      currentSuggestionAction === "shorter" ||
-                      currentSuggestionAction === "rewriteSlide" ||
-                      currentSuggestionAction === "custom"
-                    ) {
-                      newBulletFormat = "paragraphs";
-                    } else {
-                      newBulletFormat = currentBulletFormat;
-                    }
-                    onUpdateSlide?.(slideIndex, {
-                      title: sug.title,
-                      bullets: sug.bullets,
-                      bulletFormat: newBulletFormat,
-                      ...(currentSuggestionAction === "custom" && sug.imageUrl
-                        ? { image_url: sug.imageUrl }
-                        : {}),
-                    });
-                    if (currentSuggestionAction === "custom" && sug.imageUrl) {
-                      setPreviewImage(sug.imageUrl);
-                      onUpdateSlideImages?.(slideIndex, [sug.imageUrl]);
-                    }
-                    setShowSuggestionsBox(false);
-                    setCurrentSuggestionAction(null);
-                    setAiEditMenuAnchorEl(null);
-                  }}
-                >
-                  <Box
-                    sx={{
-                      p: 1,
-                      border: "1px solid #ccc",
-                      borderRadius: 1,
-                      cursor: "pointer",
-                      width: "100%",
+          {showSuggestionsBox &&
+            textSuggestions.length > 0 &&
+            aiEditMenuAnchorEl && (
+              <Menu
+                open={showSuggestionsBox}
+                anchorEl={aiEditMenuAnchorEl}
+                onClose={() => {
+                  setShowSuggestionsBox(false);
+                  setTextSuggestions([]);
+                  setCurrentSuggestionAction(null);
+                  setAiEditMenuAnchorEl(null);
+                }}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                transformOrigin={{ vertical: "bottom", horizontal: "right" }}
+                disablePortal
+                sx={{ zIndex: 8 }}
+              >
+                {textSuggestions.map((sug, idx) => (
+                  <MenuItem
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      let newBulletFormat:
+                        | "bullets"
+                        | "paragraphs"
+                        | "list"
+                        | null = null;
+                      if (currentSuggestionAction === "bulletsFormat") {
+                        newBulletFormat = "bullets";
+                      } else if (currentSuggestionAction === "listFormat") {
+                        newBulletFormat = "list";
+                      } else if (
+                        currentSuggestionAction === "longer" ||
+                        currentSuggestionAction === "shorter" ||
+                        currentSuggestionAction === "rewriteSlide" ||
+                        currentSuggestionAction === "custom"
+                      ) {
+                        newBulletFormat = "paragraphs";
+                      } else {
+                        newBulletFormat = currentBulletFormat;
+                      }
+                      onUpdateSlide?.(slideIndex, {
+                        title: sug.title,
+                        bullets: sug.bullets,
+                        bulletFormat: newBulletFormat,
+                        ...(currentSuggestionAction === "custom" && sug.imageUrl
+                          ? { image_url: sug.imageUrl }
+                          : {}),
+                      });
+                      if (
+                        currentSuggestionAction === "custom" &&
+                        sug.imageUrl
+                      ) {
+                        setPreviewImage(sug.imageUrl);
+                        onUpdateSlideImages?.(slideIndex, [sug.imageUrl]);
+                      }
+                      setShowSuggestionsBox(false);
+                      setCurrentSuggestionAction(null);
+                      setAiEditMenuAnchorEl(null);
                     }}
                   >
-                    <Typography fontWeight={600}>{sug.title}</Typography>
-                    {currentSuggestionAction === "custom" && sug.imageUrl && (
-                      <Box
-                        sx={{
-                          mt: 1,
-                          mb: 1,
-                          borderRadius: 1,
-                          overflow: "hidden",
-                          border: "1px solid #eee",
-                          width: "100%",
-                          height: 140,
-                        }}
-                      >
-                        <img
-                          src={sug.imageUrl}
-                          alt="Suggested visual"
-                          style={{
+                    <Box
+                      sx={{
+                        p: 1,
+                        border: "1px solid #ccc",
+                        borderRadius: 1,
+                        cursor: "pointer",
+                        width: "100%",
+                      }}
+                    >
+                      <Typography fontWeight={600}>{sug.title}</Typography>
+                      {currentSuggestionAction === "custom" && sug.imageUrl && (
+                        <Box
+                          sx={{
+                            mt: 1,
+                            mb: 1,
+                            borderRadius: 1,
+                            overflow: "hidden",
+                            border: "1px solid #eee",
                             width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
+                            height: 140,
                           }}
-                          onError={(e) => {
-                            console.error(`Failed to load custom suggestion image: ${sug.imageUrl}`);
-                          }}
-                        />
-                      </Box>
-                    )}
-                    {currentSuggestionAction === "longer" ||
+                        >
+                          <img
+                            src={sug.imageUrl}
+                            alt="Suggested visual"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                            onError={(e) => {
+                              console.error(
+                                `Failed to load custom suggestion image: ${sug.imageUrl}`
+                              );
+                            }}
+                          />
+                        </Box>
+                      )}
+                      {currentSuggestionAction === "longer" ||
                       currentSuggestionAction === "shorter" ||
                       currentSuggestionAction === "rewriteSlide" ||
                       currentSuggestionAction === "custom" ? (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 0.5,
-                          mt: 0.5,
-                        }}
-                      >
-                        {sug.bullets.map((b, i) => (
-                          <Typography
-                            key={i}
-                            variant="body2"
-                            sx={{ fontSize: 14 }}
-                          >
-                            {b}
-                          </Typography>
-                        ))}
-                      </Box>
-                    ) : currentSuggestionAction === "listFormat" ? (
-                      <List
-                        dense
-                        sx={{ listStyleType: "decimal", pl: 2, mt: 0.5 }}
-                      >
-                        {sug.bullets.map((b, i) => (
-                          <ListItem
-                            key={i}
-                            sx={{ display: "list-item", py: 0, px: 0 }}
-                          >
-                            <Typography variant="body2" sx={{ fontSize: 14 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 0.5,
+                            mt: 0.5,
+                          }}
+                        >
+                          {sug.bullets.map((b, i) => (
+                            <Typography
+                              key={i}
+                              variant="body2"
+                              sx={{ fontSize: 14 }}
+                            >
                               {b}
                             </Typography>
-                          </ListItem>
-                        ))}
-                      </List>
-                    ) : (
-                      <ul
-                        style={{
-                          paddingLeft: 16,
-                          margin: "4px 0",
-                          color: "#757577",
-                          fontSize: 14,
-                        }}
-                      >
-                        {sug.bullets.map((b, i) => (
-                          <li
-                            key={i}
-                            style={{ listStyle: "disc", paddingRight: 8 }}
-                          >
-                            {b}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </Box>
-                </MenuItem>
-              ))}
-            </Menu>
-          )}
+                          ))}
+                        </Box>
+                      ) : currentSuggestionAction === "listFormat" ? (
+                        <List
+                          dense
+                          sx={{ listStyleType: "decimal", pl: 2, mt: 0.5 }}
+                        >
+                          {sug.bullets.map((b, i) => (
+                            <ListItem
+                              key={i}
+                              sx={{ display: "list-item", py: 0, px: 0 }}
+                            >
+                              <Typography variant="body2" sx={{ fontSize: 14 }}>
+                                {b}
+                              </Typography>
+                            </ListItem>
+                          ))}
+                        </List>
+                      ) : (
+                        <ul
+                          style={{
+                            paddingLeft: 16,
+                            margin: "4px 0",
+                            color: "#757577",
+                            fontSize: 14,
+                          }}
+                        >
+                          {sug.bullets.map((b, i) => (
+                            <li
+                              key={i}
+                              style={{ listStyle: "disc", paddingRight: 8 }}
+                            >
+                              {b}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Menu>
+            )}
         </>
       )}
       <Dialog
@@ -1125,7 +1227,14 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogContent sx={{ p: 2, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <DialogContent
+          sx={{
+            p: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <img
             src={modalImageSrc || ""}
             alt="Preview"
