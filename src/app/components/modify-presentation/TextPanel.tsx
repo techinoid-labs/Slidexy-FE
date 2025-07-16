@@ -20,11 +20,7 @@ import VerticalAlignTopIcon from "@mui/icons-material/VerticalAlignTop";
 import VerticalAlignBottomIcon from "@mui/icons-material/VerticalAlignBottom";
 import VerticalAlignCenterIcon from "@mui/icons-material/VerticalAlignCenter";
 import { useSlides } from "@/app/context/SlidesContext";
-
-<link
-  href="https://fonts.googleapis.com/css2?family=Raleway&display=swap"
-  rel="stylesheet"
-/>;
+import { useSlideThemeContext } from "@/app/context/ThemeContext";
 
 const fontOptions = ["Raleway", "Roboto", "Arial"];
 
@@ -42,50 +38,34 @@ interface TextSettingsPanelProps {
 const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   sidebarHeight = "100vh",
 }) => {
-  const { slides, selectedTextId, setSlides } = useSlides();
-
+  const {
+    slides,
+    selectedTextId,
+    selectedShapeIndex,
+    selectedSlideIndex,
+    setSlides,
+  } = useSlides();
+  const { setPrimaryColor } = useSlideThemeContext();
   const parsed = selectedTextId
     ? selectedTextId.match(/(?:title|el)-(\d+)(?:-(\d+))?/)
     : null;
-  const slideIndex = parsed ? parseInt(parsed[1], 10) : -1;
-  const elementIndex = parsed?.[2] ? parseInt(parsed[2], 10) : null;
+
+  const slideIndex = parsed ? parseInt(parsed[1], 10) : selectedSlideIndex;
+
+  const elementIndex = parsed?.[2]
+    ? parseInt(parsed[2], 10)
+    : selectedShapeIndex !== null
+    ? selectedShapeIndex
+    : null;
 
   let textObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex]) {
     if (selectedTextId?.startsWith("title")) {
       textObj = slides[slideIndex].slide_title;
-    } else if (
-      elementIndex !== null &&
-      slides[slideIndex].elements[elementIndex]
-    ) {
+    } else if (elementIndex !== null) {
       textObj = slides[slideIndex].elements[elementIndex];
     }
   }
-
-  const updateTextProperty = (prop: string, value: any) => {
-    if (slideIndex === -1 || !textObj) return;
-    const updatedSlides = structuredClone(slides);
-    const updateProps = (props: any) => {
-      props[prop] = value;
-    };
-    if (selectedTextId?.startsWith("title")) {
-      updateProps(updatedSlides[slideIndex].slide_title.properties);
-    } else if (elementIndex !== null) {
-      updateProps(updatedSlides[slideIndex].elements[elementIndex].properties);
-    }
-    setSlides(updatedSlides);
-  };
-
-  const updateTextContent = (value: string) => {
-    if (slideIndex === -1 || !textObj) return;
-    const updatedSlides = structuredClone(slides);
-    if (selectedTextId?.startsWith("title")) {
-      updatedSlides[slideIndex].slide_title.text = value;
-    } else if (elementIndex !== null) {
-      updatedSlides[slideIndex].elements[elementIndex].text = value;
-    }
-    setSlides(updatedSlides);
-  };
 
   if (!textObj) return null;
 
@@ -102,6 +82,29 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   const align = rawProps.align ?? "left";
   const opacity = rawProps.opacity ?? 1;
   const verticalAlign = rawProps.verticalAlign ?? "top";
+
+  const updateTextProperty = (prop: string, value: any) => {
+    if (!textObj || slideIndex === -1) return;
+    const updatedSlides = structuredClone(slides);
+    const target: any = selectedTextId?.startsWith("title")
+      ? updatedSlides[slideIndex].slide_title.properties
+      : elementIndex !== null
+      ? updatedSlides[slideIndex].elements[elementIndex].properties
+      : null;
+    if (target) target[prop] = value;
+    setSlides(updatedSlides);
+  };
+
+  const updateTextContent = (value: string) => {
+    if (!textObj || slideIndex === -1) return;
+    const updatedSlides = structuredClone(slides);
+    if (selectedTextId?.startsWith("title")) {
+      updatedSlides[slideIndex].slide_title.text = value;
+    } else if (elementIndex !== null) {
+      updatedSlides[slideIndex].elements[elementIndex].text = value;
+    }
+    setSlides(updatedSlides);
+  };
 
   return (
     <Box className="w-[410px] min-w-[350px] md:min-w-[410px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
@@ -247,37 +250,43 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
         <Box className="flex flex-wrap gap-x-2 gap-y-2 mb-2">
           {[
-            { icon: <FormatAlignLeftIcon />, value: "left" },
-            { icon: <FormatAlignCenterIcon />, value: "center" },
-            { icon: <FormatAlignRightIcon />, value: "right" },
-            { icon: <FormatAlignJustifyIcon />, value: "justify" },
-          ].map(({ icon, value }) => (
-            <IconButton
-              key={value}
-              onClick={() => updateTextProperty("align", value)}
-              className={`rounded-md w-11 h-11 ${
-                align === value ? "bg-gray-300" : "bg-[#F8F8FA]"
-              }`}
-            >
-              {icon}
-            </IconButton>
-          ))}
-          <Box className="flex gap-1 bg-[#F8F8FA] rounded-md px-1 ml-2">
-            {[
-              { icon: <VerticalAlignTopIcon />, value: "top" },
-              { icon: <VerticalAlignCenterIcon />, value: "middle" },
-              { icon: <VerticalAlignBottomIcon />, value: "bottom" },
-            ].map(({ icon, value }) => (
+            FormatAlignLeftIcon,
+            FormatAlignCenterIcon,
+            FormatAlignRightIcon,
+            FormatAlignJustifyIcon,
+          ].map((Icon, i) => {
+            const value = ["left", "center", "right", "justify"][i];
+            return (
               <IconButton
                 key={value}
-                onClick={() => updateTextProperty("verticalAlign", value)}
-                className={`w-9 h-9 rounded-md ${
-                  verticalAlign === value ? "bg-gray-300" : "bg-transparent"
+                onClick={() => updateTextProperty("align", value)}
+                className={`rounded-md w-11 h-11 ${
+                  align === value ? "bg-gray-300" : "bg-[#F8F8FA]"
                 }`}
               >
-                {icon}
+                <Icon />
               </IconButton>
-            ))}
+            );
+          })}
+          <Box className="flex gap-1 bg-[#F8F8FA] rounded-md px-1 ml-2">
+            {[
+              VerticalAlignTopIcon,
+              VerticalAlignCenterIcon,
+              VerticalAlignBottomIcon,
+            ].map((Icon, i) => {
+              const value = ["top", "middle", "bottom"][i];
+              return (
+                <IconButton
+                  key={value}
+                  onClick={() => updateTextProperty("verticalAlign", value)}
+                  className={`w-9 h-9 rounded-md ${
+                    verticalAlign === value ? "bg-gray-300" : "bg-transparent"
+                  }`}
+                >
+                  <Icon />
+                </IconButton>
+              );
+            })}
           </Box>
         </Box>
       </Box>
@@ -294,7 +303,10 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             type="color"
             value={fill}
             className="w-12 h-12 rounded-full"
-            onChange={(e) => updateTextProperty("fill", e.target.value)}
+            onChange={(e) => {
+              updateTextProperty("fill", e.target.value);
+              // !selectedShapeIndex && setPrimaryColor(e.target.value);
+            }}
           />
           <Typography sx={{ fontSize: 14 }}>{fill.toUpperCase()}</Typography>
         </Box>

@@ -18,6 +18,8 @@ interface SlidesContextType {
   setSelectedImageIndex: (index: number | null) => void;
   selectedTextId: null | string;
   setSelectedTextId: (id: string | null) => void;
+  selectedShapeIndex: number | null;
+  setSelectedShapeIndex: (index: number | null) => void;
 }
 
 const SlidesContext = createContext<SlidesContextType>({
@@ -31,6 +33,8 @@ const SlidesContext = createContext<SlidesContextType>({
   setSelectedImageIndex: () => {},
   selectedTextId: null,
   setSelectedTextId: () => {},
+  selectedShapeIndex: null,
+  setSelectedShapeIndex: () => {},
 });
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
@@ -40,6 +44,9 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<any | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<any | null>(
+    null
+  );
+  const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
     null
   );
 
@@ -60,6 +67,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setSelectedImageIndex,
         selectedTextId,
         setSelectedTextId,
+        selectedShapeIndex,
+        setSelectedShapeIndex,
       }}
     >
       {children}

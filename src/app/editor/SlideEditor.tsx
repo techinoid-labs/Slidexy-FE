@@ -15,6 +15,7 @@ import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 import {
   getRandomSlide,
+  getLayoutProps,
   SLIDE_WIDTH,
   SLIDE_HEIGHT,
   LEFT_PADDING,
@@ -32,13 +33,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     setSelectedImage,
     selectedTextId,
     setSelectedTextId,
+    selectedShapeIndex,
+    setSelectedShapeIndex,
   } = useSlides();
   const { selectedTheme, selectedLayout } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
-    null
-  );
 
   console.log(slides);
   const [useDummy] = useState(false);
@@ -57,64 +57,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     dispatch(setSlides(newSlides));
     if (selectedIndex >= newSlides.length) {
       setSelectedIndex(Math.max(0, newSlides.length - 1));
-    }
-  };
-
-  const getLayoutProps = (layout: number) => {
-    // Returns { image: {x, y, width, height}, title: {x, y}, bullets: {x, y} }
-    switch (layout) {
-      case 0: // image down, text above
-        return {
-          image: { x: 100, y: 500, width: 700, height: 220 },
-          title: { x: LEFT_PADDING, y: 60 },
-          bullets: { x: LEFT_PADDING, y: 180 },
-        };
-      case 1: // image up, text below
-        return {
-          image: { x: 100, y: 60, width: 700, height: 220 },
-          title: { x: LEFT_PADDING, y: 350 },
-          bullets: { x: LEFT_PADDING, y: 420 },
-        };
-      case 2: // image right, text left
-        return {
-          image: { x: 900, y: 100, width: 320, height: 520 },
-          title: { x: LEFT_PADDING, y: 100 },
-          bullets: { x: LEFT_PADDING, y: 200 },
-        };
-      case 3: // image left, text right
-        return {
-          image: { x: 60, y: 100, width: 320, height: 520 },
-          title: { x: 500, y: 100 },
-          bullets: { x: 500, y: 200 },
-        };
-      case 4: // image center, title above, bullets below
-        return {
-          image: {
-            x: (SLIDE_WIDTH - 500) / 2,
-            y: 300,
-            width: 500,
-            height: 200,
-          },
-          title: { x: (SLIDE_WIDTH - 900) / 2, y: 80 },
-          bullets: { x: (SLIDE_WIDTH - 900) / 2, y: 540 },
-        };
-      case 5: // text only
-        return {
-          image: null,
-          title: { x: LEFT_PADDING, y: 100 },
-          bullets: { x: LEFT_PADDING, y: 200 },
-        };
-      default:
-        return {
-          image: {
-            x: SLIDE_WIDTH - 700,
-            y: (SLIDE_HEIGHT - 600) / 2,
-            width: 700,
-            height: 600,
-          },
-          title: { x: LEFT_PADDING, y: 60 },
-          bullets: { x: LEFT_PADDING, y: 180 },
-        };
     }
   };
 
@@ -228,6 +170,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         y={0}
                         width={SLIDE_WIDTH}
                         height={SLIDE_HEIGHT}
+                        onClick={() => {
+                          setSelectedTextId(null);
+                          setSelectedImageIndex(null);
+                          setSelectedShapeIndex(null);
+                          setSelectedImage(null);
+                        }}
                       />
                     ) : (
                       <Rect
@@ -281,12 +229,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           verticalAlign={el.properties.verticalAlign}
                           wrap="word"
                           fontSize={el.properties.fontSize}
-                          fontFamily={el.properties.fontFamily}
                           fill={
                             selectedTheme?.primaryColor || el.properties.fill
                           }
                           fontStyle={el.properties.fontStyle}
                           fontWeight={el.properties.fontWeight}
+                          fontFamily={el.properties.fontFamily}
                           isSelected={selectedTextId === `el-${index}-${i}`}
                           onSelect={() => {
                             setSelectedTextId(`el-${index}-${i}`);

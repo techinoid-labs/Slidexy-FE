@@ -3,7 +3,7 @@ export const SLIDE_HEIGHT = 430;
 export const LEFT_PADDING = 50;
 
 export const getRandomSlide = () => {
-  const titles = [
+  const titles: any = [
     "5 Ways to Boost Productivity",
     "Understanding AI in 2025",
     "Why Design Thinking Works",
@@ -11,7 +11,7 @@ export const getRandomSlide = () => {
     "The Future of Remote Work",
   ];
 
-  const bullets = [
+  const bullets: any = [
     "Keep tasks short and focused",
     "Automate where possible",
     "Use data to drive decisions",
@@ -32,10 +32,10 @@ export const getRandomSlide = () => {
         konva_component: "Konva.Text",
         properties: {
           fontSize: 18,
-          fontWeight: 400,
-          fontFamily: "Inter",
+          fontWeight: "",
+          fontFamily: "",
           fill: "#444",
-          fontStyle: "normal",
+          fontStyle: "",
         },
       };
     });
@@ -46,14 +46,28 @@ export const getRandomSlide = () => {
       text: titles[Math.floor(Math.random() * titles.length)],
       properties: {
         fontSize: 24,
-        fontFamily: "Arial",
+        fontFamily: "",
         fill: "#000",
-        fontStyle: "normal",
+        fontStyle: "",
       },
     },
     elements: getRandomBullets(3),
     image_url: "/images/create-presentation/new-slide-img.png",
   };
+  // return {
+  //   slide_id: `slide-${Date.now()}`,
+  //   slide_title: {
+  //     text: "",
+  //     properties: {
+  //       fontSize: 24,
+  //       fontFamily: "Arial",
+  //       fill: "#000",
+  //       fontStyle: "normal",
+  //     },
+  //   },
+  //   elements: [],
+  //   image_url: null,
+  // };
 };
 
 export const getLayoutProps = (layout: number) => {

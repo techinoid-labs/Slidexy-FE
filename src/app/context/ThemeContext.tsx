@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState } from "react";
-
+// ThemeContext.tsx
 export interface Theme {
   font: string;
   primaryColor: string;
@@ -16,6 +16,7 @@ interface ThemeContextType {
   setSelectedTheme: (theme: Theme) => void;
   selectedLayout: LayoutType;
   setSelectedLayout: (layout: LayoutType) => void;
+  setPrimaryColor: (color: string) => void; // ✅ NEW
 }
 
 const ThemeContext = createContext<ThemeContextType>({
@@ -23,14 +24,29 @@ const ThemeContext = createContext<ThemeContextType>({
   setSelectedTheme: () => {},
   selectedLayout: 0,
   setSelectedLayout: () => {},
+  setPrimaryColor: () => {}, // ✅ DEFAULT
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
   const [selectedLayout, setSelectedLayout] = useState<LayoutType>(0);
 
+  const setPrimaryColor = (color: string) => {
+    if (selectedTheme) {
+      setSelectedTheme({ ...selectedTheme, primaryColor: color });
+    }
+  };
+
   return (
-    <ThemeContext.Provider value={{ selectedTheme, setSelectedTheme, selectedLayout, setSelectedLayout }}>
+    <ThemeContext.Provider
+      value={{
+        selectedTheme,
+        setSelectedTheme,
+        selectedLayout,
+        setSelectedLayout,
+        setPrimaryColor, // ✅ PROVIDE
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

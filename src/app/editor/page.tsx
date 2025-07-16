@@ -10,31 +10,40 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
-import type { Slide } from "@/app/slice/slidesSlice";
 import { exportSlidesAsPDF } from "../../../utils/exportSlides";
 import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
 import dynamic from "next/dynamic";
-
-const TextPanel = dynamic(
-  () => import("@/app/components/modify-presentation/TextPanel"),
-  { ssr: false }
-);
+import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
-  const { slides, setSelectedTextId, selectedTextId, selectedImageIndex } =
-    useSlides();
+  const {
+    slides,
+    setSelectedTextId,
+    selectedTextId,
+    selectedImageIndex,
+    selectedShapeIndex,
+  } = useSlides();
   const dispatch = useDispatch();
   const router = useRouter();
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
 
-  const [initialSlides] = useState(() => structuredClone(slides));
+  const [initialSlides] = useState(() => slides);
+
+  console.log({
+    selectedTextId,
+    selectedImageIndex,
+    selectedShapeIndex,
+  });
 
   const resetAll = () => {
-    dispatch(setSlides(structuredClone(initialSlides)));
+    dispatch(setSlides(initialSlides));
     setSelectedTextId(null);
   };
 
+  const isTextSelected = selectedTextId !== null && selectedTextId !== "";
+  const isShapeSelected = selectedShapeIndex !== null;
+  const isImageSelected = selectedImageIndex !== null;
   const handleExportPDF = () => exportSlidesAsPDF(stageRefs.current);
   return (
     <div
@@ -53,12 +62,12 @@ const Page = () => {
           showTemplatePanel={showTemplatePanel}
           setShowTemplatePanel={setShowTemplatePanel}
         />
-
         <SlideEditor slides={slides} stageRefs={stageRefs} />
 
-        {selectedTextId ? (
-          <TextPanel resetAll={resetAll} />
-        ) : selectedImageIndex ? (
+        {/* {isTextSelected || isShapeSelected ? ( */}
+        {isTextSelected ? (
+          <TextSettingsPanel resetAll={resetAll} />
+        ) : isImageSelected ? (
           <ImageSettingsPanel />
         ) : (
           <ThemePanel resetAll={resetAll} />
