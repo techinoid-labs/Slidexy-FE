@@ -9,7 +9,7 @@ export default function ResponsivePageWrapper({
   children: React.ReactNode;
 }) {
   return (
-    <Box className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-2 bg-red">
+    <Box className="w-full  mx-auto   px-4 sm:px-6 md:px-8 lg:px-10 py-2 bg-red">
       {children}
     </Box>
   );

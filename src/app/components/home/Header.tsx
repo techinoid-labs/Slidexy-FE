@@ -20,7 +20,7 @@ import { Typography } from "@mui/material";
 
 export default function Header() {
   const theme = useMuiTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -44,7 +44,7 @@ export default function Header() {
       position="sticky"
       elevation={0}
       sx={{
-        background: "#fff",
+        background: "#fff",       
         minHeight: 80,
         boxShadow: "none",
         borderBottom: `1px solid ${theme.palette.divider}`,
@@ -108,7 +108,7 @@ export default function Header() {
         )}
 
         {/* Right Side Actions */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ display: "flex" , alignItems: "center", gap: 1 }}>
           {!isMobile && (
             <>
               <Typography
