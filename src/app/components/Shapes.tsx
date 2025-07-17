@@ -5,7 +5,7 @@ import { Box, Typography, IconButton, InputBase } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import { useSlides } from "@/app/context/SlidesContext";
-
+import { v4 as uuidv4 } from "uuid";
 const shapes = [
   {
     name: "Circle",
@@ -227,6 +227,7 @@ const Shapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
       konva_component: shape.konva_component,
       element_type: "shape",
       properties: shape.defaultProps,
+      element_id: uuidv4(),
     };
 
     const updatedSlides = [...slides];

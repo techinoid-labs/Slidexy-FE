@@ -10,7 +10,6 @@ import { dummyData } from "./dummy";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import SlidePreviews from "./slidesPreview";
 import { useDispatch } from "react-redux";
-import { setSlides } from "../slice/slidesSlice";
 import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 import {
@@ -20,7 +19,7 @@ import {
   SLIDE_HEIGHT,
   LEFT_PADDING,
 } from "../../../utils/slideUtils";
-
+import { v4 as uuidv4 } from "uuid";
 const IMAGE_WIDTH = 500;
 const IMAGE_PADDING = 20;
 const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
@@ -35,6 +34,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     setSelectedTextId,
     selectedShapeIndex,
     setSelectedShapeIndex,
+    setSlides,
   } = useSlides();
   const { selectedTheme, selectedLayout } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
@@ -46,15 +46,15 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
 
-    const newSlides = [...slides, newSlide];
-    dispatch(setSlides(newSlides));
+    const newSlides = [...slides, structuredClone(newSlide)];
+    setSlides(newSlides);
     setSelectedIndex(newSlides.length - 1);
   };
 
   const handleDeleteSlide = (index: number) => {
     const newSlides = [...slides];
     newSlides.splice(index, 1);
-    dispatch(setSlides(newSlides));
+    setSlides(newSlides);
     if (selectedIndex >= newSlides.length) {
       setSelectedIndex(Math.max(0, newSlides.length - 1));
     }
@@ -76,6 +76,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         const defaultImageElement = {
           element_type: "image",
           konva_component: "Konva.Image",
+          element_id: uuidv4(),
           properties: {
             imageSrc: slide.image_url,
             x: SLIDE_WIDTH - 480,
@@ -94,9 +95,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     });
 
     if (JSON.stringify(slides) !== JSON.stringify(normalizedSlides)) {
-      dispatch(setSlides(normalizedSlides));
+      setSlides(normalizedSlides);
     }
-  }, [slides, dispatch]);
+  }, [slides]);
 
   return (
     <main
@@ -189,29 +190,43 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     )}
 
                     {title.text && (
-                      <KonvaTextEditor
-                        id={`title-${index}`}
-                        text={title.text}
-                        x={LEFT_PADDING}
-                        y={titleY}
-                        width={textMaxWidth}
-                        wrap="word"
-                        fontSize={titleProps.fontSize}
-                        fontWeight={titleProps.fontWeight}
-                        fontFamily={titleProps.fontFamily}
-                        opacity={titleProps.opacity}
-                        align={titleProps.align}
-                        verticalAlign={titleProps.verticalAlign}
-                        fill={selectedTheme?.primaryColor || titleProps.fill}
-                        fontStyle={titleProps.fontStyle}
-                        isSelected={selectedTextId === `title-${index}`}
-                        onSelect={() => {
-                          setSelectedTextId(`title-${index}`);
-                          setSelectedImageIndex(null);
-                          setSelectedShapeIndex(null);
-                          setSelectedImage(null);
-                        }}
-                      />
+                      <>
+                        {console.log({
+                          isTheme: title.useThemeColor,
+                          selected: selectedTheme,
+                          chosen: !title.useThemeColor
+                            ? titleProps.fill
+                            : selectedTheme?.primaryColor,
+                          individual: titleProps.fill,
+                        })}
+                        <KonvaTextEditor
+                          id={`title-${index}`}
+                          text={title.text}
+                          x={LEFT_PADDING}
+                          y={titleY}
+                          width={textMaxWidth}
+                          wrap="word"
+                          fontSize={titleProps.fontSize}
+                          fontWeight={titleProps.fontWeight}
+                          fontFamily={titleProps.fontFamily}
+                          opacity={titleProps.opacity}
+                          align={titleProps.align}
+                          verticalAlign={titleProps.verticalAlign}
+                          fill={
+                            !title.useThemeColor
+                              ? titleProps.fill
+                              : selectedTheme?.primaryColor ?? "#000"
+                          }
+                          fontStyle={titleProps.fontStyle}
+                          isSelected={selectedTextId === `title-${index}`}
+                          onSelect={() => {
+                            setSelectedTextId(`title-${index}`);
+                            setSelectedImageIndex(null);
+                            setSelectedShapeIndex(null);
+                            setSelectedImage(null);
+                          }}
+                        />
+                      </>
                     )}
                     {slide.elements.map((el: any, i: number) => {
                       if (el.element_type !== "text") return null;
@@ -230,7 +245,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           wrap="word"
                           fontSize={el.properties.fontSize}
                           fill={
-                            selectedTheme?.primaryColor || el.properties.fill
+                            !el.useThemeColor
+                              ? el.properties.fill
+                              : selectedTheme?.primaryColor
                           }
                           fontStyle={el.properties.fontStyle}
                           fontWeight={el.properties.fontWeight}
@@ -280,7 +297,14 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           if (line) lines.push(line.trim());
 
                           const height = lines.length * fontSize * lineHeight;
-
+                          // console.log({
+                          //   isTheme: el.useThemeColor,
+                          //   selected: selectedTheme,
+                          //   chosen: !el.useThemeColor
+                          //     ? el.properties.fill
+                          //     : selectedTheme?.primaryColor,
+                          //   individual: el.properties.fill,
+                          // });
                           const editor = (
                             <KonvaTextEditor
                               key={`el-${index}-${i}`}
@@ -295,10 +319,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                               fontSize={fontSize}
                               fontFamily={fontFamily}
                               fill={
-                                selectedTheme?.primaryColor ||
-                                el.properties.fill
+                                !el.useThemeColor
+                                  ? el.properties.fill
+                                  : selectedTheme?.primaryColor
                               }
                               fontStyle={el.properties.fontStyle}
+                              fontWeight={el.properties.fontWeight}
                               isSelected={selectedTextId === `el-${index}-${i}`}
                               onSelect={() => {
                                 setSelectedTextId(`el-${index}-${i}`);

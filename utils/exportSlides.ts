@@ -7,7 +7,7 @@ export const exportSlidesAsPDF = async (
   const pdf = new jsPDF({
     orientation: "landscape",
     unit: "px",
-    format: [920, 430],
+    format: [1280, 720],
   });
 
   for (let i = 0; i < canvasRefs.length; i++) {
@@ -15,7 +15,7 @@ export const exportSlidesAsPDF = async (
     if (!canvas) continue;
     const dataUrl = canvas.toDataURL("image/png");
     if (i > 0) pdf.addPage();
-    pdf.addImage(dataUrl, "PNG", 0, 0, 920, 430);
+    pdf.addImage(dataUrl, "PNG", 0, 0, 1280, 720);
   }
 
   pdf.save("slides.pdf");

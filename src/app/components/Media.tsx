@@ -11,7 +11,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSlides } from "@/app/context/SlidesContext";
-
+import { v4 as uuidv4 } from "uuid";
 interface MediaPanelProps {
   sidebarHeight?: string | number;
   onClose?: () => void;
@@ -66,6 +66,7 @@ const Media: React.FC<MediaPanelProps> = ({
     const newImageElement = {
       konva_component: "Konva.Image",
       element_type: "image",
+      element_id: uuidv4(),
       properties: {
         x,
         y,

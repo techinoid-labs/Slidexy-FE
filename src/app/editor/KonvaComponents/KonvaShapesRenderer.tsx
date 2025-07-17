@@ -41,7 +41,6 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
         const updatedSlides = structuredClone(slides);
         updatedSlides[slideIdx].elements.splice(selectedShapeIndex, 1);
         setSlides(updatedSlides);
-
         onSelectShape(null);
       }
     };

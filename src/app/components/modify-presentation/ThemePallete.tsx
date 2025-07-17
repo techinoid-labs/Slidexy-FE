@@ -11,6 +11,7 @@ import {
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { ChromePicker } from "react-color";
 import Popover from "@mui/material/Popover";
+import { useSlides } from "@/app/context/SlidesContext"; // adjust path if needed
 
 // PaletteStack: renders a stack of overlapping color circles
 interface PaletteStackProps {
@@ -23,35 +24,37 @@ const PaletteStack: React.FC<PaletteStackProps> = ({
   colors,
   size = 38,
   overlap = 14,
-}) => (
-  <Box
-    sx={{
-      display: "flex",
-      alignItems: "center",
-      position: "relative",
-      height: size,
-      width: size + (colors.length - 1) * overlap,
-    }}
-  >
-    {colors.map((color, i) => (
-      <Box
-        key={i}
-        sx={{
-          width: size,
-          height: size,
-          borderRadius: "50%",
-          bgcolor: color,
-          border: "none",
-          boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)",
-          position: "absolute",
-          left: i * overlap,
-          zIndex: colors.length - i,
-          transition: "transform 0.15s, box-shadow 0.15s",
-        }}
-      />
-    ))}
-  </Box>
-);
+}) => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        position: "relative",
+        height: size,
+        width: size + (colors.length - 1) * overlap,
+      }}
+    >
+      {colors.map((color, i) => (
+        <Box
+          key={i}
+          sx={{
+            width: size,
+            height: size,
+            borderRadius: "50%",
+            bgcolor: color,
+            border: "none",
+            boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)",
+            position: "absolute",
+            left: i * overlap,
+            zIndex: colors.length - i,
+            transition: "transform 0.15s, box-shadow 0.15s",
+          }}
+        />
+      ))}
+    </Box>
+  );
+};
 
 // Sample palettes (replace with API data later)
 const palettes = [
@@ -73,6 +76,8 @@ const paletteToTheme = (palette: string[]) => ({
 const ThemePanel = ({ resetAll }: any) => {
   const { selectedTheme, setSelectedTheme, selectedLayout, setSelectedLayout } =
     useSlideThemeContext();
+  const { slides, setSlides } = useSlides(); // Get slides + dispatcher from context
+
   // Find selected palette index
   const [customPalettes, setCustomPalettes] = useState<string[][]>([]);
   const [customColors, setCustomColors] = useState<string[]>([]);
@@ -97,8 +102,36 @@ const ThemePanel = ({ resetAll }: any) => {
       p[2] === selectedTheme.secondaryColor
   );
 
+  // const handlePaletteClick = (palette: string[]) => {
+  //   setSelectedTheme(paletteToTheme(palette));
+  // };
+
   const handlePaletteClick = (palette: string[]) => {
-    setSelectedTheme(paletteToTheme(palette));
+    const theme = paletteToTheme(palette);
+    setSelectedTheme(theme);
+
+    // Update all relevant text elements to use the new theme color
+    const updatedSlides = slides.map((slide) => ({
+      ...slide,
+      elements: slide.elements.map((el) => {
+        if (
+          el.element_type === "text" ||
+          (el.element_type === "bullet_points" && el.useThemeColor !== false)
+        ) {
+          return {
+            ...el,
+            useThemeColor: true,
+            properties: {
+              ...el.properties,
+              // fill: theme.primaryColor,
+            },
+          };
+        }
+        return el;
+      }),
+    }));
+
+    setSlides(updatedSlides); // Dispatch to Redux
   };
 
   const handleAddColor = (color: string) => {

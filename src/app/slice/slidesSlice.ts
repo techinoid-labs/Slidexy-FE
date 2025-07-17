@@ -20,6 +20,7 @@ interface KonvaTextProperties {
 interface KonvaImageProperties {
   x: number;
   y: number;
+  fill?: string;
   width: number;
   height: number;
   imageSrc: string;
@@ -27,9 +28,11 @@ interface KonvaImageProperties {
 
 interface KonvaComponent {
   konva_component: string;
+  element_id?: string;
   element_type?: string;
   properties: KonvaTextProperties | KonvaImageProperties;
   text?: string;
+  useThemeColor?: boolean;
 }
 
 export interface Slide {

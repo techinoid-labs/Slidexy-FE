@@ -15,6 +15,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useSlideThemeContext } from "../context/ThemeContext";
 import Image from "next/image";
+import { useSlides } from "../context/SlidesContext";
 
 interface Theme {
   font: string;
@@ -31,8 +32,6 @@ interface TemplatePanelProps {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-console.log(API_BASE_URL);
-
 const TemplatePanel = ({
   sidebarHeight = "100vh",
   onClose,
@@ -43,7 +42,7 @@ const TemplatePanel = ({
   const [error, setError] = useState("");
   const [imgError, setImgError] = useState(false);
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
-  console.log({ themes });
+  const { setSlides, slides } = useSlides();
   const themeImageUrls = [
     "/theme-1.jpeg",
     "/theme-2.jpeg",
@@ -146,93 +145,6 @@ const TemplatePanel = ({
   useEffect(() => {
     setThemes(mockThemes);
   }, []);
-
-  // const handleSearch = async () => {
-  //   if (!search.trim()) return;
-
-  //   setLoading(true);
-  //   setError("");
-
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/generate-theme-image`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ prompt: search }),
-  //     });
-
-  //     if (!res.ok) throw new Error("Failed to fetch themes");
-
-  //     const data = await res.json();
-  //     // const cleanedThemes = (data.themes || []).map((theme: any) => {
-  //     //   let imageUrl = theme.image_url;
-
-  //     //   // ✅ Sanitize double "data:image/png;base64," prefixes
-  //     //   if (typeof imageUrl === "string" && imageUrl.startsWith("data:image")) {
-  //     //     const parts = imageUrl.split(",");
-  //     //     if (parts.length > 2) {
-  //     //       imageUrl = parts[0] + "," + parts.pop(); // keep only one prefix and the base64
-  //     //     }
-  //     //   }
-
-  //     //   return {
-  //     //     font: theme.font,
-  //     //     primaryColor: theme.primaryColor,
-  //     //     secondaryColor: theme.secondaryColor,
-  //     //     backgroundColor: theme.backgroundColor,
-  //     //     image_url: imageUrl,
-  //     //   };
-  //     // });
-
-  //     const cleanedThemes = (data.themes || []).map(
-  //       (theme: any, index: number) => {
-  //         console.log(`Theme ${index}:`, theme); // 👈 See what you're getting
-
-  //         let imageUrl = theme.image_url;
-
-  //         if (!imageUrl) {
-  //           console.warn(`Theme at index ${index} missing image_url`, theme);
-  //           imageUrl = ""; // or fallback
-  //         }
-
-  //         // Optional base64 cleanup logic if needed
-  //         if (
-  //           typeof imageUrl === "string" &&
-  //           imageUrl.startsWith("data:image")
-  //         ) {
-  //           const parts = imageUrl.split(",");
-  //           if (parts.length > 2) {
-  //             imageUrl = parts[0] + "," + parts.pop(); // keep only one prefix and the base64
-  //           }
-  //         }
-
-  //         return {
-  //           font: theme.font || "Inter",
-  //           primaryColor: theme.primaryColor || "#000",
-  //           secondaryColor: theme.secondaryColor || "#888",
-  //           backgroundColor: theme.backgroundColor || "#fff",
-  //           image_url: imageUrl,
-  //         };
-  //       }
-  //     );
-
-  //     const newThemes =
-  //       cleanedThemes.length > 0 ? cleanedThemes : fallbackThemes;
-
-  //     console.log({ cleanedThemes });
-  //     setThemes(newThemes);
-
-  //     // ✅ Apply the first theme to context right away
-  //     if (newThemes.length > 0) {
-  //       setSelectedTheme(newThemes[0]);
-  //     }
-  //   } catch (e: any) {
-  //     console.error("Error during fetch:", e);
-  //     setError(e.message || "Unknown error");
-  //     setThemes(fallbackThemes);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleSearch = async () => {
     if (!search.trim()) return;
@@ -436,7 +348,29 @@ const TemplatePanel = ({
                     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                   },
                 }}
-                onClick={() => setSelectedTheme(theme)}
+                // onClick={() => setSelectedTheme(theme)}
+                onClick={() => {
+                  setSelectedTheme(theme);
+                  const updatedSlides = slides.map((slide) => ({
+                    ...slide,
+                    slide_title: { ...slide.slide_title, useThemeColor: true },
+                    elements: slide.elements.map((el) => {
+                      if (
+                        el.element_type === "text" ||
+                        (el.element_type === "bullet_point" &&
+                          el.useThemeColor !== false)
+                      ) {
+                        return {
+                          ...el,
+                          useThemeColor: true,
+                        };
+                      }
+                      return el;
+                    }),
+                  }));
+
+                  setSlides(updatedSlides);
+                }}
               >
                 {theme.image_url && theme.image_url.startsWith("data:image") ? (
                   <img

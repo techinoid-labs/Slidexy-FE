@@ -106,6 +106,21 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     setSlides(updatedSlides);
   };
 
+  const setTextFillAndDisableTheme = (color: string) => {
+    const updatedSlides = structuredClone(slides);
+    const el = selectedTextId?.startsWith("title")
+      ? updatedSlides[slideIndex].slide_title
+      : elementIndex !== null
+      ? updatedSlides[slideIndex].elements[elementIndex]
+      : null;
+
+    if (!el) return;
+    el.properties.fill = color;
+    el.useThemeColor = false;
+
+    setSlides(updatedSlides);
+  };
+
   return (
     <Box className="w-[410px] min-w-[350px] md:min-w-[410px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
       {/* Tabs */}
@@ -305,6 +320,9 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             className="w-12 h-12 rounded-full"
             onChange={(e) => {
               updateTextProperty("fill", e.target.value);
+              setTextFillAndDisableTheme(e.target.value);
+              // updateTextProperty("useThemeColor", false);
+
               // !selectedShapeIndex && setPrimaryColor(e.target.value);
             }}
           />
