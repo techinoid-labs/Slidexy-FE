@@ -89,12 +89,13 @@ export default function FeaturesSection() {
             sx={{
               color: "#757575",
               fontSize: { xs: "0.9rem", md: "1.25rem" },
-              mb: {xs: 0, md: 7},
+              mb: { xs: 0, md: 7 },
               maxWidth: 600,
               mx: "auto",
             }}
           >
-            Turn any thought into a polished, on-brand presentation<br />
+            Turn any thought into a polished, on-brand presentation
+            <br />
             powered by AI
           </Typography>
           {/* Features Flex Layout */}
@@ -145,7 +146,7 @@ export default function FeaturesSection() {
                 maxWidth: 320,
                 textAlign: "center",
                 px: 2,
-                
+
                 position: "relative",
                 zIndex: 1, // Ensure content is above background
               }}
@@ -162,7 +163,7 @@ export default function FeaturesSection() {
               <Typography
                 sx={{
                   mt: 1,
-                  mb: {xs: 3, md: 7},
+                  mb: { xs: 3, md: 7 },
                   fontWeight: 400,
                   color: "#18181B",
                   fontSize: { xs: "1.1rem", md: "1.8rem" },
@@ -172,7 +173,6 @@ export default function FeaturesSection() {
               </Typography>
               <Typography
                 sx={{
-
                   color: "#757575",
                   fontSize: { xs: "0.8rem", md: "1.05rem" },
                   lineHeight: 1.6,

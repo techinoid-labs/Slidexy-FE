@@ -1,8 +1,10 @@
 "use client";
 
 import { Box, Typography, Chip, Button } from "@mui/material";
+import Link from "next/link";
 
-export default function WorkingSection() {
+export default function WorkingSection() {  
+  
   return (
     <Box
       sx={{
@@ -30,7 +32,9 @@ export default function WorkingSection() {
             />
           }
           label={
-            <span style={{ fontWeight: 500, fontSize: "1.2rem", color: "#4A00E0" }}>
+            <span
+              style={{ fontWeight: 500, fontSize: "1.2rem", color: "#4A00E0" }}
+            >
               How it Works?
             </span>
           }
@@ -82,7 +86,12 @@ export default function WorkingSection() {
       </Box>
 
       {/* Heading */}
-      <Box sx={{ textAlign: { xs: "center", md: "left" }, mt: { xs: -5, md: -24 } }}>
+      <Box
+        sx={{
+          textAlign: { xs: "center", md: "left" },
+          mt: { xs: -5, md: -24 },
+        }}
+      >
         <Typography
           variant="h1"
           sx={{
@@ -103,30 +112,32 @@ export default function WorkingSection() {
         sx={{
           textAlign: "center",
           mb: 2,
-          mt: {xs: -5},
+          mt: { xs: -5 },
           display: { xs: "block", md: "none" }, // Show only in xs
         }}
       >
-        <Button
-          variant="contained"
-          sx={{
-            background: "#6C2BD7",
-            color: "#fff",
-            borderRadius: "999px",
-            px: {xs: 3, md: 4},
-            py: {xs: 1, md: 1.5},
-            fontWeight: 600,
-            fontSize: {xs: "0.9rem", md:"1.1rem"},
-            textTransform: "none",
-            boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
-            "&:hover": {
-              background: "#8E2DE2",
-            },
-          }}
-          endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
-        >
-          Try for Free
-        </Button>
+        <Link href="/presentation/create" passHref>  
+          <Button
+            variant="contained"
+            sx={{
+              background: "#6C2BD7",
+              color: "#fff",
+              borderRadius: "999px",
+              px: { xs: 3, md: 4 },
+              py: { xs: 1, md: 1.5 },
+              fontWeight: 600,
+              fontSize: { xs: "0.9rem", md: "1.1rem" },
+              textTransform: "none",
+              boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
+              "&:hover": {
+                background: "#8E2DE2",
+              },
+            }}
+            endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
+          >
+            Try for Free
+          </Button>
+        </Link>
       </Box>
 
       {/* Main Content */}
@@ -174,7 +185,9 @@ export default function WorkingSection() {
                 Drop In Your Idea
               </Typography>
               <Typography sx={{ color: "#757575", fontSize: "1.05rem" }}>
-                Type a prompt, record a voice note, upload a sketch, or share a video. Our AI reads, hears, sees, and processes your input intelligently.
+                Type a prompt, record a voice note, upload a sketch, or share a
+                video. Our AI reads, hears, sees, and processes your input
+                intelligently.
               </Typography>
             </Box>
             <Box
@@ -209,7 +222,9 @@ export default function WorkingSection() {
             }}
           >
             <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontWeight: 500, fontSize: "1.13rem", color: "#18181B" }}>
+              <Typography
+                sx={{ fontWeight: 500, fontSize: "1.13rem", color: "#18181B" }}
+              >
                 AI Builds the Story & Design
               </Typography>
             </Box>
@@ -245,7 +260,9 @@ export default function WorkingSection() {
             }}
           >
             <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontWeight: 500, fontSize: "1.13rem", color: "#18181B" }}>
+              <Typography
+                sx={{ fontWeight: 500, fontSize: "1.13rem", color: "#18181B" }}
+              >
                 Customize & Share Instantly
               </Typography>
             </Box>
