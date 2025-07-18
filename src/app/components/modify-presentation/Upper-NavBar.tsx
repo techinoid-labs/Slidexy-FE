@@ -10,7 +10,12 @@ import {
   Avatar,
   Menu,
   MenuItem,
+  useMediaQuery,
+  useTheme,
+  ListItemIcon,
+  Divider,
 } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useRouter } from "next/navigation";
 
 const UpperNavBar: React.FC<{
@@ -18,7 +23,19 @@ const UpperNavBar: React.FC<{
   onExportPPT?: () => void;
 }> = ({ onExportPDF, onExportPPT }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = React.useState<null | HTMLElement>(null);
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  // Handlers for mobile menu
+  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMobileMenuAnchor(event.currentTarget);
+  };
+  const handleMobileMenuClose = () => {
+    setMobileMenuAnchor(null);
+  };
+
   return (
     <AppBar
       position="static"
@@ -28,7 +45,7 @@ const UpperNavBar: React.FC<{
         color: "#18181B",
         borderBottom: "1px solid #E0E0E0",
         width: "100%",
-        height: 80,
+        height: {xs: 74, md: 80},
         boxSizing: "border-box",
       }}
     >
@@ -40,49 +57,59 @@ const UpperNavBar: React.FC<{
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
+          position: "relative",
           px: 3,
         }}
       >
-        {/* Left icons */}
+        {/* Left section */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, ml: -1 }}>
-          <IconButton onClick={() => router.push("/home")} sx={{ p: 1 }}>
-            <Image
-              src="/images/home-icon.svg"
-              alt="Home"
-              width={25} // increased from 32
-              height={25}
-            />
-          </IconButton>
-          <Box
-            sx={{
-              width: "1px",
-              height: 32,
-              background: "#E0E0E0",
-              borderRadius: 1,
-              mx: 1,
-              display: { xs: "none", md: "block" },
-            }}
-          />
-          <IconButton sx={{ p: 1.5 }}>
-            <Image
-              src="/images/list-icon.svg"
-              alt="List"
-              width={25}
-              height={25}
-            />
-          </IconButton>
-          <IconButton sx={{ p: 1.5 }}>
-            <Image
-              src="/images/ai-star.svg"
-              alt="Star"
-              width={25}
-              height={25}
-            />
-          </IconButton>
+          {isMobile ? (
+            <IconButton onClick={handleMobileMenuOpen} sx={{ p: 1 }}>
+              <MenuIcon />
+            </IconButton>
+          ) : (
+            <>
+              <IconButton onClick={() => router.push("/home")} sx={{ p: 1 }}>
+                <Image
+                  src="/images/home-icon.svg"
+                  alt="Home"
+                  width={25}
+                  height={25}
+                />
+              </IconButton>
+              <Box
+                sx={{
+                  width: "1px",
+                  height: 32,
+                  background: "#E0E0E0",
+                  borderRadius: 1,
+                  mx: 1,
+                  display: { xs: "none", md: "block" },
+                }}
+              />
+              <IconButton sx={{ p: 1.5 }}>
+                <Image
+                  src="/images/list-icon.svg"
+                  alt="List"
+                  width={25}
+                  height={25}
+                />
+              </IconButton>
+              <IconButton sx={{ p: 1.5 }}>
+                <Image
+                  src="/images/ai-star.svg"
+                  alt="Star"
+                  width={25}
+                  height={25}
+                />
+              </IconButton>
+            </>
+          )}
 
+          {/* File title/type always visible */}
           <Box
             sx={{
-              display: { xs: "none", md: "flex" },
+              display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
               ml: 1,
@@ -90,7 +117,7 @@ const UpperNavBar: React.FC<{
           >
             <Typography
               variant="subtitle1"
-              sx={{ fontWeight: 600, fontSize: 16 }}
+              sx={{ fontWeight: { xs: 400, md: 600 }, fontSize: 16 }}
             >
               File Name Here
             </Typography>
@@ -103,33 +130,72 @@ const UpperNavBar: React.FC<{
           </Box>
         </Box>
 
-        {/* Right icons */}
+        {/* Right section */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton sx={{ p: 1.5 }}>
-            <Image
-              src="/images/profile-icon.svg"
-              alt="Profile"
-              width={40}
-              height={40}
-            />
-          </IconButton>
-          <IconButton sx={{ p: 1.5 }}>
-            <Image
-              src="/images/bell-icon.svg"
-              alt="Notifications"
-              width={40}
-              height={40}
-            />
-          </IconButton>
-          <IconButton sx={{ p: 1.5 }}>
-            <Image
-              src="/images/play-button.svg"
-              alt="Play"
-              width={40}
-              height={40}
-            />
-          </IconButton>
-          {/* Share button */}
+          {/* Only show these on desktop */}
+          {!isMobile && (
+            <>
+              <IconButton sx={{ p: 1.5 }}>
+                <Image
+                  src="/images/profile-icon.svg"
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                />
+              </IconButton>
+              <IconButton sx={{ p: 1.5 }}>
+                <Image
+                  src="/images/bell-icon.svg"
+                  alt="Notifications"
+                  width={40}
+                  height={40}
+                />
+              </IconButton>
+            </>
+          )}
+          {/* Always show profile icon, play, share on mobile */}
+          {isMobile && (
+            <Box sx={{
+              width: { xs: 46, md: 50 },  // Responsive width
+              height: { xs: 46, md: 50 }, // Responsive height
+              position: 'relative',
+              // Required for next/image layout
+              mb: { xs: 1, md: 3 },
+              mt: { xs: 2.3, md: 3 },
+              mr: {xs: -1.5, md: 3}
+            }}
+            >
+              <IconButton sx={{ p: { xs: 0.5, md: 1.5 }, mr: { xs: 1, md: 3 } }}>
+                <Image
+                  src="/images/profile-icon.svg"
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', marginBottom: { xs: 1, md: 3 } }}
+                />
+              </IconButton>
+            </Box>
+          )}
+          <Box sx={{
+            width: { xs: 40, md: 120 },  // Responsive width
+            height: { xs: 40, md: 120 }, // Responsive height
+            position: 'relative',
+            // Required for next/image layout
+            mb: { xs: 1, md: 0 },
+            mt: { xs: 1, md: 6.5 },
+            ml: { xs: 0, md: 0 },
+            mr: {md: -10},
+          }}
+          >
+            <IconButton sx={{ p: { xs: 0.5, md: 1.5 } }}>
+              <Image
+                src="/images/play-button.svg"
+                alt="Play"
+                width={40}
+                height={40}
+              />
+            </IconButton>
+          </Box>
           <Box
             sx={{
               display: "flex",
@@ -138,47 +204,109 @@ const UpperNavBar: React.FC<{
               background:
                 "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
               color: "#fff",
-              borderRadius: "999px",
-              px: 3,
-              py: 1.2,
-              ml: 1.5,
+              borderRadius: { xs: "800px", md: "999px" },
+              px: { xs: 1.5, md: 3 },
+              py: { xs: 1, md: 1.2 },
+              ml: { xs: -1, md: 3 },
+              mr: { xs: -1, md: 1 },
               cursor: "pointer",
-              gap: 1.5,
-              fontSize: 14,
+              gap: { xs: 1, md: 1.5 },
+              fontSize: { xs: 12, md: 14 },
               fontWeight: 600,
               transition: "background 0.2s",
               "&:hover": { bgcolor: "#333" },
             }}
           >
             Share
-            <Image
-              src="/images/share-icon.svg"
-              alt="Share"
-              width={26}
-              height={26}
-            />
+            <Box
+              sx={{
+                width: { xs: 12, md: 26 },  // Responsive width
+                height: { xs: 12, md: 26 }, // Responsive height
+                position: 'relative',
+                ml: {md: -1 },
+                // Required for next/image layout
+              }}
+            >
+              <Image
+                src="/images/share-icon.svg"
+                alt="Share"
+                width={20}
+                height={20}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', marginBottom: { xs: 2, md: 3 } }}
+              />
+            </Box>
           </Box>
-
-          <Box
-            onClick={onExportPDF}
-            sx={{
-              bgcolor: "#18181B",
-              background:
-                "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-              color: "#fff",
-              borderRadius: "999px",
-              px: 3,
-              py: 1.2,
-              cursor: "pointer",
-              fontSize: 14,
-              fontWeight: 600,
-              "&:hover": { bgcolor: "#333" },
-            }}
-          >
-            Export as PDF
-          </Box>
+          {/* Only show export on desktop */}
+          {!isMobile && (
+            <Box
+              onClick={onExportPDF}
+              sx={{
+                bgcolor: "#18181B",
+                background:
+                  "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                color: "#fff",
+                borderRadius: "999px",
+                px: 3,
+                py: 1.2,
+                cursor: "pointer",
+                fontSize: 14,
+                fontWeight: 600,
+                "&:hover": { bgcolor: "#333" },
+              }}
+            >
+              Export as PDF
+            </Box>
+          )}
         </Box>
       </Toolbar>
+      {/* Mobile menu */}
+      <Menu
+        anchorEl={mobileMenuAnchor}
+        open={Boolean(mobileMenuAnchor)}
+        onClose={handleMobileMenuClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+      >
+        <MenuItem onClick={() => { router.push("/home"); handleMobileMenuClose(); }}>
+          <ListItemIcon>
+            <Image src="/images/home-icon.svg" alt="Home" width={25} height={25} />
+          </ListItemIcon>
+          Home
+        </MenuItem>
+        <MenuItem onClick={handleMobileMenuClose}>
+          <ListItemIcon>
+            <Image src="/images/list-icon.svg" alt="List" width={25} height={25} />
+          </ListItemIcon>
+          List
+        </MenuItem>
+        <MenuItem onClick={handleMobileMenuClose}>
+          <ListItemIcon>
+            <Image src="/images/ai-star.svg" alt="Star" width={25} height={25} />
+          </ListItemIcon>
+          AI Star
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleMobileMenuClose}>
+          <ListItemIcon>
+            <Image src="/images/bell-icon.svg" alt="Notifications" width={25} height={25} />
+          </ListItemIcon>
+          Notifications
+        </MenuItem>
+        <MenuItem onClick={() => { onExportPDF(); handleMobileMenuClose(); }}>
+          <ListItemIcon>
+            //<Image src="/images/file.svg" alt="Export PDF" width={25} height={25} />
+          </ListItemIcon>
+          Export as PDF
+        </MenuItem>
+        {onExportPPT && (
+          <MenuItem onClick={() => { onExportPPT(); handleMobileMenuClose(); }}>
+            <ListItemIcon>
+              <Image src="/images/file.svg" alt="Export PPT" width={25} height={25} />
+            </ListItemIcon>
+            Export as PPT
+          </MenuItem>
+        )}
+      </Menu>
     </AppBar>
   );
 };

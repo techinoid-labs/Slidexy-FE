@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTheme, useMediaQuery } from "@mui/material";
 import {
   Box,
   Divider,
@@ -38,6 +39,11 @@ interface TextSettingsPanelProps {
 const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   sidebarHeight = "100vh",
 }) => {
+  // Hard guard: never render on mobile
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  if (isMobile) return null;
+
   const {
     slides,
     selectedTextId,
