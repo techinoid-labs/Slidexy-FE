@@ -5,7 +5,7 @@ import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 import { Box } from "@mui/material";
 import SlideImage from "./KonvaComponents/KonvaSlideImage";
-import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor"; 
+import KonvaTextEditor from "./KonvaComponents/KonvaTextEditorMobile";
 import { dummyData } from "./dummy";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import SlidePreviews from "./slidesPreview";
@@ -19,13 +19,17 @@ import {
   SLIDE_WIDTH,
   SLIDE_HEIGHT,
   LEFT_PADDING,
-} from "../../../utils/slideUtilsmobile";
+} from "@/utils/slideUtilsmobile";
 
 const IMAGE_WIDTH = 200;
 const IMAGE_PADDING = 10;
 const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
 
-const MobileSlideEditor = ({ slides = [], stageRefs, setIsMobileTextSelected }: any) => {
+const MobileSlideEditor = ({
+  slides = [],
+  stageRefs,
+  setIsMobileTextSelected,
+}: any) => {
   const dispatch = useDispatch();
   const {
     selectedImageIndex,
@@ -124,7 +128,7 @@ const MobileSlideEditor = ({ slides = [], stageRefs, setIsMobileTextSelected }: 
             height: 705,
             bgcolor: "#fff",
             border: "1px solid #E0E0E0",
-            zIndex: 10,
+            // zIndex: 10,
             boxShadow: 3,
             display: "flex",
             flexDirection: "column",
@@ -224,7 +228,8 @@ const MobileSlideEditor = ({ slides = [], stageRefs, setIsMobileTextSelected }: 
                           setSelectedImageIndex(null);
                           setSelectedShapeIndex(null);
                           setSelectedImage(null);
-                          if (setIsMobileTextSelected) setIsMobileTextSelected(true);
+                          if (setIsMobileTextSelected)
+                            setIsMobileTextSelected(true);
                         }}
                       />
                     )}
@@ -244,7 +249,9 @@ const MobileSlideEditor = ({ slides = [], stageRefs, setIsMobileTextSelected }: 
                           verticalAlign={el.properties.verticalAlign}
                           wrap="word"
                           fontSize={el.properties.fontSize / 2}
-                          fill={selectedTheme?.primaryColor || el.properties.fill}
+                          fill={
+                            selectedTheme?.primaryColor || el.properties.fill
+                          }
                           fontStyle={el.properties.fontStyle}
                           fontWeight={el.properties.fontWeight}
                           fontFamily={el.properties.fontFamily}
@@ -254,7 +261,8 @@ const MobileSlideEditor = ({ slides = [], stageRefs, setIsMobileTextSelected }: 
                             setSelectedImageIndex(null);
                             setSelectedShapeIndex(null);
                             setSelectedImage(null);
-                            if (setIsMobileTextSelected) setIsMobileTextSelected(true);
+                            if (setIsMobileTextSelected)
+                              setIsMobileTextSelected(true);
                           }}
                         />
                       );
@@ -268,11 +276,13 @@ const MobileSlideEditor = ({ slides = [], stageRefs, setIsMobileTextSelected }: 
                         .map((el: any, i: number) => {
                           const isBullet = el.element_type === "bullet_point";
                           const fontSize = el.properties.fontSize / 2;
-                          const fontFamily = selectedTheme?.font || el.properties.fontFamily;
+                          const fontFamily =
+                            selectedTheme?.font || el.properties.fontFamily;
                           const lineHeight = 1.2;
                           const bulletText = isBullet ? `${el.text}` : el.text;
 
-                          const textWidth = (textMaxWidth - (isBullet ? 10 : 0)) / 2;
+                          const textWidth =
+                            (textMaxWidth - (isBullet ? 10 : 0)) / 2;
                           const canvas = document.createElement("canvas");
                           const context = canvas.getContext("2d");
                           context!.font = `${fontSize}px ${fontFamily}`;
@@ -307,7 +317,10 @@ const MobileSlideEditor = ({ slides = [], stageRefs, setIsMobileTextSelected }: 
                               wrap="word"
                               fontSize={fontSize}
                               fontFamily={fontFamily}
-                              fill={selectedTheme?.primaryColor || el.properties.fill}
+                              fill={
+                                selectedTheme?.primaryColor ||
+                                el.properties.fill
+                              }
                               fontStyle={el.properties.fontStyle}
                               isSelected={selectedTextId === `el-${index}-${i}`}
                               onSelect={() => {

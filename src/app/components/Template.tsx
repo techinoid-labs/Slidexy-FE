@@ -455,7 +455,7 @@ interface TemplatePanelProps {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const TemplatePanel = ({ sidebarHeight = "100vh", onClose }) => {
+const TemplatePanel = ({ sidebarHeight = "100vh", onClose }: any) => {
   const [search, setSearch] = useState("");
   const [themes, setThemes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
