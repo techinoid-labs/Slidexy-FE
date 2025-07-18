@@ -8,7 +8,7 @@ import TemplatePanel from "../Template";
 // import TextEditorPanel from "../TextEditor";
 import TextEditor from "./TextEditor";
 import MediaPanel from "../Media";
-import ShapesPanel from "../Shapes";
+import ShapesPanel from "../../editor/Shapes";
 
 type PanelType = null | "template" | "text" | "media" | "shapes";
 

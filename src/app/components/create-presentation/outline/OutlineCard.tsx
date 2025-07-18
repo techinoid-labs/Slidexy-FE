@@ -356,7 +356,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                       {...dragHandleProps}
                       sx={{
                         color: "#8E2DE2",
-                        fontWeight: 700,
+                        fontWeight: 500,
                         fontSize: 19,
                         display: "flex",
                         gap: 1.2,
@@ -367,9 +367,9 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                       <Image
                         src="/images/left-grid.svg"
                         alt="Card Icon"
-                        width={12}
-                        height={12}
-                        style={{ marginTop: 2 }}
+                        width={5}
+                        height={5}
+                        style={{ marginTop: -3, marginBottom: 2 }}
                       />
                       {index < 9 ? `0${index + 1}` : index + 1}
                     </Box>
@@ -798,7 +798,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                               setImageList(newImages);
                               onUpdateSlideImages(slideIndex, newImages);
                               setPreviewImage(suggestedSrc);
-                              setSuggestedImages(null);
+                              //setSuggestedImages(null);
                             }}
                           >
                             <Image
@@ -836,7 +836,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                   gap: 1,
                   position: "relative",
                   zIndex: 2,
-                  mr: { sm: -2 },
+                  mr: { sm: -2, md: 7 },
                 }}
               >
                 <Image
