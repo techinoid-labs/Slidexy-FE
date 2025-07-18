@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
 import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
 import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
+
 interface KonvaTextEditorProps {
   id: string;
   text: string;
@@ -140,6 +141,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   }, [slideIndex, elementIndex, slides, dispatch, id]);
 
   const handleTouchEnd = useCallback((e: KonvaEventObject<TouchEvent>) => {
+    e.evt.preventDefault(); // Prevent default touch behavior
     if (!isEditing) {
       onSelect();
       setIsEditing(true);
@@ -205,8 +207,8 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     if (isEditing && textRef.current) {
       const rect = textRef.current.getClientRect();
       setTooltipStyle({
-        top: rect.y - 50,
-        left: rect.x + rect.width / 2 - 125,
+        top: rect.y - 60, // Adjusted for better mobile visibility
+        left: Math.max(10, rect.x + rect.width / 2 - 150), // Ensure it stays on screen
       });
     }
   }, [isEditing, textRef.current]);
@@ -266,8 +268,9 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
                 border: "1px solid #ccc",
                 padding: "4px 8px",
                 lineHeight: 1.2,
-                width: `${width}px`,
-                zIndex: 999,
+                width: `${width || 200}px`, // Default width for mobile
+                zIndex: 1000, // Ensure textarea is above other elements
+                boxSizing: "border-box",
               }}
               onBlur={commitEdit}
             />
@@ -275,143 +278,139 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
           {tooltipVisible && (
             <Html>
               <div
+                onClick={(e) => e.stopPropagation()} // Prevent click from closing the tooltip
                 style={{
                   position: "absolute",
                   top: `${tooltipStyle.top}px`,
                   left: `${tooltipStyle.left}px`,
-                  background: "#111",
-                  borderRadius: "8px",
-                  padding: "2px 4px",
+                  background: "#fff",
+                  borderRadius: "10px",
+                  padding: "8px 8px",
                   display: "flex",
-                  gap: "2px",
-                  zIndex: 1,
-                  minWidth: "250px",
-                  minHeight: "36px",
+                  flexDirection: "column",
+                  gap: "8px",
+                  zIndex: 2001,
+                  minWidth: "260px",
+                  minHeight: "40px",
                   alignItems: "center",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                  overflow: "visible",
                 }}
               >
-                {/* Font Weight Dropdown */}
-                <Select
-                  value={currentFontWeight}
-                  onChange={(e) => handleStyleChange({ fontWeight: e.target.value })}
-                  style={{
-                    fontSize: 11,
-                    borderRadius: 4,
-                    padding: "1px 2px",
-                    color: "#111",
-                    background: "#fff",
-                    height: "24px",
-                    minWidth: "48px",
-                  }}
-                >
-                  {weightOptions.map((opt) => (
-                    <MenuItem key={opt.value} value={opt.value} style={{ fontSize: 14 }}>
-                      {opt.label}
-                    </MenuItem>
+                <div style={{ display: "flex", gap: "8px", width: "100%", alignItems: "center" }}>
+                  {/* Font Family Dropdown */}
+                  <Select
+                    value={currentFontFamily}
+                    onChange={(e) => handleStyleChange({ fontFamily: e.target.value })}
+                    size="small"
+                    style={{ minWidth: 80, fontSize: 14, background: "#F8F8FA", borderRadius: 6 }}
+                    MenuProps={{
+                      PaperProps: { style: { maxHeight: 200, zIndex: 2100 } },
+                      disableScrollLock: true,
+                    }}
+                  >
+                    {fontOptions.map((opt) => (
+                      <MenuItem key={opt} value={opt} style={{ fontSize: 14 }}>
+                        {opt}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {/* Font Size Dropdown */}
+                  <Select
+                    value={currentFontSize}
+                    onChange={(e) => handleStyleChange({ fontSize: Number(e.target.value) })}
+                    size="small"
+                    style={{ minWidth: 60, fontSize: 14, background: "#F8F8FA", borderRadius: 6 }}
+                    MenuProps={{
+                      PaperProps: { style: { maxHeight: 200, zIndex: 2100 } },
+                      disableScrollLock: true,
+                    }}
+                  >
+                    {[16, 18, 20, 24, 28, 32, 36].map((size) => (
+                      <MenuItem key={size} value={size} style={{ fontSize: 14 }}>
+                        {size}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {/* Font Weight Dropdown */}
+                  <Select
+                    value={currentFontWeight}
+                    onChange={(e) => handleStyleChange({ fontWeight: e.target.value })}
+                    size="small"
+                    style={{ minWidth: 70, fontSize: 14, background: "#F8F8FA", borderRadius: 6 }}
+                    MenuProps={{
+                      PaperProps: { style: { maxHeight: 200, zIndex: 2100 } },
+                      disableScrollLock: true,
+                    }}
+                  >
+                    {weightOptions.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value} style={{ fontSize: 14 }}>
+                        {opt.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </div>
+                <div style={{ display: "flex", gap: "6px", width: "100%", justifyContent: "center", marginTop: 4 }}>
+                  {/* Horizontal Alignment */}
+                  {[
+                    { Icon: FormatAlignLeftIcon, value: "left" },
+                    { Icon: FormatAlignCenterIcon, value: "center" },
+                    { Icon: FormatAlignRightIcon, value: "right" },
+                    { Icon: require("@mui/icons-material/FormatAlignJustify").default, value: "justify" },
+                  ].map(({ Icon, value }) => (
+                    <button
+                      key={value}
+                      onClick={() => handleStyleChange({ align: value })}
+                      style={{
+                        color: currentAlign === value ? "#7B4AE2" : "#222",
+                        background: currentAlign === value ? "#F3EDFF" : "#F8F8FA",
+                        border: "none",
+                        borderRadius: 6,
+                        fontSize: 18,
+                        padding: "4px 6px",
+                        cursor: "pointer",
+                        outline: "none",
+                        width: 32,
+                        height: 32,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title={`Align ${value.charAt(0).toUpperCase() + value.slice(1)}`}
+                    >
+                      <Icon fontSize="small" />
+                    </button>
                   ))}
-                </Select>
-                {/* Italic Button
-                <button
-                  onClick={() =>
-                    handleStyleChange({
-                      fontStyle: currentFontStyle === "italic" ? "normal" : "italic",
-                    })
-                  }
-                  style={{
-                    color: "#fff",
-                    background: "none",
-                    border: "none",
-                    fontStyle: "italic",
-                    fontSize: 16,
-                    padding: "0 4px",
-                  }}
-                  title="Italic"
-                >
-                  I
-                </button> */}
-                {/* Font Family Dropdown */}
-                <Select
-                  value={currentFontFamily}
-                  onChange={(e) => handleStyleChange({ fontFamily: e.target.value })}
-                  style={{
-                    fontSize: 11,
-                    borderRadius: 4,
-                    padding: "1px 2px",
-                    color: "#111",
-                    background: "#fff",
-                    height: "24px",
-                    minWidth: "48px",
-                  }}
-                >
-                  {fontOptions.map((font) => (
-                    <MenuItem key={font} value={font} style={{ fontSize: 14 }}>
-                      {font}
-                    </MenuItem>
+                  {/* Vertical Alignment */}
+                  {[
+                    { Icon: require("@mui/icons-material/VerticalAlignTop").default, value: "top" },
+                    { Icon: require("@mui/icons-material/VerticalAlignCenter").default, value: "middle" },
+                    { Icon: require("@mui/icons-material/VerticalAlignBottom").default, value: "bottom" },
+                  ].map(({ Icon, value }) => (
+                    <button
+                      key={value}
+                      onClick={() => handleStyleChange({ verticalAlign: value })}
+                      style={{
+                        color: (verticalAlign || "top") === value ? "#7B4AE2" : "#222",
+                        background: (verticalAlign || "top") === value ? "#F3EDFF" : "#F8F8FA",
+                        border: "none",
+                        borderRadius: 6,
+                        fontSize: 18,
+                        padding: "4px 6px",
+                        cursor: "pointer",
+                        outline: "none",
+                        width: 32,
+                        height: 32,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title={`Vertical Align ${value.charAt(0).toUpperCase() + value.slice(1)}`}
+                    >
+                      <Icon fontSize="small" />
+                    </button>
                   ))}
-                </Select>
-                {/* Font Size Dropdown */}
-                <Select
-                  value={currentFontSize}
-                  onChange={(e) => handleStyleChange({ fontSize: Number(e.target.value) })}
-                  style={{
-                    fontSize: 11,
-                    borderRadius: 4,
-                    padding: "1px 2px",
-                    color: "#111",
-                    background: "#fff",
-                    height: "24px",
-                    minWidth: "48px",
-                  }}
-                >
-                  {[16, 18, 20, 24, 28, 32, 36].map((size) => (
-                    <MenuItem key={size} value={size}>
-                      {size}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {/* Align Left */}
-                <button
-                  onClick={() => handleStyleChange({ align: "left" })}
-                  style={{
-                    color: "#fff",
-                    background: "none",
-                    border: "none",
-                    fontSize: 16,
-                    padding: "0 4px",
-                  }}
-                  title="Align Left"
-                >
-                  <FormatAlignLeftIcon />
-                </button>
-                {/* Align Center */}
-                <button
-                  onClick={() => handleStyleChange({ align: "center" })}
-                  style={{
-                    color: "#fff",
-                    background: "none",
-                    border: "none",
-                    fontSize: 16,
-                    padding: "0 4px",
-                  }}
-                  title="Align Center"
-                >
-                  <FormatAlignCenterIcon />
-                </button>
-                {/* Align Right */}
-                <button
-                  onClick={() => handleStyleChange({ align: "right" })}
-                  style={{
-                    color: "#fff",
-                    background: "none",
-                    border: "none",
-                    fontSize: 16,
-                    padding: "0 4px",
-                  }}
-                  title="Align Right"
-                >
-                  <FormatAlignRightIcon />
-                </button>
+                </div>
               </div>
             </Html>
           )}

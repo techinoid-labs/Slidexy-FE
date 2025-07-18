@@ -17,7 +17,8 @@ import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";
 import { useTheme, useMediaQuery } from "@mui/material";
 import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mobile";
 import MobileSlideEditor from "./SlideEditorMobile";
-import TextSettingsPanelMobile from "@/app/components/modify-presentation/TextPanelMobile";
+//import TextSettingsPanelMobile from "@/app/components/modify-presentation/TextPanelMobile";
+import TextSettingsPanelMobile from "@/app/components/modify-presentation/Text-Panel-Mobile";
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const {
@@ -75,7 +76,7 @@ const Page = () => {
             <LowerNavbarMobile showTemplatePanel={showTemplatePanel} setShowTemplatePanel={setShowTemplatePanel} />
             <MobileSlideEditor slides={slides} stageRefs={stageRefs} setIsMobileTextSelected={setIsMobileTextSelected} />
             {/* Only show mobile text panel on mobile */}
-            {isMobileTextSelected && <TextSettingsPanelMobile />}
+            {(isTextSelected) && <TextSettingsPanelMobile resetAll={resetAll} />}
           </>
         ) : (
           <>

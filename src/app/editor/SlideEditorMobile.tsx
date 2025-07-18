@@ -5,7 +5,7 @@ import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 import { Box } from "@mui/material";
 import SlideImage from "./KonvaComponents/KonvaSlideImage";
-import KonvaTextEditor from "./KonvaComponents/KonvaTextEditorMobile"; 
+import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor"; 
 import { dummyData } from "./dummy";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import SlidePreviews from "./slidesPreview";
@@ -25,7 +25,7 @@ const IMAGE_WIDTH = 200;
 const IMAGE_PADDING = 10;
 const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
 
-const MobileSlideEditor = ({ slides = [], stageRefs }: any) => {
+const MobileSlideEditor = ({ slides = [], stageRefs, setIsMobileTextSelected }: any) => {
   const dispatch = useDispatch();
   const {
     selectedImageIndex,
@@ -134,7 +134,6 @@ const MobileSlideEditor = ({ slides = [], stageRefs }: any) => {
             borderTopLeftRadius: "13px",
             borderTopRightRadius: "13px",
             overflowY: "auto",
-            zIndex: 0,
           }}
         >
           {slides.map((slide: any, index: number) => {
@@ -225,6 +224,7 @@ const MobileSlideEditor = ({ slides = [], stageRefs }: any) => {
                           setSelectedImageIndex(null);
                           setSelectedShapeIndex(null);
                           setSelectedImage(null);
+                          if (setIsMobileTextSelected) setIsMobileTextSelected(true);
                         }}
                       />
                     )}
@@ -254,6 +254,7 @@ const MobileSlideEditor = ({ slides = [], stageRefs }: any) => {
                             setSelectedImageIndex(null);
                             setSelectedShapeIndex(null);
                             setSelectedImage(null);
+                            if (setIsMobileTextSelected) setIsMobileTextSelected(true);
                           }}
                         />
                       );
