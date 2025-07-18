@@ -1,16 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Box,
-  IconButton,
-  Tooltip,
-  Avatar,
-  Menu,
-  MenuItem,
-} from "@mui/material";
+import { AppBar, Toolbar, Typography, Box, IconButton } from "@mui/material";
 import { useRouter } from "next/navigation";
 
 const UpperNavBar: React.FC<{
@@ -19,6 +9,7 @@ const UpperNavBar: React.FC<{
 }> = ({ onExportPDF, onExportPPT }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const router = useRouter();
+
   return (
     <AppBar
       position="static"
@@ -43,13 +34,13 @@ const UpperNavBar: React.FC<{
           px: 3,
         }}
       >
-        {/* Left icons */}
+        {/* Left Icons */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, ml: -1 }}>
           <IconButton onClick={() => router.push("/home")} sx={{ p: 1 }}>
             <Image
               src="/images/home-icon.svg"
               alt="Home"
-              width={25} // increased from 32
+              width={25}
               height={25}
             />
           </IconButton>
@@ -103,7 +94,7 @@ const UpperNavBar: React.FC<{
           </Box>
         </Box>
 
-        {/* Right icons */}
+        {/* Right Icons */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton sx={{ p: 1.5 }}>
             <Image
@@ -129,7 +120,8 @@ const UpperNavBar: React.FC<{
               height={40}
             />
           </IconButton>
-          {/* Share button */}
+
+          {/* Share Button */}
           <Box
             sx={{
               display: "flex",
@@ -159,6 +151,7 @@ const UpperNavBar: React.FC<{
             />
           </Box>
 
+          {/* Export PDF */}
           <Box
             onClick={onExportPDF}
             sx={{
@@ -172,11 +165,35 @@ const UpperNavBar: React.FC<{
               cursor: "pointer",
               fontSize: 14,
               fontWeight: 600,
+              ml: 1,
               "&:hover": { bgcolor: "#333" },
             }}
           >
             Export as PDF
           </Box>
+
+          {/* Export PPTX */}
+          {onExportPPT && (
+            <Box
+              onClick={onExportPPT}
+              sx={{
+                bgcolor: "#18181B",
+                background:
+                  "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                color: "#fff",
+                borderRadius: "999px",
+                px: 3,
+                py: 1.2,
+                cursor: "pointer",
+                fontSize: 14,
+                fontWeight: 600,
+                ml: 1,
+                "&:hover": { bgcolor: "#333" },
+              }}
+            >
+              Export as PPTX
+            </Box>
+          )}
         </Box>
       </Toolbar>
     </AppBar>
