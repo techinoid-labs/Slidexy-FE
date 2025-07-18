@@ -23,7 +23,8 @@ const UpperNavBar: React.FC<{
   onExportPPT?: () => void;
 }> = ({ onExportPDF, onExportPPT }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [mobileMenuAnchor, setMobileMenuAnchor] = React.useState<null | HTMLElement>(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] =
+    React.useState<null | HTMLElement>(null);
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -45,7 +46,7 @@ const UpperNavBar: React.FC<{
         color: "#18181B",
         borderBottom: "1px solid #E0E0E0",
         width: "100%",
-        height: {xs: 74, md: 80},
+        height: { xs: 74, md: 80 },
         boxSizing: "border-box",
       }}
     >
@@ -155,37 +156,46 @@ const UpperNavBar: React.FC<{
           )}
           {/* Always show profile icon, play, share on mobile */}
           {isMobile && (
-            <Box sx={{
-              width: { xs: 46, md: 50 },  // Responsive width
-              height: { xs: 46, md: 50 }, // Responsive height
-              position: 'relative',
-              // Required for next/image layout
-              mb: { xs: 1, md: 3 },
-              mt: { xs: 2.3, md: 3 },
-              mr: {xs: -1.5, md: 3}
-            }}
+            <Box
+              sx={{
+                width: { xs: 46, md: 50 }, // Responsive width
+                height: { xs: 46, md: 50 }, // Responsive height
+                position: "relative",
+                // Required for next/image layout
+                mb: { xs: 1, md: 3 },
+                mt: { xs: 2.3, md: 3 },
+                mr: { xs: -1.5, md: 3 },
+              }}
             >
-              <IconButton sx={{ p: { xs: 0.5, md: 1.5 }, mr: { xs: 1, md: 3 } }}>
+              <IconButton
+                sx={{ p: { xs: 0.5, md: 1.5 }, mr: { xs: 1, md: 3 } }}
+              >
                 <Image
                   src="/images/profile-icon.svg"
                   alt="Profile"
                   width={40}
                   height={40}
-                  style={{ width: '100%', height: '100%', objectFit: 'contain', marginBottom: { xs: 1, md: 3 } }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    marginBottom: 3,
+                  }}
                 />
               </IconButton>
             </Box>
           )}
-          <Box sx={{
-            width: { xs: 40, md: 120 },  // Responsive width
-            height: { xs: 40, md: 120 }, // Responsive height
-            position: 'relative',
-            // Required for next/image layout
-            mb: { xs: 1, md: 0 },
-            mt: { xs: 1, md: 6.5 },
-            ml: { xs: 0, md: 0 },
-            mr: {md: -10},
-          }}
+          <Box
+            sx={{
+              width: { xs: 40, md: 120 }, // Responsive width
+              height: { xs: 40, md: 120 }, // Responsive height
+              position: "relative",
+              // Required for next/image layout
+              mb: { xs: 1, md: 0 },
+              mt: { xs: 1, md: 6.5 },
+              ml: { xs: 0, md: 0 },
+              mr: { md: -10 },
+            }}
           >
             <IconButton sx={{ p: { xs: 0.5, md: 1.5 } }}>
               <Image
@@ -220,10 +230,10 @@ const UpperNavBar: React.FC<{
             Share
             <Box
               sx={{
-                width: { xs: 12, md: 26 },  // Responsive width
+                width: { xs: 12, md: 26 }, // Responsive width
                 height: { xs: 12, md: 26 }, // Responsive height
-                position: 'relative',
-                ml: {md: -1 },
+                position: "relative",
+                ml: { md: -1 },
                 // Required for next/image layout
               }}
             >
@@ -232,7 +242,12 @@ const UpperNavBar: React.FC<{
                 alt="Share"
                 width={20}
                 height={20}
-                style={{ width: '100%', height: '100%', objectFit: 'contain', marginBottom: { xs: 2, md: 3 } }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  marginBottom: 3,
+                }}
               />
             </Box>
           </Box>
@@ -267,45 +282,90 @@ const UpperNavBar: React.FC<{
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
-        <MenuItem onClick={() => { router.push("/home"); handleMobileMenuClose(); }}>
+        <MenuItem
+          onClick={() => {
+            router.push("/home");
+            handleMobileMenuClose();
+          }}
+        >
           <ListItemIcon>
-            <Image src="/images/home-icon.svg" alt="Home" width={25} height={25} />
+            <Image
+              src="/images/home-icon.svg"
+              alt="Home"
+              width={25}
+              height={25}
+            />
           </ListItemIcon>
           Home
         </MenuItem>
         <MenuItem onClick={handleMobileMenuClose}>
           <ListItemIcon>
-            <Image src="/images/list-icon.svg" alt="List" width={25} height={25} />
+            <Image
+              src="/images/list-icon.svg"
+              alt="List"
+              width={25}
+              height={25}
+            />
           </ListItemIcon>
           List
         </MenuItem>
         <MenuItem onClick={handleMobileMenuClose}>
           <ListItemIcon>
-            <Image src="/images/ai-star.svg" alt="Star" width={25} height={25} />
+            <Image
+              src="/images/ai-star.svg"
+              alt="Star"
+              width={25}
+              height={25}
+            />
           </ListItemIcon>
           AI Star
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleMobileMenuClose}>
           <ListItemIcon>
-            <Image src="/images/bell-icon.svg" alt="Notifications" width={25} height={25} />
+            <Image
+              src="/images/bell-icon.svg"
+              alt="Notifications"
+              width={25}
+              height={25}
+            />
           </ListItemIcon>
           Notifications
         </MenuItem>
-        <MenuItem onClick={() => { onExportPDF(); handleMobileMenuClose(); }}>
+        <MenuItem
+          onClick={() => {
+            onExportPDF();
+            handleMobileMenuClose();
+          }}
+        >
           <ListItemIcon>
-            //<Image src="/images/file.svg" alt="Export PDF" width={25} height={25} />
+            <Image
+              src="/images/bell-icon.svg"
+              alt="Export PDF"
+              width={25}
+              height={25}
+            />
           </ListItemIcon>
           Export as PDF
         </MenuItem>
-        {onExportPPT && (
-          <MenuItem onClick={() => { onExportPPT(); handleMobileMenuClose(); }}>
+        {/* {onExportPPT && (
+          <MenuItem
+            onClick={() => {
+              onExportPPT();
+              handleMobileMenuClose();
+            }}
+          >
             <ListItemIcon>
-              <Image src="/images/file.svg" alt="Export PPT" width={25} height={25} />
+              <Image
+                src="/images/file.svg"
+                alt="Export PPT"
+                width={25}
+                height={25}
+              />
             </ListItemIcon>
             Export as PPT
           </MenuItem>
-        )}
+        )} */}
       </Menu>
     </AppBar>
   );

@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Box, Divider, IconButton, Select, MenuItem, Typography } from "@mui/material";
+import {
+  Box,
+  Divider,
+  IconButton,
+  Select,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
 import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
@@ -53,10 +60,18 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     }
   }
 
-  const [currentFontSize, setCurrentFontSize] = useState(textObj?.properties?.fontSize ?? 24);
-  const [currentFontFamily, setCurrentFontFamily] = useState(textObj?.properties?.fontFamily ?? "Roboto");
-  const [currentFontWeight, setCurrentFontWeight] = useState(textObj?.properties?.fontWeight ?? "normal");
-  const [currentAlign, setCurrentAlign] = useState(textObj?.properties?.align ?? "left");
+  const [currentFontSize, setCurrentFontSize] = useState(
+    textObj?.properties?.fontSize ?? 24
+  );
+  const [currentFontFamily, setCurrentFontFamily] = useState(
+    textObj?.properties?.fontFamily ?? "Roboto"
+  );
+  const [currentFontWeight, setCurrentFontWeight] = useState(
+    textObj?.properties?.fontWeight ?? "normal"
+  );
+  const [currentAlign, setCurrentAlign] = useState(
+    textObj?.properties?.align ?? "left"
+  );
 
   useEffect(() => {
     if (textObj) {
@@ -70,7 +85,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
   const updateTextProperty = (prop: string, value: any) => {
     if (!textObj || slideIndex === -1) return;
     const updatedSlides = structuredClone(slides);
-    const target = selectedTextId?.startsWith("title")
+    const target: any = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title.properties
       : elementIndex !== null
       ? updatedSlides[slideIndex].elements[elementIndex].properties
@@ -142,95 +157,107 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
 
       {/* <Divider sx={{ my: 2 }} /> */}
 
-      {/* Text Settings */}
-      <Box sx={{ px: 3, mb: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
-            Text
-          </Typography>
-          <IconButton size="small">
-            <SettingsIcon />
-          </IconButton>
-        </Box>
+        {/* Text Settings */}
+        <Box sx={{ px: 3, mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+            <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+              Text
+            </Typography>
+            <IconButton size="small">
+              <SettingsIcon />
+            </IconButton>
+          </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-          {/* Bold Icon */}
-          <IconButton
-            size="small"
-            onClick={() => updateTextProperty("fontWeight", currentFontWeight === "bold" ? "normal" : "bold")}
-            sx={{ p: 0.5 }}
-          >
-            <FormatAlignLeftIcon /> {/* Placeholder for Bold icon */}
-          </IconButton>
-          {/* Italic Icon */}
-          <IconButton
-            size="small"
-            onClick={() => updateTextProperty("fontStyle", currentFontStyle === "italic" ? "normal" : "italic")}
-            sx={{ p: 0.5 }}
-          >
-            <FormatAlignCenterIcon /> {/* Placeholder for Italic icon */}
-          </IconButton>
-          {/* Font Family Dropdown */}
-          <Select
-            value={currentFontFamily}
-            onChange={(e) => updateTextProperty("fontFamily", e.target.value)}
-            size="small"
-            sx={{ height: 36, width: 120, fontSize: 14 }}
-          >
-            {fontOptions.map((opt) => (
-              <MenuItem key={opt} value={opt}>
-                {opt}
-              </MenuItem>
-            ))}
-          </Select>
-          {/* Font Size Dropdown */}
-          <Select
-            value={currentFontSize}
-            onChange={(e) => updateTextProperty("fontSize", Number(e.target.value))}
-            size="small"
-            sx={{ height: 36, width: 80, fontSize: 14 }}
-          >
-            {[16, 18, 20, 24, 28, 32, 36].map((size) => (
-              <MenuItem key={size} value={size}>
-                {size}
-              </MenuItem>
-            ))}
-          </Select>
-          {/* Align Left Icon */}
-          <IconButton
-            size="small"
-            onClick={() => updateTextProperty("align", "left")}
-            sx={{ p: 0.5 }}
-          >
-            <FormatAlignLeftIcon />
-          </IconButton>
-          {/* Align Center Icon */}
-          <IconButton
-            size="small"
-            onClick={() => updateTextProperty("align", "center")}
-            sx={{ p: 0.5 }}
-          >
-            <FormatAlignCenterIcon />
-          </IconButton>
-          {/* Align Right Icon */}
-          <IconButton
-            size="small"
-            onClick={() => updateTextProperty("align", "right")}
-            sx={{ p: 0.5 }}
-          >
-            <FormatAlignRightIcon />
-          </IconButton>
-          {/* Align Justify Icon */}
-          <IconButton
-            size="small"
-            onClick={() => updateTextProperty("align", "justify")}
-            sx={{ p: 0.5 }}
-          >
-            <FormatAlignJustifyIcon />
-          </IconButton>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+            {/* Bold Icon */}
+            <IconButton
+              size="small"
+              onClick={() =>
+                updateTextProperty(
+                  "fontWeight",
+                  currentFontWeight === "bold" ? "normal" : "bold"
+                )
+              }
+              sx={{ p: 0.5 }}
+            >
+              <FormatAlignLeftIcon /> {/* Placeholder for Bold icon */}
+            </IconButton>
+            {/* Italic Icon */}
+            <IconButton
+              size="small"
+              onClick={() =>
+                updateTextProperty(
+                  "fontStyle",
+                  currentFontWeight === "italic" ? "normal" : "italic"
+                )
+              }
+              sx={{ p: 0.5 }}
+            >
+              <FormatAlignCenterIcon /> {/* Placeholder for Italic icon */}
+            </IconButton>
+            {/* Font Family Dropdown */}
+            <Select
+              value={currentFontFamily}
+              onChange={(e) => updateTextProperty("fontFamily", e.target.value)}
+              size="small"
+              sx={{ height: 36, width: 120, fontSize: 14 }}
+            >
+              {fontOptions.map((opt) => (
+                <MenuItem key={opt} value={opt}>
+                  {opt}
+                </MenuItem>
+              ))}
+            </Select>
+            {/* Font Size Dropdown */}
+            <Select
+              value={currentFontSize}
+              onChange={(e) =>
+                updateTextProperty("fontSize", Number(e.target.value))
+              }
+              size="small"
+              sx={{ height: 36, width: 80, fontSize: 14 }}
+            >
+              {[16, 18, 20, 24, 28, 32, 36].map((size) => (
+                <MenuItem key={size} value={size}>
+                  {size}
+                </MenuItem>
+              ))}
+            </Select>
+            {/* Align Left Icon */}
+            <IconButton
+              size="small"
+              onClick={() => updateTextProperty("align", "left")}
+              sx={{ p: 0.5 }}
+            >
+              <FormatAlignLeftIcon />
+            </IconButton>
+            {/* Align Center Icon */}
+            <IconButton
+              size="small"
+              onClick={() => updateTextProperty("align", "center")}
+              sx={{ p: 0.5 }}
+            >
+              <FormatAlignCenterIcon />
+            </IconButton>
+            {/* Align Right Icon */}
+            <IconButton
+              size="small"
+              onClick={() => updateTextProperty("align", "right")}
+              sx={{ p: 0.5 }}
+            >
+              <FormatAlignRightIcon />
+            </IconButton>
+            {/* Align Justify Icon */}
+            <IconButton
+              size="small"
+              onClick={() => updateTextProperty("align", "justify")}
+              sx={{ p: 0.5 }}
+            >
+              <FormatAlignJustifyIcon />
+            </IconButton>
+          </Box>
         </Box>
       </Box>
-</Box>
       <Divider sx={{ my: 2 }} />
     </Box>
   );
