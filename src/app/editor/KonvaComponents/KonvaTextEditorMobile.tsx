@@ -70,12 +70,16 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipStyle, setTooltipStyle] = useState({ top: 0, left: 0 });
   const [currentFontSize, setCurrentFontSize] = useState(fontSize || 24);
-  const [currentFontFamily, setCurrentFontFamily] = useState(fontFamily || "Roboto");
+  const [currentFontFamily, setCurrentFontFamily] = useState(
+    fontFamily || "Roboto"
+  );
   const [currentFontWeight, setCurrentFontWeight] = useState(
     weightOptions.some((w) => w.value === fontWeight) ? fontWeight : "normal"
   );
   const [currentAlign, setCurrentAlign] = useState(align || "left");
-  const [currentFontStyle, setCurrentFontStyle] = useState(fontStyle || "normal");
+  const [currentFontStyle, setCurrentFontStyle] = useState(
+    fontStyle || "normal"
+  );
 
   const parsed = id.match(/(?:title|el)-(\d+)(?:-(\d+))?/);
   const slideIndex = parsed ? parseInt(parsed[1], 10) : -1;
@@ -88,7 +92,10 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     }
   }, [isSelected]);
 
-  const updateSlides = (newText: string, newStyle: Partial<KonvaTextEditorProps> = {}) => {
+  const updateSlides = (
+    newText: string,
+    newStyle: Partial<KonvaTextEditorProps> = {}
+  ) => {
     if (slideIndex === -1) return;
 
     const updatedSlides = structuredClone(slides);
@@ -103,7 +110,9 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     if (id.startsWith("title")) {
       slide.slide_title = updateElement(slide.slide_title);
     } else if (elementIndex !== null && slide.elements[elementIndex]) {
-      slide.elements[elementIndex] = updateElement(slide.elements[elementIndex]);
+      slide.elements[elementIndex] = updateElement(
+        slide.elements[elementIndex]
+      );
     }
 
     dispatch(setSlides(updatedSlides));
@@ -121,7 +130,15 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     }
     setIsEditing(false);
     setTooltipVisible(false);
-  }, [inputValue, text, currentFontSize, currentFontFamily, currentFontWeight, currentAlign, currentFontStyle]);
+  }, [
+    inputValue,
+    text,
+    currentFontSize,
+    currentFontFamily,
+    currentFontWeight,
+    currentAlign,
+    currentFontStyle,
+  ]);
 
   const handleDelete = useCallback(() => {
     if (slideIndex === -1) return;
@@ -140,14 +157,17 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     setTooltipVisible(false);
   }, [slideIndex, elementIndex, slides, dispatch, id]);
 
-  const handleTouchEnd = useCallback((e: KonvaEventObject<TouchEvent>) => {
-    e.evt.preventDefault(); // Prevent default touch behavior
-    if (!isEditing) {
-      onSelect();
-      setIsEditing(true);
-      setTooltipVisible(true);
-    }
-  }, [onSelect, isEditing]);
+  const handleTouchEnd = useCallback(
+    (e: KonvaEventObject<TouchEvent>) => {
+      e.evt.preventDefault(); // Prevent default touch behavior
+      if (!isEditing) {
+        onSelect();
+        setIsEditing(true);
+        setTooltipVisible(true);
+      }
+    },
+    [onSelect, isEditing]
+  );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -245,7 +265,12 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
             ...newBox,
             width: Math.max(30, newBox.width),
           })}
-          enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
+          enabledAnchors={[
+            "top-left",
+            "top-right",
+            "bottom-left",
+            "bottom-right",
+          ]}
         />
       )}
       {isEditing && textRef.current && (
@@ -275,7 +300,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
               onBlur={commitEdit}
             />
           </Html>
-          {tooltipVisible && (
+          {/* {tooltipVisible && (
             <Html>
               <div
                 onClick={(e) => e.stopPropagation()} // Prevent click from closing the tooltip
@@ -298,7 +323,6 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
                 }}
               >
                 <div style={{ display: "flex", gap: "8px", width: "100%", alignItems: "center" }}>
-                  {/* Font Family Dropdown */}
                   <Select
                     value={currentFontFamily}
                     onChange={(e) => handleStyleChange({ fontFamily: e.target.value })}
@@ -315,7 +339,6 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
                       </MenuItem>
                     ))}
                   </Select>
-                  {/* Font Size Dropdown */}
                   <Select
                     value={currentFontSize}
                     onChange={(e) => handleStyleChange({ fontSize: Number(e.target.value) })}
@@ -332,7 +355,6 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
                       </MenuItem>
                     ))}
                   </Select>
-                  {/* Font Weight Dropdown */}
                   <Select
                     value={currentFontWeight}
                     onChange={(e) => handleStyleChange({ fontWeight: e.target.value })}
@@ -351,7 +373,6 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
                   </Select>
                 </div>
                 <div style={{ display: "flex", gap: "6px", width: "100%", justifyContent: "center", marginTop: 4 }}>
-                  {/* Horizontal Alignment */}
                   {[
                     { Icon: FormatAlignLeftIcon, value: "left" },
                     { Icon: FormatAlignCenterIcon, value: "center" },
@@ -381,7 +402,6 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
                       <Icon fontSize="small" />
                     </button>
                   ))}
-                  {/* Vertical Alignment */}
                   {[
                     { Icon: require("@mui/icons-material/VerticalAlignTop").default, value: "top" },
                     { Icon: require("@mui/icons-material/VerticalAlignCenter").default, value: "middle" },
@@ -413,7 +433,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
                 </div>
               </div>
             </Html>
-          )}
+          )} */}
         </>
       )}
     </>

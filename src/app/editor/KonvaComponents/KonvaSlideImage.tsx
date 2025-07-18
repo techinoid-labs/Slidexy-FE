@@ -98,8 +98,8 @@ const SlideImage = ({
         width={width}
         height={height}
         draggable
-        // onClick={onSelect}
-        // onTap={onSelect}
+        onClick={onSelect}
+        onTap={onSelect}
         onMouseDown={onSelect}
         onTouchStart={onSelect}
         onTransformEnd={(e) => {

@@ -174,10 +174,18 @@ const MobileSlideEditor = ({
                       e.target.name() === "background";
                     if (clickedOnEmpty) {
                       setSelectedTextId(null);
+                      setIsMobileTextSelected(false);
                       setSelectedImageIndex(null);
                       setSelectedShapeIndex(null);
                       setSelectedImage(null);
                     }
+                  }}
+                  onTouchStart={() => {
+                    setSelectedTextId(null);
+                    setSelectedImageIndex(null);
+                    setSelectedShapeIndex(null);
+                    setSelectedImage(null);
+                    setIsMobileTextSelected(false);
                   }}
                 >
                   <Layer>
@@ -193,6 +201,7 @@ const MobileSlideEditor = ({
                           setSelectedImageIndex(null);
                           setSelectedShapeIndex(null);
                           setSelectedImage(null);
+                          setIsMobileTextSelected(false);
                         }}
                       />
                     ) : (
@@ -316,7 +325,8 @@ const MobileSlideEditor = ({
                               width={textWidth}
                               wrap="word"
                               fontSize={fontSize}
-                              fontFamily={fontFamily}
+                              fontFamily={el.properties.fontFamily}
+                              // fontFamily={fontFamily}
                               fill={
                                 selectedTheme?.primaryColor ||
                                 el.properties.fill

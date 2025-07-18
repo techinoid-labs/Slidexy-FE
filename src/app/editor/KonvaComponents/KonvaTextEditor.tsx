@@ -137,6 +137,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
       <Text
         onClick={onSelect}
         onTap={onSelect}
+        onTouchStart={onSelect}
         ref={textRef}
         text={text}
         x={x}
