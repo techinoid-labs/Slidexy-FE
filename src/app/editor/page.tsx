@@ -10,7 +10,7 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
-import { exportSlidesAsPDF } from "../../../utils/exportSlides";
+import { exportSlidesAsPDF } from "../../utils/exportSlides";
 import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
 import dynamic from "next/dynamic";
 import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";

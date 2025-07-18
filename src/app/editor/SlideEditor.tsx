@@ -18,7 +18,7 @@ import {
   SLIDE_WIDTH,
   SLIDE_HEIGHT,
   LEFT_PADDING,
-} from "../../../utils/slideUtils";
+} from "../../utils/slideUtils";
 import { v4 as uuidv4 } from "uuid";
 const IMAGE_WIDTH = 500;
 const IMAGE_PADDING = 20;
@@ -191,14 +191,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
 
                     {title.text && (
                       <>
-                        {console.log({
-                          isTheme: title.useThemeColor,
-                          selected: selectedTheme,
-                          chosen: !title.useThemeColor
-                            ? titleProps.fill
-                            : selectedTheme?.primaryColor,
-                          individual: titleProps.fill,
-                        })}
                         <KonvaTextEditor
                           id={`title-${index}`}
                           text={title.text}
@@ -297,14 +289,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           if (line) lines.push(line.trim());
 
                           const height = lines.length * fontSize * lineHeight;
-                          // console.log({
-                          //   isTheme: el.useThemeColor,
-                          //   selected: selectedTheme,
-                          //   chosen: !el.useThemeColor
-                          //     ? el.properties.fill
-                          //     : selectedTheme?.primaryColor,
-                          //   individual: el.properties.fill,
-                          // });
+
                           const editor = (
                             <KonvaTextEditor
                               key={`el-${index}-${i}`}

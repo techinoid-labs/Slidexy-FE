@@ -102,6 +102,7 @@ const shapes = [
     defaultProps: {
       points: [20, 20, 60, 60],
       stroke: "#2ecc71",
+      fill: "#2ecc71",
       strokeWidth: 4,
     },
     svg: (

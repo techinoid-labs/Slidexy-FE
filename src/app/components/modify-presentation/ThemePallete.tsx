@@ -250,7 +250,7 @@ const ThemePanel = ({ resetAll }: any) => {
       </Box>
       <Divider />
       {/* Presentation Style */}
-      <Box sx={{ px: 3, py: 2 }}>
+      {/* <Box sx={{ px: 3, py: 2 }}>
         <Typography sx={{ fontWeight: 500, fontSize: 16, mb: 1 }}>
           Presentation Layout
         </Typography>
@@ -276,7 +276,7 @@ const ThemePanel = ({ resetAll }: any) => {
           ))}
         </div>
       </Box>
-      <Divider />
+      <Divider /> */}
       {/* Custom Background Color Section */}
       <Box sx={{ px: 3, py: 2 }}>
         <Typography sx={{ fontWeight: 500, fontSize: 16, mb: 1 }}>

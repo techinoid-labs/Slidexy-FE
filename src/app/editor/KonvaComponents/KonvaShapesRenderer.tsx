@@ -81,14 +81,9 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
             const shapeType = el.konva_component;
             const updated = { ...el.properties };
 
-            const box = node.getClientRect();
-            const { width, height } = box;
+            const scaleX = node.scaleX();
+            const scaleY = node.scaleY();
 
-            // Reset scale to avoid cumulative scaling
-            node.scaleX(1);
-            node.scaleY(1);
-
-            // Always update position
             updated.x = node.x();
             updated.y = node.y();
 
@@ -98,30 +93,49 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
               case "Konva.Wedge":
               case "Konva.Arc":
               case "Konva.RegularPolygon":
-                updated.width = width;
-                updated.height = height;
+                const oldWidth = node.width();
+                const newWidth = oldWidth * scaleX;
+                const dx = (newWidth - oldWidth) / 2;
+
+                updated.x = node.x();
+                updated.y = node.y();
+
+                updated.width = newWidth;
+                updated.height = node.height() * scaleY;
+
                 break;
 
               case "Konva.Circle":
-                updated.radius = Math.max(width, height) / 2;
+                updated.radius = node.radius() * Math.max(scaleX, scaleY);
                 break;
 
-              //   case "Konva.RegularPolygon":
-              //     updated.radius = Math.min(width, height) / 2;
-              //     break;
-
               case "Konva.Star":
-                updated.outerRadius = Math.min(width, height) / 2;
+                updated.outerRadius =
+                  node.outerRadius() * Math.max(scaleX, scaleY);
                 if (updated.innerRadius)
                   updated.innerRadius = updated.outerRadius / 2;
                 break;
 
               case "Konva.Line":
               case "Konva.Arrow":
-                const points = node.points();
-                updated.points = points;
+                // Scale each point
+                const scaledPoints = node
+                  .points()
+                  .map((point: number, idx: number) => {
+                    return idx % 2 === 0 ? point * scaleX : point * scaleY;
+                  });
+
+                updated.points = scaledPoints;
+
+                // Reset scale to avoid compounding
+                node.scaleX(1);
+                node.scaleY(1);
                 break;
             }
+
+            // Reset scale
+            node.scaleX(1);
+            node.scaleY(1);
 
             const updatedSlides = structuredClone(slides);
             updatedSlides[slideIdx].elements[i].properties = updated;
@@ -183,6 +197,8 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                 onTouchStart={onSelectShape}
                 key={`shape-${i}`}
                 {...commonProps}
+                fill={el.properties.fill}
+                stroke={el.properties.fill}
               />
             );
           case "Konva.Arrow":
@@ -194,6 +210,8 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                 onTouchStart={onSelectShape}
                 key={`shape-${i}`}
                 {...commonProps}
+                stroke={el.properties.fill}
+                fill={el.properties.fill}
               />
             );
           case "Konva.Ellipse":
