@@ -18,7 +18,10 @@ import Link from "next/link";
 import { ThemeToggle } from "@/lib/theme-toggle";
 import { Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-export default function Header() {
+
+import { clearPersistedSlides } from "@/app/store/store";
+
+export default function StepsHeader() {
   const theme = useMuiTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -42,7 +45,7 @@ export default function Header() {
           px: { xs: 2, md: 8 },
           minHeight: 60,
           mt: 1,
-          flexDirection: "row", 
+          flexDirection: "row",
         }}
       >
         {/* Go Back Button */}
@@ -55,12 +58,7 @@ export default function Header() {
           <Button
             onClick={() => router.push("/home")}
             startIcon={
-              <Image
-                src="/arrow-left.svg"
-                alt="Back"
-                width={19}
-                height={19}
-              />
+              <Image src="/arrow-left.svg" alt="Back" width={19} height={19} />
             }
             sx={{
               textTransform: "none",
@@ -90,9 +88,38 @@ export default function Header() {
             />
           </Box>
         </Link>
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <Button
+            onClick={() => {
+              clearPersistedSlides();
+              router.push("/home");
+            }}
+            // startIcon={
+            //   <Image src="/arrow-left.svg" alt="Back" width={19} height={19} />
+            // }
+            sx={{
+              textTransform: "none",
+              fontWeight: 500,
+              color: "#1A1A1A",
+              fontSize: { xs: "0.8rem", md: "1rem" },
+              backgroundColor: "#F6F6F6",
+              "&:hover": {
+                backgroundColor: "#f3f0ff",
+              },
+              px: 2,
+              py: 1,
+            }}
+          >
+            Cancel
+          </Button>
+        </Box>
       </Toolbar>
-
-
     </AppBar>
   );
 }

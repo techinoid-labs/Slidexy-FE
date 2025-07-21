@@ -1,12 +1,10 @@
-"use client"
-import Header from "@/app/components/create-presentation/create/Header";
+"use client";
 import PresentationMaker from "@/app/components/create-presentation/create/PresentationMaker";
 import { Box, Container, Typography, Button } from "@mui/material";
 import Image from "next/image";
 import { SlidesProvider } from "@/app/context/SlidesContext";
 import StepIndicator from "@/app/components/shared/StepIndicator";
-
-
+import StepsHeader from "@/app/components/shared/StepsHeader";
 
 const CreatePresentationPage = () => {
   const promptCards = [
@@ -27,15 +25,11 @@ const CreatePresentationPage = () => {
       icon: "/top-element.svg",
     },
   ];
- 
 
   return (
-
     // <SlidesProvider>
     <Box>
-      
-
-      <Header />
+      <StepsHeader />
       <Box sx={{ mt: 4 }}>
         <StepIndicator activeStep={0} />
       </Box>

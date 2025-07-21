@@ -5,14 +5,13 @@ import OutlineCard from "@/app/components/create-presentation/outline/OutlineCar
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import Image from "next/image";
 import EditMenuCard from "@/app/components/create-presentation/outline/EditMenuCard";
-import GeneralHeader from "@/app/components/create-presentation/outline/General-Header";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import type { Slide } from "@/app/slice/slidesSlice";
 import StepIndicator from "@/app/components/shared/StepIndicator";
-//import Header from "@/app/components/create-presentation/create/Header";
+import StepsHeader from "@/app/components/shared/StepsHeader";
 
 // API response type and map helper
 export interface SlideApiResponse {
@@ -101,7 +100,6 @@ export default function OutlinePage() {
   );
   const [editMenuCardIdx, setEditMenuCardIdx] = useState<number | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-
 
   const handleBulletsEditStart = (idx: number, bullets?: string[]) => {
     setEditingBulletsIdx(idx);
@@ -193,13 +191,12 @@ export default function OutlinePage() {
     router.push("/editor");
   };
 
- 
   const handleUpdateSlide = (slideIndex: number, updated: Partial<Slide>) => {
     const updatedSlides = slides.map((s: Slide, i: number) =>
       i === slideIndex ? { ...s, ...updated } : s
     );
 
-    console.log("Updated Slides",updatedSlides);
+    console.log("Updated Slides", updatedSlides);
 
     dispatch(setSlides(updatedSlides));
 
@@ -207,7 +204,6 @@ export default function OutlinePage() {
       setPreviewImage(updated.image_url);
     }
   };
-  
 
   return (
     <Box
@@ -219,7 +215,7 @@ export default function OutlinePage() {
         overflowX: "hidden",
       }}
     >
-      <GeneralHeader />
+      <StepsHeader />
       <Box sx={{ mt: 4 }}>
         <StepIndicator activeStep={1} />
       </Box>
