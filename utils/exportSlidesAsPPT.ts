@@ -36,6 +36,8 @@ export type StructuredSlide = {
 export function exportSlidesAsPPT(structuredSlides: StructuredSlide[]) {
   const pptx = new PptxGenJS();
 
+  console.log("Structured Slides:", structuredSlides);
+
   structuredSlides.forEach((structuredSlide) => {
     const slide = pptx.addSlide();
 

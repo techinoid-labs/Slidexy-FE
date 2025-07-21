@@ -36,81 +36,57 @@ const Page = () => {
   };
 
   const handleExportPPTX = () => {
-    const structuredSlides: StructuredSlide[] = slides.map((s, index) => {
-      // Determine title text
-      let titleText = "";
+    const structuredSlides: StructuredSlide[] = slides.map((slide) => {
+      const elements: StructuredSlide["elements"] = [];
 
-      if (typeof s.title === "string") {
-        titleText = s.title;
-      } else if (s.title?.text && typeof s.title.text === "string") {
-        titleText = s.title.text;
-      }
-
-      // Create title element
-      const titleElement = titleText
-        ? [
-            {
-              element_type: "title",
-              text: titleText,
-              properties: {
-                x: 0.5,
-                y: 0.3,
-                w: 9,
-                h: 1,
-                fontSize: 28,
-                color: "000000",
-              },
+      slide.elements?.forEach((el) => {
+        if (el.element_type === "bullet_point") {
+          const textProps = el.properties as any; // Or define a better type for bullet points
+          elements.push({
+            element_type: "bullet_point",
+            text: el.text,
+            properties: {
+              x: 0.7,
+              y: undefined,
+              w: 8,
+              h: 0.6,
+              fontSize: textProps?.fontSize || 18,
+              fill: textProps?.fill || "#444444",
             },
-          ]
-        : [];
+          });
+        }
 
-      // Create bullet elements
-      let bulletElements: StructuredSlide["elements"] = [];
-      if (Array.isArray(s.bullets)) {
-        bulletElements =
-          typeof s.bullets[0] === "string"
-            ? [
-                {
-                  element_type: "bullet_point",
-                  text: s.bullets as string[],
-                  properties: {
-                    x: 0.7,
-                    y: 1.2,
-                    w: 8,
-                    h: 3,
-                    fontSize: 18,
-                    color: "444444",
-                  },
-                },
-              ]
-            : (s.bullets as any);
-      }
-
-      // Add image if present
-      const imageElements =
-        s.images && s.images[0]?.url
-          ? [
-              {
-                element_type: "image",
-                src: s.images[0].url,
-                properties: {
-                  x: 1,
-                  y: 4,
-                  w: 6,
-                  h: 3.5,
-                },
-              },
-            ]
-          : [];
+        if (el.element_type === "image") {
+          const imgProps = el.properties as any; // Or define a better type for images
+          elements.push({
+            element_type: "image",
+            src: slide.image_url || undefined,
+            properties: {
+              imageSrc: imgProps?.imageSrc,
+              x: (imgProps?.x || 440) / 100,
+              y: (imgProps?.y || 15) / 100,
+              w: (imgProps?.width || 480) / 100,
+              h: (imgProps?.height || 400) / 100,
+            },
+          });
+        }
+      });
 
       return {
-        elements: [...titleElement, ...bulletElements, ...imageElements],
+        slide_id: slide.slide_id,
+        slide_title: {
+          text: slide.slide_title?.text || "",
+          properties: {
+            fill: slide.slide_title?.properties?.fill?.replace("#", ""),
+          },
+        },
+        elements,
+        image_url: slide.image_url || undefined,
       };
     });
 
     exportSlidesAsPPT(structuredSlides);
   };
-
 
   const isTextSelected = selectedTextId !== null && selectedTextId !== "";
   const isShapeSelected = selectedShapeIndex !== null;
