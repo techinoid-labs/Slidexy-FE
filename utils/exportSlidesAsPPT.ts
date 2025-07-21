@@ -41,54 +41,50 @@ export function exportSlidesAsPPT(structuredSlides: StructuredSlide[]) {
   structuredSlides.forEach((structuredSlide) => {
     const slide = pptx.addSlide();
 
-    // Add slide title if exists
+    // Add slide title (left column)
+    const titleProps = structuredSlide.slide_title?.properties || {};
     if (structuredSlide.slide_title?.text) {
-      const titleProps = structuredSlide.slide_title.properties || {};
       slide.addText(structuredSlide.slide_title.text, {
         x: 0.5,
-        y: 0.3,
-        w: 8,
-        h: 1,
+        y: 0.4,
+        w: 4.5,
+        h: 0.8,
         fontSize: titleProps.fontSize || 24,
         bold: true,
         color: titleProps.fill || "000000",
       });
     }
 
-    // Loop through elements
-    structuredSlide.elements?.forEach((el, idx) => {
+    // Track vertical position of bullet points
+    let bulletYOffset = 1.3;
+
+    structuredSlide.elements?.forEach((el) => {
       const { element_type, text, src, properties = {} } = el;
 
-      const {
-        x = 0.5,
-        y = 1 + idx * 0.7, // stack bullets vertically
-        w = 8,
-        h = 0.7,
-        fontSize = 18,
-        fill = "444444",
-      } = properties;
+      const { fontSize = 14, fill = "444444", imageSrc } = properties;
 
       if (element_type === "bullet_point" && typeof text === "string") {
         slide.addText(text, {
-          x,
-          y,
-          w,
-          h,
+          x: 0.5, // left column
+          y: bulletYOffset,
+          w: 4.5,
+          h: 0.6,
           fontSize,
           color: fill,
           bullet: true,
         });
+        bulletYOffset += 0.6; // space between bullets
       }
 
       if (element_type === "image") {
-        const imagePath = properties.imageSrc || src;
+        const imagePath = imageSrc || src;
         if (imagePath) {
           slide.addImage({
             path: imagePath,
-            x: properties.x || 0.5,
-            y: properties.y || 1,
-            w: properties.w || 5,
-            h: properties.h || 3,
+            x: 5.2, // right column
+            y: properties.y ?? 1,
+            w: properties.w ?? 4.3,
+            h: properties.h ?? 3.5,
           });
         }
       }
