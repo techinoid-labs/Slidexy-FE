@@ -34,6 +34,7 @@ export default function PresentationMaker({
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0); // ✅ progress state
   const { setSlides } = useSlides();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -59,7 +60,6 @@ export default function PresentationMaker({
     setInputValue(description);
   };
 
-  // Helper to extract YouTube video ID
   const extractVideoId = (inputUrl: string) => {
     try {
       const urlObj = new URL(inputUrl);
@@ -73,13 +73,11 @@ export default function PresentationMaker({
     }
   };
 
-  // Helper to validate YouTube URL
   const isValidYoutubeUrl = (inputUrl: string) => {
     const id = extractVideoId(inputUrl);
     return Boolean(id);
   };
 
-  // Helper to extract favicon URL for website
   const getFaviconUrl = (inputUrl: string) => {
     try {
       const domain = new URL(inputUrl).hostname;
@@ -99,6 +97,16 @@ export default function PresentationMaker({
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
+    setProgress(0);
+    const startTime = Date.now();
+    let interval: NodeJS.Timeout | null = null;
+
+    interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 95) return prev;
+        return prev + Math.random() * 2;
+      });
+    }, 200);
 
     if (inputMode === "Website") {
       try {
@@ -107,36 +115,27 @@ export default function PresentationMaker({
       } catch {
         setError("Please enter a valid website URL.");
         setLoading(false);
+        if (interval) clearInterval(interval);
         return;
       }
     }
 
-    // Build payload
     const base =
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
-          ? { source: "website", inputWebsiteUrl: inputValue }
-          : { source: "text", textContent: inputValue };
+        ? { source: "website", inputWebsiteUrl: inputValue }
+        : { source: "text", textContent: inputValue };
 
-    const promptMeta = {
-      goal,
-      tone,
-      audience,
-      length,
-    };
-
+    const promptMeta = { goal, tone, audience, length };
     const payload = { ...base, meta: promptMeta };
-    console.log("[SlidesX] Payload to backend:", payload);
-    // console.log("[SlidesX] Prompt meta (not sent):", promptMeta);
-    // return;
+
     try {
       const res = await fetch(`${API_BASE_URL}/generate-slides`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      console.log("[SlidesX] Raw response:", res);
 
       if (!res.ok) {
         let errorData: any = {};
@@ -145,36 +144,40 @@ export default function PresentationMaker({
         } catch (e) {
           errorData = { error: "Unknown error" };
         }
-        console.error("[SlidesX] Error response from backend:", errorData);
         throw new Error(errorData.error || "Failed to generate slides");
       }
 
       const data = await res.json();
-      console.log("[SlidesX] Parsed slides data:", data);
-      setSlides(data.slides);
-      router.push(`/presentation/outline`);
+
+      const elapsed = Date.now() - startTime;
+      const minDelay = 1200;
+      const remaining = Math.max(0, minDelay - elapsed);
+
+      setTimeout(() => {
+        setProgress(100);
+        setSlides(data.slides);
+        router.push(`/presentation/outline`);
+      }, remaining);
     } catch (err: any) {
-      console.error("[SlidesX] Exception in handleSubmit:", err);
       setError(err.message || "Something went wrong");
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        if (interval) clearInterval(interval);
+        setLoading(false);
+        setProgress(0);
+      }, 1800);
     }
   };
 
   useEffect(() => {
     const prompt = searchParams.get("prompt");
-
     if (prompt) {
       setInputValue(prompt);
-
       const params = new URLSearchParams(Array.from(searchParams.entries()));
       params.delete("prompt");
-
       const newQuery = params.toString();
       const pathname = window.location.pathname;
-
       const newUrl = newQuery ? `${pathname}?${newQuery}` : pathname;
-
       router.replace(newUrl, { scroll: false });
     }
   }, []);
@@ -202,7 +205,7 @@ export default function PresentationMaker({
           borderRadius: "999px",
           border: "2px solid #8E2DE2",
           boxShadow: "4px 5px 0px 0px #8E2DE2",
-          height: {xs: 57, md: 70},
+          height: { xs: 57, md: 70 },
           px: 2,
           mb: 3,
         }}
@@ -219,7 +222,7 @@ export default function PresentationMaker({
               height: "100%",
               border: "none",
               "& fieldset": { border: "none" },
-              fontSize: {xs: "1rem", md:"1rem"},
+              fontSize: { xs: "1rem", md: "1rem" },
               px: 2,
             },
             endAdornment:
@@ -236,11 +239,8 @@ export default function PresentationMaker({
         />
       </Box>
 
-      {/* Show YouTube thumbnail if mode is Youtube and valid videoId */}
       {inputMode === "Youtube" && videoId && !showYoutubeError && (
-        <MuiBox
-          sx={{ width: "100%", maxWidth: 600, mx: "auto", mb: 3 }} // Increase maxWidth here for larger card
-        >
+        <MuiBox sx={{ width: "100%", maxWidth: 600, mx: "auto", mb: 3 }}>
           <Card
             sx={{ position: "relative", borderRadius: 2, overflow: "hidden" }}
           >
@@ -248,7 +248,7 @@ export default function PresentationMaker({
               component="img"
               image={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
               alt="YouTube Thumbnail"
-              sx={{ width: "100%", height: 300, objectFit: "cover" }} // Increase height here for larger image
+              sx={{ width: "100%", height: 300, objectFit: "cover" }}
             />
             <MuiBox
               sx={{
@@ -275,7 +275,7 @@ export default function PresentationMaker({
           </Card>
         </MuiBox>
       )}
-      {/* Show error if YouTube URL is invalid */}
+
       {showYoutubeError && (
         <Typography color="error" sx={{ mt: 1, mb: 2, textAlign: "center" }}>
           Please enter a valid YouTube URL.
@@ -296,38 +296,48 @@ export default function PresentationMaker({
           fontSize: "1.125rem",
           fontWeight: 600,
           mb: 4,
-          height: {xs: 57, md: 70},
+          height: { xs: 57, md: 70 },
           border: "2px solid #8E2DE2",
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
-
-          "&:hover": {
-            backgroundColor: "#f3eaff",
-          },
-
+          "&:hover": { backgroundColor: "#f3eaff" },
           "&::before": {
             content: '""',
             position: "absolute",
             top: 0,
             left: 0,
             height: "100%",
-            width: loading ? "100%" : "0%",
+            width: `${progress}%`,
             background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
-            transition: "width 1.8s ease-in-out", // slowed down fill animation
+            transition: "width 0.2s ease-out",
             zIndex: 0,
           },
-
           "& span, & .icon": {
             position: "relative",
             zIndex: 1,
           },
         }}
       >
-        <span style={{ color: loading ? "#fff" : "#8E2DE2", transition: "color 0.6s ease" }}>
-          {loading ? "Generating..." : "Generate Outlines"}
+        <span
+          style={{
+            color: loading ? "white" : "#8E2DE2",
+            textShadow: loading
+              ? `
+        0 0 5px #8E2DE2,
+        
+       
+        0 0 20px #4A00E0
+      `
+              : "none",
+            transition: "color 0.6s ease, text-shadow 0.6s ease",
+            fontWeight: 600,
+          }}
+        >
+          {loading
+            ? `Generating... ${Math.round(progress)}%`
+            : "Generate Outlines"}
         </span>
-
         <Box
           className="icon"
           sx={{
@@ -335,8 +345,8 @@ export default function PresentationMaker({
             height: 22,
             ml: 1,
             background: loading
-              ? "#fff" 
-              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)", 
+              ? "green" // white icon when loading
+              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",
@@ -345,11 +355,10 @@ export default function PresentationMaker({
             WebkitMaskRepeat: "no-repeat",
             maskPosition: "center",
             WebkitMaskPosition: "center",
-            transition: "background 1s ease",
+            transition: "background 0.4s ease",
           }}
         />
       </Button>
-
 
       {error && (
         <Typography color="error" sx={{ mt: 2 }}>
@@ -357,7 +366,6 @@ export default function PresentationMaker({
         </Typography>
       )}
 
-      {/* Prompt Cards */}
       <Box sx={{ px: 2 }}>
         <Box
           sx={{
@@ -394,16 +402,14 @@ export default function PresentationMaker({
           />
         </Box>
 
-
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "column", md: "row" }, // Stack in column on mobile, row on desktop
+            flexDirection: { xs: "column", md: "row" },
             gap: 2,
             flexWrap: { xs: "wrap", sm: "nowrap" },
-            width: { xs: "100%", md: 1000 }, // Responsive width
-            //justifyContent: "center", // Center children horizontally
-            alignItems: "center",     // Center children vertically (for column)
+            width: { xs: "100%", md: 1000 },
+            alignItems: "center",
           }}
         >
           {promptCards.map((card, index) => (
@@ -419,19 +425,8 @@ export default function PresentationMaker({
                 borderRadius: "16px",
                 padding: 2,
                 position: "relative",
-                minHeight: {xs: 100, sm: 180},
-                width: {
-                  xs: index === 0 ? 270 :
-                      index === 1 ? 270 :
-                        index === 2 ? 270 :
-                          100,
-                  sm:
-                    index === 0 ? 250 :
-                      index === 1 ? 250 :
-                        index === 2 ? 250 :
-                          200,
-
-                },
+                minHeight: { xs: 100, sm: 180 },
+                width: index === 0 || index === 1 || index === 2 ? 270 : 100,
               }}
               onClick={() => handlePromptClick(card.description)}
             >
@@ -449,11 +444,15 @@ export default function PresentationMaker({
                   cursor: "pointer",
                 }}
               >
-                <Image src={card.icon} alt="Prompt icon" width={20} height={20} />
+                <Image
+                  src={card.icon}
+                  alt="Prompt icon"
+                  width={20}
+                  height={20}
+                />
               </Box>
             </Box>
           ))}
-
         </Box>
       </Box>
     </Box>
