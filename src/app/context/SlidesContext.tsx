@@ -21,6 +21,13 @@ interface SlidesContextType {
   setSelectedTextId: (id: string | null) => void;
   selectedShapeIndex: number | null;
   setSelectedShapeIndex: (index: number | null) => void;
+  tooltip: { visible: boolean; x: number; y: number; node: any | null };
+  setTooltip: (tooltip: {
+    visible: boolean;
+    x: number;
+    y: number;
+    node: any | null;
+  }) => void;
 }
 
 const SlidesContext = createContext<SlidesContextType>({
@@ -37,6 +44,8 @@ const SlidesContext = createContext<SlidesContextType>({
   setSelectedTextId: () => {},
   selectedShapeIndex: null,
   setSelectedShapeIndex: () => {},
+  tooltip: { visible: false, x: 0, y: 0, node: null },
+  setTooltip: () => {},
 });
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
@@ -51,6 +60,12 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
     null
   );
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    x: 50,
+    y: 10,
+    node: null,
+  });
 
   const handleSetSlides = (newSlides: SlidesType) => {
     dispatch(setSlides(newSlides));
@@ -76,6 +91,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setSelectedTextId,
         selectedShapeIndex,
         setSelectedShapeIndex,
+        tooltip,
+        setTooltip,
       }}
     >
       {children}

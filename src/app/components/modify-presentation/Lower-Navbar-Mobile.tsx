@@ -48,6 +48,7 @@ const SideNavBar = ({
           flexDirection: "row",
           justifyContent: "center",
           py: 2,
+          zIndex: 1,
           boxSizing: "border-box",
           position: "fixed",
           bottom: 0,

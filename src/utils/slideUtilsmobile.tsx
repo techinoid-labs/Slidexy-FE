@@ -1,6 +1,6 @@
-export const SLIDE_WIDTH = 700;
-export const SLIDE_HEIGHT =500;
-export const LEFT_PADDING = 50;
+export const SLIDE_WIDTH = 500;
+export const SLIDE_HEIGHT =400;
+export const LEFT_PADDING = 17;
 
 export const getRandomSlide = () => {
   const titles: any = [
@@ -31,7 +31,7 @@ export const getRandomSlide = () => {
         text,
         konva_component: "Konva.Text",
         properties: {
-          fontSize: 18,
+          fontSize: 12,
           fontWeight: "",
           fontFamily: "",
           fill: "#444",
@@ -45,7 +45,7 @@ export const getRandomSlide = () => {
     slide_title: {
       text: titles[Math.floor(Math.random() * titles.length)],
       properties: {
-        fontSize: 30,
+        fontSize: 12,
         fontFamily: "",
         fill: "#000",
         fontStyle: "",

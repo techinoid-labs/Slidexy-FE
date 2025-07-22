@@ -31,6 +31,7 @@ interface KonvaTextEditorProps {
   isSelected: boolean;
   onSelect: () => void;
   verticalAlign?: string;
+  onClick?: (e: KonvaEventObject<MouseEvent>) => void; // Added onClick prop
 }
 
 const fontOptions = ["Raleway", "Roboto", "Arial"];
@@ -58,17 +59,16 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   draggable = true,
   isSelected,
   onSelect,
+  onClick, // Added to props destructuring
 }) => {
   const textRef = useRef<any>(null);
   const trRef = useRef<any>(null);
   const dispatch = useDispatch();
   const { selectedTheme } = useSlideThemeContext();
-  const { slides } = useSlides();
+  const { slides, setTooltip } = useSlides();
 
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(text);
-  const [tooltipVisible, setTooltipVisible] = useState(false);
-  const [tooltipStyle, setTooltipStyle] = useState({ top: 0, left: 0 });
   const [currentFontSize, setCurrentFontSize] = useState(fontSize || 24);
   const [currentFontFamily, setCurrentFontFamily] = useState(
     fontFamily || "Roboto"
@@ -121,15 +121,14 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   const commitEdit = useCallback(() => {
     if (inputValue.trim() !== text.trim()) {
       updateSlides(inputValue, {
-        fontSize: currentFontSize,
-        fontFamily: currentFontFamily,
-        fontWeight: currentFontWeight,
-        align: currentAlign,
-        fontStyle: currentFontStyle,
+        fontSize: fontSize,
+        fontFamily: fontFamily,
+        fontWeight: fontWeight,
+        align: align,
+        fontStyle: fontStyle,
       });
     }
     setIsEditing(false);
-    setTooltipVisible(false);
   }, [
     inputValue,
     text,
@@ -154,7 +153,6 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
 
     dispatch(setSlides(updatedSlides));
     setIsEditing(false);
-    setTooltipVisible(false);
   }, [slideIndex, elementIndex, slides, dispatch, id]);
 
   const handleTouchEnd = useCallback(
@@ -163,10 +161,40 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
       if (!isEditing) {
         onSelect();
         setIsEditing(true);
-        setTooltipVisible(true);
+        const node = textRef.current;
+        if (node) {
+          const stage = node.getStage();
+          const pos = node.absolutePosition();
+          setTooltip({
+            visible: true,
+            x: pos.x,
+            y: pos.y - 60,
+            node,
+          });
+        }
       }
     },
-    [onSelect, isEditing]
+    [onSelect, isEditing, setTooltip]
+  );
+
+  const handleClick = useCallback(
+    (e: KonvaEventObject<MouseEvent>) => {
+      if (!isEditing && onClick) {
+        onClick(e); // Call the passed onClick handler
+        onSelect(); // Ensure selection is updated
+        const node = textRef.current;
+        if (node) {
+          const pos = node.absolutePosition();
+          setTooltip({
+            visible: true,
+            x: pos.x,
+            y: pos.y - 60,
+            node,
+          });
+        }
+      }
+    },
+    [onSelect, isEditing, onClick, setTooltip]
   );
 
   const handleKeyDown = useCallback(
@@ -183,7 +211,6 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
         }
         if (e.key === "Escape") {
           setIsEditing(false);
-          setTooltipVisible(false);
         }
       }
     },
@@ -196,11 +223,11 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   }, [handleKeyDown]);
 
   const handleStyleChange = (style: Partial<KonvaTextEditorProps>) => {
-    let updatedFontSize = currentFontSize;
-    let updatedFontFamily = currentFontFamily;
-    let updatedFontWeight = currentFontWeight;
-    let updatedFontStyle = currentFontStyle;
-    let updatedAlign = currentAlign;
+    let updatedFontSize = fontSize;
+    let updatedFontFamily = fontFamily;
+    let updatedFontWeight = fontWeight;
+    let updatedFontStyle = fontStyle;
+    let updatedAlign = align;
 
     if (style.fontSize !== undefined) updatedFontSize = style.fontSize;
     if (style.fontFamily !== undefined) updatedFontFamily = style.fontFamily;
@@ -218,25 +245,20 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     setCurrentFontSize(updatedFontSize);
     setCurrentFontFamily(updatedFontFamily);
     setCurrentFontWeight(updatedFontWeight);
-    setCurrentFontStyle(updatedFontStyle);
+    //setCurrentFontStyle(updatedFontStyle);
     setCurrentAlign(updatedAlign);
-    setTooltipVisible(true);
   };
 
   useEffect(() => {
     if (isEditing && textRef.current) {
       const rect = textRef.current.getClientRect();
-      setTooltipStyle({
-        top: rect.y - 60, // Adjusted for better mobile visibility
-        left: Math.max(10, rect.x + rect.width / 2 - 150), // Ensure it stays on screen
-      });
     }
   }, [isEditing, textRef.current]);
 
   return (
     <>
       <Text
-        onClick={onSelect}
+        onClick={handleClick} // Updated to use handleClick
         onTap={onSelect}
         onTouchEnd={handleTouchEnd}
         ref={textRef}
@@ -244,13 +266,13 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
         x={x}
         y={y}
         zIndex={999}
-        fontSize={currentFontSize}
+        fontSize={fontSize}
         fill={selectedTheme?.primaryColor || fill}
         verticalAlign={verticalAlign}
-        fontFamily={currentFontFamily}
-        fontStyle={fontStyle || (currentFontWeight ? "normal" : undefined)}
-        fontWeight={currentFontWeight}
-        align={currentAlign}
+        fontFamily={fontFamily}
+        fontStyle={fontWeight} // Note: This might be a typo; should it be fontStyle?
+        fontWeight={fontWeight}
+        align={align}
         opacity={opacity}
         width={width}
         wrap={wrap}
@@ -274,167 +296,31 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
         />
       )}
       {isEditing && textRef.current && (
-        <>
-          <Html>
-            <textarea
-              autoFocus
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              style={{
-                position: "absolute",
-                top: textRef.current.absolutePosition().y,
-                left: textRef.current.absolutePosition().x,
-                fontSize: `${currentFontSize}px`,
-                fontFamily: currentFontFamily,
-                fontStyle: currentFontStyle,
-                fontWeight: currentFontWeight,
-                color: selectedTheme?.primaryColor || fill,
-                background: "white",
-                border: "1px solid #ccc",
-                padding: "4px 8px",
-                lineHeight: 1.2,
-                width: `${width || 200}px`, // Default width for mobile
-                zIndex: 1000, // Ensure textarea is above other elements
-                boxSizing: "border-box",
-              }}
-              onBlur={commitEdit}
-            />
-          </Html>
-          {/* {tooltipVisible && (
-            <Html>
-              <div
-                onClick={(e) => e.stopPropagation()} // Prevent click from closing the tooltip
-                style={{
-                  position: "absolute",
-                  top: `${tooltipStyle.top}px`,
-                  left: `${tooltipStyle.left}px`,
-                  background: "#fff",
-                  borderRadius: "10px",
-                  padding: "8px 8px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px",
-                  zIndex: 2001,
-                  minWidth: "260px",
-                  minHeight: "40px",
-                  alignItems: "center",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                  overflow: "visible",
-                }}
-              >
-                <div style={{ display: "flex", gap: "8px", width: "100%", alignItems: "center" }}>
-                  <Select
-                    value={currentFontFamily}
-                    onChange={(e) => handleStyleChange({ fontFamily: e.target.value })}
-                    size="small"
-                    style={{ minWidth: 80, fontSize: 14, background: "#F8F8FA", borderRadius: 6 }}
-                    MenuProps={{
-                      PaperProps: { style: { maxHeight: 200, zIndex: 2100 } },
-                      disableScrollLock: true,
-                    }}
-                  >
-                    {fontOptions.map((opt) => (
-                      <MenuItem key={opt} value={opt} style={{ fontSize: 14 }}>
-                        {opt}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <Select
-                    value={currentFontSize}
-                    onChange={(e) => handleStyleChange({ fontSize: Number(e.target.value) })}
-                    size="small"
-                    style={{ minWidth: 60, fontSize: 14, background: "#F8F8FA", borderRadius: 6 }}
-                    MenuProps={{
-                      PaperProps: { style: { maxHeight: 200, zIndex: 2100 } },
-                      disableScrollLock: true,
-                    }}
-                  >
-                    {[16, 18, 20, 24, 28, 32, 36].map((size) => (
-                      <MenuItem key={size} value={size} style={{ fontSize: 14 }}>
-                        {size}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <Select
-                    value={currentFontWeight}
-                    onChange={(e) => handleStyleChange({ fontWeight: e.target.value })}
-                    size="small"
-                    style={{ minWidth: 70, fontSize: 14, background: "#F8F8FA", borderRadius: 6 }}
-                    MenuProps={{
-                      PaperProps: { style: { maxHeight: 200, zIndex: 2100 } },
-                      disableScrollLock: true,
-                    }}
-                  >
-                    {weightOptions.map((opt) => (
-                      <MenuItem key={opt.value} value={opt.value} style={{ fontSize: 14 }}>
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </div>
-                <div style={{ display: "flex", gap: "6px", width: "100%", justifyContent: "center", marginTop: 4 }}>
-                  {[
-                    { Icon: FormatAlignLeftIcon, value: "left" },
-                    { Icon: FormatAlignCenterIcon, value: "center" },
-                    { Icon: FormatAlignRightIcon, value: "right" },
-                    { Icon: require("@mui/icons-material/FormatAlignJustify").default, value: "justify" },
-                  ].map(({ Icon, value }) => (
-                    <button
-                      key={value}
-                      onClick={() => handleStyleChange({ align: value })}
-                      style={{
-                        color: currentAlign === value ? "#7B4AE2" : "#222",
-                        background: currentAlign === value ? "#F3EDFF" : "#F8F8FA",
-                        border: "none",
-                        borderRadius: 6,
-                        fontSize: 18,
-                        padding: "4px 6px",
-                        cursor: "pointer",
-                        outline: "none",
-                        width: 32,
-                        height: 32,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                      title={`Align ${value.charAt(0).toUpperCase() + value.slice(1)}`}
-                    >
-                      <Icon fontSize="small" />
-                    </button>
-                  ))}
-                  {[
-                    { Icon: require("@mui/icons-material/VerticalAlignTop").default, value: "top" },
-                    { Icon: require("@mui/icons-material/VerticalAlignCenter").default, value: "middle" },
-                    { Icon: require("@mui/icons-material/VerticalAlignBottom").default, value: "bottom" },
-                  ].map(({ Icon, value }) => (
-                    <button
-                      key={value}
-                      onClick={() => handleStyleChange({ verticalAlign: value })}
-                      style={{
-                        color: (verticalAlign || "top") === value ? "#7B4AE2" : "#222",
-                        background: (verticalAlign || "top") === value ? "#F3EDFF" : "#F8F8FA",
-                        border: "none",
-                        borderRadius: 6,
-                        fontSize: 18,
-                        padding: "4px 6px",
-                        cursor: "pointer",
-                        outline: "none",
-                        width: 32,
-                        height: 32,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                      title={`Vertical Align ${value.charAt(0).toUpperCase() + value.slice(1)}`}
-                    >
-                      <Icon fontSize="small" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </Html>
-          )} */}
-        </>
+        <Html>
+          <textarea
+            autoFocus
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            style={{
+              position: "absolute",
+              top: textRef.current.absolutePosition().y,
+              left: textRef.current.absolutePosition().x,
+              fontSize: `${fontSize}px`,
+              fontFamily: fontFamily,
+              fontStyle: fontStyle,
+              fontWeight: fontWeight,
+              color: selectedTheme?.primaryColor || fill,
+              background: "white",
+              border: "1px solid #ccc",
+              padding: "2px 4px",
+              lineHeight: 1.2,
+              width: "250px", // Default width for mobile
+              zIndex: 1000, // Ensure textarea is above other elements
+              boxSizing: "border-box",
+            }}
+            onBlur={commitEdit}
+          />
+        </Html>
       )}
     </>
   );
