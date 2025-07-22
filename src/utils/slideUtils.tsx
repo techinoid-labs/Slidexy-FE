@@ -48,26 +48,25 @@ export const getRandomSlide = () => {
         fontSize: 24,
         fontFamily: "",
         fill: "#000",
-        fontStyle: "",
+        fontWeight: "bold",
       },
     },
-    elements: getRandomBullets(3),
+    elements: [
+      ...getRandomBullets(3),
+      {
+        element_type: "image",
+        konva_component: "Konva.Image",
+        properties: {
+          imageSrc: "/images/create-presentation/new-slide-img.png",
+          x: SLIDE_WIDTH - 500,
+          y: (SLIDE_HEIGHT - 400) / 2,
+          width: 480,
+          height: 400,
+        },
+      },
+    ],
     image_url: "/images/create-presentation/new-slide-img.png",
   };
-  // return {
-  //   slide_id: `slide-${Date.now()}`,
-  //   slide_title: {
-  //     text: "",
-  //     properties: {
-  //       fontSize: 24,
-  //       fontFamily: "Arial",
-  //       fill: "#000",
-  //       fontStyle: "normal",
-  //     },
-  //   },
-  //   elements: [],
-  //   image_url: null,
-  // };
 };
 
 export const getLayoutProps = (layout: number) => {

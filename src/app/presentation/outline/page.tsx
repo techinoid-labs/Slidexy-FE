@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import type { Slide } from "@/app/slice/slidesSlice";
 import StepIndicator from "@/app/components/shared/StepIndicator";
 import StepsHeader from "@/app/components/shared/StepsHeader";
-
+import { SLIDE_WIDTH, SLIDE_HEIGHT } from "@/utils/slideUtils";
 // API response type and map helper
 export interface SlideApiResponse {
   slide_id: string;
@@ -42,20 +42,37 @@ function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
 }
 
 // Map UI cards back to Redux Slide[] format
+// function mapCardsToSlides(cards: any[]): Slide[] {
+//   return cards.map((card, index) => ({
+//     slide_id: `slide-${index + 1}`,
+//     slide_title: {
+//       text: card.title,
+//       konva_component: "Konva.Text",
+//       properties: {
+//         fontSize: 32,
+//         fontFamily: "Inter",
+//         fill: "#333",
+//         fontStyle: "bold",
+//       },
+//     },
+//     elements: (card.bullets || []).map((text: string) => ({
+//       element_type: "bullet_point",
+//       text,
+//       konva_component: "Konva.Text",
+//       properties: {
+//         fontSize: 18,
+//         fontFamily: "Inter",
+//         fill: "#444",
+//         fontStyle: "normal",
+//       },
+//     })),
+//     image_url: card.images?.[0] || null,
+//     image_caption: "",
+//   }));
+// }
 function mapCardsToSlides(cards: any[]): Slide[] {
-  return cards.map((card, index) => ({
-    slide_id: `slide-${index + 1}`,
-    slide_title: {
-      text: card.title,
-      konva_component: "Konva.Text",
-      properties: {
-        fontSize: 32,
-        fontFamily: "Inter",
-        fill: "#333",
-        fontStyle: "bold",
-      },
-    },
-    elements: (card.bullets || []).map((text: string) => ({
+  return cards.map((card, index) => {
+    const bulletElements = (card.bullets || []).map((text: string) => ({
       element_type: "bullet_point",
       text,
       konva_component: "Konva.Text",
@@ -65,10 +82,41 @@ function mapCardsToSlides(cards: any[]): Slide[] {
         fill: "#444",
         fontStyle: "normal",
       },
-    })),
-    image_url: card.images?.[0] || null,
-    image_caption: "",
-  }));
+    }));
+
+    const imageElement = card.images?.[0]
+      ? [
+          {
+            element_type: "image",
+            konva_component: "Konva.Image",
+            properties: {
+              imageSrc: card.images[0],
+              x: SLIDE_WIDTH - 500,
+              y: (SLIDE_HEIGHT - 400) / 2,
+              width: 480,
+              height: 400,
+            },
+          },
+        ]
+      : [];
+
+    return {
+      slide_id: `slide-${index + 1}`,
+      slide_title: {
+        text: card.title,
+        konva_component: "Konva.Text",
+        properties: {
+          fontSize: 32,
+          fontFamily: "Inter",
+          fill: "#333",
+          fontStyle: "bold",
+        },
+      },
+      elements: [...bulletElements, ...imageElement],
+      image_url: card.images?.[0] || null,
+      image_caption: "",
+    };
+  });
 }
 
 export default function OutlinePage() {

@@ -41,7 +41,7 @@ const SlidesContext = createContext<SlidesContextType>({
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch();
-  const slides = useSelector((state: RootState) => state.slidesData.slides);
+  const slides = useSelector((state: any) => state.slidesData.slides);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<any | null>(null);

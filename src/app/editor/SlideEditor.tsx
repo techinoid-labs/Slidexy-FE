@@ -25,7 +25,6 @@ const IMAGE_PADDING = 20;
 const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
 
 const SlideEditor = ({ slides = [], stageRefs }: any) => {
-  const dispatch = useDispatch();
   const {
     selectedImageIndex,
     setSelectedImageIndex,
@@ -60,44 +59,44 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     }
   };
 
-  useEffect(() => {
-    if (!slides || slides.length === 0) return;
+  // useEffect(() => {
+  //   if (!slides || slides.length === 0) return;
 
-    const normalizedSlides = slides.map((slide: any) => {
-      if (
-        slide.image_url &&
-        !slide.elements?.some(
-          (el: any) =>
-            el.element_type === "image" &&
-            el.konva_component === "Konva.Image" &&
-            el.properties.imageSrc === slide.image_url
-        )
-      ) {
-        const defaultImageElement = {
-          element_type: "image",
-          konva_component: "Konva.Image",
-          element_id: uuidv4(),
-          properties: {
-            imageSrc: slide.image_url,
-            x: SLIDE_WIDTH - 480,
-            y: (SLIDE_HEIGHT - 400) / 2,
-            width: 480,
-            height: 400,
-          },
-        };
-        return {
-          ...slide,
-          elements: [...(slide.elements || []), defaultImageElement],
-          image_url: null,
-        };
-      }
-      return slide;
-    });
+  //   const normalizedSlides = slides.map((slide: any) => {
+  //     if (
+  //       slide.image_url &&
+  //       !slide.elements?.some(
+  //         (el: any) =>
+  //           el.element_type === "image" &&
+  //           el.konva_component === "Konva.Image" &&
+  //           el.properties.imageSrc === slide.image_url
+  //       )
+  //     ) {
+  //       const defaultImageElement = {
+  //         element_type: "image",
+  //         konva_component: "Konva.Image",
+  //         element_id: uuidv4(),
+  //         properties: {
+  //           imageSrc: slide.image_url,
+  //           x: SLIDE_WIDTH - 480,
+  //           y: (SLIDE_HEIGHT - 400) / 2,
+  //           width: 480,
+  //           height: 400,
+  //         },
+  //       };
+  //       return {
+  //         ...slide,
+  //         elements: [...(slide.elements || []), defaultImageElement],
+  //         // image_url: null,
+  //       };
+  //     }
+  //     return slide;
+  //   });
 
-    if (JSON.stringify(slides) !== JSON.stringify(normalizedSlides)) {
-      setSlides(normalizedSlides);
-    }
-  }, [slides]);
+  //   if (JSON.stringify(slides) !== JSON.stringify(normalizedSlides)) {
+  //     setSlides(normalizedSlides);
+  //   }
+  // }, [slides]);
 
   return (
     <main

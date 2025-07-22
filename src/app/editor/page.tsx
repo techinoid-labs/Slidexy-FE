@@ -73,10 +73,17 @@ const Page = () => {
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         {isMobile ? (
           <>
-            <LowerNavbarMobile showTemplatePanel={showTemplatePanel} setShowTemplatePanel={setShowTemplatePanel} />
-            <MobileSlideEditor slides={slides} stageRefs={stageRefs} setIsMobileTextSelected={setIsMobileTextSelected} />
+            <LowerNavbarMobile
+              showTemplatePanel={showTemplatePanel}
+              setShowTemplatePanel={setShowTemplatePanel}
+            />
+            <MobileSlideEditor
+              slides={slides}
+              stageRefs={stageRefs}
+              setIsMobileTextSelected={setIsMobileTextSelected}
+            />
             {/* Only show mobile text panel on mobile */}
-            {(isTextSelected) && <TextSettingsPanelMobile resetAll={resetAll} />}
+            {isTextSelected && <TextSettingsPanelMobile resetAll={resetAll} />}
           </>
         ) : (
           <>
@@ -86,9 +93,13 @@ const Page = () => {
             />
             <SlideEditor slides={slides} stageRefs={stageRefs} />
             {/* Only show web text panel on desktop */}
-            {(isTextSelected || isShapeSelected) && <TextSettingsPanel resetAll={resetAll} />}
+            {(isTextSelected || isShapeSelected) && (
+              <TextSettingsPanel resetAll={resetAll} />
+            )}
             {isImageSelected && <ImageSettingsPanel />}
-            {!isTextSelected && !isShapeSelected && !isImageSelected && <ThemePanel resetAll={resetAll} />}
+            {!isTextSelected && !isShapeSelected && !isImageSelected && (
+              <ThemePanel resetAll={resetAll} />
+            )}
           </>
         )}
       </div>
