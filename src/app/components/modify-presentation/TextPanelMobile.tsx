@@ -9,13 +9,14 @@ import {
   MenuItem,
   Typography,
 } from "@mui/material";
-import SettingsIcon from "@mui/icons-material/Settings";
 import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
 import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
 import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
-import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
+import { v4 as uuidv4 } from "uuid";
 
 const fontOptions = ["Raleway", "Roboto", "Arial"];
 const weightOptions = [
@@ -25,12 +26,14 @@ const weightOptions = [
 ];
 
 interface TextSettingsPanelProps {
-  sidebarHeight?: string | number;
-  resetAll?: () => void;
+  onClose: () => void;
+  style: React.CSSProperties;
+  resetAll?: () => void; // Optional if not always required
 }
 
 const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
-  sidebarHeight = "100vh",
+  onClose,
+  style,
 }) => {
   const {
     slides,
@@ -48,8 +51,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
   const elementIndex = parsed?.[2]
     ? parseInt(parsed[2], 10)
     : selectedShapeIndex !== null
-    ? selectedShapeIndex
-    : null;
+      ? selectedShapeIndex
+      : null;
 
   let textObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex]) {
@@ -60,27 +63,23 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     }
   }
 
-  const [currentFontSize, setCurrentFontSize] = useState(
-    textObj?.properties?.fontSize ?? 24
-  );
-  const [currentFontFamily, setCurrentFontFamily] = useState(
-    textObj?.properties?.fontFamily ?? "Roboto"
-  );
-  const [currentFontWeight, setCurrentFontWeight] = useState(
-    textObj?.properties?.fontWeight ?? "normal"
-  );
-  const [currentAlign, setCurrentAlign] = useState(
-    textObj?.properties?.align ?? "left"
-  );
+  if (!textObj) return null;
 
-  useEffect(() => {
-    if (textObj) {
-      setCurrentFontSize(textObj.properties?.fontSize ?? 24);
-      setCurrentFontFamily(textObj.properties?.fontFamily ?? "Roboto");
-      setCurrentFontWeight(textObj.properties?.fontWeight ?? "normal");
-      setCurrentAlign(textObj.properties?.align ?? "left");
-    }
-  }, [textObj, selectedTextId]);
+  const rawProps = textObj.properties || {};
+
+  const fontSize = rawProps.fontSize ?? 24;
+  const fontFamily = fontOptions.includes(rawProps.fontFamily)
+    ? rawProps.fontFamily
+    : "Roboto";
+  const fill = rawProps.fill ?? "#000000";
+  const fontWeight = weightOptions.some((w) => w.value === rawProps.fontWeight)
+    ? rawProps.fontWeight
+    : "normal";
+  const align = rawProps.align ?? "left";
+  const opacity = rawProps.opacity ?? 1;
+  const verticalAlign = rawProps.verticalAlign ?? "top";
+  const originalX = rawProps.x ?? 0; // Preserve original x position
+  const originalY = rawProps.y ?? 0; // Preserve original y position
 
   const updateTextProperty = (prop: string, value: any) => {
     if (!textObj || slideIndex === -1) return;
@@ -88,177 +87,261 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     const target: any = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title.properties
       : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex].properties
-      : null;
-    if (target) {
-      target[prop] = value;
-      setSlides(updatedSlides);
-      if (prop === "fontSize") setCurrentFontSize(value);
-      if (prop === "fontFamily") setCurrentFontFamily(value);
-      if (prop === "fontWeight") setCurrentFontWeight(value);
-      if (prop === "align") setCurrentAlign(value);
-    }
+        ? updatedSlides[slideIndex].elements[elementIndex].properties
+        : null;
+    if (target) target[prop] = value;
+    setSlides(updatedSlides);
   };
 
-  if (!textObj) return null;
+  const toggleBulletPoint = () => {
+    if (!textObj || slideIndex === -1) return;
 
+    const bulletPrefix = "• ";
+    const updatedSlides = structuredClone(slides);
+    let target = selectedTextId?.startsWith("title")
+      ? updatedSlides[slideIndex].slide_title
+      : elementIndex !== null
+        ? updatedSlides[slideIndex].elements[elementIndex]
+        : null;
+
+    if (!target) return;
+
+    const lines = (target.text || "").split("\n").map(line => line.trim());
+    let newText = "";
+
+    // Handle empty text
+    if (!lines.join("").trim()) {
+      newText = "• [Click to edit]";
+    } else if (lines.every(line => line.startsWith(bulletPrefix))) {
+      // Remove bullets from all lines
+      newText = lines.map(line => line.substring(bulletPrefix.length).trim()).join("\n");
+    } else {
+      // Add bullets to all lines
+      newText = lines.map(line => bulletPrefix + line).join("\n");
+    }
+
+    target.text = newText;
+    // Explicitly preserve original position
+    if (target.properties) {
+      target.properties.x = originalX;
+      target.properties.y = originalY;
+    }
+    setSlides(updatedSlides);
+  };
+
+  const unbulletText = () => {
+    if (!textObj || slideIndex === -1) return;
+
+    const bulletPrefix = "• ";
+    const updatedSlides = structuredClone(slides);
+    let target = selectedTextId?.startsWith("title")
+      ? updatedSlides[slideIndex].slide_title
+      : elementIndex !== null
+        ? updatedSlides[slideIndex].elements[elementIndex]
+        : null;
+
+    if (!target) return;
+
+    const lines = (target.text || "").split("\n").map(line => line.trim());
+    let newText = lines.join("\n"); // Default to original text
+
+    if (lines.some(line => line.startsWith(bulletPrefix))) {
+      // Remove bullets from all lines
+      newText = lines.map(line => line.startsWith(bulletPrefix) ? line.substring(bulletPrefix.length).trim() : line).join("\n");
+    }
+
+    target.text = newText;
+    // Explicitly preserve original position
+    if (target.properties) {
+      target.properties.x = originalX;
+      target.properties.y = originalY;
+    }
+    setSlides(updatedSlides);
+  };
+
+  const updateTextContent = (value: string) => {
+    if (!textObj || slideIndex === -1) return;
+    const updatedSlides = structuredClone(slides);
+    if (selectedTextId?.startsWith("title")) {
+      updatedSlides[slideIndex].slide_title.text = value;
+    } else if (elementIndex !== null) {
+      updatedSlides[slideIndex].elements[elementIndex].text = value;
+    }
+    setSlides(updatedSlides);
+  };
+
+  const setTextFillAndDisableTheme = (color: string) => {
+    const updatedSlides = structuredClone(slides);
+    const el = selectedTextId?.startsWith("title")
+      ? updatedSlides[slideIndex].slide_title
+      : elementIndex !== null
+        ? updatedSlides[slideIndex].elements[elementIndex]
+        : null;
+
+    if (!el) return;
+    el.properties.fill = color;
+    el.useThemeColor = false;
+    setSlides(updatedSlides);
+  };
+
+  const [isBulleted, setIsBulleted] = useState(false);
+
+  const handleToggle = () => {
+    if (isBulleted) {
+      unbulletText();
+    } else {
+      toggleBulletPoint();
+    }
+    setIsBulleted(!isBulleted);
+  }
   return (
     <Box
-      className="w-[410px] min-w-[350px] md:min-w-[410px] bg-white flex flex-col overflow-y-auto border-r border-gray-200"
-      sx={{ height: sidebarHeight }}
+      sx={{
+        ...style,
+        position: "absolute",
+        backgroundColor: "#1a1a1a",
+        borderRadius: "5px",
+        padding: "4px 4px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "2px",
+        zIndex: 2,
+        minWidth: "50px",
+        minHeight: "10px",
+        alignItems: "center",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+        overflow: "visible",
+      }}
     >
-      {/* Tabs */}
-      <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
-        {/* <Box
-          sx={{
-            bgcolor: "#F5F5F5",
-            color: "#222",
-            fontWeight: 600,
-            borderRadius: 2,
-            px: 2.5,
-            py: 1,
-            fontSize: 15,
-            mr: 2,
-          }}
-        >
-          Settings
-        </Box>
-        <Box
-          sx={{
-            color: "#888",
-            fontWeight: 500,
-            fontSize: 15,
-            mr: 2,
-            py: 1,
-            cursor: "pointer",
-          }}
-        >
-          Animate
-        </Box> */}
-        {/* <Box sx={{ flex: 1 }} />
+      <Box
+        sx={{
+          display: "flex",
+          gap: "2px",
+          width: "300px",
+          height: "30px",
+          alignItems: "center",
+        }}
+      >
         <Select
-          value={50}
+          value={fontFamily}
+          onChange={(e) => updateTextProperty("fontFamily", e.target.value)}
           size="small"
           sx={{
-            fontSize: 15,
-            bgcolor: "#F5F5F5",
-            borderRadius: 2,
-            width: 70,
-            height: 32,
+            minWidth: 40,
+            minHeight: 20,
+            fontSize: 10,
+            backgroundColor: "#F8F8FA",
           }}
-          displayEmpty
-          inputProps={{ "aria-label": "Percentage" }}
+          MenuProps={{
+            PaperProps: { sx: { maxHeight: 200, zIndex: 2100 } },
+            disableScrollLock: true,
+          }}
         >
-          <MenuItem value={50}>50%</MenuItem>
-          <MenuItem value={75}>75%</MenuItem>
-          <MenuItem value={100}>100%</MenuItem>
+          {fontOptions.map((opt) => (
+            <MenuItem key={opt} value={opt} sx={{ fontSize: 14 }}>
+              {opt}
+            </MenuItem>
+          ))}
         </Select>
-      </Box> *?/}
-
-      {/* <Divider sx={{ my: 2 }} /> */}
-
-        {/* Text Settings */}
-        <Box sx={{ px: 3, mb: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-            <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
-              Text
-            </Typography>
-            <IconButton size="small">
-              <SettingsIcon />
-            </IconButton>
+        <Select
+          value={fontSize}
+          onChange={(e) =>
+            updateTextProperty("fontSize", Number(e.target.value))
+          }
+          size="small"
+          sx={{
+            minWidth: 40,
+            minHeight: 2,
+            fontSize: 10,
+            backgroundColor: "#F8F8FA",
+          }}
+          MenuProps={{
+            PaperProps: { sx: { maxHeight: 200, zIndex: 2100 } },
+            disableScrollLock: true,
+          }}
+        >
+          {[16, 18, 20, 24, 28, 32, 36].map((size) => (
+            <MenuItem key={size} value={size} sx={{ fontSize: 14 }}>
+              {size}
+            </MenuItem>
+          ))}
+        </Select>
+        <Select
+          value={fontWeight}
+          onChange={(e) => updateTextProperty("fontWeight", e.target.value)}
+          size="small"
+          sx={{
+            minWidth: 30,
+            fontSize: 10,
+            minHeight: 20,
+            backgroundColor: "#F8F8FA",
+          }}
+          MenuProps={{
+            PaperProps: { sx: { maxHeight: 200, zIndex: 2100 } },
+            disableScrollLock: true,
+          }}
+        >
+          {weightOptions.map((opt) => (
+            <MenuItem
+              key={opt.value}
+              value={opt.value}
+              sx={{ fontSize: 14 }}
+            >
+              {opt.label}
+            </MenuItem>
+          ))}
+        </Select>
+        {[
+          { Icon: FormatAlignLeftIcon, value: "left" },
+          { Icon: FormatAlignCenterIcon, value: "center" },
+          { Icon: FormatAlignRightIcon, value: "right" },
+        ].map(({ Icon, value }) => (
+          <Box
+            component="button"
+            key={value}
+            onClick={() => updateTextProperty("align", value)}
+            sx={{
+              color: "#222",
+              backgroundColor: "#F8F8FA",
+              border: "none",
+              fontSize: 18,
+              padding: "4px 6px",
+              cursor: "pointer",
+              outline: "none",
+              width: 27,
+              height: 27,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            title={`Align ${value.charAt(0).toUpperCase() + value.slice(1)}`}
+          >
+            <Icon fontSize="small" />
           </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-            {/* Bold Icon */}
-            <IconButton
-              size="small"
-              onClick={() =>
-                updateTextProperty(
-                  "fontWeight",
-                  currentFontWeight === "bold" ? "normal" : "bold"
-                )
-              }
-              sx={{ p: 0.5 }}
-            >
-              <FormatAlignLeftIcon /> {/* Placeholder for Bold icon */}
-            </IconButton>
-            {/* Italic Icon */}
-            <IconButton
-              size="small"
-              onClick={() =>
-                updateTextProperty(
-                  "fontStyle",
-                  currentFontWeight === "italic" ? "normal" : "italic"
-                )
-              }
-              sx={{ p: 0.5 }}
-            >
-              <FormatAlignCenterIcon /> {/* Placeholder for Italic icon */}
-            </IconButton>
-            {/* Font Family Dropdown */}
-            <Select
-              value={currentFontFamily}
-              onChange={(e) => updateTextProperty("fontFamily", e.target.value)}
-              size="small"
-              sx={{ height: 36, width: 120, fontSize: 14 }}
-            >
-              {fontOptions.map((opt) => (
-                <MenuItem key={opt} value={opt}>
-                  {opt}
-                </MenuItem>
-              ))}
-            </Select>
-            {/* Font Size Dropdown */}
-            <Select
-              value={currentFontSize}
-              onChange={(e) =>
-                updateTextProperty("fontSize", Number(e.target.value))
-              }
-              size="small"
-              sx={{ height: 36, width: 80, fontSize: 14 }}
-            >
-              {[16, 18, 20, 24, 28, 32, 36].map((size) => (
-                <MenuItem key={size} value={size}>
-                  {size}
-                </MenuItem>
-              ))}
-            </Select>
-            {/* Align Left Icon */}
-            <IconButton
-              size="small"
-              onClick={() => updateTextProperty("align", "left")}
-              sx={{ p: 0.5 }}
-            >
-              <FormatAlignLeftIcon />
-            </IconButton>
-            {/* Align Center Icon */}
-            <IconButton
-              size="small"
-              onClick={() => updateTextProperty("align", "center")}
-              sx={{ p: 0.5 }}
-            >
-              <FormatAlignCenterIcon />
-            </IconButton>
-            {/* Align Right Icon */}
-            <IconButton
-              size="small"
-              onClick={() => updateTextProperty("align", "right")}
-              sx={{ p: 0.5 }}
-            >
-              <FormatAlignRightIcon />
-            </IconButton>
-            {/* Align Justify Icon */}
-            <IconButton
-              size="small"
-              onClick={() => updateTextProperty("align", "justify")}
-              sx={{ p: 0.5 }}
-            >
-              <FormatAlignJustifyIcon />
-            </IconButton>
-          </Box>
+        ))}
+        <Box
+          component="button"
+          onClick={handleToggle}
+          sx={{
+            color: "#222",
+            backgroundColor: isBulleted ? "#ebe8e8ff" : "#ffffff", // visually pressed
+            border: "1px solid transparent",
+            fontSize: 18,
+            padding: "2px 2px",
+            cursor: "pointer",
+            outline: "none",
+            width: 27,
+            height: 27,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 0,
+          }}
+          title={isBulleted ? "Remove Bullet Points" : "Add Bullet Points"}
+        >
+          <FormatListBulletedIcon fontSize="small" />
         </Box>
       </Box>
-      <Divider sx={{ my: 2 }} />
     </Box>
   );
 };

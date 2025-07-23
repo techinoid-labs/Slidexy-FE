@@ -4,13 +4,12 @@ import React, { useEffect, useState } from "react";
 import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 import { Box } from "@mui/material";
-import SlideImage from "./KonvaComponents/KonvaSlideImage";
+import SlideImage from "./KonvaComponents/KonvaSlideImageMobile";
 import KonvaTextEditor from "./KonvaComponents/KonvaTextEditorMobile";
 import { dummyData } from "./dummy";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import SlidePreviews from "./slidesPreview";
 import { useDispatch } from "react-redux";
-import { setSlides } from "../slice/slidesSlice";
 import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 import {
@@ -19,17 +18,14 @@ import {
   SLIDE_WIDTH,
   SLIDE_HEIGHT,
   LEFT_PADDING,
-} from "@/utils/slideUtilsmobile";
-
-const IMAGE_WIDTH = 200;
-const IMAGE_PADDING = 10;
-const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
-
-const MobileSlideEditor = ({
-  slides = [],
-  stageRefs,
-  setIsMobileTextSelected,
-}: any) => {
+} from "../../utils/slideUtilsmobile";
+import { v4 as uuidv4 } from "uuid";
+import TextSettingsPanelMobile from "../components/modify-presentation/TextPanelMobile";
+const IMAGE_WIDTH =  100;
+const IMAGE_PADDING = 5;
+const textMaxWidth = (SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING)-100;
+const textMaxHeight = SLIDE_HEIGHT - 60 - 20; 
+const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const dispatch = useDispatch();
   const {
     selectedImageIndex,
@@ -39,6 +35,9 @@ const MobileSlideEditor = ({
     setSelectedTextId,
     selectedShapeIndex,
     setSelectedShapeIndex,
+    setSlides,
+    tooltip,
+    setTooltip,
   } = useSlides();
   const { selectedTheme, selectedLayout } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
@@ -50,15 +49,15 @@ const MobileSlideEditor = ({
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
 
-    const newSlides = [...slides, newSlide];
-    dispatch(setSlides(newSlides));
+    const newSlides = [...slides, structuredClone(newSlide)];
+    setSlides(newSlides);
     setSelectedIndex(newSlides.length - 1);
   };
 
   const handleDeleteSlide = (index: number) => {
     const newSlides = [...slides];
     newSlides.splice(index, 1);
-    dispatch(setSlides(newSlides));
+    setSlides(newSlides);
     if (selectedIndex >= newSlides.length) {
       setSelectedIndex(Math.max(0, newSlides.length - 1));
     }
@@ -80,12 +79,13 @@ const MobileSlideEditor = ({
         const defaultImageElement = {
           element_type: "image",
           konva_component: "Konva.Image",
+          element_id: uuidv4(),
           properties: {
             imageSrc: slide.image_url,
-            x: SLIDE_WIDTH - 280,
-            y: (SLIDE_HEIGHT - 240) / 2,
+            x: SLIDE_WIDTH - 450,
+            y: (SLIDE_HEIGHT - 10) / 1.9,
             width: 200,
-            height: 200,
+            height: 150,
           },
         };
         return {
@@ -98,9 +98,9 @@ const MobileSlideEditor = ({
     });
 
     if (JSON.stringify(slides) !== JSON.stringify(normalizedSlides)) {
-      dispatch(setSlides(normalizedSlides));
+      setSlides(normalizedSlides);
     }
-  }, [slides, dispatch]);
+  }, [slides]);
 
   return (
     <main
@@ -115,7 +115,7 @@ const MobileSlideEditor = ({
         style={{
           flexGrow: 1,
           overflowY: "auto",
-          padding: 8,
+          padding: 16,
           display: "flex",
           justifyContent: "center",
         }}
@@ -123,12 +123,12 @@ const MobileSlideEditor = ({
         <Box
           sx={{
             position: "fixed",
-            top: 95,
-            width: 380,
-            height: 705,
+            top: 90,
+            width: 350,
+            height: 650,
             bgcolor: "#fff",
             border: "1px solid #E0E0E0",
-            // zIndex: 10,
+            zIndex: 0,
             boxShadow: 3,
             display: "flex",
             flexDirection: "column",
@@ -143,27 +143,26 @@ const MobileSlideEditor = ({
           {slides.map((slide: any, index: number) => {
             const title = slide.slide_title;
             const titleProps = title.properties;
-            const titleY = 15;
-            const bulletGap = 5;
-            const bulletStartY = titleY + titleProps.fontSize + 10;
+            const titleY = 60;
+            const bulletGap = 2;
+            const bulletStartY = titleY + titleProps.fontSize-50;
 
             return (
               <Box
                 key={slide.slide_id}
                 sx={{
-                  width: `${SLIDE_WIDTH / 2}px`,
-                  height: `${SLIDE_HEIGHT / 2}px`, // Corrected from / -5
+                  width: `${SLIDE_WIDTH}px`,
+                  height: `${SLIDE_HEIGHT}px`,
                   border: "1px solid #ccc",
                   backgroundColor: "#fff",
                   position: "relative",
-                  flexDirection: "column",
                   mb: 1,
-                  display: index === selectedIndex ? "flex" : "none",
+                  display: index === selectedIndex ? "block" : "none",
                 }}
               >
                 <Stage
-                  width={SLIDE_WIDTH / 2}
-                  height={SLIDE_HEIGHT / 2}
+                  width={SLIDE_WIDTH/1.5}
+                  height={SLIDE_HEIGHT/1.01}
                   ref={(ref: any) => {
                     stageRefs.current[index] =
                       ref?.getStage()?.content?.querySelector("canvas") || null;
@@ -173,19 +172,13 @@ const MobileSlideEditor = ({
                       e.target === e.target.getStage() ||
                       e.target.name() === "background";
                     if (clickedOnEmpty) {
+                      console.log("Stage width:", SLIDE_WIDTH/1.5);
                       setSelectedTextId(null);
-                      setIsMobileTextSelected(false);
                       setSelectedImageIndex(null);
                       setSelectedShapeIndex(null);
                       setSelectedImage(null);
+                      setTooltip({ visible: false, x: 0, y: 0, node: null });
                     }
-                  }}
-                  onTouchStart={() => {
-                    setSelectedTextId(null);
-                    setSelectedImageIndex(null);
-                    setSelectedShapeIndex(null);
-                    setSelectedImage(null);
-                    setIsMobileTextSelected(false);
                   }}
                 >
                   <Layer>
@@ -194,14 +187,14 @@ const MobileSlideEditor = ({
                         image={bgImage}
                         x={0}
                         y={0}
-                        width={SLIDE_WIDTH / 2}
-                        height={SLIDE_HEIGHT / 2}
+                        width={SLIDE_WIDTH}
+                        height={SLIDE_HEIGHT}
                         onClick={() => {
                           setSelectedTextId(null);
                           setSelectedImageIndex(null);
                           setSelectedShapeIndex(null);
                           setSelectedImage(null);
-                          setIsMobileTextSelected(false);
+                          setTooltip({ visible: false, x: 0, y: 0, node: null });
                         }}
                       />
                     ) : (
@@ -209,38 +202,50 @@ const MobileSlideEditor = ({
                         name="background"
                         x={0}
                         y={0}
-                        width={SLIDE_WIDTH / 2}
-                        height={SLIDE_HEIGHT / 2}
+                        width={SLIDE_WIDTH}
+                        height={SLIDE_HEIGHT}
                         fill={selectedTheme?.backgroundColor || "#fff"}
                       />
                     )}
 
                     {title.text && (
-                      <KonvaTextEditor
-                        id={`title-${index}`}
-                        text={title.text}
-                        x={LEFT_PADDING / 2}
-                        y={titleY}
-                        width={textMaxWidth / 2}
-                        wrap="word"
-                        fontSize={titleProps.fontSize / 2}
-                        fontWeight={titleProps.fontWeight}
-                        fontFamily={titleProps.fontFamily}
-                        opacity={titleProps.opacity}
-                        align={titleProps.align}
-                        verticalAlign={titleProps.verticalAlign}
-                        fill={selectedTheme?.primaryColor || titleProps.fill}
-                        fontStyle={titleProps.fontStyle}
-                        isSelected={selectedTextId === `title-${index}`}
-                        onSelect={() => {
-                          setSelectedTextId(`title-${index}`);
-                          setSelectedImageIndex(null);
-                          setSelectedShapeIndex(null);
-                          setSelectedImage(null);
-                          if (setIsMobileTextSelected)
-                            setIsMobileTextSelected(true);
-                        }}
-                      />
+                      <>
+                        <KonvaTextEditor
+                          id={`title-${index}`}
+                          text={title.text}
+                          x={LEFT_PADDING}
+                          y={titleY}
+                          width={textMaxWidth}
+                          wrap="word"
+                          fontSize={titleProps.fontSize}
+                          fontWeight={titleProps.fontWeight}
+                          fontFamily={titleProps.fontFamily}
+                          opacity={titleProps.opacity}
+                          align={titleProps.align}
+                          verticalAlign={titleProps.verticalAlign}
+                          fill={
+                            !title.useThemeColor
+                              ? titleProps.fill
+                              : selectedTheme?.primaryColor ?? "#000"
+                          }
+                          fontStyle={titleProps.fontStyle}
+                          isSelected={selectedTextId === `title-${index}`}
+                          onSelect={() => {
+                            setSelectedTextId(`title-${index}`);
+                            setSelectedImageIndex(null);
+                            setSelectedShapeIndex(null);
+                            setSelectedImage(null);
+                          }}
+                          onClick={() => {
+                            setTooltip({
+                              visible: true,
+                              x: tooltip.x,
+                              y: tooltip.y,
+                              node: null,
+                            });
+                          }}
+                        />
+                      </>
                     )}
                     {slide.elements.map((el: any, i: number) => {
                       if (el.element_type !== "text") return null;
@@ -250,16 +255,18 @@ const MobileSlideEditor = ({
                           key={`el-${index}-${i}`}
                           id={`el-${index}-${i}`}
                           text={el.text}
-                          x={el.properties.x / 2 || LEFT_PADDING / 2}
-                          y={el.properties.y / 2 || 150}
-                          width={el.properties.width / 2 || textMaxWidth / 2}
+                          x={el.properties.x || LEFT_PADDING}
+                          y={el.properties.y || 300}
+                          width={el.properties.width || textMaxWidth}
                           opacity={el.properties.opacity}
                           align={el.properties.align}
                           verticalAlign={el.properties.verticalAlign}
                           wrap="word"
-                          fontSize={el.properties.fontSize / 2}
+                          fontSize={el.properties.fontSize}
                           fill={
-                            selectedTheme?.primaryColor || el.properties.fill
+                            !el.useThemeColor
+                              ? el.properties.fill
+                              : selectedTheme?.primaryColor
                           }
                           fontStyle={el.properties.fontStyle}
                           fontWeight={el.properties.fontWeight}
@@ -270,28 +277,33 @@ const MobileSlideEditor = ({
                             setSelectedImageIndex(null);
                             setSelectedShapeIndex(null);
                             setSelectedImage(null);
-                            if (setIsMobileTextSelected)
-                              setIsMobileTextSelected(true);
+                          }}
+                          onClick={() => {
+                            setTooltip({
+                              visible: true,
+                              x: 10,
+                              y: 10,
+                              node: null,
+                            });
                           }}
                         />
                       );
                     })}
 
                     {(() => {
-                      let currentY = bulletStartY / 2 + 35;
+                      let currentY = bulletStartY + 70;
 
                       return slide.elements
                         .filter((el: any) => el.element_type === "bullet_point")
                         .map((el: any, i: number) => {
                           const isBullet = el.element_type === "bullet_point";
-                          const fontSize = el.properties.fontSize / 2;
+                          const fontSize = el.properties.fontSize;
                           const fontFamily =
                             selectedTheme?.font || el.properties.fontFamily;
                           const lineHeight = 1.2;
                           const bulletText = isBullet ? `${el.text}` : el.text;
 
-                          const textWidth =
-                            (textMaxWidth - (isBullet ? 10 : 0)) / 2;
+                          const textWidth = textMaxWidth - (isBullet ? 20 : 0);
                           const canvas = document.createElement("canvas");
                           const context = canvas.getContext("2d");
                           context!.font = `${fontSize}px ${fontFamily}`;
@@ -318,20 +330,21 @@ const MobileSlideEditor = ({
                               key={`el-${index}-${i}`}
                               id={`el-${index}-${i}`}
                               text={bulletText}
-                              x={LEFT_PADDING / 2 + (isBullet ? 10 : 0)}
+                              x={LEFT_PADDING + (isBullet ? 20 : 0)}
                               y={currentY}
                               opacity={el.properties.opacity}
                               align={el.properties.align}
                               width={textWidth}
                               wrap="word"
                               fontSize={fontSize}
-                              fontFamily={el.properties.fontFamily}
-                              // fontFamily={fontFamily}
+                              fontFamily={fontFamily}
                               fill={
-                                selectedTheme?.primaryColor ||
-                                el.properties.fill
+                                !el.useThemeColor
+                                  ? el.properties.fill
+                                  : selectedTheme?.primaryColor
                               }
                               fontStyle={el.properties.fontStyle}
+                              fontWeight={el.properties.fontWeight}
                               isSelected={selectedTextId === `el-${index}-${i}`}
                               onSelect={() => {
                                 setSelectedTextId(`el-${index}-${i}`);
@@ -339,10 +352,18 @@ const MobileSlideEditor = ({
                                 setSelectedShapeIndex(null);
                                 setSelectedImage(null);
                               }}
+                              onClick={() => {
+                                setTooltip({
+                                  visible: true,
+                                  x: 0,
+                                  y: 0,
+                                  node: null,
+                                });
+                              }}
                             />
                           );
 
-                          currentY += height + bulletGap / 2;
+                          currentY += height + bulletGap;
                           return editor;
                         });
                     })()}
@@ -355,6 +376,7 @@ const MobileSlideEditor = ({
                         setSelectedTextId(null);
                         setSelectedImageIndex(null);
                         setSelectedImage(null);
+                        setTooltip({ visible: false, x: 0, y: 0, node: null });
                       }}
                     />
                     {slide.elements.map((el: any, i: number) => {
@@ -366,16 +388,22 @@ const MobileSlideEditor = ({
                           <SlideImage
                             key={`image-${i}`}
                             imageSrc={el.properties.imageSrc}
-                            x={el.properties.x / 2}
-                            y={el.properties.y / 2}
-                            width={el.properties.width / 2}
-                            height={el.properties.height / 2}
+                            x={el.properties.x}
+                            y={el.properties.y}
+                            width={el.properties.width}
+                            height={el.properties.height}
                             isSelected={selectedImageIndex === i}
                             onSelect={() => {
                               setSelectedImage({ ...el });
                               setSelectedImageIndex(i);
                               setSelectedShapeIndex(null);
                               setSelectedTextId(null);
+                              setTooltip({
+                                visible: false,
+                                x: 0,
+                                y: 0,
+                                node: null,
+                              });
                             }}
                           />
                         );
@@ -386,10 +414,19 @@ const MobileSlideEditor = ({
               </Box>
             );
           })}
+          {tooltip.visible && (
+            <TextSettingsPanelMobile
+              style={{
+                top: tooltip.y,
+                left: tooltip.x-15,
+              }}
+              onClose={() => setTooltip({ ...tooltip, visible: false })}
+            />
+          )}
           <SlidePreviews
             slides={slides}
             selectedIndex={selectedIndex}
-            slide_width={SLIDE_WIDTH / 2.03}
+            slide_width={SLIDE_WIDTH/1.6}
             onSelect={setSelectedIndex}
             onAddSlide={handleAddSlide}
             onDeleteSlide={handleDeleteSlide}
@@ -400,4 +437,4 @@ const MobileSlideEditor = ({
   );
 };
 
-export default MobileSlideEditor;
+export default SlideEditor;

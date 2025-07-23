@@ -18,8 +18,8 @@ import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";
 import { useTheme, useMediaQuery } from "@mui/material";
 import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mobile";
 import MobileSlideEditor from "./SlideEditorMobile";
-//import TextSettingsPanelMobile from "@/app/components/modify-presentation/TextPanelMobile";
-import TextSettingsPanelMobile from "@/app/components/modify-presentation/Text-Panel-Mobile";
+import TextSettingsPanelMobile from "@/app/components/modify-presentation/TextPanelMobile";
+
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const {
@@ -113,7 +113,6 @@ const Page = () => {
         backgroundColor: "#FBFAFF",
         maxWidth: "100%",
         overflow: "hidden",
-        //position: "fixed",
       }}
     >
       <UpperNavBar
@@ -133,7 +132,14 @@ const Page = () => {
               setIsMobileTextSelected={setIsMobileTextSelected}
             />
             {/* Only show mobile text panel on mobile */}
-            {isTextSelected && <TextSettingsPanelMobile resetAll={resetAll} />}
+            {/* {isTextSelected && <TextSettingsPanelMobile resetAll={resetAll} />} */}
+            {isMobileTextSelected && (
+              <TextSettingsPanelMobile
+                resetAll={resetAll}
+                onClose={() => setIsMobileTextSelected(false)} // Function to close the panel
+                style={{ top: 100, left: 100 }} // Example style with positioning
+              />
+            )}
           </>
         ) : (
           <>
