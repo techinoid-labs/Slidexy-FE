@@ -212,7 +212,6 @@ export default function PresentationMaker({
       >
         <TextField
           fullWidth
-          disabled={loading ? true : false}
           type="url"
           variant="outlined"
           placeholder={getPlaceholder()}
@@ -425,25 +424,7 @@ export default function PresentationMaker({
                 padding: 2,
                 position: "relative",
                 minHeight: { xs: 100, sm: 180 },
-                // width: index === 0 || index === 1 || index === 2 ? 270 : 100,
-                width: {
-                  xs:
-                    index === 0
-                      ? 270
-                      : index === 1
-                      ? 270
-                      : index === 2
-                      ? 270
-                      : 100,
-                  sm:
-                    index === 0
-                      ? 250
-                      : index === 1
-                      ? 250
-                      : index === 2
-                      ? 250
-                      : 200,
-                },
+                width: index === 0 || index === 1 || index === 2 ? 270 : 100,
               }}
               onClick={() => handlePromptClick(card.description)}
             >

@@ -13,7 +13,6 @@ import type { Slide } from "@/app/slice/slidesSlice";
 import StepIndicator from "@/app/components/shared/StepIndicator";
 import StepsHeader from "@/app/components/shared/StepsHeader";
 import { SLIDE_WIDTH, SLIDE_HEIGHT } from "@/utils/slideUtils";
-
 // API response type and map helper
 export interface SlideApiResponse {
   slide_id: string;
@@ -42,6 +41,35 @@ function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
   }));
 }
 
+// Map UI cards back to Redux Slide[] format
+// function mapCardsToSlides(cards: any[]): Slide[] {
+//   return cards.map((card, index) => ({
+//     slide_id: `slide-${index + 1}`,
+//     slide_title: {
+//       text: card.title,
+//       konva_component: "Konva.Text",
+//       properties: {
+//         fontSize: 32,
+//         fontFamily: "Inter",
+//         fill: "#333",
+//         fontStyle: "bold",
+//       },
+//     },
+//     elements: (card.bullets || []).map((text: string) => ({
+//       element_type: "bullet_point",
+//       text,
+//       konva_component: "Konva.Text",
+//       properties: {
+//         fontSize: 18,
+//         fontFamily: "Inter",
+//         fill: "#444",
+//         fontStyle: "normal",
+//       },
+//     })),
+//     image_url: card.images?.[0] || null,
+//     image_caption: "",
+//   }));
+// }
 function mapCardsToSlides(cards: any[]): Slide[] {
   return cards.map((card, index) => {
     const bulletElements = (card.bullets || []).map((text: string) => ({
@@ -93,8 +121,8 @@ function mapCardsToSlides(cards: any[]): Slide[] {
 
 export default function OutlinePage() {
   const { slides }: any = useSlides();
-  const slidesState = slides;
-  const isInfographicMode = false;
+  const slidesState = slides; // or use a better name if you like
+  const isInfographicMode = false; // replace with actual logic if available
   const dispatch = useDispatch();
   const router = useRouter();
   const [imageSuggestionsBox, setImageSuggestionsBox] = React.useState<{
@@ -128,13 +156,8 @@ export default function OutlinePage() {
   const handleBulletsEditChange = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
     setEditingBulletsValue(e.target.value);
   const handleBulletsEditSave = (idx: number) => {
-    if (!editingBulletsValue.trim()) {
-      setEditingBulletsIdx(null);
-      setEditingBulletsValue("");
-      return;
-    }
-    setCards((prev) => {
-      const newCards = prev.map((c, i) =>
+    setCards((prev) =>
+      prev.map((c, i) =>
         i !== idx
           ? c
           : {
@@ -144,12 +167,8 @@ export default function OutlinePage() {
                 .filter((l) => l.trim() !== ""),
               images: "images" in c ? c.images ?? [] : [],
             }
-      );
-      // Dispatch updated slides to Redux store
-      const mappedSlides = mapCardsToSlides(newCards);
-      dispatch(setSlides(mappedSlides));
-      return newCards;
-    });
+      )
+    );
     setEditingBulletsIdx(null);
     setEditingBulletsValue("");
   };
@@ -165,27 +184,16 @@ export default function OutlinePage() {
     arr.splice(result.destination.index, 0, removed);
     setCards(arr);
     setExpandedIdx(null);
-    // Dispatch updated slides to Redux store
-    const mappedSlides = mapCardsToSlides(arr);
-    dispatch(setSlides(mappedSlides));
   };
 
   const handleDelete = (idx: number) => {
-    setCards((prev) => {
-      const newCards = prev.filter((_, i) => i !== idx);
-      // Dispatch updated slides to Redux store
-      const mappedSlides = mapCardsToSlides(newCards);
-      dispatch(setSlides(mappedSlides));
-      return newCards;
-    });
+    setCards((prev) => prev.filter((_, i) => i !== idx));
     if (expandedIdx === idx) setExpandedIdx(null);
   };
 
   const handleRegenerate = () => {
     setCards([]);
     setExpandedIdx(null);
-    // Dispatch empty slides to Redux store
-    dispatch(setSlides([]));
   };
 
   const handleCardClick = (idx: number) => {
@@ -200,13 +208,9 @@ export default function OutlinePage() {
   const handleTitleEditChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setEditingTitle(e.target.value);
   const handleTitleEditSave = (idx: number) => {
-    setCards((prev) => {
-      const newCards = prev.map((c, i) => (i === idx ? { ...c, title: editingTitle } : c));
-      // Dispatch updated slides to Redux store
-      const mappedSlides = mapCardsToSlides(newCards);
-      dispatch(setSlides(mappedSlides));
-      return newCards;
-    });
+    setCards((prev) =>
+      prev.map((c, i) => (i === idx ? { ...c, title: editingTitle } : c))
+    );
     setEditingIdx(null);
     setEditingTitle("");
   };
@@ -235,39 +239,18 @@ export default function OutlinePage() {
     router.push("/editor");
   };
 
-  const handleUpdateSlide = (
-    slideIndex: number,
-    updated: Partial<{
-      title: string;
-      bullets: string[];
-      bulletFormat?: "bullets" | "paragraphs" | "list" | null;
-      image_url?: string;
-    }>
-  ) => {
-    setCards((prev) => {
-      const newCards = prev.map((card, i) =>
-        i === slideIndex ? { ...card, ...updated } : card
-      );
-      // Dispatch updated slides to Redux store
-      const mappedSlides = mapCardsToSlides(newCards);
-      dispatch(setSlides(mappedSlides));
-      return newCards;
-    });
+  const handleUpdateSlide = (slideIndex: number, updated: Partial<Slide>) => {
+    const updatedSlides = slides.map((s: Slide, i: number) =>
+      i === slideIndex ? { ...s, ...updated } : s
+    );
+
+    console.log("Updated Slides", updatedSlides);
+
+    dispatch(setSlides(updatedSlides));
+
     if (updated.image_url) {
       setPreviewImage(updated.image_url);
     }
-  };
-
-  const handleUpdateSlideImages = (slideIndex: number, newImages: string[]) => {
-    setCards((prev) => {
-      const newCards = prev.map((card, i) =>
-        i === slideIndex ? { ...card, images: [...newImages] } : card
-      );
-      // Dispatch updated slides to Redux store
-      const mappedSlides = mapCardsToSlides(newCards);
-      dispatch(setSlides(mappedSlides));
-      return newCards;
-    });
   };
 
   return (
@@ -306,6 +289,21 @@ export default function OutlinePage() {
             pb: { xs: 1, md: 2 },
           }}
         >
+          {/* <Box
+            sx={{
+              display: { xs: "none", md: "block" },
+              position: "absolute",
+              top: { md: 100 },
+              left: { md: 190 },
+            }}
+          >
+            <Image
+              src="/images/side-star-dark.svg"
+              alt="Icon"
+              width={60}
+              height={60}
+            />
+          </Box> */}
           <Typography
             variant="h3"
             sx={{
@@ -356,6 +354,41 @@ export default function OutlinePage() {
             >
               Personal portfolio outline
             </Typography>
+            {/* <Button
+              onClick={handleRegenerate}
+              variant="contained"
+              endIcon={
+                <Image
+                  src="/images/regenerate-outline.svg"
+                  alt="regen"
+                  width={16}
+                  height={16}
+                  style={{ minWidth: 16, minHeight: 16 }}
+                />
+              }
+              sx={{
+                background:
+                  "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                color: "#fff",
+                borderRadius: "999px",
+                px: { xs: 2, md: 4 },
+                py: { xs: 0.7, md: 1.5 },
+                fontWeight: 600,
+                fontSize: { xs: "0.92rem", md: "1.1rem" },
+                textTransform: "none",
+                boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
+                minHeight: { xs: 30, md: 44 },
+                width: { xs: "100%", md: "auto" },
+                maxWidth: 260,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                "&:hover": { background: "#4A00E0" },
+              }}
+              className="w-full md:w-auto"
+            >
+              Regenerate Outline
+            </Button> */}
           </Box>
           <Typography
             sx={{
@@ -443,9 +476,27 @@ export default function OutlinePage() {
                             slideIndex={idx}
                             slidesState={slidesState}
                             isInfographicMode={isInfographicMode}
-                            onUpdateSlideImages={handleUpdateSlideImages}
-                            onUpdateSlide={handleUpdateSlide}
+                            // ✅ Add this line to fix the error:
+                            onUpdateSlideImages={(slideIndex, newImages) => {
+                              setCards((prev) =>
+                                prev.map((card, i) =>
+                                  i === slideIndex
+                                    ? { ...card, images: [...newImages] }
+                                    : card
+                                )
+                              );
+                            }}
+                            onUpdateSlide={(slideIndex, updated) => {
+                              setCards((prev) =>
+                                prev.map((card, i) =>
+                                  i === slideIndex
+                                    ? { ...card, ...updated }
+                                    : card
+                                )
+                              );
+                            }}
                           />
+
                           {expandedIdx === idx && (
                             <EditMenuCard
                               open={
@@ -538,8 +589,8 @@ export default function OutlinePage() {
                 "&:hover": { borderColor: "#8E2DE2" },
               }}
               onClick={() => {
-                setCards((prev) => {
-                  const newCards = prev.map((card, idx) =>
+                setCards((prev) =>
+                  prev.map((card, idx) =>
                     idx === imageSuggestionsBox.slideIndex
                       ? {
                           ...card,
@@ -550,12 +601,8 @@ export default function OutlinePage() {
                           ],
                         }
                       : card
-                  );
-                  // Dispatch updated slides to Redux store
-                  const mappedSlides = mapCardsToSlides(newCards);
-                  dispatch(setSlides(mappedSlides));
-                  return newCards;
-                });
+                  )
+                );
                 setImageSuggestionsBox(null);
               }}
             >
