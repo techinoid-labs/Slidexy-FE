@@ -116,8 +116,11 @@ export default function PresentationMaker({
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
-          ? { source: "website", inputWebsiteUrl: inputValue }
-          : { source: "text", textContent: inputValue };
+        ? { source: "website", inputWebsiteUrl: inputValue }
+        : inputMode === "Infographic"
+        ? { input: inputValue }
+        : { source: "text", textContent: inputValue };
+
 
     const promptMeta = {
       goal,
@@ -131,11 +134,17 @@ export default function PresentationMaker({
     // console.log("[SlidesX] Prompt meta (not sent):", promptMeta);
     // return;
     try {
-      const res = await fetch(`${API_BASE_URL}/generate-slides`, {
+      const endpoint =
+        inputMode === "Infographic"
+          ? "/generate-infographic"
+          : "/generate-slides";
+
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
       console.log("[SlidesX] Raw response:", res);
 
       if (!res.ok) {
@@ -150,9 +159,33 @@ export default function PresentationMaker({
       }
 
       const data = await res.json();
-      console.log("[SlidesX] Parsed slides data:", data);
-      setSlides(data.slides);
-      router.push(`/presentation/outline`);
+      
+      
+      
+      if (inputMode === "Infographic") {
+        const { title, content } = data;
+
+        const infographicPayload = {
+          title,
+          sections: content.sections,
+          footerText: content.footerText,
+        };
+
+        // Temporarily store in local/session storage or pass via router (example below uses localStorage)
+        localStorage.setItem(
+          "infographicData",
+          JSON.stringify(infographicPayload)
+        );
+
+        router.push("/infographics");
+
+        
+      } else {
+        setSlides(data.slides);
+        router.push("/presentation/outline");
+      }
+
+
     } catch (err: any) {
       console.error("[SlidesX] Exception in handleSubmit:", err);
       setError(err.message || "Something went wrong");

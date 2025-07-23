@@ -8,6 +8,7 @@ const modes = [
   { label: "Prompt-to-Deck", value: "Text" },
   { label: "Video-to-Deck", value: "Youtube" },
   { label: "Web-to-Deck", value: "Website" },
+  { label: "Text-to-Infographic", value: "Infographic" },
 ];
 
 export default function InputModeSelector({
