@@ -16,6 +16,7 @@ import {
   Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+// import { AppBar, Toolbar, Typography, Box, IconButton } from "@mui/material";
 import { useRouter } from "next/navigation";
 
 const UpperNavBar: React.FC<{
@@ -228,33 +229,39 @@ const UpperNavBar: React.FC<{
             }}
           >
             Share
-            <Box
-              sx={{
-                width: { xs: 12, md: 26 }, // Responsive width
-                height: { xs: 12, md: 26 }, // Responsive height
-                position: "relative",
-                ml: { md: -1 },
-                // Required for next/image layout
-              }}
-            >
-              <Image
-                src="/images/share-icon.svg"
-                alt="Share"
-                width={20}
-                height={20}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                  marginBottom: 3,
-                }}
-              />
-            </Box>
+            <Image
+              src="/images/share-icon.svg"
+              alt="Share"
+              width={26}
+              height={26}
+            />
           </Box>
-          {/* Only show export on desktop */}
-          {!isMobile && (
+
+          {/* Export PDF */}
+          <Box
+            onClick={onExportPDF}
+            sx={{
+              bgcolor: "#18181B",
+              background:
+                "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+              color: "#fff",
+              borderRadius: "999px",
+              px: 3,
+              py: 1.2,
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 600,
+              ml: 1,
+              "&:hover": { bgcolor: "#333" },
+            }}
+          >
+            Export as PDF
+          </Box>
+
+          {/* Export PPTX */}
+          {onExportPPT && (
             <Box
-              onClick={onExportPDF}
+              onClick={onExportPPT}
               sx={{
                 bgcolor: "#18181B",
                 background:
@@ -266,10 +273,11 @@ const UpperNavBar: React.FC<{
                 cursor: "pointer",
                 fontSize: 14,
                 fontWeight: 600,
+                ml: 1,
                 "&:hover": { bgcolor: "#333" },
               }}
             >
-              Export as PDF
+              Export as PPTX
             </Box>
           )}
         </Box>
