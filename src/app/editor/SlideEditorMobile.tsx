@@ -12,19 +12,19 @@ import SlidePreviews from "./slidesPreview";
 import { useDispatch } from "react-redux";
 import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
-import {
-  getRandomSlide,
-  getLayoutProps,
-  SLIDE_WIDTH,
-  SLIDE_HEIGHT,
-  LEFT_PADDING,
-} from "../../utils/slideUtilsmobile";
+import { getRandomSlide, getLayoutProps, getSlideDimensions } from "../../utils/slideUtilsmobile";
 import { v4 as uuidv4 } from "uuid";
 import TextSettingsPanelMobile from "../components/modify-presentation/TextPanelMobile";
-const IMAGE_WIDTH =  100;
-const IMAGE_PADDING = 5;
-const textMaxWidth = (SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING)-100;
-const textMaxHeight = SLIDE_HEIGHT - 60 - 20; 
+
+const getDynamicConstants = () => {
+  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
+  const IMAGE_WIDTH = 100;
+  const IMAGE_PADDING = 5;
+  const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING -  100;
+  const textMaxHeight = SLIDE_HEIGHT - 60 - 20;
+  return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_PADDING, textMaxWidth, textMaxHeight };
+};
+
 const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const dispatch = useDispatch();
   const {
@@ -38,17 +38,24 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     setSlides,
     tooltip,
     setTooltip,
+    isAtBoundary,
   } = useSlides();
   const { selectedTheme, selectedLayout } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  console.log(slides);
+  const [dimensions, setDimensions] = useState(getDynamicConstants());
   const [useDummy] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions(getDynamicConstants());
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
-
     const newSlides = [...slides, structuredClone(newSlide)];
     setSlides(newSlides);
     setSelectedIndex(newSlides.length - 1);
@@ -82,8 +89,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           element_id: uuidv4(),
           properties: {
             imageSrc: slide.image_url,
-            x: SLIDE_WIDTH - 450,
-            y: (SLIDE_HEIGHT - 10) / 1.9,
+            x: dimensions.SLIDE_WIDTH - 260,
+            y: (dimensions.SLIDE_HEIGHT - 20) /2.6 ,
             width: 200,
             height: 150,
           },
@@ -100,7 +107,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     if (JSON.stringify(slides) !== JSON.stringify(normalizedSlides)) {
       setSlides(normalizedSlides);
     }
-  }, [slides]);
+  }, [slides, dimensions.SLIDE_WIDTH, dimensions.SLIDE_HEIGHT, setSlides]);
+
+  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, textMaxWidth, textMaxHeight } = dimensions;
 
   return (
     <main
@@ -124,8 +133,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           sx={{
             position: "fixed",
             top: 90,
-            width: 350,
-            height: 650,
+            width: SLIDE_WIDTH + 32,
+            height: SLIDE_HEIGHT + 32,
             bgcolor: "#fff",
             border: "1px solid #E0E0E0",
             zIndex: 0,
@@ -145,7 +154,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             const titleProps = title.properties;
             const titleY = 60;
             const bulletGap = 2;
-            const bulletStartY = titleY + titleProps.fontSize-50;
+            const bulletStartY = titleY + (titleProps.fontSize || 12) -50;
 
             return (
               <Box
@@ -161,8 +170,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 }}
               >
                 <Stage
-                  width={SLIDE_WIDTH/1.5}
-                  height={SLIDE_HEIGHT/1.01}
+                  width={SLIDE_WIDTH-10}
+                  height={SLIDE_HEIGHT-155}
                   ref={(ref: any) => {
                     stageRefs.current[index] =
                       ref?.getStage()?.content?.querySelector("canvas") || null;
@@ -172,7 +181,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       e.target === e.target.getStage() ||
                       e.target.name() === "background";
                     if (clickedOnEmpty) {
-                      console.log("Stage width:", SLIDE_WIDTH/1.5);
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
                       setSelectedShapeIndex(null);
@@ -207,45 +215,51 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         fill={selectedTheme?.backgroundColor || "#fff"}
                       />
                     )}
-
+                    <Rect
+                      x={0}
+                      y={0}
+                      width={SLIDE_WIDTH}
+                      height={SLIDE_HEIGHT}
+                      stroke={isAtBoundary ? "red" : "transparent"}
+                      strokeWidth={2}
+                      listening={false}
+                    />
                     {title.text && (
-                      <>
-                        <KonvaTextEditor
-                          id={`title-${index}`}
-                          text={title.text}
-                          x={LEFT_PADDING}
-                          y={titleY}
-                          width={textMaxWidth}
-                          wrap="word"
-                          fontSize={titleProps.fontSize}
-                          fontWeight={titleProps.fontWeight}
-                          fontFamily={titleProps.fontFamily}
-                          opacity={titleProps.opacity}
-                          align={titleProps.align}
-                          verticalAlign={titleProps.verticalAlign}
-                          fill={
-                            !title.useThemeColor
-                              ? titleProps.fill
-                              : selectedTheme?.primaryColor ?? "#000"
-                          }
-                          fontStyle={titleProps.fontStyle}
-                          isSelected={selectedTextId === `title-${index}`}
-                          onSelect={() => {
-                            setSelectedTextId(`title-${index}`);
-                            setSelectedImageIndex(null);
-                            setSelectedShapeIndex(null);
-                            setSelectedImage(null);
-                          }}
-                          onClick={() => {
-                            setTooltip({
-                              visible: true,
-                              x: tooltip.x,
-                              y: tooltip.y,
-                              node: null,
-                            });
-                          }}
-                        />
-                      </>
+                      <KonvaTextEditor
+                        id={`title-${index}`}
+                        text={title.text}
+                        x={titleProps.x || LEFT_PADDING}
+                        y={titleProps.y || titleY}
+                        width={titleProps.width || textMaxWidth}
+                        wrap="word"
+                        fontSize={titleProps.fontSize}
+                        fontWeight={titleProps.fontWeight}
+                        fontFamily={titleProps.fontFamily}
+                        opacity={titleProps.opacity}
+                        align={titleProps.align}
+                        verticalAlign={titleProps.verticalAlign}
+                        fill={
+                          !title.useThemeColor
+                            ? titleProps.fill
+                            : selectedTheme?.primaryColor ?? "#000"
+                        }
+                        fontStyle={titleProps.fontStyle}
+                        isSelected={selectedTextId === `title-${index}`}
+                        onSelect={() => {
+                          setSelectedTextId(`title-${index}`);
+                          setSelectedImageIndex(null);
+                          setSelectedShapeIndex(null);
+                          setSelectedImage(null);
+                        }}
+                        onClick={() => {
+                          setTooltip({
+                            visible: true,
+                            x: tooltip.x,
+                            y: tooltip.y,
+                            node: null,
+                          });
+                        }}
+                      />
                     )}
                     {slide.elements.map((el: any, i: number) => {
                       if (el.element_type !== "text") return null;
@@ -289,7 +303,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         />
                       );
                     })}
-
                     {(() => {
                       let currentY = bulletStartY + 70;
 
@@ -330,11 +343,11 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                               key={`el-${index}-${i}`}
                               id={`el-${index}-${i}`}
                               text={bulletText}
-                              x={LEFT_PADDING + (isBullet ? 20 : 0)}
+                              x={el.properties.x || LEFT_PADDING + (isBullet ? 20 : 0)}
                               y={currentY}
                               opacity={el.properties.opacity}
                               align={el.properties.align}
-                              width={textWidth}
+                              width={el.properties.width || textWidth}
                               wrap="word"
                               fontSize={fontSize}
                               fontFamily={fontFamily}
@@ -367,7 +380,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           return editor;
                         });
                     })()}
-
                     <KonvaShapeRenderer
                       elements={slide.elements}
                       selectedShapeIndex={selectedShapeIndex}
@@ -418,7 +430,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             <TextSettingsPanelMobile
               style={{
                 top: tooltip.y,
-                left: tooltip.x-15,
+                left: tooltip.x - 15,
               }}
               onClose={() => setTooltip({ ...tooltip, visible: false })}
             />
@@ -426,7 +438,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           <SlidePreviews
             slides={slides}
             selectedIndex={selectedIndex}
-            slide_width={SLIDE_WIDTH/1.6}
+            slide_width={SLIDE_WIDTH}
             onSelect={setSelectedIndex}
             onAddSlide={handleAddSlide}
             onDeleteSlide={handleDeleteSlide}

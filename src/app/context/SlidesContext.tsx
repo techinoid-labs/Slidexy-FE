@@ -1,4 +1,5 @@
 "use client";
+
 import React, { createContext, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSlides, updateSlide } from "../slice/slidesSlice";
@@ -28,6 +29,8 @@ interface SlidesContextType {
     y: number;
     node: any | null;
   }) => void;
+  isAtBoundary: boolean;
+  setIsAtBoundary: (value: boolean) => void;
 }
 
 const SlidesContext = createContext<SlidesContextType>({
@@ -46,6 +49,8 @@ const SlidesContext = createContext<SlidesContextType>({
   setSelectedShapeIndex: () => {},
   tooltip: { visible: false, x: 0, y: 0, node: null },
   setTooltip: () => {},
+  isAtBoundary: false,
+  setIsAtBoundary: () => {},
 });
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
@@ -54,18 +59,15 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<any | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<any | null>(
-    null
-  );
-  const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
-    null
-  );
+  const [selectedImageIndex, setSelectedImageIndex] = useState<any | null>(null);
+  const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState({
     visible: false,
     x: 50,
     y: 10,
     node: null,
   });
+  const [isAtBoundary, setIsAtBoundary] = useState(false);
 
   const handleSetSlides = (newSlides: SlidesType) => {
     dispatch(setSlides(newSlides));
@@ -80,7 +82,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         slides,
         setSlides: handleSetSlides,
-        // updateSlides: handleUpdateSlides,
+        updateSlides: handleUpdateSlides,
         selectedSlideIndex,
         setSelectedSlideIndex,
         selectedImage,
@@ -93,6 +95,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setSelectedShapeIndex,
         tooltip,
         setTooltip,
+        isAtBoundary,
+        setIsAtBoundary,
       }}
     >
       {children}

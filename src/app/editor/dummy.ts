@@ -290,3 +290,23 @@ export const dummyData = [
     image_caption: "mountain",
   },
 ];
+
+// Utility to stack y positions for text/bullet elements
+function stackElementY(slide: any, startY = 120, gap = 32) {
+  let currentY = startY;
+  (slide.elements as any[]).forEach((el: any) => {
+    if (el.element_type === "text" || el.element_type === "bullet_point") {
+      el.properties.y = currentY;
+      const fontSize = el.properties.fontSize || 18;
+      currentY += fontSize * 1.2 + gap;
+    }
+  });
+}
+
+dummyData.forEach(slide => {
+  if (slide.slide_title && slide.slide_title.properties) {
+    slide.slide_title.properties.fontSize = 48;
+  }
+});
+
+dummyData.forEach(slide => stackElementY(slide));

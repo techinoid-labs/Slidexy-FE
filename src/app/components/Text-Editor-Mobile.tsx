@@ -26,6 +26,26 @@ const TextEditor: React.FC<TextEditorProps> = ({
     fontWeight: number,
     color = "#222"
   ) => {
+    // Get the current slide's elements
+    const slidesState = useSlides();
+    const currentSlide = slidesState.slides[slidesState.selectedSlideIndex];
+    const GAP = 16; // vertical gap between elements
+
+    // Find the max y + estimated height among text/bullet elements
+    let maxY = 60; // Start below the title (default titleY in SlideEditorMobile)
+    if (currentSlide && currentSlide.elements && currentSlide.elements.length > 0) {
+      currentSlide.elements.forEach((el: any) => {
+        if (el.element_type === "text" || el.element_type === "bullet_point") {
+          const y = el.properties.y ?? 300;
+          const size = el.properties.fontSize ?? 24;
+          // Estimate height: 1 line for now (could be improved for multiline)
+          const height = size * 1.2;
+          if (y + height > maxY) maxY = y + height;
+        }
+      });
+    }
+    const newY = maxY + GAP;
+
     const newTextElement = {
       text,
       konva_component: "Konva.Text",
@@ -36,6 +56,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
         fill: color,
         fontStyle: "normal",
         fontWeight,
+        y: newY,
       },
     };
 

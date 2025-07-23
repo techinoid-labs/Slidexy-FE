@@ -17,6 +17,7 @@ import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { v4 as uuidv4 } from "uuid";
+import { getSlideDimensions } from "@/utils/slideUtilsmobile";
 
 const fontOptions = ["Raleway", "Roboto", "Arial"];
 const weightOptions = [
@@ -89,7 +90,21 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
       : elementIndex !== null
         ? updatedSlides[slideIndex].elements[elementIndex].properties
         : null;
-    if (target) target[prop] = value;
+    if (target) {
+      target[prop] = value;
+      // Alignment fix: adjust x when align changes
+      if (prop === "align") {
+        const { SLIDE_WIDTH, LEFT_PADDING } = getSlideDimensions();
+        const width = target.width || 220; // fallback width
+        if (value === "center") {
+          target.x = (SLIDE_WIDTH - width) / 2;
+        } else if (value === "right") {
+          target.x = SLIDE_WIDTH - width - LEFT_PADDING-10;
+        } else {
+          target.x = LEFT_PADDING;
+        }
+      }
+    }
     setSlides(updatedSlides);
   };
 
