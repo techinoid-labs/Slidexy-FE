@@ -376,14 +376,14 @@ const UpperNavBar: React.FC<{
             handleMobileMenuClose();
           }}
         >
-          <ListItemIcon>
+          {/* <ListItemIcon>
             <Image
               src="/images/file.svg"
               alt="Export PDF"
               width={25}
               height={25}
             />
-          </ListItemIcon>
+          </ListItemIcon> */}
           Export as PDF
         </MenuItem>
         {onExportPPT && (
@@ -393,14 +393,14 @@ const UpperNavBar: React.FC<{
               handleMobileMenuClose();
             }}
           >
-            <ListItemIcon>
+            {/* <ListItemIcon>
               <Image
                 src="/images/file.svg"
                 alt="Export PPTX"
                 width={25}
                 height={25}
               />
-            </ListItemIcon>
+            </ListItemIcon> */}
             Export as PPTX
           </MenuItem>
         )}
