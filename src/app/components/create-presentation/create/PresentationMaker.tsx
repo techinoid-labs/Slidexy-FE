@@ -202,13 +202,14 @@ export default function PresentationMaker({
           borderRadius: "999px",
           border: "2px solid #8E2DE2",
           boxShadow: "4px 5px 0px 0px #8E2DE2",
-          height: {xs: 57, md: 70},
+          height: { xs: 57, md: 70 },
           px: 2,
           mb: 3,
         }}
       >
         <TextField
           fullWidth
+          disabled={loading ? true : false}
           type="url"
           variant="outlined"
           placeholder={getPlaceholder()}
@@ -219,7 +220,7 @@ export default function PresentationMaker({
               height: "100%",
               border: "none",
               "& fieldset": { border: "none" },
-              fontSize: {xs: "1rem", md:"1rem"},
+              fontSize: { xs: "1rem", md: "1rem" },
               px: 2,
             },
             endAdornment:
@@ -296,7 +297,7 @@ export default function PresentationMaker({
           fontSize: "1.125rem",
           fontWeight: 600,
           mb: 4,
-          height: {xs: 57, md: 70},
+          height: { xs: 57, md: 70 },
           border: "2px solid #8E2DE2",
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
@@ -324,7 +325,12 @@ export default function PresentationMaker({
           },
         }}
       >
-        <span style={{ color: loading ? "#fff" : "#8E2DE2", transition: "color 0.6s ease" }}>
+        <span
+          style={{
+            color: loading ? "#fff" : "#8E2DE2",
+            transition: "color 0.6s ease",
+          }}
+        >
           {loading ? "Generating..." : "Generate Outlines"}
         </span>
 
@@ -335,8 +341,8 @@ export default function PresentationMaker({
             height: 22,
             ml: 1,
             background: loading
-              ? "#fff" 
-              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)", 
+              ? "#fff"
+              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",
@@ -349,7 +355,6 @@ export default function PresentationMaker({
           }}
         />
       </Button>
-
 
       {error && (
         <Typography color="error" sx={{ mt: 2 }}>
@@ -394,7 +399,6 @@ export default function PresentationMaker({
           />
         </Box>
 
-
         <Box
           sx={{
             display: "flex",
@@ -403,7 +407,7 @@ export default function PresentationMaker({
             flexWrap: { xs: "wrap", sm: "nowrap" },
             width: { xs: "100%", md: 1000 }, // Responsive width
             //justifyContent: "center", // Center children horizontally
-            alignItems: "center",     // Center children vertically (for column)
+            alignItems: "center", // Center children vertically (for column)
           }}
         >
           {promptCards.map((card, index) => (
@@ -419,18 +423,24 @@ export default function PresentationMaker({
                 borderRadius: "16px",
                 padding: 2,
                 position: "relative",
-                minHeight: {xs: 100, sm: 180},
+                minHeight: { xs: 100, sm: 180 },
                 width: {
-                  xs: index === 0 ? 270 :
-                      index === 1 ? 270 :
-                        index === 2 ? 270 :
-                          100,
+                  xs:
+                    index === 0
+                      ? 270
+                      : index === 1
+                      ? 270
+                      : index === 2
+                      ? 270
+                      : 100,
                   sm:
-                    index === 0 ? 250 :
-                      index === 1 ? 250 :
-                        index === 2 ? 250 :
-                          200,
-
+                    index === 0
+                      ? 250
+                      : index === 1
+                      ? 250
+                      : index === 2
+                      ? 250
+                      : 200,
                 },
               }}
               onClick={() => handlePromptClick(card.description)}
@@ -449,11 +459,15 @@ export default function PresentationMaker({
                   cursor: "pointer",
                 }}
               >
-                <Image src={card.icon} alt="Prompt icon" width={20} height={20} />
+                <Image
+                  src={card.icon}
+                  alt="Prompt icon"
+                  width={20}
+                  height={20}
+                />
               </Box>
             </Box>
           ))}
-
         </Box>
       </Box>
     </Box>

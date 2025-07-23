@@ -231,16 +231,22 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") onTitleEditSave?.();
-    else if (e.key === "Escape") onTitleEditCancel?.();
+    if (e.key === "Enter") {
+      e.preventDefault();
+      setTimeout(() => onTitleEditSave?.(), 0);
+    } else if (e.key === "Escape") {
+      onTitleEditCancel?.();
+    }
   };
 
   const handleInputBlur = () => {
-    onTitleEditSave?.();
-    if (expandClickedRef.current) {
-      onToggleExpand?.();
-      expandClickedRef.current = false;
-    }
+    setTimeout(() => {
+      onTitleEditSave?.();
+      if (expandClickedRef.current) {
+        onToggleExpand?.();
+        expandClickedRef.current = false;
+      }
+    }, 0);
   };
 
   const SAMPLE_IMAGES = [
@@ -249,35 +255,11 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     "/images/sample-image.svg",
   ];
 
-  // const handleRegenerateImage = async (
-  //   imageIndex: number,
-  //   e: React.MouseEvent
-  // ) => {
-  //   e.stopPropagation();
-  //   if (loadingImageIndex !== null) return;
-  //   setLoadingImageIndex(imageIndex);
-  //   try {
-  //     setSuggestedImages({ imageIndex, suggestions: SAMPLE_IMAGES });
-  //     // Always update imageList and slide images with fallbacks if imageList is empty
-  //     if (imageList.length === 0) {
-  //       setImageList(SAMPLE_IMAGES);
-  //       onUpdateSlideImages(slideIndex, SAMPLE_IMAGES);
-  //     }
-  //   } catch (err) {
-  //     setSuggestedImages({ imageIndex, suggestions: SAMPLE_IMAGES });
-  //     if (imageList.length === 0) {
-  //       setImageList(SAMPLE_IMAGES);
-  //       onUpdateSlideImages(slideIndex, SAMPLE_IMAGES);
-  //     }
-  //   } finally {
-  //     setLoadingImageIndex(null);
-  //   }
-  // };
   const handleRegenerateImage = async (
     imageIndex: number,
-    e: React.MouseEvent // Keep this as it is already being passed
+    e: React.MouseEvent
   ) => {
-    e.stopPropagation(); // Essential to stop propagation here
+    e.stopPropagation();
     if (loadingImageIndex !== null) return;
 
     setLoadingImageIndex(imageIndex);
@@ -301,13 +283,30 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
 
       const data = await res.json();
       if (data.imageUrls?.length > 0) {
-        setSuggestedImages({ imageIndex, suggestions: data.imageUrls });
+        // Include the original image in the suggestions
+        const originalImage = imageList[imageIndex] || SAMPLE_IMAGES[0];
+        setSuggestedImages({
+          imageIndex,
+          suggestions: [originalImage, ...data.imageUrls],
+        });
       } else {
         alert("Failed to generate image suggestions.");
+        // Fallback to include original image and sample images
+        const originalImage = imageList[imageIndex] || SAMPLE_IMAGES[0];
+        setSuggestedImages({
+          imageIndex,
+          suggestions: [originalImage, ...SAMPLE_IMAGES],
+        });
       }
     } catch (err) {
       console.error("Image regeneration error:", err);
       alert("Error generating image suggestions.");
+      // Fallback to include original image and sample images
+      const originalImage = imageList[imageIndex] || SAMPLE_IMAGES[0];
+      setSuggestedImages({
+        imageIndex,
+        suggestions: [originalImage, ...SAMPLE_IMAGES],
+      });
     } finally {
       setLoadingImageIndex(null);
     }
@@ -564,11 +563,11 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                         <textarea
                           value={props.editingBulletsValue}
                           onChange={props.onBulletsEditChange}
-                          onBlur={props.onBulletsEditSave}
+                          onBlur={() => setTimeout(() => props.onBulletsEditSave?.(), 0)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
                               e.preventDefault();
-                              props.onBulletsEditSave?.();
+                              setTimeout(() => props.onBulletsEditSave?.(), 0);
                             } else if (e.key === "Escape") {
                               props.onBulletsEditCancel?.();
                             }
@@ -614,11 +613,11 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                         <textarea
                           value={props.editingBulletsValue}
                           onChange={props.onBulletsEditChange}
-                          onBlur={props.onBulletsEditSave}
+                          onBlur={() => setTimeout(() => props.onBulletsEditSave?.(), 0)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
                               e.preventDefault();
-                              props.onBulletsEditSave?.();
+                              setTimeout(() => props.onBulletsEditSave?.(), 0);
                             } else if (e.key === "Escape") {
                               props.onBulletsEditCancel?.();
                             }
@@ -665,11 +664,11 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                         <textarea
                           value={props.editingBulletsValue}
                           onChange={props.onBulletsEditChange}
-                          onBlur={props.onBulletsEditSave}
+                          onBlur={() => setTimeout(() => props.onBulletsEditSave?.(), 0)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
                               e.preventDefault();
-                              props.onBulletsEditSave?.();
+                              setTimeout(() => props.onBulletsEditSave?.(), 0);
                             } else if (e.key === "Escape") {
                               props.onBulletsEditCancel?.();
                             }
@@ -777,7 +776,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                           <CloseIcon fontSize="small" />
                         </IconButton>
                       </Box>
-                      <Box sx={{ display: "flex", gap: 1 }}>
+                      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                         {suggestedImages.suggestions.map((suggestedSrc, j) => (
                           <Box
                             key={j}
@@ -787,7 +786,11 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                               borderRadius: 0.5,
                               overflow: "hidden",
                               cursor: "pointer",
-                              border: "1px solid #ccc",
+                              border: `1px solid ${
+                                suggestedSrc === imageList[i]
+                                  ? "#8E2DE2"
+                                  : "#ccc"
+                              }`,
                               position: "relative",
                               zIndex: 4,
                             }}
@@ -798,7 +801,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                               setImageList(newImages);
                               onUpdateSlideImages(slideIndex, newImages);
                               setPreviewImage(suggestedSrc);
-                              //setSuggestedImages(null);
                             }}
                           >
                             <Image
@@ -893,124 +895,123 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
               style={{ width: "100%", height: "100%" }}
             />
           </Box>
-          {aiEditMenuAnchorEl && (
-            <Menu
-              open={!!aiEditMenuAnchorEl}
-              anchorEl={aiEditMenuAnchorEl}
-              onClose={() => {
-                setAiEditMenuAnchorEl(null);
-                setLoadingSuggestionsAction(null);
-                setShowSuggestionsBox(false);
-                setCurrentSuggestionAction(null);
-              }}
-              slotProps={{
-                paper: {
-                  sx: {
-                    backgroundColor: "#ffffff",
+          <Menu
+            open={!!aiEditMenuAnchorEl}
+            anchorEl={aiEditMenuAnchorEl}
+            onClose={() => {
+              setAiEditMenuAnchorEl(null);
+              setLoadingSuggestionsAction(null);
+              setShowSuggestionsBox(false);
+              setCurrentSuggestionAction(null);
+            }}
+            slotProps={{
+              paper: {
+                sx: {
+                  backgroundColor: "#ffffff",
+                },
+              },
+              transition: {
+                component: Grow,
+                timeout: 200,
+              },
+            }}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            transformOrigin={{ vertical: "bottom", horizontal: "right" }}
+            disablePortal
+            sx={{ zIndex: 7 }}
+          >
+            {textEditActions.map((action, idx) => (
+              <MenuItem
+                sx={{
+                  alignItems: "flex-start",
+                  gap: 1.5,
+                  px: 2,
+                  py: 1.5,
+                  borderBottom:
+                    idx !== textEditActions.length - 1
+                      ? "1px solid #eee"
+                      : "none",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: "#f3f0ff",
+                    transform: "scale(1.02)",
                   },
-                },
-                transition: {
-                  component: Grow,
-                  timeout: 200,
-                },
-              }}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }}
-              transformOrigin={{ vertical: "bottom", horizontal: "right" }}
-              disablePortal
-              sx={{ zIndex: 7 }}
-            >
-              {textEditActions.map((action, idx) => (
-                <MenuItem
-                  sx={{
-                    alignItems: "flex-start",
-                    gap: 1.5,
-                    px: 2,
-                    py: 1.5,
-                    borderBottom:
-                      idx !== textEditActions.length - 1
-                        ? "1px solid #eee"
-                        : "none",
-                    transition: "all 0.2s ease-in-out",
-                    "&:hover": {
-                      backgroundColor: "#f3f0ff",
-                      transform: "scale(1.02)",
-                    },
-                  }}
-                  key={action.value}
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    setLoadingSuggestionsAction(action.value);
-                    setCurrentSuggestionAction(action.value);
-                    if (action.value === "custom") {
-                      setShowCustomPromptInput(true);
-                      setLoadingSuggestionsAction(null);
-                      return;
-                    }
-                    if (action.value === "regenerateImages") {
-                      if (imageList.length > 0) {
-                        await handleRegenerateImage(0, e);
-                      } else {
-                        console.log(
-                          "No images to regenerate, using fallback images"
-                        );
-                        setSuggestedImages({
-                          imageIndex: 0,
-                          suggestions: SAMPLE_IMAGES,
-                        });
-                      }
-                      setLoadingSuggestionsAction(null);
-                      setAiEditMenuAnchorEl(null);
-                      setCurrentSuggestionAction(null);
-                      return;
-                    }
-                    try {
-                      const res = await fetch(`${API_BASE_URL}/edit-text`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          title,
-                          bullets,
-                          action: action.value,
-                          currentFormat: currentBulletFormat,
-                        }),
+                }}
+                key={action.value}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  setLoadingSuggestionsAction(action.value);
+                  setCurrentSuggestionAction(action.value);
+                  if (action.value === "custom") {
+                    setShowCustomPromptInput(true);
+                    setLoadingSuggestionsAction(null);
+                    return;
+                  }
+                  if (action.value === "regenerateImages") {
+                    if (imageList.length > 0) {
+                      await handleRegenerateImage(0, e);
+                    } else {
+                      console.log(
+                        "No images to regenerate, using fallback images"
+                      );
+                      const originalImage = imageList[0] || SAMPLE_IMAGES[0];
+                      setSuggestedImages({
+                        imageIndex: 0,
+                        suggestions: [originalImage, ...SAMPLE_IMAGES],
                       });
-                      const data = await res.json();
-                      if (Array.isArray(data.suggestions)) {
-                        setTextSuggestions(data.suggestions);
-                        setShowSuggestionsBox(true);
-                      }
-                    } catch (err) {
-                      console.error("Suggestion fetch error:", err);
-                      alert("Error generating suggestions.");
-                    } finally {
-                      setLoadingSuggestionsAction(null);
                     }
-                  }}
-                >
-                  <Box sx={{ mt: "3px" }}>{action.icon}</Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography
-                      fontWeight={600}
-                      fontSize={14}
-                      color="text.primary"
-                    >
-                      {action.label}
-                    </Typography>
-                    <Typography
-                      fontSize={12}
-                      color="text.secondary"
-                      sx={{ mt: 0.2, lineHeight: 1.4 }}
-                    >
-                      {action.subtitle}
-                    </Typography>
-                  </Box>
-                  {loadingSuggestionsAction === action.value && (
-                    <CircularProgress size={16} color="inherit" />
-                  )}
-                </MenuItem>
-              ))}
-            </Menu>
-          )}
+                    setLoadingSuggestionsAction(null);
+                    setAiEditMenuAnchorEl(null);
+                    setCurrentSuggestionAction(null);
+                    return;
+                  }
+                  try {
+                    const res = await fetch(`${API_BASE_URL}/edit-text`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        title,
+                        bullets,
+                        action: action.value,
+                        currentFormat: currentBulletFormat,
+                      }),
+                    });
+                    const data = await res.json();
+                    if (Array.isArray(data.suggestions)) {
+                      setTextSuggestions(data.suggestions);
+                      setShowSuggestionsBox(true);
+                    }
+                  } catch (err) {
+                    console.error("Suggestion fetch error:", err);
+                    alert("Error generating suggestions.");
+                  } finally {
+                    setLoadingSuggestionsAction(null);
+                  }
+                }}
+              >
+                <Box sx={{ mt: "3px" }}>{action.icon}</Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    fontWeight={600}
+                    fontSize={14}
+                    color="text.primary"
+                  >
+                    {action.label}
+                  </Typography>
+                  <Typography
+                    fontSize={12}
+                    color="text.secondary"
+                    sx={{ mt: 0.2, lineHeight: 1.4 }}
+                  >
+                    {action.subtitle}
+                  </Typography>
+                </Box>
+                {loadingSuggestionsAction === action.value && (
+                  <CircularProgress size={16} color="inherit" />
+                )}
+              </MenuItem>
+            ))}
+          </Menu>
           <Popover
             open={showCustomPromptInput}
             anchorEl={aiEditMenuAnchorEl}
