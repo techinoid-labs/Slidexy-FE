@@ -1,5 +1,5 @@
 export const SLIDE_WIDTH = 500;
-export const SLIDE_HEIGHT =400;
+export const SLIDE_HEIGHT = 400;
 export const LEFT_PADDING = 17;
 
 export const getRandomSlide = () => {

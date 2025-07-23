@@ -285,7 +285,7 @@ export default function PresentationMaker({
       <Button
         fullWidth
         onClick={handleSubmit}
-        disabled={loading}
+        disabled={loading || !inputValue.trim()}
         sx={{
           position: "relative",
           overflow: "hidden",
@@ -297,10 +297,11 @@ export default function PresentationMaker({
           fontWeight: 600,
           mb: 4,
           height: { xs: 57, md: 70 },
-          border: "2px solid #8E2DE2",
+          border: `2px solid ${!inputValue.trim() ? "grey" : "#8E2DE2"}`,
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
+          opacity: !inputValue.trim() ? 0.7 : 1,
           "&:hover": { backgroundColor: "#f3eaff" },
           "&::before": {
             content: '""',
@@ -321,15 +322,8 @@ export default function PresentationMaker({
       >
         <span
           style={{
-            color: loading ? "white" : "#8E2DE2",
-            textShadow: loading
-              ? `
-        0 0 5px #8E2DE2,
-        
-       
-        0 0 20px #4A00E0
-      `
-              : "none",
+            color: loading ? "#fff" : !inputValue.trim() ? "grey" : "#8E2DE2",
+            textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
             transition: "color 0.6s ease, text-shadow 0.6s ease",
             fontWeight: 600,
           }}
@@ -345,8 +339,11 @@ export default function PresentationMaker({
             height: 22,
             ml: 1,
             background: loading
-              ? "green" // white icon when loading
+              ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
+              : !inputValue.trim()
+              ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
               : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",
@@ -355,7 +352,8 @@ export default function PresentationMaker({
             WebkitMaskRepeat: "no-repeat",
             maskPosition: "center",
             WebkitMaskPosition: "center",
-            transition: "background 0.4s ease",
+            transition: "background 0.4s ease, box-shadow 0.4s ease",
+            boxShadow: loading ? "0 0 10px #8E2DE2, 0 0 5px #4A00E0" : "none",
           }}
         />
       </Button>

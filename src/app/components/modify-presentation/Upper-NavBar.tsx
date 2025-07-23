@@ -38,6 +38,42 @@ const UpperNavBar: React.FC<{
     setMobileMenuAnchor(null);
   };
 
+  const [fileName, setFileName] = React.useState("Untitled");
+  const [editing, setEditing] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem("fileName");
+    if (saved) setFileName(saved);
+  }, []);
+
+  const handleEdit = () => setEditing(true);
+
+  const [error, setError] = React.useState(false);
+
+  const handleBlur = () => {
+    const trimmed = fileName.trim();
+
+    if (trimmed.length < 3) {
+      setError(true);
+      const saved = localStorage.getItem("fileName");
+      setFileName(saved || "Untitled");
+    } else {
+      setError(false);
+      localStorage.setItem("fileName", trimmed);
+      setFileName(trimmed);
+    }
+
+    setEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      inputRef.current?.blur();
+    }
+  };
+
   return (
     <AppBar
       position="static"
@@ -83,7 +119,7 @@ const UpperNavBar: React.FC<{
               display: { xs: "none", md: "block" },
             }}
           />
-          <IconButton sx={{ p: 1.5 }}>
+          {/* <IconButton sx={{ p: 1.5 }}>
             <Image
               src="/images/list-icon.svg"
               alt="List"
@@ -98,7 +134,7 @@ const UpperNavBar: React.FC<{
               width={25}
               height={25}
             />
-          </IconButton>
+          </IconButton> */}
 
           {/* File title/type always visible */}
           <Box
@@ -109,12 +145,45 @@ const UpperNavBar: React.FC<{
               ml: 1,
             }}
           >
-            <Typography
+            {/* <Typography
               variant="subtitle1"
               sx={{ fontWeight: { xs: 400, md: 600 }, fontSize: 16 }}
             >
               File Name Here
-            </Typography>
+            </Typography> */}
+
+            {editing ? (
+              <input
+                ref={inputRef}
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                autoFocus
+                style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  border: error ? "1px solid red" : "none",
+                  outline: "none",
+                  background: "transparent",
+                  padding: 0,
+                  margin: 0,
+                }}
+              />
+            ) : (
+              <Typography
+                variant="subtitle1"
+                onClick={handleEdit}
+                sx={{
+                  fontWeight: { xs: 400, md: 600 },
+                  fontSize: 16,
+                  cursor: "pointer",
+                  "&:hover": { textDecoration: "underline" },
+                }}
+              >
+                {fileName || "File Name Here"}
+              </Typography>
+            )}
             <Typography
               variant="caption"
               sx={{ color: "#888", mt: -0.5, fontSize: 12 }}
@@ -126,7 +195,7 @@ const UpperNavBar: React.FC<{
 
         {/* Right Icons */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton sx={{ p: 1.5 }}>
+          {/* <IconButton sx={{ p: 1.5 }}>
             <Image
               src="/images/profile-icon.svg"
               alt="Profile"
@@ -149,10 +218,10 @@ const UpperNavBar: React.FC<{
               width={40}
               height={40}
             />
-          </IconButton>
+          </IconButton> */}
 
           {/* Share Button */}
-          <Box
+          {/* <Box
             sx={{
               display: "flex",
               alignItems: "center",
@@ -180,53 +249,69 @@ const UpperNavBar: React.FC<{
               width={26}
               height={26}
             />
-          </Box>
+          </Box> */}
 
-          {/* Export PDF */}
-          <Box
-            onClick={onExportPDF}
-            sx={{
-              bgcolor: "#18181B",
-              background:
-                "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-              color: "#fff",
-              borderRadius: "999px",
-              px: 3,
-              py: 1.2,
-              cursor: "pointer",
-              fontSize: 14,
-              fontWeight: 600,
-              ml: 1,
-              "&:hover": { bgcolor: "#333" },
-            }}
-          >
-            Export as PDF
-          </Box>
+          {/* Desktop Export Buttons */}
+          {!isMobile && (
+            <>
+              <Box
+                onClick={onExportPDF}
+                sx={{
+                  bgcolor: "#18181B",
+                  background:
+                    "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                  color: "#fff",
+                  borderRadius: "999px",
+                  px: 3,
+                  py: 1.2,
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  ml: 1,
+                  "&:hover": { bgcolor: "#333" },
+                }}
+              >
+                Export as PDF
+              </Box>
 
-          {/* Export PPTX */}
-          {onExportPPT && (
-            <Box
-              onClick={onExportPPT}
-              sx={{
-                bgcolor: "#18181B",
-                background:
-                  "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-                color: "#fff",
-                borderRadius: "999px",
-                px: 3,
-                py: 1.2,
-                cursor: "pointer",
-                fontSize: 14,
-                fontWeight: 600,
-                ml: 1,
-                "&:hover": { bgcolor: "#333" },
-              }}
+              {onExportPPT && (
+                <Box
+                  onClick={onExportPPT}
+                  sx={{
+                    bgcolor: "#18181B",
+                    background:
+                      "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                    color: "#fff",
+                    borderRadius: "999px",
+                    px: 3,
+                    py: 1.2,
+                    cursor: "pointer",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    ml: 1,
+                    "&:hover": { bgcolor: "#333" },
+                  }}
+                >
+                  Export as PPTX
+                </Box>
+              )}
+            </>
+          )}
+
+          {/* Hamburger for mobile */}
+          {isMobile && (
+            <IconButton
+              size="large"
+              edge="end"
+              color="inherit"
+              onClick={handleMobileMenuOpen}
             >
-              Export as PPTX
-            </Box>
+              <MenuIcon />
+            </IconButton>
           )}
         </Box>
       </Toolbar>
+
       {/* Mobile menu */}
       <Menu
         anchorEl={mobileMenuAnchor}
@@ -235,7 +320,7 @@ const UpperNavBar: React.FC<{
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
-        <MenuItem
+        {/* <MenuItem
           onClick={() => {
             router.push("/home");
             handleMobileMenuClose();
@@ -272,9 +357,9 @@ const UpperNavBar: React.FC<{
             />
           </ListItemIcon>
           AI Star
-        </MenuItem>
+        </MenuItem> */}
         <Divider />
-        <MenuItem onClick={handleMobileMenuClose}>
+        {/* <MenuItem onClick={handleMobileMenuClose}>
           <ListItemIcon>
             <Image
               src="/images/bell-icon.svg"
@@ -284,7 +369,7 @@ const UpperNavBar: React.FC<{
             />
           </ListItemIcon>
           Notifications
-        </MenuItem>
+        </MenuItem> */}
         <MenuItem
           onClick={() => {
             onExportPDF();
@@ -293,7 +378,7 @@ const UpperNavBar: React.FC<{
         >
           <ListItemIcon>
             <Image
-              src="/images/bell-icon.svg"
+              src="/images/file.svg"
               alt="Export PDF"
               width={25}
               height={25}
@@ -301,7 +386,7 @@ const UpperNavBar: React.FC<{
           </ListItemIcon>
           Export as PDF
         </MenuItem>
-        {/* {onExportPPT && (
+        {onExportPPT && (
           <MenuItem
             onClick={() => {
               onExportPPT();
@@ -311,14 +396,14 @@ const UpperNavBar: React.FC<{
             <ListItemIcon>
               <Image
                 src="/images/file.svg"
-                alt="Export PPT"
+                alt="Export PPTX"
                 width={25}
                 height={25}
               />
             </ListItemIcon>
-            Export as PPT
+            Export as PPTX
           </MenuItem>
-        )} */}
+        )}
       </Menu>
     </AppBar>
   );

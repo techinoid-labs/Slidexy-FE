@@ -27,7 +27,7 @@ const fontOptions = ["Raleway", "Roboto", "Arial"];
 
 const weightOptions = [
   { label: "Regular", value: "normal" },
-  { label: "Semibold", value: "600" },
+  // { label: "Semibold", value: "600" },
   { label: "Bold", value: "bold" },
 ];
 
@@ -128,7 +128,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   };
 
   return (
-    <Box className="w-[410px] min-w-[350px] md:min-w-[410px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
+    <Box className="w-[360px] min-w-[320px] md:min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
       {/* Tabs */}
       <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
         <Box
@@ -145,7 +145,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         >
           Settings
         </Box>
-        <Box
+        {/* <Box
           sx={{
             color: "#888",
             fontWeight: 500,
@@ -156,8 +156,8 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           }}
         >
           Animate
-        </Box>
-        <Box sx={{ flex: 1 }} />
+        </Box> */}
+        {/* <Box sx={{ flex: 1 }} />
         <Select
           value={50}
           size="small"
@@ -174,7 +174,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           <MenuItem value={50}>50%</MenuItem>
           <MenuItem value={75}>75%</MenuItem>
           <MenuItem value={100}>100%</MenuItem>
-        </Select>
+        </Select> */}
       </Box>
 
       <Divider sx={{ my: 2 }} />
@@ -185,9 +185,9 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
             Text
           </Typography>
-          <IconButton size="small">
+          {/* <IconButton size="small">
             <SettingsIcon />
-          </IconButton>
+          </IconButton> */}
         </Box>
 
         <InputBase
@@ -289,7 +289,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
               </IconButton>
             );
           })}
-          <Box className="flex gap-1 bg-[#F8F8FA] rounded-md px-1 ml-2">
+          {/* <Box className="flex gap-1 bg-[#F8F8FA] rounded-md px-1 ml-2">
             {[
               VerticalAlignTopIcon,
               VerticalAlignCenterIcon,
@@ -308,7 +308,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
                 </IconButton>
               );
             })}
-          </Box>
+          </Box> */}
         </Box>
       </Box>
 
@@ -327,9 +327,6 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             onChange={(e) => {
               updateTextProperty("fill", e.target.value);
               setTextFillAndDisableTheme(e.target.value);
-              // updateTextProperty("useThemeColor", false);
-
-              // !selectedShapeIndex && setPrimaryColor(e.target.value);
             }}
           />
           <Typography sx={{ fontSize: 14 }}>{fill.toUpperCase()}</Typography>

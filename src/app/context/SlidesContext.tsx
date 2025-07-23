@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setSlides, updateSlide } from "../slice/slidesSlice";
+import { setSlides, updateSlide, removeSlides } from "../slice/slidesSlice";
 import type { Slide } from "../slice/slidesSlice";
 import type { RootState } from "../store/store";
 
@@ -20,6 +20,7 @@ interface SlidesContextType {
   selectedTextId: null | string;
   setSelectedTextId: (id: string | null) => void;
   selectedShapeIndex: number | null;
+  removeSlides: () => void;
   setSelectedShapeIndex: (index: number | null) => void;
   tooltip: { visible: boolean; x: number; y: number; node: any | null };
   setTooltip: (tooltip: {
@@ -38,6 +39,7 @@ const SlidesContext = createContext<SlidesContextType>({
   setSelectedSlideIndex: () => {},
   selectedImage: null,
   setSelectedImage: () => {},
+  removeSlides: () => {},
   selectedImageIndex: null,
   setSelectedImageIndex: () => {},
   selectedTextId: null,
@@ -71,6 +73,10 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch(setSlides(newSlides));
   };
 
+  const handleDeleteSlides = () => {
+    dispatch(setSlides([]));
+  };
+
   const handleUpdateSlides = (slides: any) => {
     dispatch(updateSlide(slides));
   };
@@ -80,6 +86,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         slides,
         setSlides: handleSetSlides,
+        removeSlides: handleDeleteSlides,
         // updateSlides: handleUpdateSlides,
         selectedSlideIndex,
         setSelectedSlideIndex,

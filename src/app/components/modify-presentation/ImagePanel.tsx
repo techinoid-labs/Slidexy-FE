@@ -133,7 +133,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   };
 
   return (
-    <Box className="w-[410px] min-w-[350px] md:min-w-[410px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
+    <Box className="w-[360px] min-w-[320px] md:min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
       {/* Tabs */}
       <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
         <Box

@@ -17,15 +17,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/lib/theme-toggle";
 import { Typography } from "@mui/material";
-import { useRouter } from "next/navigation";
-
+import { useSlides } from "@/app/context/SlidesContext";
 import { clearPersistedSlides } from "@/app/store/store";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function StepsHeader() {
   const theme = useMuiTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const router = useRouter();
+  const { removeSlides } = useSlides();
+  const pathname = usePathname();
+
+  const handleGoBack = () => {
+    if (pathname === "/editor") {
+      router.push("/presentation/outline");
+    } else if (pathname === "/presentation/outline") {
+      router.push("/presentation/create");
+    } else if (pathname === "/presentation/create") {
+      router.push("/home");
+    } else {
+      router.back(); // fallback
+    }
+  };
+
   return (
     <AppBar
       position="sticky"
@@ -56,7 +71,9 @@ export default function StepsHeader() {
           }}
         >
           <Button
-            onClick={() => router.push("/home")}
+            onClick={() => {
+              handleGoBack();
+            }}
             startIcon={
               <Image src="/arrow-left.svg" alt="Back" width={19} height={19} />
             }
@@ -97,8 +114,10 @@ export default function StepsHeader() {
         >
           <Button
             onClick={() => {
+              localStorage.removeItem("fileName");
               clearPersistedSlides();
-              router.push("/home");
+              removeSlides();
+              handleGoBack();
             }}
             // startIcon={
             //   <Image src="/arrow-left.svg" alt="Back" width={19} height={19} />

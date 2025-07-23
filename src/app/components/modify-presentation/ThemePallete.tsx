@@ -156,7 +156,7 @@ const ThemePanel = ({ resetAll }: any) => {
   };
 
   return (
-    <Box className="w-[410px] min-w-[350px] md:min-w-[410px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
+    <Box className="w-[360px] min-w-[320px] md:min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
       {/* Tabs */}
       <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
         <Box
@@ -173,7 +173,7 @@ const ThemePanel = ({ resetAll }: any) => {
         >
           Settings
         </Box>
-        <Box
+        {/* <Box
           sx={{
             color: "#888",
             fontWeight: 500,
@@ -184,8 +184,8 @@ const ThemePanel = ({ resetAll }: any) => {
           }}
         >
           Animate
-        </Box>
-        <Box sx={{ flex: 1 }} />
+        </Box> */}
+        {/* <Box sx={{ flex: 1 }} />
         <Select
           value={50}
           size="small"
@@ -202,7 +202,7 @@ const ThemePanel = ({ resetAll }: any) => {
           <MenuItem value={50}>50%</MenuItem>
           <MenuItem value={75}>75%</MenuItem>
           <MenuItem value={100}>100%</MenuItem>
-        </Select>
+        </Select> */}
       </Box>
       <Divider sx={{ my: 2 }} />
       {/* Theme Palette */}

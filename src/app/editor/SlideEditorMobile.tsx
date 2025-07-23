@@ -21,10 +21,13 @@ import {
 } from "../../utils/slideUtilsmobile";
 import { v4 as uuidv4 } from "uuid";
 import TextSettingsPanelMobile from "../components/modify-presentation/TextPanelMobile";
-const IMAGE_WIDTH =  100;
+const IMAGE_WIDTH = 100;
 const IMAGE_PADDING = 5;
-const textMaxWidth = (SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING)-100;
-const textMaxHeight = SLIDE_HEIGHT - 60 - 20; 
+const textMaxWidth =
+  SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING - 100;
+const textMaxHeight = SLIDE_HEIGHT - 60 - 20;
+
+console.log({ textMaxWidth });
 const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const dispatch = useDispatch();
   const {
@@ -145,7 +148,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             const titleProps = title.properties;
             const titleY = 60;
             const bulletGap = 2;
-            const bulletStartY = titleY + titleProps.fontSize-50;
+            const bulletStartY = titleY + titleProps.fontSize - 50;
 
             return (
               <Box
@@ -161,8 +164,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 }}
               >
                 <Stage
-                  width={SLIDE_WIDTH/1.5}
-                  height={SLIDE_HEIGHT/1.01}
+                  width={SLIDE_WIDTH / 1.5}
+                  height={SLIDE_HEIGHT / 1.01}
                   ref={(ref: any) => {
                     stageRefs.current[index] =
                       ref?.getStage()?.content?.querySelector("canvas") || null;
@@ -172,7 +175,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       e.target === e.target.getStage() ||
                       e.target.name() === "background";
                     if (clickedOnEmpty) {
-                      console.log("Stage width:", SLIDE_WIDTH/1.5);
+                      console.log("Stage width:", SLIDE_WIDTH / 1.5);
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
                       setSelectedShapeIndex(null);
@@ -194,7 +197,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           setSelectedImageIndex(null);
                           setSelectedShapeIndex(null);
                           setSelectedImage(null);
-                          setTooltip({ visible: false, x: 0, y: 0, node: null });
+                          setTooltip({
+                            visible: false,
+                            x: 0,
+                            y: 0,
+                            node: null,
+                          });
                         }}
                       />
                     ) : (
@@ -418,7 +426,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             <TextSettingsPanelMobile
               style={{
                 top: tooltip.y,
-                left: tooltip.x-15,
+                left: tooltip.x - 15,
               }}
               onClose={() => setTooltip({ ...tooltip, visible: false })}
             />
@@ -426,7 +434,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           <SlidePreviews
             slides={slides}
             selectedIndex={selectedIndex}
-            slide_width={SLIDE_WIDTH/1.6}
+            slide_width={SLIDE_WIDTH / 1.6}
             onSelect={setSelectedIndex}
             onAddSlide={handleAddSlide}
             onDeleteSlide={handleDeleteSlide}

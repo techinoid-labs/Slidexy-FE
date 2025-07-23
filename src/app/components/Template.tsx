@@ -687,7 +687,7 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose }: any) => {
       </Box>
 
       {/* Tabs */}
-      <Box sx={{ display: "flex", px: 3 }}>
+      {/* <Box sx={{ display: "flex", px: 3 }}>
         <Box
           sx={{
             flex: 1,
@@ -717,7 +717,7 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose }: any) => {
         >
           Your Templates
         </Box>
-      </Box>
+      </Box> */}
 
       <Divider sx={{ my: 2 }} />
 

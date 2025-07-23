@@ -60,7 +60,9 @@ const slidesSlice = createSlice({
     setSlides: (state, action: PayloadAction<Slide[]>) => {
       state.slides = action.payload;
     },
-
+    removeSlides: (state) => {
+      state.slides = [];
+    },
     updateSlideImages: (
       state,
       action: PayloadAction<{ slideIndex: number; updatedImages: string[] }>
@@ -68,7 +70,6 @@ const slidesSlice = createSlice({
       state.slides[action.payload.slideIndex].images =
         action.payload.updatedImages;
     },
-
     addTextElementToSlide: (
       state,
       action: PayloadAction<{
@@ -80,7 +81,6 @@ const slidesSlice = createSlice({
       if (!state.slides[slideIndex]) return;
       state.slides[slideIndex].elements.push(newElement);
     },
-
     updateSlide: (
       state,
       action: PayloadAction<{
@@ -102,6 +102,7 @@ export const {
   updateSlideImages,
   addTextElementToSlide,
   updateSlide,
+  removeSlides,
 } = slidesSlice.actions;
 
 export default slidesSlice.reducer;
