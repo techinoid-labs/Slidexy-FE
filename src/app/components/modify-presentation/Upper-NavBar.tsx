@@ -63,50 +63,42 @@ const UpperNavBar: React.FC<{
           px: 3,
         }}
       >
-        {/* Left section */}
+        {/* Left Icons */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, ml: -1 }}>
-          {isMobile ? (
-            <IconButton onClick={handleMobileMenuOpen} sx={{ p: 1 }}>
-              <MenuIcon />
-            </IconButton>
-          ) : (
-            <>
-              <IconButton onClick={() => router.push("/home")} sx={{ p: 1 }}>
-                <Image
-                  src="/images/home-icon.svg"
-                  alt="Home"
-                  width={25}
-                  height={25}
-                />
-              </IconButton>
-              <Box
-                sx={{
-                  width: "1px",
-                  height: 32,
-                  background: "#E0E0E0",
-                  borderRadius: 1,
-                  mx: 1,
-                  display: { xs: "none", md: "block" },
-                }}
-              />
-              <IconButton sx={{ p: 1.5 }}>
-                <Image
-                  src="/images/list-icon.svg"
-                  alt="List"
-                  width={25}
-                  height={25}
-                />
-              </IconButton>
-              <IconButton sx={{ p: 1.5 }}>
-                <Image
-                  src="/images/ai-star.svg"
-                  alt="Star"
-                  width={25}
-                  height={25}
-                />
-              </IconButton>
-            </>
-          )}
+          <IconButton onClick={() => router.push("/home")} sx={{ p: 1 }}>
+            <Image
+              src="/images/home-icon.svg"
+              alt="Home"
+              width={25}
+              height={25}
+            />
+          </IconButton>
+          <Box
+            sx={{
+              width: "1px",
+              height: 32,
+              background: "#E0E0E0",
+              borderRadius: 1,
+              mx: 1,
+              display: { xs: "none", md: "block" },
+            }}
+          />
+          <IconButton sx={{ p: 1.5 }}>
+            <Image
+              src="/images/list-icon.svg"
+              alt="List"
+              width={25}
+              height={25}
+            />
+          </IconButton>
+          <IconButton sx={{ p: 1.5 }}>
+            <Image
+              src="/images/ai-star.svg"
+              alt="Star"
+              width={25}
+              height={25}
+            />
+          </IconButton>
 
           {/* File title/type always visible */}
           <Box
@@ -132,81 +124,34 @@ const UpperNavBar: React.FC<{
           </Box>
         </Box>
 
-        {/* Right section */}
+        {/* Right Icons */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {/* Only show these on desktop */}
-          {!isMobile && (
-            <>
-              <IconButton sx={{ p: 1.5 }}>
-                <Image
-                  src="/images/profile-icon.svg"
-                  alt="Profile"
-                  width={40}
-                  height={40}
-                />
-              </IconButton>
-              <IconButton sx={{ p: 1.5 }}>
-                <Image
-                  src="/images/bell-icon.svg"
-                  alt="Notifications"
-                  width={40}
-                  height={40}
-                />
-              </IconButton>
-            </>
-          )}
-          {/* Always show profile icon, play, share on mobile */}
-          {isMobile && (
-            <Box
-              sx={{
-                width: { xs: 46, md: 50 }, // Responsive width
-                height: { xs: 46, md: 50 }, // Responsive height
-                position: "relative",
-                // Required for next/image layout
-                mb: { xs: 1, md: 3 },
-                mt: { xs: 2.3, md: 3 },
-                mr: { xs: -1.5, md: 3 },
-              }}
-            >
-              <IconButton
-                sx={{ p: { xs: 0.5, md: 1.5 }, mr: { xs: 1, md: 3 } }}
-              >
-                <Image
-                  src="/images/profile-icon.svg"
-                  alt="Profile"
-                  width={40}
-                  height={40}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
-                    marginBottom: 3,
-                  }}
-                />
-              </IconButton>
-            </Box>
-          )}
-          <Box
-            sx={{
-              width: { xs: 40, md: 120 }, // Responsive width
-              height: { xs: 40, md: 120 }, // Responsive height
-              position: "relative",
-              // Required for next/image layout
-              mb: { xs: 1, md: 0 },
-              mt: { xs: 1, md: 6.5 },
-              ml: { xs: 0, md: 0 },
-              mr: { md: -10 },
-            }}
-          >
-            <IconButton sx={{ p: { xs: 0.5, md: 1.5 } }}>
-              <Image
-                src="/images/play-button.svg"
-                alt="Play"
-                width={40}
-                height={40}
-              />
-            </IconButton>
-          </Box>
+          <IconButton sx={{ p: 1.5 }}>
+            <Image
+              src="/images/profile-icon.svg"
+              alt="Profile"
+              width={40}
+              height={40}
+            />
+          </IconButton>
+          <IconButton sx={{ p: 1.5 }}>
+            <Image
+              src="/images/bell-icon.svg"
+              alt="Notifications"
+              width={40}
+              height={40}
+            />
+          </IconButton>
+          <IconButton sx={{ p: 1.5 }}>
+            <Image
+              src="/images/play-button.svg"
+              alt="Play"
+              width={40}
+              height={40}
+            />
+          </IconButton>
+
+          {/* Share Button */}
           <Box
             sx={{
               display: "flex",
