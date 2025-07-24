@@ -147,7 +147,10 @@ export default function OutlinePage() {
       );
       // Dispatch updated slides to Redux store
       const mappedSlides = mapCardsToSlides(newCards);
-      dispatch(setSlides(mappedSlides));
+      setTimeout(() => {
+        dispatch(setSlides(mappedSlides));
+      }, 100);
+
       return newCards;
     });
     setEditingBulletsIdx(null);
@@ -201,10 +204,15 @@ export default function OutlinePage() {
     setEditingTitle(e.target.value);
   const handleTitleEditSave = (idx: number) => {
     setCards((prev) => {
-      const newCards = prev.map((c, i) => (i === idx ? { ...c, title: editingTitle } : c));
+      const newCards = prev.map((c, i) =>
+        i === idx ? { ...c, title: editingTitle } : c
+      );
       // Dispatch updated slides to Redux store
       const mappedSlides = mapCardsToSlides(newCards);
-      dispatch(setSlides(mappedSlides));
+      setTimeout(() => {
+        dispatch(setSlides(mappedSlides));
+      }, 100);
+
       return newCards;
     });
     setEditingIdx(null);
@@ -250,7 +258,10 @@ export default function OutlinePage() {
       );
       // Dispatch updated slides to Redux store
       const mappedSlides = mapCardsToSlides(newCards);
-      dispatch(setSlides(mappedSlides));
+      setTimeout(() => {
+        dispatch(setSlides(mappedSlides));
+      }, 100);
+
       return newCards;
     });
     if (updated.image_url) {
@@ -265,7 +276,10 @@ export default function OutlinePage() {
       );
       // Dispatch updated slides to Redux store
       const mappedSlides = mapCardsToSlides(newCards);
-      dispatch(setSlides(mappedSlides));
+      setTimeout(() => {
+        dispatch(setSlides(mappedSlides));
+      }, 100);
+
       return newCards;
     });
   };
