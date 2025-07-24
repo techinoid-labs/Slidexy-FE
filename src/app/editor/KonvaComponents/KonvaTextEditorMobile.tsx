@@ -22,6 +22,7 @@ interface KonvaTextEditorProps {
   fontWeight?: string;
   align?: "left" | "center" | "right" | "justify";
   opacity?: number;
+  height?: number;
   width?: number;
   wrap?: "word" | "char";
   draggable?: boolean;
