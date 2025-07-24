@@ -203,12 +203,11 @@ const MobileTemplatePanel = ({
     <Box
       sx={{
         position: "fixed",
-       left: "4%",
-        width: 380,
+       left: "8%",
+         width: window.innerWidth * 0.84,
+        height: window.innerHeight * 0.5,
         //right: "50%",
         bottom: 0,
-        
-        height: 550,
         bgcolor: "#fff",
         borderLeft: "1px solid #E0E0E0",
         zIndex: 10,
@@ -241,7 +240,7 @@ const MobileTemplatePanel = ({
           borderTopRightRadius: "48px",
         }}
       >
-        <Typography fontSize={20} fontWeight={400}>
+        <Typography fontSize={18} fontWeight={400}>
           Templates
         </Typography>
         <IconButton size="small" onClick={onClose}>
@@ -250,7 +249,7 @@ const MobileTemplatePanel = ({
       </Box>
 
       {/* Search Bar */}
-      <Box sx={{ px: 3, py: 2, mt: "48px" }}>
+      <Box sx={{ px: 3, py: 2, mt: "20px" }}>
         <Box
           sx={{
             display: "flex",
@@ -258,7 +257,7 @@ const MobileTemplatePanel = ({
             bgcolor: "#F5F5F5",
             borderRadius: 2,
             px: 2,
-            height: 42,
+            height: 30,
             border: "1px solid #DDD",
           }}
         >
@@ -288,7 +287,7 @@ const MobileTemplatePanel = ({
       </Box>
 
       {/* Tabs */}
-      <Box sx={{ display: "flex", px: 3, mt: 2 }}>
+      <Box sx={{ display: "flex", px: 5.5, mt: 0, height: "30px" }}>
         <Box
           sx={{
             flex: 1,
@@ -297,13 +296,14 @@ const MobileTemplatePanel = ({
             fontWeight: 600,
             borderRadius: 2,
             textAlign: "center",
-            py: 1,
-            fontSize: 15,
+            py: 0.5,
+            fontSize: 12,
+            maxWidth : "100px",
           }}
         >
           From Slide AI
         </Box>
-        <Box sx={{ width: 8 }} />
+        <Box sx={{ display: "flex", px: 1.5, mt: 0, height: "30px"}} />
         <Box
           sx={{
             flex: 1,
@@ -312,8 +312,9 @@ const MobileTemplatePanel = ({
             fontWeight: 500,
             borderRadius: 2,
             textAlign: "center",
-            py: 1,
-            fontSize: 15,
+            py: 0.5,
+            fontSize: 12,
+            maxWidth: "100px",
           }}
         >
           Your Templates
@@ -323,12 +324,14 @@ const MobileTemplatePanel = ({
       <Divider sx={{ my: 2 }} />
 
       {/* Theme Cards */}
-      <Box sx={{ flex: 1, overflowY: "auto", px: 3, pb: 3, gap: 20 }}>
+      <Box sx={{ flex: 1, overflowY: "auto", px: 3, pb: 3, gap: 20, flexDirection: "row", flexGrow: "row" }}>
         {themes.length > 0 ? (
           <>
             <Box
               sx={{
                 display: "flex",
+                flexGrow: "row",
+                flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
                 mb: 2,
@@ -353,7 +356,7 @@ const MobileTemplatePanel = ({
                     selectedTheme?.image_url === theme.image_url
                       ? "2px solid #7B4AE2"
                       : "1px solid #EEE",
-                  borderRadius: 3,
+                  borderRadius: 2,
                   boxShadow:
                     selectedTheme?.image_url === theme.image_url
                       ? "0 4px 16px rgba(123,74,226,0.12)"
@@ -371,8 +374,8 @@ const MobileTemplatePanel = ({
                     src={theme.image_url}
                     alt="theme"
                     style={{
-                      width: 200,
-                      height: 140,
+                      width: 120,
+                      height: 90,
                       objectFit: "cover",
                       borderRadius: 8,
                       border: "1px solid #DDD",
@@ -389,8 +392,8 @@ const MobileTemplatePanel = ({
                     }
                     alt="theme"
                     style={{
-                      width: 200,
-                      height: 140,
+                      width: 100,
+                      height: 70,
                       objectFit: "cover",
                       borderRadius: 8,
                       border: "1px solid #DDD",
@@ -401,9 +404,9 @@ const MobileTemplatePanel = ({
                 )}
                 <Box sx={{ flex: 1 }}>
                   <Typography
-                    fontSize={15}
-                    fontWeight={600}
-                    sx={{ color: theme.primaryColor }}
+                    fontSize={12}
+                    fontWeight={300}
+                    sx={{ color: "#1a1a1a" }}
                   >
                     {theme.font}
                   </Typography>

@@ -149,8 +149,8 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
         position: "fixed",
         bottom: 0,
         left: "8%",
-        width: 350,
-        height: 700,
+        width: window.innerWidth * 0.84,
+        height: window.innerHeight * 0.5,
         bgcolor: "#fff",
         border: "1px solid #E0E0E0",
         zIndex: 10,
@@ -172,13 +172,13 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
           mb: 2,
         }}
       >
-        <Typography sx={{ fontWeight: 600, fontSize: 20 }}>Media</Typography>
+        <Typography sx={{ fontWeight: 500, fontSize: 15 }}>Media</Typography>
         <IconButton size="small" onClick={onClose}>
           <CloseIcon />
         </IconButton>
       </Box>
 
-      {/* Upload Dropdown */}
+      {/* Upload Dropdown
       <Box sx={{ mb: 2 }}>
         <Select
           value={uploadType}
@@ -196,7 +196,7 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
         >
           <MenuItem value="Upload Image">Upload Image</MenuItem>
         </Select>
-      </Box>
+      </Box> */}
 
       {/* Upload Area */}
       <Box sx={{ mb: 2 }}>
@@ -214,9 +214,9 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
           onDrop={handleDrop}
           sx={{
             width: "100%",
-            height: 200,
+            height: 120,
             border: dragActive ? "2px solid #7B4AE2" : "2px dashed #E0E0E0",
-            borderRadius: 4,
+            borderRadius: 2,
             bgcolor: "#FAFAFC",
             display: "flex",
             flexDirection: "column",
@@ -232,18 +232,18 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
             sx={{
               bgcolor: "#F3F3F7",
               borderRadius: "50%",
-              p: 1.2,
+              p: 1,
               mb: 1,
               boxShadow: "0 2px 8px 0 #E0E0E0",
             }}
           >
-            <CloudUploadIcon sx={{ fontSize: 32, color: "#B0AEB8" }} />
+            <CloudUploadIcon sx={{ fontSize: 20, color: "#B0AEB8", width: "20px", height: "20px" }} />
           </Box>
           <Typography
             sx={{
               color: "#7B4AE2",
               fontWeight: 500,
-              fontSize: 15,
+              fontSize: 12,
               mb: 0.5,
               cursor: "pointer",
               textDecoration: "underline",
@@ -251,7 +251,7 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
           >
             Click to upload
           </Typography>
-          <Typography sx={{ color: "#888", fontSize: 13, textAlign: "center" }}>
+          <Typography sx={{ color: "#888", fontSize: 9, textAlign: "center" }}>
             or drag and drop
             <br />
             SVG, PNG, JPG or GIF (max. 800x400px)

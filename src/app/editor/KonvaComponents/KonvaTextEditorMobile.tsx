@@ -199,11 +199,12 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     (e: KonvaEventObject<DragEvent>) => {
       const node = textRef.current;
       if (!node) return;
+      const boundingBox = node.getClientRect();
       const { x, y, isAtBoundary } = constrainToCanvas(
         node.x(),
         node.y(),
         node.width(),
-        node.height(),
+        boundingBox.height,
         getSlideDimensions().SLIDE_WIDTH,
         getSlideDimensions().SLIDE_HEIGHT
       );
@@ -411,7 +412,9 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
               boxSizing: "border-box",
             }}
           />
+          
         </Html>
+        
       )}
     </>
   );

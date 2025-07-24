@@ -247,8 +247,8 @@ const MobileShapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
         position: "fixed",
         bottom: 0,
         left: "8%",
-        width: 350,
-        height: 720,
+         width: window.innerWidth * 0.84,
+        height: window.innerHeight * 0.5,
         bgcolor: "#fff",
         border: "1px solid #E0E0E0",
         zIndex: 10,
@@ -269,9 +269,9 @@ const MobileShapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
           mb: 2,
           flexShrink: 0,
           bgcolor: "#fff",
-          position: "sticky",
+          position: "relative",
           top: 0,
-          zIndex: 1,
+          //zIndex: 1,
         }}
       >
         <Typography sx={{ fontWeight: 600, fontSize: 20 }}>Shapes</Typography>
@@ -280,7 +280,7 @@ const MobileShapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
         </IconButton>
       </Box>
 
-      <Box sx={{ mb: 2 }}>
+      {/* <Box sx={{ mb: 2 }}>
         <Box
           sx={{
             display: "flex",
@@ -295,12 +295,10 @@ const MobileShapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
           <SearchIcon sx={{ color: "#B0AEB8", mr: 1 }} />
           <InputBase placeholder="Search..." sx={{ flex: 1, fontSize: 15 }} />
         </Box>
-      </Box>
+      </Box> */}
 
       <Box sx={{ pb: 2 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1 }}>
-          Essentials
-        </Typography>
+        
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
           {shapes.map((shape, idx) => (
             <Box
