@@ -1,32 +1,28 @@
 "use client";
-
 import { useEffect, useState } from "react";
 
-export default function InfographicsPage() {
-  const [infographicData, setInfographicData] = useState<any>(null);
+export default function InfographicDisplay() {
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     const stored = localStorage.getItem("infographicData");
     if (stored) {
-      setInfographicData(JSON.parse(stored));
+      const data = JSON.parse(stored);
+      setImageUrl(data.imageUrl || "");
     }
   }, []);
 
-  if (!infographicData) return <div>Loading...</div>;
-
   return (
-    <div>
-      <h1>{infographicData.title}</h1>
-      {infographicData.sections.map((section: any, idx: number) => (
-        <div key={idx}>
-          <h2>{section.heading}</h2>
-          <p>{section.description}</p>
-          <img src={section.image_url} alt={section.heading} />
-        </div>
-      ))}
-      <footer>
-        <p>{infographicData.footerText}</p>
-      </footer>
+    <div style={{ textAlign: "center", padding: "2rem" }}>
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt="Generated Infographic"
+          style={{ maxWidth: "100%", borderRadius: "10px" }}
+        />
+      ) : (
+        <p>No infographic found.</p>
+      )}
     </div>
   );
 }

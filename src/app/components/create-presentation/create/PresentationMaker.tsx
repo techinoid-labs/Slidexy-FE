@@ -118,7 +118,7 @@ export default function PresentationMaker({
         : inputMode === "Website"
         ? { source: "website", inputWebsiteUrl: inputValue }
         : inputMode === "Infographic"
-        ? { input: inputValue }
+        ? { topic: inputValue }
         : { source: "text", textContent: inputValue };
 
 
@@ -163,24 +163,26 @@ export default function PresentationMaker({
       
       
       if (inputMode === "Infographic") {
-        const { title, content } = data;
+        const { image } = data;
 
-        const infographicPayload = {
-          title,
-          sections: content.sections,
-          footerText: content.footerText,
+        if (!image) {
+          throw new Error("No infographic image returned from backend.");
+        }
+
+        const infographicPayload = {          
+          imageUrl: image,
         };
 
-        // Temporarily store in local/session storage or pass via router (example below uses localStorage)
+        // You can store it for retrieval on /infographics page
         localStorage.setItem(
           "infographicData",
           JSON.stringify(infographicPayload)
         );
 
         router.push("/infographics");
-
-        
-      } else {
+      } 
+      
+      else {
         setSlides(data.slides);
         router.push("/presentation/outline");
       }
