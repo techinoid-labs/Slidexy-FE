@@ -186,24 +186,28 @@ const Page = () => {
               className={`
     ${isXLScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
     bg-white shadow-md transition-all duration-300 ease-in-out flex
-     ${!isXLScreen && showRightPanel ? "w-96" : isXLScreen ? "w-0" : "w-0"}
+     ${
+       !isXLScreen && showRightPanel ? "w-96" : isXLScreen ? "w-[360px]" : "w-0"
+     }
   `}
             >
               {/* Toggle Tab */}
-              <div
-                className={`
+              {!isXLScreen && (
+                <div
+                  className={`
       absolute -left-5 top-24
       bg-white border-r-0 border border-gray-200 shadow-xl
       rounded-l-md px-2 py-2 cursor-pointer z-50
     `}
-                onClick={() => setShowRightPanel(!showRightPanel)}
-              >
-                {showRightPanel ? (
-                  <CloseIcon color="primary" fontSize="small" />
-                ) : (
-                  <SettingsIcon color="primary" fontSize="small" />
-                )}
-              </div>
+                  onClick={() => setShowRightPanel(!showRightPanel)}
+                >
+                  {showRightPanel ? (
+                    <CloseIcon color="primary" fontSize="small" />
+                  ) : (
+                    <SettingsIcon color="primary" fontSize="small" />
+                  )}
+                </div>
+              )}
 
               {/* Content area only shows if expanded */}
               <div

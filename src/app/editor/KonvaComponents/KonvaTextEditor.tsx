@@ -53,6 +53,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   const { selectedTheme } = useSlideThemeContext();
   const { slides } = useSlides();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lastTap = useRef<number | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(text);
@@ -139,13 +140,45 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [isEditing]);
+  useEffect(() => {
+    const handleStageClick = (e: MouseEvent | TouchEvent) => {
+      if (!textRef.current || !isSelected) return;
+
+      const stage = textRef.current.getStage();
+      const clickedOnText =
+        stage?.findOne(`#${textRef.current._id}`) === e.target;
+
+      // If clicked somewhere else, deselect
+      if (!clickedOnText) {
+        setIsEditing(false);
+      }
+    };
+
+    const stage = textRef.current?.getStage();
+    stage?.on("mousedown touchstart", handleStageClick);
+
+    return () => {
+      stage?.off("mousedown touchstart", handleStageClick);
+    };
+  }, [isSelected]);
 
   return (
     <>
       <Text
         onClick={onSelect}
         onTap={onSelect}
-        onTouchStart={onSelect}
+        onTouchEnd={(e) => {
+          onSelect(); // select on any touch
+
+          const now = Date.now();
+          const DOUBLE_TAP_DELAY = 300;
+
+          if (lastTap.current && now - lastTap.current < DOUBLE_TAP_DELAY) {
+            setIsEditing(true); // double-tap
+          }
+
+          lastTap.current = now;
+        }}
         ref={textRef}
         text={text}
         x={x}
