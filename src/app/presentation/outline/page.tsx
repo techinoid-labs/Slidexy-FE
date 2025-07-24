@@ -12,7 +12,12 @@ import { useRouter } from "next/navigation";
 import type { Slide } from "@/app/slice/slidesSlice";
 import StepIndicator from "@/app/components/shared/StepIndicator";
 import StepsHeader from "@/app/components/shared/StepsHeader";
-import { SLIDE_WIDTH, SLIDE_HEIGHT } from "@/utils/slideUtils";
+import {
+  SLIDE_WIDTH,
+  SLIDE_HEIGHT,
+  IMG_WIDTH,
+  IMG_HEIGHT,
+} from "@/utils/slideUtils";
 // API response type and map helper
 export interface SlideApiResponse {
   slide_id: string;
@@ -91,10 +96,14 @@ function mapCardsToSlides(cards: any[]): Slide[] {
             konva_component: "Konva.Image",
             properties: {
               imageSrc: card.images[0],
-              x: SLIDE_WIDTH - 500,
-              y: (SLIDE_HEIGHT - 400) / 2,
-              width: 480,
-              height: 400,
+              // x: SLIDE_WIDTH - 500,
+              // y: (SLIDE_HEIGHT - 400) / 2,
+              // width: 480,
+              // height: 400,
+              x: SLIDE_WIDTH - 400,
+              y: (SLIDE_HEIGHT - 320) / 2,
+              width: IMG_WIDTH,
+              height: IMG_HEIGHT,
             },
           },
         ]

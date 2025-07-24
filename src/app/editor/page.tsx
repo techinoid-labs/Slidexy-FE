@@ -12,13 +12,15 @@ import { useRouter } from "next/navigation";
 import { exportSlidesAsPDF } from "@/utils/exportSlides";
 import { exportSlidesAsPPT } from "@/utils/exportSlidesAsPPT";
 import type { StructuredSlide } from "@/utils/exportSlidesAsPPT";
-
+import SettingsIcon from "@mui/icons-material/Settings";
+import CloseIcon from "@mui/icons-material/Close";
 import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
 import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";
 import { useTheme, useMediaQuery } from "@mui/material";
 import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mobile";
 import MobileSlideEditor from "./SlideEditorMobile";
 import TextSettingsPanelMobile from "@/app/components/modify-presentation/TextPanelMobile";
+import { Button } from "@mui/material"; // Optional: MUI or use your own toggle icon
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
@@ -35,13 +37,15 @@ const Page = () => {
   const [initialSlides] = useState(() => slides);
   // Separate state for mobile text selection
   const [isMobileTextSelected, setIsMobileTextSelected] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(false);
+  const theme = useTheme();
+  const isXLScreen = useMediaQuery(theme.breakpoints.up("xl"));
 
   const resetAll = () => {
     dispatch(setSlides(initialSlides));
     setSelectedTextId(null);
     setIsMobileTextSelected(false);
   };
-
   const handleExportPPTX = () => {
     const structuredSlides: StructuredSlide[] = slides.map((slide) => {
       const elements: StructuredSlide["elements"] = [];
@@ -101,7 +105,6 @@ const Page = () => {
 
   const handleExportPDF = () => exportSlidesAsPDF(stageRefs.current);
 
-  const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   return (
@@ -142,21 +145,84 @@ const Page = () => {
             )}
           </>
         ) : (
-          <>
-            <SideNavBar
-              showTemplatePanel={showTemplatePanel}
-              setShowTemplatePanel={setShowTemplatePanel}
-            />
-            <SlideEditor slides={slides} stageRefs={stageRefs} />
-            {/* Only show web text panel on desktop */}
-            {(isTextSelected || isShapeSelected) && (
-              <TextSettingsPanel resetAll={resetAll} />
-            )}
-            {isImageSelected && <ImageSettingsPanel />}
-            {!isTextSelected && !isShapeSelected && !isImageSelected && (
-              <ThemePanel resetAll={resetAll} />
-            )}
-          </>
+          <div className="relative flex flex-1 min-h-0 overflow-hidden">
+            <div className="shrink-0 z-10">
+              <SideNavBar
+                showTemplatePanel={showTemplatePanel}
+                setShowTemplatePanel={setShowTemplatePanel}
+              />
+            </div>
+
+            <div className="flex-1 overflow-auto z-0">
+              <SlideEditor slides={slides} stageRefs={stageRefs} />
+            </div>
+
+            {/* {!isXLScreen && (
+              <button
+                className="fixed top-24 right-4 z-50 bg-white border shadow-lg p-2 rounded-full hover:bg-gray-100 transition-colors"
+                onClick={() => setShowRightPanel((prev) => !prev)}
+                aria-label="Toggle settings panel"
+              >
+                {showRightPanel ? <CloseIcon /> : <SettingsIcon />}
+              </button>
+            )} */}
+
+            {/* <div
+              className={`
+      ${isXLScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
+      bg-white shadow-md transition-transform duration-300 ease-in-out
+      ${!isXLScreen && !showRightPanel ? "translate-x-full" : "translate-x-0"}
+    `}
+            >
+              {(isTextSelected || isShapeSelected) && (
+                <TextSettingsPanel resetAll={resetAll} />
+              )}
+              {isImageSelected && <ImageSettingsPanel />}
+              {!isTextSelected && !isShapeSelected && !isImageSelected && (
+                <ThemePanel resetAll={resetAll} />
+              )}
+            </div> */}
+            <div
+              className={`
+    ${isXLScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
+    bg-white shadow-md transition-all duration-300 ease-in-out flex
+     ${!isXLScreen && showRightPanel ? "w-96" : isXLScreen ? "w-0" : "w-0"}
+  `}
+            >
+              {/* Toggle Tab */}
+              <div
+                className={`
+      absolute -left-5 top-24
+      bg-white border-r-0 border border-gray-200 shadow-xl
+      rounded-l-md px-2 py-2 cursor-pointer z-50
+    `}
+                onClick={() => setShowRightPanel(!showRightPanel)}
+              >
+                {showRightPanel ? (
+                  <CloseIcon color="primary" fontSize="small" />
+                ) : (
+                  <SettingsIcon color="primary" fontSize="small" />
+                )}
+              </div>
+
+              {/* Content area only shows if expanded */}
+              <div
+                className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
+                  !showRightPanel && !isXLScreen
+                    ? "opacity-0 pointer-events-none"
+                    : "opacity-100"
+                }`}
+              >
+                {(isTextSelected || isShapeSelected) && (
+                  <TextSettingsPanel resetAll={resetAll} />
+                )}
+                {isImageSelected && <ImageSettingsPanel />}
+                {!isTextSelected && !isShapeSelected && !isImageSelected && (
+                  <ThemePanel resetAll={resetAll} />
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

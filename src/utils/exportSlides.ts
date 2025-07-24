@@ -1,11 +1,11 @@
 import jsPDF from "jspdf";
 
-// EXPORT CANVAS AS PDF
+// EXPORT CANVAS AS PDF with improved quality and correct scale
 export const exportSlidesAsPDF = async (
   canvasRefs: (HTMLCanvasElement | null)[]
 ) => {
-  const WIDTH = 920;
-  const HEIGHT = 430;
+  const WIDTH = 800;
+  const HEIGHT = 400;
 
   const pdf = new jsPDF({
     orientation: "landscape",
@@ -13,12 +13,40 @@ export const exportSlidesAsPDF = async (
     format: [WIDTH, HEIGHT],
   });
 
+  const scaleFactor = 2; // higher = better quality
+
   for (let i = 0; i < canvasRefs.length; i++) {
     const canvas = canvasRefs[i];
     if (!canvas) continue;
-    const dataUrl = canvas.toDataURL("image/png");
+
+    // Create a high-res copy of the canvas
+    const offscreenCanvas = document.createElement("canvas");
+    offscreenCanvas.width = WIDTH * scaleFactor;
+    offscreenCanvas.height = HEIGHT * scaleFactor;
+
+    const offCtx = offscreenCanvas.getContext("2d");
+    if (!offCtx) continue;
+
+    // Copy original canvas content using drawImage, which automatically scales
+    offCtx.drawImage(
+      canvas,
+      0,
+      0,
+      offscreenCanvas.width,
+      offscreenCanvas.height
+    );
+
+    const dataUrl = offscreenCanvas.toDataURL("image/png");
+
     if (i > 0) pdf.addPage();
-    pdf.addImage(dataUrl, "PNG", 0, 0, WIDTH, HEIGHT);
+    pdf.addImage(
+      dataUrl,
+      "PNG",
+      0,
+      0,
+      WIDTH, // keep PDF size fixed
+      HEIGHT
+    );
   }
 
   pdf.save("slides.pdf");

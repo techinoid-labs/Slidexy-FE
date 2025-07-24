@@ -1,6 +1,8 @@
-export const SLIDE_WIDTH = 920;
-export const SLIDE_HEIGHT = 430;
-export const LEFT_PADDING = 50;
+export const SLIDE_WIDTH = 800;
+export const SLIDE_HEIGHT = 400;
+export const LEFT_PADDING = 30;
+export const IMG_WIDTH = 380;
+export const IMG_HEIGHT = 320;
 
 export const getRandomSlide = () => {
   const titles: any = [
@@ -40,48 +42,52 @@ export const getRandomSlide = () => {
       };
     });
 
-  // return {
-  //   slide_id: `slide-${Date.now()}`,
-  //   slide_title: {
-  //     text: titles[Math.floor(Math.random() * titles.length)],
-  //     properties: {
-  //       fontSize: 24,
-  //       fontFamily: "",
-  //       fill: "#000",
-  //       fontWeight: "bold",
-  //     },
-  //   },
-  //   elements: [
-  //     ...getRandomBullets(3),
-  //     {
-  //       element_type: "image",
-  //       konva_component: "Konva.Image",
-  //       properties: {
-  //         imageSrc: "/images/create-presentation/new-slide-img.png",
-  //         x: SLIDE_WIDTH - 500,
-  //         y: (SLIDE_HEIGHT - 400) / 2,
-  //         width: 480,
-  //         height: 400,
-  //       },
-  //     },
-  //   ],
-  //   image_url: "/images/create-presentation/new-slide-img.png",
-  // };
-
   return {
     slide_id: `slide-${Date.now()}`,
     slide_title: {
-      text: "",
+      text: titles[Math.floor(Math.random() * titles.length)],
       properties: {
         fontSize: 24,
-        fontFamily: "Arial",
+        fontFamily: "",
         fill: "#000",
-        fontStyle: "normal",
+        fontWeight: "bold",
       },
     },
-    elements: [],
-    image_url: null,
+    elements: [
+      ...getRandomBullets(3),
+      {
+        element_type: "image",
+        konva_component: "Konva.Image",
+        properties: {
+          imageSrc: "/images/create-presentation/new-slide-img.png",
+          // x: SLIDE_WIDTH - 500,
+          // y: (SLIDE_HEIGHT - 400) / 2,
+          // width: 480,
+          // height: 400,
+          x: SLIDE_WIDTH - 400,
+          y: (SLIDE_HEIGHT - 320) / 2,
+          width: IMG_WIDTH,
+          height: IMG_HEIGHT,
+        },
+      },
+    ],
+    image_url: "/images/create-presentation/new-slide-img.png",
   };
+
+  // return {
+  //   slide_id: `slide-${Date.now()}`,
+  //   slide_title: {
+  //     text: "",
+  //     properties: {
+  //       fontSize: 24,
+  //       fontFamily: "Arial",
+  //       fill: "#000",
+  //       fontStyle: "normal",
+  //     },
+  //   },
+  //   elements: [],
+  //   image_url: null,
+  // };
 };
 
 export const getLayoutProps = (layout: number) => {

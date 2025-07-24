@@ -52,6 +52,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   const dispatch = useDispatch();
   const { selectedTheme } = useSlideThemeContext();
   const { slides } = useSlides();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(text);
@@ -132,6 +133,13 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [isEditing]);
+
   return (
     <>
       <Text
@@ -180,24 +188,33 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
           <textarea
             autoFocus
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            // onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+
+              if (textareaRef.current) {
+                textareaRef.current.style.height = "auto";
+                textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+              }
+            }}
             style={{
               position: "absolute",
               top: textRef.current.absolutePosition().y,
               left: textRef.current.absolutePosition().x,
               fontSize: `${fontSize}px`,
-              // fontFamily: selectedTheme?.font || fontFamily,
               fontFamily: fontFamily?.trim() || selectedTheme?.font || "Roboto",
               fontStyle: fontWeight || "normal",
               fontWeight: fontWeight || "normal",
-              color: fill,
+              outline: "none",
+              // background: "transparent",
               background: "white",
-              border: "1px solid #ccc",
-              padding: "4px 8px",
-              lineHeight: 1.2,
-              // resize: "none",
+              border: "0px",
+              paddingLeft: "6px",
+              lineHeight: 0.9,
+              resize: "none",
               transform: `rotate(${textRef.current.rotation()}deg)`,
-              width: `${width}px`,
+              width: `${textRef.current.width()}px`,
+              height: `${textRef.current.height()}px`,
               zIndex: 999,
             }}
             onBlur={commitEdit}
