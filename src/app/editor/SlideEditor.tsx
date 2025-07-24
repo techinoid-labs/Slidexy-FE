@@ -21,7 +21,7 @@ import {
 } from "../../utils/slideUtils";
 import { v4 as uuidv4 } from "uuid";
 const IMAGE_WIDTH = 500;
-const IMAGE_PADDING = 20;
+const IMAGE_PADDING = 2;
 const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
 
 const SlideEditor = ({ slides = [], stageRefs }: any) => {

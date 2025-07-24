@@ -4,14 +4,11 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Text, Transformer } from "react-konva";
 import { Html } from "react-konva-utils";
-import { Select, MenuItem } from "@mui/material";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
-import { setSlides } from "@/app/slice/slidesSlice";
 import { useDispatch } from "react-redux";
-import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
-import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
-import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
+import { setSlides } from "@/app/slice/slidesSlice";
+import { constrainToCanvas, getSlideDimensions } from "../../../utils/slideUtilsmobile";
 
 interface KonvaTextEditorProps {
   id: string;
@@ -31,7 +28,7 @@ interface KonvaTextEditorProps {
   isSelected: boolean;
   onSelect: () => void;
   verticalAlign?: string;
-  onClick?: (e: KonvaEventObject<MouseEvent>) => void; // Added onClick prop
+  onClick?: (e: KonvaEventObject<MouseEvent>) => void;
 }
 
 const fontOptions = ["Raleway", "Roboto", "Arial"];
@@ -46,11 +43,11 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   text,
   x,
   y,
-  fontSize = 24,
+  fontSize = 12,
   fontFamily = "Roboto",
   fill = "#000",
-  fontStyle,
-  fontWeight,
+  fontStyle = "normal",
+  fontWeight = "normal",
   verticalAlign = "start",
   align = "left",
   opacity = 1,
@@ -59,27 +56,23 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   draggable = true,
   isSelected,
   onSelect,
-  onClick, // Added to props destructuring
+  onClick,
 }) => {
   const textRef = useRef<any>(null);
   const trRef = useRef<any>(null);
   const dispatch = useDispatch();
   const { selectedTheme } = useSlideThemeContext();
-  const { slides, setTooltip } = useSlides();
+  const { slides, setTooltip, setIsAtBoundary } = useSlides();
 
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(text);
-  const [currentFontSize, setCurrentFontSize] = useState(fontSize || 24);
-  const [currentFontFamily, setCurrentFontFamily] = useState(
-    fontFamily || "Roboto"
-  );
+  const [currentFontSize, setCurrentFontSize] = useState(fontSize);
+  const [currentFontFamily, setCurrentFontFamily] = useState(fontFamily);
   const [currentFontWeight, setCurrentFontWeight] = useState(
     weightOptions.some((w) => w.value === fontWeight) ? fontWeight : "normal"
   );
-  const [currentAlign, setCurrentAlign] = useState(align || "left");
-  const [currentFontStyle, setCurrentFontStyle] = useState(
-    fontStyle || "normal"
-  );
+  const [currentAlign, setCurrentAlign] = useState(align);
+  const [currentFontStyle, setCurrentFontStyle] = useState(fontStyle);
 
   const parsed = id.match(/(?:title|el)-(\d+)(?:-(\d+))?/);
   const slideIndex = parsed ? parseInt(parsed[1], 10) : -1;
@@ -92,31 +85,29 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     }
   }, [isSelected]);
 
-  const updateSlides = (
-    newText: string,
-    newStyle: Partial<KonvaTextEditorProps> = {}
-  ) => {
-    if (slideIndex === -1) return;
+  const updateSlides = useCallback(
+    (newText: string, newStyle: Partial<KonvaTextEditorProps> = {}) => {
+      if (slideIndex === -1) return;
 
-    const updatedSlides = structuredClone(slides);
-    const slide = updatedSlides[slideIndex];
+      const updatedSlides = structuredClone(slides);
+      const slide = updatedSlides[slideIndex];
 
-    const updateElement = (element: any) => ({
-      ...element,
-      text: newText,
-      properties: { ...element.properties, ...newStyle },
-    });
+      const updateElement = (element: any) => ({
+        ...element,
+        text: newText,
+        properties: { ...element.properties, ...newStyle },
+      });
 
-    if (id.startsWith("title")) {
-      slide.slide_title = updateElement(slide.slide_title);
-    } else if (elementIndex !== null && slide.elements[elementIndex]) {
-      slide.elements[elementIndex] = updateElement(
-        slide.elements[elementIndex]
-      );
-    }
+      if (id.startsWith("title")) {
+        slide.slide_title = updateElement(slide.slide_title);
+      } else if (elementIndex !== null && slide.elements[elementIndex]) {
+        slide.elements[elementIndex] = updateElement(slide.elements[elementIndex]);
+      }
 
-    dispatch(setSlides(updatedSlides));
-  };
+      dispatch(setSlides(updatedSlides));
+    },
+    [dispatch, slideIndex, elementIndex, slides, id]
+  );
 
   const commitEdit = useCallback(() => {
     if (inputValue.trim() !== text.trim()) {
@@ -124,8 +115,11 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
         fontSize: fontSize,
         fontFamily: fontFamily,
         fontWeight: fontWeight,
-        align: align,
         fontStyle: fontStyle,
+        align: align,
+        x,
+        y,
+        width,
       });
     }
     setIsEditing(false);
@@ -135,8 +129,12 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     currentFontSize,
     currentFontFamily,
     currentFontWeight,
-    currentAlign,
     currentFontStyle,
+    currentAlign,
+    x,
+    y,
+    width,
+    updateSlides,
   ]);
 
   const handleDelete = useCallback(() => {
@@ -153,17 +151,16 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
 
     dispatch(setSlides(updatedSlides));
     setIsEditing(false);
-  }, [slideIndex, elementIndex, slides, dispatch, id]);
+  }, [dispatch, slideIndex, elementIndex, slides, id]);
 
   const handleTouchEnd = useCallback(
     (e: KonvaEventObject<TouchEvent>) => {
-      e.evt.preventDefault(); // Prevent default touch behavior
+      e.evt.preventDefault();
       if (!isEditing) {
         onSelect();
         setIsEditing(true);
         const node = textRef.current;
         if (node) {
-          const stage = node.getStage();
           const pos = node.absolutePosition();
           setTooltip({
             visible: true,
@@ -180,8 +177,8 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   const handleClick = useCallback(
     (e: KonvaEventObject<MouseEvent>) => {
       if (!isEditing && onClick) {
-        onClick(e); // Call the passed onClick handler
-        onSelect(); // Ensure selection is updated
+        onClick(e);
+        onSelect();
         const node = textRef.current;
         if (node) {
           const pos = node.absolutePosition();
@@ -196,6 +193,87 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     },
     [onSelect, isEditing, onClick, setTooltip]
   );
+
+  const handleDragEnd = useCallback(
+    (e: KonvaEventObject<DragEvent>) => {
+      const node = textRef.current;
+      if (!node) return;
+      const { x, y, isAtBoundary } = constrainToCanvas(
+        node.x(),
+        node.y(),
+        node.width(),
+        node.height(),
+        getSlideDimensions().SLIDE_WIDTH,
+        getSlideDimensions().SLIDE_HEIGHT
+      );
+      node.position({ x, y });
+      setIsAtBoundary(isAtBoundary);
+      updateSlides(text, {
+        x,
+        y,
+        width,
+        fontSize: fontSize,
+        fontFamily: fontFamily,
+        fontWeight: fontWeight,
+        fontStyle: fontWeight,
+        align: align,
+      });
+    },
+    [
+      text,
+      width,
+      currentFontSize,
+      currentFontFamily,
+      currentFontWeight,
+      currentFontStyle,
+      currentAlign,
+      updateSlides,
+      setIsAtBoundary,
+    ]
+  );
+
+  const handleTransformEnd = useCallback(() => {
+    const node = textRef.current;
+    if (!node) return;
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+    node.scaleX(1);
+    node.scaleY(1);
+    const newWidth = Math.max(30, node.width() * scaleX);
+    const newHeight = Math.max(20, node.height() * scaleY);
+    const { x, y, isAtBoundary } = constrainToCanvas(
+      node.x(),
+      node.y(),
+      newWidth,
+      newHeight,
+      getSlideDimensions().SLIDE_WIDTH,
+      getSlideDimensions().SLIDE_HEIGHT
+    );
+    node.position({ x, y });
+    node.width(newWidth);
+    node.height(newHeight);
+    setIsAtBoundary(isAtBoundary);
+    updateSlides(text, {
+      x,
+      y,
+      width: newWidth,
+      height: newHeight,
+      fontSize: fontSize,
+      fontFamily: fontFamily,
+      fontWeight: fontWeight,
+      fontStyle: fontWeight,
+      align: align,
+    });
+  }, [
+    text,
+    currentFontSize,
+    currentFontFamily,
+    currentFontWeight,
+    currentFontStyle,
+    currentAlign,
+    updateSlides,
+    setIsAtBoundary,
+  ]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -222,77 +300,89 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const handleStyleChange = (style: Partial<KonvaTextEditorProps>) => {
-    let updatedFontSize = fontSize;
-    let updatedFontFamily = fontFamily;
-    let updatedFontWeight = fontWeight;
-    let updatedFontStyle = fontStyle;
-    let updatedAlign = align;
+  const handleStyleChange = useCallback(
+    (style: Partial<KonvaTextEditorProps>) => {
+      const updatedStyle = {
+        fontSize: style.fontSize !== undefined ? style.fontSize : currentFontSize,
+        fontFamily: style.fontFamily !== undefined ? style.fontFamily : currentFontFamily,
+        fontWeight: style.fontWeight !== undefined ? style.fontWeight : currentFontWeight,
+        fontStyle: style.fontStyle !== undefined ? style.fontStyle : currentFontStyle,
+        align: style.align !== undefined ? style.align : currentAlign,
+        x,
+        y,
+        width,
+      };
 
-    if (style.fontSize !== undefined) updatedFontSize = style.fontSize;
-    if (style.fontFamily !== undefined) updatedFontFamily = style.fontFamily;
-    if (style.fontWeight !== undefined) updatedFontWeight = style.fontWeight;
-    if (style.fontStyle !== undefined) updatedFontStyle = style.fontStyle;
-    if (style.align !== undefined) updatedAlign = style.align;
-
-    updateSlides(inputValue, {
-      fontSize: updatedFontSize,
-      fontFamily: updatedFontFamily,
-      fontWeight: updatedFontWeight,
-      fontStyle: updatedFontStyle,
-      align: updatedAlign,
-    });
-    setCurrentFontSize(updatedFontSize);
-    setCurrentFontFamily(updatedFontFamily);
-    setCurrentFontWeight(updatedFontWeight);
-    //setCurrentFontStyle(updatedFontStyle);
-    setCurrentAlign(updatedAlign);
-  };
+      updateSlides(inputValue, updatedStyle);
+      setCurrentFontSize(updatedStyle.fontSize);
+      setCurrentFontFamily(updatedStyle.fontFamily);
+      setCurrentFontWeight(updatedStyle.fontWeight);
+      setCurrentFontStyle(updatedStyle.fontStyle);
+      setCurrentAlign(updatedStyle.align);
+    },
+    [
+      currentFontSize,
+      currentFontFamily,
+      currentFontWeight,
+      currentFontStyle,
+      currentAlign,
+      x,
+      y,
+      width,
+      inputValue,
+      updateSlides,
+    ]
+  );
 
   useEffect(() => {
     if (isEditing && textRef.current) {
-      const rect = textRef.current.getClientRect();
+      textRef.current.getClientRect();
     }
-  }, [isEditing, textRef.current]);
+  }, [isEditing]);
 
   return (
     <>
       <Text
-        onClick={handleClick} // Updated to use handleClick
-        onTap={onSelect}
-        onTouchEnd={handleTouchEnd}
         ref={textRef}
         text={text}
         x={x}
         y={y}
-        zIndex={999}
         fontSize={fontSize}
-        fill={selectedTheme?.primaryColor || fill}
-        verticalAlign={verticalAlign}
         fontFamily={fontFamily}
-        fontStyle={fontWeight} // Note: This might be a typo; should it be fontStyle?
+        fontStyle={fontWeight}
         fontWeight={fontWeight}
+        fill={selectedTheme?.primaryColor || fill}
         align={align}
+        verticalAlign={verticalAlign}
         opacity={opacity}
         width={width}
         wrap={wrap}
         draggable={draggable}
         visible={!isEditing}
+        zIndex={999}
+        onClick={handleClick}
+        onTap={onSelect}
+        onTouchEnd={handleTouchEnd}
+        onDragEnd={handleDragEnd}
+        onTransformEnd={handleTransformEnd}
       />
       {isSelected && (
         <Transformer
           ref={trRef}
           keepRatio={true}
-          boundBoxFunc={(oldBox, newBox) => ({
-            ...newBox,
-            width: Math.max(30, newBox.width),
-          })}
-          enabledAnchors={[
-            "top-left",
-            "top-right",
-            "bottom-left",
-            "bottom-right",
-          ]}
+          enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
+          boundBoxFunc={(oldBox, newBox) => {
+            const { x, y, isAtBoundary } = constrainToCanvas(
+              newBox.x,
+              newBox.y,
+              newBox.width,
+              newBox.height,
+              getSlideDimensions().SLIDE_WIDTH,
+              getSlideDimensions().SLIDE_HEIGHT
+            );
+            setIsAtBoundary(isAtBoundary);
+            return { ...newBox, x, y, width: Math.max(30, newBox.width) };
+          }}
         />
       )}
       {isEditing && textRef.current && (
@@ -301,24 +391,24 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
             autoFocus
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onBlur={commitEdit}
             style={{
               position: "absolute",
               top: textRef.current.absolutePosition().y,
               left: textRef.current.absolutePosition().x,
               fontSize: `${fontSize}px`,
-              fontFamily: fontFamily,
-              fontStyle: fontStyle,
-              fontWeight: fontWeight,
+              fontFamily,
+              fontStyle,
+              fontWeight,
               color: selectedTheme?.primaryColor || fill,
               background: "white",
               border: "1px solid #ccc",
               padding: "2px 4px",
               lineHeight: 1.2,
-              width: "250px", // Default width for mobile
-              zIndex: 1000, // Ensure textarea is above other elements
+              width: "250px",
+              zIndex: 1000,
               boxSizing: "border-box",
             }}
-            onBlur={commitEdit}
           />
         </Html>
       )}

@@ -1,4 +1,5 @@
 "use client";
+
 import React, { createContext, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSlides, updateSlide, removeSlides } from "../slice/slidesSlice";
@@ -29,6 +30,8 @@ interface SlidesContextType {
     y: number;
     node: any | null;
   }) => void;
+  isAtBoundary: boolean;
+  setIsAtBoundary: (value: boolean) => void;
 }
 
 const SlidesContext = createContext<SlidesContextType>({
@@ -48,6 +51,8 @@ const SlidesContext = createContext<SlidesContextType>({
   setSelectedShapeIndex: () => {},
   tooltip: { visible: false, x: 0, y: 0, node: null },
   setTooltip: () => {},
+  isAtBoundary: false,
+  setIsAtBoundary: () => {},
 });
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
@@ -68,6 +73,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     y: 10,
     node: null,
   });
+  const [isAtBoundary, setIsAtBoundary] = useState(false);
 
   const handleSetSlides = (newSlides: SlidesType) => {
     dispatch(setSlides(newSlides));
@@ -88,6 +94,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setSlides: handleSetSlides,
         removeSlides: handleDeleteSlides,
         // updateSlides: handleUpdateSlides,
+        updateSlides: handleUpdateSlides,
         selectedSlideIndex,
         setSelectedSlideIndex,
         selectedImage,
@@ -100,6 +107,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setSelectedShapeIndex,
         tooltip,
         setTooltip,
+        isAtBoundary,
+        setIsAtBoundary,
       }}
     >
       {children}
