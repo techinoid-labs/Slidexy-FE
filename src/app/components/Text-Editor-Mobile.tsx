@@ -19,6 +19,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
 }) => {
   const { selectedSlideIndex } = useSlides();
   const dispatch = useDispatch();
+ const slidesState = useSlides();
 
   const handleAddTextElement = (
     text: string,
@@ -27,8 +28,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
     color = "#222"
   ) => {
     // Get the current slide's elements
-    const slidesState = useSlides();
-    const currentSlide = slidesState.slides[slidesState.selectedSlideIndex];
+        const currentSlide = slidesState.slides[slidesState.selectedSlideIndex];
     const GAP = 16; // vertical gap between elements
 
     // Find the max y + estimated height among text/bullet elements
