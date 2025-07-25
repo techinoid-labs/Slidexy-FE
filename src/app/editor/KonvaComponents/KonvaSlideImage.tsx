@@ -102,6 +102,43 @@ const SlideImage = ({
         onTap={onSelect}
         onMouseDown={onSelect}
         onTouchStart={onSelect}
+        onDragEnd={(e) => {
+          const newX = e.target.x();
+          const newY = e.target.y();
+
+          const newSlides = JSON.parse(JSON.stringify(slides));
+          const currentSlide = newSlides[selectedSlideIndex];
+
+          if (url && !imageSrc && currentSlide.image_url === url) {
+            setSlides(newSlides);
+            setSelectedImage({
+              element_type: "image",
+              konva_component: "Konva.Image",
+              properties: {
+                x: newX,
+                y: newY,
+                width,
+                height,
+                imageSrc: url,
+              },
+            });
+            return;
+          }
+
+          const imageElement = currentSlide.elements.find(
+            (el: any) =>
+              el.element_type === "image" &&
+              el.konva_component === "Konva.Image" &&
+              el.properties.imageSrc === imageSrc
+          );
+
+          if (imageElement) {
+            imageElement.properties.x = newX;
+            imageElement.properties.y = newY;
+            setSlides(newSlides);
+            setSelectedImage(imageElement);
+          }
+        }}
         onTransformEnd={(e) => {
           const node = imageRef.current;
           const scaleX = node.scaleX();

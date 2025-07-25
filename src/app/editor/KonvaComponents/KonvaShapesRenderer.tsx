@@ -49,7 +49,6 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedShapeIndex, slides, setSlides, slideIdx, onSelectShape]);
 
-  // --- TRANSFORMER ATTACHMENT ---
   useEffect(() => {
     if (
       selectedShapeIndex !== null &&
@@ -139,6 +138,18 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
 
             const updatedSlides = structuredClone(slides);
             updatedSlides[slideIdx].elements[i].properties = updated;
+            setSlides(updatedSlides);
+          },
+          onDragEnd: () => {
+            const node = shapeRefs.current[i];
+            if (!node) return;
+
+            const updatedSlides = structuredClone(slides);
+            const shape = updatedSlides[slideIdx].elements[i];
+
+            shape.properties.x = node.x();
+            shape.properties.y = node.y();
+
             setSlides(updatedSlides);
           },
         };

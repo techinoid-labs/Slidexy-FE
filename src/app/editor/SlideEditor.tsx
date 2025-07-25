@@ -31,7 +31,6 @@ const getDynamicConstants = () => {
   const IMAGE_PADDING = 40;
   const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
   const textMaxHeight = SLIDE_HEIGHT;
-
   return {
     SLIDE_WIDTH,
     SLIDE_HEIGHT,
@@ -58,20 +57,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const { selectedTheme, selectedLayout } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  // const [SLIDE_WIDTH, setSlideWidth] = useState(slide_width);
-  // const [SLIDE_HEIGHT, setSlideHeight] = useState(slide_height);
-  const theme = useTheme();
-  const isXLScreen = useMediaQuery(theme.breakpoints.up("xl"));
 
   const [useDummy] = useState(false);
-
-  // useEffect(() => {
-  //   if (isXLScreen) {
-  //     setSlideWidth((prev) => 780);
-  //   } else {
-  //     setSlideWidth((prev) => 720);
-  //   }
-  // }, [isXLScreen]);
 
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
@@ -88,24 +75,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       setSelectedIndex(Math.max(0, newSlides.length - 1));
     }
   };
-  // return (
-  // <main
-  //   style={{
-  //     flexGrow: 1,
-  //     display: "flex",
-  //     flexDirection: "column",
-  //     overflow: "hidden",
-  //   }}
-  // >
-  //   <div
-  //     style={{
-  //       flexGrow: 1,
-  //       overflowY: "auto",
-  //       padding: 16,
-  //       display: "flex",
-  //       justifyContent: "center",
-  //     }}
-  //   >
+
   return (
     <Box
       sx={{
@@ -212,8 +182,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     <KonvaTextEditor
                       id={`title-${index}`}
                       text={title.text}
-                      x={getDynamicConstants().LEFT_PADDING}
-                      y={titleY}
+                      x={titleProps.x || titleY}
+                      y={titleProps.y || getDynamicConstants().LEFT_PADDING}
                       width={getDynamicConstants().textMaxWidth}
                       wrap="word"
                       fontSize={titleProps.fontSize}
@@ -240,7 +210,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 )}
                 {slide.elements.map((el: any, i: number) => {
                   if (el.element_type !== "text") return null;
-
                   return (
                     <KonvaTextEditor
                       key={`el-${index}-${i}`}
@@ -282,6 +251,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   return slide.elements
                     .filter((el: any) => el.element_type === "bullet_point")
                     .map((el: any, i: number) => {
+                      console.log(el);
                       const isBullet = el.element_type === "bullet_point";
                       const fontSize = el.properties.fontSize;
                       const fontFamily =
@@ -319,10 +289,11 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           id={`el-${index}-${i}`}
                           text={bulletText}
                           x={
+                            el.properties.x ||
                             getDynamicConstants().LEFT_PADDING +
-                            (isBullet ? 20 : 0)
+                              (isBullet ? 20 : 0)
                           }
-                          y={currentY}
+                          y={el.properties.y || currentY}
                           opacity={el.properties.opacity}
                           align={el.properties.align}
                           width={textWidth}

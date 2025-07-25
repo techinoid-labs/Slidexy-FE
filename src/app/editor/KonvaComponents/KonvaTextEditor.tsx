@@ -180,6 +180,36 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
 
           lastTap.current = now;
         }}
+        onDragEnd={(e) => {
+          const newX = e.target.x();
+          const newY = e.target.y();
+
+          if (slideIndex === -1) return;
+          const updatedSlides = structuredClone(slides);
+          const slide = updatedSlides[slideIndex];
+
+          const assignXY = (props: any) => {
+            if (props && typeof props === "object") {
+              props.x = newX;
+              props.y = newY;
+            }
+          };
+
+          if (id.startsWith("title")) {
+            assignXY(slide.slide_title.properties);
+          } else if (elementIndex !== null && slide.elements[elementIndex]) {
+            const el: any = slide.elements[elementIndex];
+
+            // Ensure only text-based elements get x/y assigned
+            if (["text", "bullet_point"].includes(el?.element_type)) {
+              if (!("x" in el.properties)) el.properties.x = 0;
+              if (!("y" in el.properties)) el.properties.y = 0;
+              assignXY(el.properties);
+            }
+          }
+
+          dispatch(setSlides(updatedSlides));
+        }}
         ref={textRef}
         text={text}
         x={x}
