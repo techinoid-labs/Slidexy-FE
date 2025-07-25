@@ -202,8 +202,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   y={0}
                   width={getDynamicConstants().SLIDE_WIDTH}
                   height={window.innerHeight - 320}
-                  stroke={ isAtBoundary ? "red" : "transparent"}
-                  strokeWidth={1}
+                  // stroke={ isAtBoundary ? "red" : "transparent"}
+                  // strokeWidth={1}
                   listening={false}
                 />
 
@@ -248,7 +248,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       text={el.text}
                       x={el.properties.x || getDynamicConstants().LEFT_PADDING}
                       y={el.properties.y || 300}
-                      width={el.properties.width || getDynamicConstants().textMaxWidth}
+                      width={
+                        el.properties.width ||
+                        getDynamicConstants().textMaxWidth
+                      }
                       opacity={el.properties.opacity}
                       align={el.properties.align}
                       verticalAlign={el.properties.verticalAlign}
@@ -286,7 +289,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       const lineHeight = 1.2;
                       const bulletText = isBullet ? `${el.text}` : el.text;
 
-                      const textWidth = getDynamicConstants().textMaxWidth - (isBullet ? 20 : 0);
+                      const textWidth =
+                        getDynamicConstants().textMaxWidth -
+                        (isBullet ? 20 : 0);
                       const canvas = document.createElement("canvas");
                       const context = canvas.getContext("2d");
                       context!.font = `${fontSize}px ${fontFamily}`;
@@ -313,7 +318,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           key={`el-${index}-${i}`}
                           id={`el-${index}-${i}`}
                           text={bulletText}
-                          x={getDynamicConstants().LEFT_PADDING + (isBullet ? 20 : 0)}
+                          x={
+                            getDynamicConstants().LEFT_PADDING +
+                            (isBullet ? 20 : 0)
+                          }
                           y={currentY}
                           opacity={el.properties.opacity}
                           align={el.properties.align}
