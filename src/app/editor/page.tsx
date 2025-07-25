@@ -118,10 +118,26 @@ const Page = () => {
         overflow: "hidden",
       }}
     >
-      <UpperNavBar
-        onExportPDF={handleExportPDF}
-        onExportPPT={handleExportPPTX}
-      />
+      {!isMobile ? (
+        <div
+          style={{
+            flexShrink: 0,
+            height: "80px",
+            zIndex: 20,
+          }}
+        >
+          <UpperNavBar
+            onExportPDF={handleExportPDF}
+            onExportPPT={handleExportPPTX}
+          />
+        </div>
+      ) : (
+        <UpperNavBar
+          onExportPDF={handleExportPDF}
+          onExportPPT={handleExportPPTX}
+        />
+      )}
+
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         {isMobile ? (
           <>
@@ -153,35 +169,9 @@ const Page = () => {
               />
             </div>
 
-            <div className="flex-1 overflow-auto z-0">
+            <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
               <SlideEditor slides={slides} stageRefs={stageRefs} />
             </div>
-
-            {/* {!isXLScreen && (
-              <button
-                className="fixed top-24 right-4 z-50 bg-white border shadow-lg p-2 rounded-full hover:bg-gray-100 transition-colors"
-                onClick={() => setShowRightPanel((prev) => !prev)}
-                aria-label="Toggle settings panel"
-              >
-                {showRightPanel ? <CloseIcon /> : <SettingsIcon />}
-              </button>
-            )} */}
-
-            {/* <div
-              className={`
-      ${isXLScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
-      bg-white shadow-md transition-transform duration-300 ease-in-out
-      ${!isXLScreen && !showRightPanel ? "translate-x-full" : "translate-x-0"}
-    `}
-            >
-              {(isTextSelected || isShapeSelected) && (
-                <TextSettingsPanel resetAll={resetAll} />
-              )}
-              {isImageSelected && <ImageSettingsPanel />}
-              {!isTextSelected && !isShapeSelected && !isImageSelected && (
-                <ThemePanel resetAll={resetAll} />
-              )}
-            </div> */}
             <div
               className={`
     ${isXLScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}

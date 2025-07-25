@@ -369,11 +369,11 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       />
     </Box>
   );
-  {
-    /* </div>
-    </main> */
-  }
-  // );
+
+  /* </div>
+    </main> 
+  );
+    */
 };
 
 export default SlideEditor;

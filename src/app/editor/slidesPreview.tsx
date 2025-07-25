@@ -70,7 +70,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
     <Box
       sx={{
         width: slide_width,
-        height: slide_height,
+        // height: slide_height,
         overflowX: "auto",
         overflowY: "hidden",
         backgroundColor: "#f5f5fa",
@@ -100,7 +100,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
               sx={{
                 position: "relative",
                 width: 200,
-                height: 70,
+                height: 120,
                 borderLeft: isSelected
                   ? "4px solid #6941c6"
                   : "1px solid #e5e5ef",
@@ -128,7 +128,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                 //fontSize={12}
                 sx={{
                   display: "block",
-                  fontSize: {xs: 12, md: 15, sm: 16, lg: 17, xl: 18},
+                  fontSize: { xs: 12, md: 15, sm: 16, lg: 17, xl: 18 },
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -143,7 +143,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                 sx={{
                   display: "block",
                   overflow: "hidden",
-                  fontSize: {xs: 10, md: 13, sm: 16, lg: 17, xl: 18},
+                  fontSize: { xs: 10, md: 13, sm: 16, lg: 17, xl: 18 },
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
                   maxWidth: "100%",
@@ -186,7 +186,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
           onClick={handleAddSlide}
           sx={{
             width: 100,
-            height: 70,
+            height: 100,
             borderRadius: 1,
             border: "1px dashed #d0d5dd",
             display: "flex",
