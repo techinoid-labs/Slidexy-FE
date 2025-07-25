@@ -17,17 +17,31 @@ import {
   getLayoutProps,
   // SLIDE_WIDTH as slide_width,
   // SLIDE_HEIGHT as slide_height,
-  SLIDE_WIDTH,
-  SLIDE_HEIGHT,
-  LEFT_PADDING,
+  getSlideDimensions,
 } from "../../utils/slideUtils";
 import { v4 as uuidv4 } from "uuid";
 import { useTheme, useMediaQuery } from "@mui/material";
 
-const IMAGE_WIDTH = 400;
-const IMAGE_PADDING = 40;
-const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
+// const IMAGE_WIDTH = 400;
+// const IMAGE_PADDING = 40;
+// const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
+const getDynamicConstants = () => {
+  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
+  const IMAGE_WIDTH = 400;
+  const IMAGE_PADDING = 40;
+  const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
+  const textMaxHeight = SLIDE_HEIGHT;
 
+  return {
+    SLIDE_WIDTH,
+    SLIDE_HEIGHT,
+    LEFT_PADDING,
+    IMAGE_WIDTH,
+    IMAGE_PADDING,
+    textMaxWidth,
+    textMaxHeight,
+  };
+};
 const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const {
     selectedImageIndex,
@@ -38,6 +52,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     selectedShapeIndex,
     setSelectedShapeIndex,
     setSlides,
+    isAtBoundary,
   } = useSlides();
 
   const { selectedTheme, selectedLayout } = useSlideThemeContext();
@@ -111,8 +126,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           <Box
             key={slide.slide_id}
             sx={{
-              width: `${SLIDE_WIDTH}px`,
-              height: `${SLIDE_HEIGHT}px`,
+              width: `${getDynamicConstants().SLIDE_WIDTH}px`,
+              height: `${getDynamicConstants().SLIDE_HEIGHT}px`,
               border: "1px solid #ccc",
               backgroundColor: "#fff",
               position: "relative",
@@ -121,8 +136,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             }}
           >
             <Stage
-              width={SLIDE_WIDTH}
-              height={SLIDE_HEIGHT}
+              width={getDynamicConstants().SLIDE_WIDTH}
+              height={getDynamicConstants().SLIDE_HEIGHT}
               ref={(ref: any) => {
                 stageRefs.current[index] =
                   ref?.getStage()?.content?.querySelector("canvas") || null;
@@ -157,8 +172,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     image={bgImage}
                     x={0}
                     y={0}
-                    width={SLIDE_WIDTH}
-                    height={SLIDE_HEIGHT}
+                    width={getDynamicConstants().SLIDE_WIDTH}
+                    height={getDynamicConstants().SLIDE_HEIGHT}
                     onClick={() => {
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
@@ -171,8 +186,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     name="background"
                     x={0}
                     y={0}
-                    width={SLIDE_WIDTH}
-                    height={SLIDE_HEIGHT}
+                    width={getDynamicConstants().SLIDE_WIDTH}
+                    height={getDynamicConstants().SLIDE_HEIGHT}
                     onClick={() => {
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
@@ -182,15 +197,24 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     fill={selectedTheme?.backgroundColor || "#fff"}
                   />
                 )}
+                <Rect
+                  x={0}
+                  y={0}
+                  width={getDynamicConstants().SLIDE_WIDTH}
+                  height={window.innerHeight - 320}
+                  stroke={ isAtBoundary ? "red" : "transparent"}
+                  strokeWidth={1}
+                  listening={false}
+                />
 
                 {title.text && (
                   <>
                     <KonvaTextEditor
                       id={`title-${index}`}
                       text={title.text}
-                      x={LEFT_PADDING}
+                      x={getDynamicConstants().LEFT_PADDING}
                       y={titleY}
-                      width={textMaxWidth}
+                      width={getDynamicConstants().textMaxWidth}
                       wrap="word"
                       fontSize={titleProps.fontSize}
                       fontWeight={titleProps.fontWeight}
@@ -222,9 +246,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       key={`el-${index}-${i}`}
                       id={`el-${index}-${i}`}
                       text={el.text}
-                      x={el.properties.x || LEFT_PADDING}
+                      x={el.properties.x || getDynamicConstants().LEFT_PADDING}
                       y={el.properties.y || 300}
-                      width={el.properties.width || textMaxWidth}
+                      width={el.properties.width || getDynamicConstants().textMaxWidth}
                       opacity={el.properties.opacity}
                       align={el.properties.align}
                       verticalAlign={el.properties.verticalAlign}
@@ -262,7 +286,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       const lineHeight = 1.2;
                       const bulletText = isBullet ? `${el.text}` : el.text;
 
-                      const textWidth = textMaxWidth - (isBullet ? 20 : 0);
+                      const textWidth = getDynamicConstants().textMaxWidth - (isBullet ? 20 : 0);
                       const canvas = document.createElement("canvas");
                       const context = canvas.getContext("2d");
                       context!.font = `${fontSize}px ${fontFamily}`;
@@ -289,7 +313,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           key={`el-${index}-${i}`}
                           id={`el-${index}-${i}`}
                           text={bulletText}
-                          x={LEFT_PADDING + (isBullet ? 20 : 0)}
+                          x={getDynamicConstants().LEFT_PADDING + (isBullet ? 20 : 0)}
                           y={currentY}
                           opacity={el.properties.opacity}
                           align={el.properties.align}
@@ -361,8 +385,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       <SlidePreviews
         slides={slides}
         selectedIndex={selectedIndex}
-        slide_width={SLIDE_WIDTH}
-        slide_height={SLIDE_HEIGHT}
+        slide_width={getDynamicConstants().SLIDE_WIDTH}
+        slide_height={getDynamicConstants().SLIDE_HEIGHT}
         onSelect={setSelectedIndex}
         onAddSlide={handleAddSlide}
         onDeleteSlide={handleDeleteSlide}

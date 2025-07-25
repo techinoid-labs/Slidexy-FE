@@ -1,10 +1,53 @@
-export const SLIDE_WIDTH = 800;
-export const SLIDE_HEIGHT = 400;
-export const LEFT_PADDING = 30;
-export const IMG_WIDTH = 380;
-export const IMG_HEIGHT = 320;
+// export const SLIDE_WIDTH = 800;
+// export const SLIDE_HEIGHT = 400;
+// export const LEFT_PADDING = 30;
+// export const IMG_WIDTH = 380;
+// export const IMG_HEIGHT = 320;
+
+
+
+export const getSlideDimensions = () => {
+  const windowWidth = typeof window !== "undefined" ? window.innerWidth : 800;
+  const windowHeight = typeof window !== "undefined" ? window.innerHeight : 400;
+  const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 800); // 90% of window width, capped at 500
+  const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 400); // 60% of window height, capped at 400
+  const LEFT_PADDING = 30;
+  const IMAGE_WIDTH= 380;
+  const IMAGE_HEIGHT=320;
+
+  return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH,IMAGE_HEIGHT };
+};
+
+export const constrainToCanvas = (
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  canvasWidth: number = getSlideDimensions().SLIDE_WIDTH,
+  canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
+) => {
+  const { LEFT_PADDING } = getSlideDimensions();
+  const minX = LEFT_PADDING;
+  const minY = 60;
+  const safeHeight = height || 30; // fallback in case of 0
+  const maxX = canvasWidth - width - 10;
+  const maxY = window.innerHeight <= 830? canvasHeight - height -100 : canvasHeight - height -10 ;
+
+  const constrainedX = Math.max(minX, Math.min(x, maxX));
+  const constrainedY = Math.max(minY, Math.min(y, maxY));
+
+  const isAtBoundary =
+    constrainedX === minX ||
+    constrainedX === maxX ||
+    constrainedY === minY ||
+    constrainedY === maxY;
+
+  return { x: constrainedX, y: constrainedY, isAtBoundary };
+};
+
 
 export const getRandomSlide = () => {
+  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const titles: any = [
     "5 Ways to Boost Productivity",
     "Understanding AI in 2025",
@@ -66,8 +109,8 @@ export const getRandomSlide = () => {
           // height: 400,
           x: SLIDE_WIDTH - 400,
           y: (SLIDE_HEIGHT - 320) / 2,
-          width: IMG_WIDTH,
-          height: IMG_HEIGHT,
+          width: getSlideDimensions().IMAGE_WIDTH,
+          height: getSlideDimensions().IMAGE_HEIGHT,
         },
       },
     ],
@@ -95,20 +138,20 @@ export const getLayoutProps = (layout: number) => {
     case 0:
       return {
         image: { x: 100, y: 500, width: 700, height: 220 },
-        title: { x: LEFT_PADDING, y: 60 },
-        bullets: { x: LEFT_PADDING, y: 180 },
+        title: { x: getSlideDimensions().LEFT_PADDING, y: 60 },
+        bullets: { x: getSlideDimensions().LEFT_PADDING, y: 180 },
       };
     case 1:
       return {
         image: { x: 100, y: 60, width: 700, height: 220 },
-        title: { x: LEFT_PADDING, y: 350 },
-        bullets: { x: LEFT_PADDING, y: 420 },
+        title: { x: getSlideDimensions().LEFT_PADDING, y: 350 },
+        bullets: { x: getSlideDimensions().LEFT_PADDING, y: 420 },
       };
     case 2:
       return {
         image: { x: 900, y: 100, width: 320, height: 520 },
-        title: { x: LEFT_PADDING, y: 100 },
-        bullets: { x: LEFT_PADDING, y: 200 },
+        title: { x: getSlideDimensions().LEFT_PADDING, y: 100 },
+        bullets: { x: getSlideDimensions().LEFT_PADDING, y: 200 },
       };
     case 3:
       return {
@@ -119,30 +162,30 @@ export const getLayoutProps = (layout: number) => {
     case 4:
       return {
         image: {
-          x: (SLIDE_WIDTH - 500) / 2,
+          x: (getSlideDimensions().SLIDE_WIDTH - 500) / 2,
           y: 300,
           width: 500,
           height: 200,
         },
-        title: { x: (SLIDE_WIDTH - 900) / 2, y: 80 },
-        bullets: { x: (SLIDE_WIDTH - 900) / 2, y: 540 },
+        title: { x: (getSlideDimensions().SLIDE_WIDTH - 900) / 2, y: 80 },
+        bullets: { x: (getSlideDimensions().SLIDE_WIDTH - 900) / 2, y: 540 },
       };
     case 5:
       return {
         image: null,
-        title: { x: LEFT_PADDING, y: 100 },
-        bullets: { x: LEFT_PADDING, y: 200 },
+        title: { x: getSlideDimensions().LEFT_PADDING, y: 100 },
+        bullets: { x: getSlideDimensions().LEFT_PADDING, y: 200 },
       };
     default:
       return {
         image: {
-          x: SLIDE_WIDTH - 700,
-          y: (SLIDE_HEIGHT - 600) / 2,
+          x: getSlideDimensions().SLIDE_WIDTH - 700,
+          y: (getSlideDimensions().SLIDE_HEIGHT - 600) / 2,
           width: 700,
           height: 600,
         },
-        title: { x: LEFT_PADDING, y: 60 },
-        bullets: { x: LEFT_PADDING, y: 180 },
+        title: { x: getSlideDimensions().LEFT_PADDING, y: 60 },
+        bullets: { x: getSlideDimensions().LEFT_PADDING, y: 180 },
       };
   }
 };
