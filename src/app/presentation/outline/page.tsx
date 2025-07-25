@@ -13,11 +13,9 @@ import type { Slide } from "@/app/slice/slidesSlice";
 import StepIndicator from "@/app/components/shared/StepIndicator";
 import StepsHeader from "@/app/components/shared/StepsHeader";
 import {
-  SLIDE_WIDTH,
-  SLIDE_HEIGHT,
-  IMG_WIDTH,
-  IMG_HEIGHT,
+  getSlideDimensions
 } from "@/utils/slideUtils";
+const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT } = getSlideDimensions();
 // API response type and map helper
 export interface SlideApiResponse {
   slide_id: string;
@@ -102,8 +100,8 @@ function mapCardsToSlides(cards: any[]): Slide[] {
               // height: 400,
               x: SLIDE_WIDTH - 400,
               y: (SLIDE_HEIGHT - 320) / 2,
-              width: IMG_WIDTH,
-              height: IMG_HEIGHT,
+              width: IMAGE_WIDTH,
+              height: IMAGE_HEIGHT,
             },
           },
         ]
