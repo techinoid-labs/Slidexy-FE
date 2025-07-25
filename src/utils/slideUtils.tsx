@@ -27,20 +27,42 @@ export const constrainToCanvas = (
   canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
 ) => {
   const { LEFT_PADDING } = getSlideDimensions();
-  const minX = LEFT_PADDING;
-  const minY = 60;
-  const safeHeight = height || 30; // fallback in case of 0
-  const maxX = canvasWidth - width - 10;
-  const maxY = window.innerHeight <= 830? canvasHeight - height -100 : canvasHeight - height -10 ;
+  const paddingLeft = LEFT_PADDING; // 17
+  const paddingRight = 10;
+  const paddingTop = 60;
+  const paddingBottom = window.innerHeight <= 830 ? 50 : 10;
+
+  const minX = paddingLeft;
+  const minY = paddingTop -80;
+  const safeHeight = height || 30;
+  // Use a less restrictive maxX to allow dragging across the canvas
+  const maxX = canvasWidth - paddingRight; // e.g., 300 - 10 = 290
+  const maxY = canvasHeight - paddingBottom;
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
 
   const isAtBoundary =
-    constrainedX === minX ||
-    constrainedX === maxX ||
-    constrainedY === minY ||
-    constrainedY === maxY;
+    (x < minX && constrainedX === minX) ||
+    (x > maxX && constrainedX === maxX) ||
+    (y < minY && constrainedY === minY) ||
+    (y > maxY && constrainedY === maxY);
+
+  console.log({
+    x,
+    y,
+    width,
+    height: safeHeight,
+    canvasWidth,
+    canvasHeight,
+    minX,
+    maxX,
+    minY,
+    maxY,
+    constrainedX,
+    constrainedY,
+    isAtBoundary,
+  });
 
   return { x: constrainedX, y: constrainedY, isAtBoundary };
 };
