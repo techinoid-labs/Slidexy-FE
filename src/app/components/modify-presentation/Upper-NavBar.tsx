@@ -18,6 +18,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import { useRouter } from "next/navigation";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
+import { useSlides } from "@/app/context/SlidesContext";
 const UpperNavBar: React.FC<{
   onExportPDF: () => void;
   onExportPPT?: () => void;
@@ -30,6 +31,16 @@ const UpperNavBar: React.FC<{
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { setSelectedLayout, setSelectedTheme } = useSlideThemeContext();
+  const {
+    setSelectedImage,
+    setSelectedImageIndex,
+    setSelectedShapeIndex,
+    setSelectedTextId,
+    selectedImage,
+    selectedImageIndex,
+    selectedShapeIndex,
+    selectedTextId,
+  } = useSlides();
   // Handlers for mobile menu
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMenuAnchor(event.currentTarget);
@@ -256,7 +267,20 @@ const UpperNavBar: React.FC<{
           {!isMobile && (
             <>
               <Box
-                onClick={onExportPDF}
+                onClick={() => {
+                  setSelectedImage(null);
+                  setSelectedImageIndex(null);
+                  setSelectedShapeIndex(null);
+                  setSelectedTextId(null);
+                  if (
+                    !selectedImage &&
+                    !selectedImageIndex &&
+                    !selectedShapeIndex &&
+                    !selectedTextId
+                  ) {
+                    onExportPDF();
+                  }
+                }}
                 sx={{
                   bgcolor: "#18181B",
                   background:
@@ -373,7 +397,18 @@ const UpperNavBar: React.FC<{
         </MenuItem> */}
         <MenuItem
           onClick={() => {
-            onExportPDF();
+            setSelectedImage(null);
+            setSelectedImageIndex(null);
+            setSelectedShapeIndex(null);
+            setSelectedTextId(null);
+            if (
+              !selectedImage &&
+              !selectedImageIndex &&
+              !selectedShapeIndex &&
+              !selectedTextId
+            ) {
+              onExportPDF();
+            }
             handleMobileMenuClose();
           }}
         >
