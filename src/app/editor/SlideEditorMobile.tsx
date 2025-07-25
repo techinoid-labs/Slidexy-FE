@@ -23,7 +23,7 @@ import TextSettingsPanelMobile from "../components/modify-presentation/TextPanel
 const getDynamicConstants = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const IMAGE_WIDTH = 100;
-  const IMAGE_PADDING = 5;
+  const IMAGE_PADDING = 0;
   const textMaxWidth =
     SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING - 100;
   const textMaxHeight = SLIDE_HEIGHT - 60 - 20;
@@ -131,7 +131,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   } = dimensions;
 
   return (
-
     <main
       style={{
         flexGrow: 1,
@@ -139,15 +138,23 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         flexDirection: "column",
         overflow: "auto",
         height: "100vh",
-
-
       }}
     >
-      <div style={{
-        display: "flex", flexDirection: "row",
-        overflow: "hidden", width: "900px", height: "100px",
-        marginLeft: 27, marginRight: 20, position: "fixed", borderRadius: "5px", borderBottomRightRadius: "16px", marginTop: 80,
-      }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          overflow: "hidden",
+          width: "900px",
+          height: "100px",
+          marginLeft: 27,
+          marginRight: 20,
+          position: "fixed",
+          borderRadius: "5px",
+          borderBottomRightRadius: "16px",
+          marginTop: 80,
+        }}
+      >
         <SlidePreviews
           slides={slides}
           selectedIndex={selectedIndex}
@@ -158,7 +165,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           onDeleteSlide={handleDeleteSlide}
         />
       </div>
-
 
       <div
         style={{
@@ -187,10 +193,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             borderTopLeftRadius: "13px",
             borderTopRightRadius: "13px",
             //overflowY: "auto",
-
           }}
         >
-
           {slides.map((slide: any, index: number) => {
             const title = slide.slide_title;
             const titleProps = title.properties;
@@ -203,7 +207,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 key={slide.slide_id}
                 sx={{
                   width: `${SLIDE_WIDTH}px`,
-                  height: { xs: `${window.innerHeight}px`, md: `${SLIDE_HEIGHT + 100}px` },
+                  height: {
+                    xs: `${window.innerHeight}px`,
+                    md: `${SLIDE_HEIGHT + 100}px`,
+                  },
                   border: "1px solid #ccc",
                   backgroundColor: "#fff",
                   position: "relative",
@@ -212,7 +219,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   //maxHeight: {xs: "calc(100vh - 200px)", sm: "calc(100vh - 150px)"},
                 }}
               >
-
                 <Stage
                   width={window.innerWidth - 40}
                   height={window.innerHeight - 320}
@@ -220,7 +226,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     stageRefs.current[index] =
                       ref?.getStage()?.content?.querySelector("canvas") || null;
                   }}
-
                   onMouseDown={(e) => {
                     const clickedOnEmpty =
                       e.target === e.target.getStage() ||
@@ -283,7 +288,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       x={0}
                       y={0}
                       width={SLIDE_WIDTH}
-                      height= {window.innerHeight -320}
+                      height={window.innerHeight - 320}
                       stroke={isAtBoundary ? "red" : "transparent"}
                       strokeWidth={1}
                       listening={false}
@@ -355,7 +360,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                             setSelectedImageIndex(null);
                             setSelectedShapeIndex(null);
                             setSelectedImage(null);
-
                           }}
                           onClick={() => {
                             setTooltip({
@@ -503,11 +507,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
               onClose={() => setTooltip({ ...tooltip, visible: false })}
             />
           )}
-
-
         </Box>
       </div>
-
     </main>
   );
 };

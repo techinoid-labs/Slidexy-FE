@@ -8,7 +8,10 @@ import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
-import { constrainToCanvas, getSlideDimensions } from "../../../utils/slideUtilsmobile";
+import {
+  constrainToCanvas,
+  getSlideDimensions,
+} from "../../../utils/slideUtilsmobile";
 
 interface KonvaTextEditorProps {
   id: string;
@@ -30,6 +33,8 @@ interface KonvaTextEditorProps {
   onSelect: () => void;
   verticalAlign?: string;
   onClick?: (e: KonvaEventObject<MouseEvent>) => void;
+  isEditingText?: boolean;
+  setIsEditingText?: any;
 }
 
 const fontOptions = ["Raleway", "Roboto", "Arial"];
@@ -65,7 +70,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   const dispatch = useDispatch();
   const { selectedTheme } = useSlideThemeContext();
   const { slides, setTooltip, setIsAtBoundary } = useSlides();
- const [lastValidPos, setLastValidPos] = useState({ x, y });
+  const [lastValidPos, setLastValidPos] = useState({ x, y });
 
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(text);
@@ -104,7 +109,9 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
       if (id.startsWith("title")) {
         slide.slide_title = updateElement(slide.slide_title);
       } else if (elementIndex !== null && slide.elements[elementIndex]) {
-        slide.elements[elementIndex] = updateElement(slide.elements[elementIndex]);
+        slide.elements[elementIndex] = updateElement(
+          slide.elements[elementIndex]
+        );
       }
 
       dispatch(setSlides(updatedSlides));
@@ -198,55 +205,59 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   );
 
   const handleDragEnd = useCallback(
-  (e: KonvaEventObject<DragEvent>) => {
-    const node = textRef.current;
-    if (!node) return;
+    (e: KonvaEventObject<DragEvent>) => {
+      const node = textRef.current;
+      if (!node) return;
 
-    const boundingBox = node.getClientRect();
-    const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
-      node.x(),
-      node.y(),
-      node.width(),
-      boundingBox.height,
-      getSlideDimensions().SLIDE_WIDTH,
-      getSlideDimensions().SLIDE_HEIGHT
-    );
-
-    if (isAtBoundary) {
-      // Snap back to last valid position
-      node.position({ x: lastValidPos.x, y: lastValidPos.y });
-    } else {
-      // Update position and state
-      node.position({ x: newX, y: newY });
-      setLastValidPos({ x: newX, y: newY });
-      updateSlides(text, {
+      const boundingBox = node.getClientRect();
+      const {
         x: newX,
         y: newY,
-        width,
-        fontSize: fontSize,
-        fontFamily: fontFamily,
-        fontWeight: fontWeight,
-        fontStyle: fontStyle,
-        align: align,
-      });
-    }
+        isAtBoundary,
+      } = constrainToCanvas(
+        node.x(),
+        node.y(),
+        node.width(),
+        boundingBox.height,
+        getSlideDimensions().SLIDE_WIDTH,
+        getSlideDimensions().SLIDE_HEIGHT
+      );
 
-    setIsAtBoundary(isAtBoundary);
-  },
-  [
-    text,
-    width,
-    height,
-    fontSize,
-    fontFamily,
-    fontWeight,
-    fontStyle,
-    align,
-    updateSlides,
-    setIsAtBoundary,
-    lastValidPos,
-  ]
-);
+      if (isAtBoundary) {
+        // Snap back to last valid position
+        node.position({ x: lastValidPos.x, y: lastValidPos.y });
+      } else {
+        // Update position and state
+        node.position({ x: newX, y: newY });
+        setLastValidPos({ x: newX, y: newY });
+        updateSlides(text, {
+          x: newX,
+          y: newY,
+          width,
+          fontSize: fontSize,
+          fontFamily: fontFamily,
+          fontWeight: fontWeight,
+          fontStyle: fontStyle,
+          align: align,
+        });
+      }
+
+      setIsAtBoundary(isAtBoundary);
+    },
+    [
+      text,
+      width,
+      height,
+      fontSize,
+      fontFamily,
+      fontWeight,
+      fontStyle,
+      align,
+      updateSlides,
+      setIsAtBoundary,
+      lastValidPos,
+    ]
+  );
 
   const handleTransformEnd = useCallback(() => {
     const node = textRef.current;
@@ -319,10 +330,14 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   const handleStyleChange = useCallback(
     (style: Partial<KonvaTextEditorProps>) => {
       const updatedStyle = {
-        fontSize: style.fontSize !== undefined ? style.fontSize : currentFontSize,
-        fontFamily: style.fontFamily !== undefined ? style.fontFamily : currentFontFamily,
-        fontWeight: style.fontWeight !== undefined ? style.fontWeight : currentFontWeight,
-        fontStyle: style.fontStyle !== undefined ? style.fontStyle : currentFontStyle,
+        fontSize:
+          style.fontSize !== undefined ? style.fontSize : currentFontSize,
+        fontFamily:
+          style.fontFamily !== undefined ? style.fontFamily : currentFontFamily,
+        fontWeight:
+          style.fontWeight !== undefined ? style.fontWeight : currentFontWeight,
+        fontStyle:
+          style.fontStyle !== undefined ? style.fontStyle : currentFontStyle,
         align: style.align !== undefined ? style.align : currentAlign,
         x,
         y,
@@ -386,7 +401,12 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
         <Transformer
           ref={trRef}
           keepRatio={true}
-          enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
+          enabledAnchors={[
+            "top-left",
+            "top-right",
+            "bottom-left",
+            "bottom-right",
+          ]}
           boundBoxFunc={(oldBox, newBox) => {
             const { x, y, isAtBoundary } = constrainToCanvas(
               newBox.x,
@@ -401,7 +421,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
           }}
         />
       )}
-      {isEditing && textRef.current && (
+      {isSelected && isEditing && textRef.current && (
         <Html>
           <textarea
             autoFocus
@@ -413,22 +433,23 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
               top: textRef.current.absolutePosition().y,
               left: textRef.current.absolutePosition().x,
               fontSize: `${fontSize}px`,
-              fontFamily,
-              fontStyle,
-              fontWeight,
-              color: selectedTheme?.primaryColor || fill,
+              fontFamily: fontFamily?.trim() || selectedTheme?.font || "Roboto",
+              fontStyle: fontWeight || "normal",
+              fontWeight: fontWeight || "normal",
+              outline: "none",
+              // background: "transparent",
               background: "white",
-              border: "1px solid #ccc",
-              padding: "2px 4px",
-              lineHeight: 1.2,
-              width: "250px",
-              zIndex: 1000,
-              boxSizing: "border-box",
+              border: "0px",
+              paddingLeft: "6px",
+              lineHeight: 0.9,
+              resize: "none",
+              transform: `rotate(${textRef.current.rotation()}deg)`,
+              width: `${textRef.current.width()}px`,
+              height: `${textRef.current.height()}px`,
+              zIndex: 999,
             }}
           />
-          
         </Html>
-        
       )}
     </>
   );

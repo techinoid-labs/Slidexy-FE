@@ -39,7 +39,7 @@ const Page = () => {
   const [isMobileTextSelected, setIsMobileTextSelected] = useState(false);
   const [showRightPanel, setShowRightPanel] = useState(false);
   const theme = useTheme();
-  const isXLScreen = useMediaQuery(theme.breakpoints.up("xl"));
+  const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
 
   const resetAll = () => {
     dispatch(setSlides(initialSlides));
@@ -174,15 +174,15 @@ const Page = () => {
             </div>
             <div
               className={`
-    ${isXLScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
+    ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
     bg-white shadow-md transition-all duration-300 ease-in-out flex
      ${
-       !isXLScreen && showRightPanel ? "w-96" : isXLScreen ? "w-[360px]" : "w-0"
+       !isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[360px]" : "w-0"
      }
   `}
             >
               {/* Toggle Tab */}
-              {!isXLScreen && (
+              {!isLGScreen && (
                 <div
                   className={`
       absolute -left-5 top-24
@@ -202,7 +202,7 @@ const Page = () => {
               {/* Content area only shows if expanded */}
               <div
                 className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
-                  !showRightPanel && !isXLScreen
+                  !showRightPanel && !isLGScreen
                     ? "opacity-0 pointer-events-none"
                     : "opacity-100"
                 }`}

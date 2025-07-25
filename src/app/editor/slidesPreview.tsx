@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { Box, Typography, IconButton, Tooltip } from "@mui/material";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Tooltip,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useSlides } from "@/app/context/SlidesContext";
@@ -31,7 +38,8 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
     selectedSlideIndex,
     setSelectedSlideIndex,
   } = useSlides();
-
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   // console.log({ selectedSlideIndex, reduxSlides });
   useEffect(() => {
     if (selectedIndex !== selectedSlideIndex) {
@@ -100,7 +108,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
               sx={{
                 position: "relative",
                 width: 200,
-                height: 120,
+                height: isMobile ? 60 : 120,
                 borderLeft: isSelected
                   ? "4px solid #6941c6"
                   : "1px solid #e5e5ef",
@@ -186,7 +194,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
           onClick={handleAddSlide}
           sx={{
             width: 100,
-            height: 100,
+            height: isMobile ? 60 : 100,
             borderRadius: 1,
             border: "1px dashed #d0d5dd",
             display: "flex",

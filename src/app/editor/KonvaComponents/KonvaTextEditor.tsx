@@ -140,6 +140,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [isEditing]);
+
   useEffect(() => {
     const handleStageClick = (e: MouseEvent | TouchEvent) => {
       if (!textRef.current || !isSelected) return;
