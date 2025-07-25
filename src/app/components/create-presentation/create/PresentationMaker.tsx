@@ -49,6 +49,8 @@ export default function PresentationMaker({
         return "Paste a YouTube video URL...";
       case "Website":
         return "Paste a website link to summarize...";
+      case "Poster": // New case for Poster
+        return "Describe your poster idea... e.g., 'A poster for a charity event'";
       default:
         return "Describe your idea... e.g., 'Pitch for a new mental health app'";
     }
@@ -63,14 +65,39 @@ export default function PresentationMaker({
   const extractVideoId = (inputUrl: string) => {
     try {
       const urlObj = new URL(inputUrl);
-      if (urlObj.hostname.includes("youtube.com")) {
+      // Standard YouTube URLs
+      if (
+        urlObj.hostname === "www.youtube.com" ||
+        urlObj.hostname === "youtube.com"
+      ) {
         return urlObj.searchParams.get("v");
-      } else if (urlObj.hostname === "youtu.be") {
+      }
+      if (urlObj.hostname === "youtu.be") {
         return urlObj.pathname.slice(1);
+      }
+      // googleusercontent.com YouTube URLs
+      if (
+        urlObj.hostname === "googleusercontent.com" &&
+        urlObj.pathname.startsWith("/youtube.com/")
+      ) {
+        const videoIdFromQuery = urlObj.searchParams.get("v");
+        if (videoIdFromQuery) {
+          return videoIdFromQuery;
+        }
+        // This assumes the video ID is the last segment after /youtube.com/N/
+        const parts = urlObj.pathname.split("/");
+        if (
+          parts.length > 3 &&
+          parts[1] === "youtube.com" &&
+          parts[2].match(/^\d+$/)
+        ) {
+          return parts[3]; // Returns VIDEO_ID from /youtube.com/N/VIDEO_ID
+        }
       }
     } catch (error) {
       return null;
     }
+    return null;
   };
 
   // Helper to validate YouTube URL
@@ -117,10 +144,9 @@ export default function PresentationMaker({
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
         ? { source: "website", inputWebsiteUrl: inputValue }
-        : inputMode === "Infographic"
-        ? { topic: inputValue }
+        : inputMode === "Poster" // Changed from "Infographic" to "Poster"
+        ? { topic: inputValue } // Payload for poster, assuming it takes a topic
         : { source: "text", textContent: inputValue };
-
 
     const promptMeta = {
       goal,
@@ -131,12 +157,10 @@ export default function PresentationMaker({
 
     const payload = { ...base, meta: promptMeta };
     console.log("[SlidesX] Payload to backend:", payload);
-    // console.log("[SlidesX] Prompt meta (not sent):", promptMeta);
-    // return;
     try {
       const endpoint =
-        inputMode === "Infographic"
-          ? "/generate-infographic"
+        inputMode === "Poster" // Changed from "Infographic" to "Poster"
+          ? "/generate-poster-template" // Changed endpoint
           : "/generate-slides";
 
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -159,35 +183,33 @@ export default function PresentationMaker({
       }
 
       const data = await res.json();
-      
-      
-      
-      if (inputMode === "Infographic") {
-        const { image } = data;
 
-        if (!image) {
-          throw new Error("No infographic image returned from backend.");
+      if (inputMode === "Poster") {
+        // Changed from "Infographic" to "Poster"
+        const { imageUrl } = data; // Assuming the response contains an imageUrl
+
+        if (!imageUrl) {
+          throw new Error("No poster image URL returned from backend.");
         }
 
-        const infographicPayload = {          
-          imageUrl: image,
+        const posterPayload = {
+          imageUrl: imageUrl,
         };
 
-        // You can store it for retrieval on /infographics page
+        // Store for retrieval on /poster-templates page
+        
+        localStorage.clear();
+        
         localStorage.setItem(
-          "infographicData",
-          JSON.stringify(infographicPayload)
-        );
+          "posterTemplateData", // Changed localStorage key
+          JSON.stringify(posterPayload)
+        )
 
-        router.push("/infographics");
-      } 
-      
-      else {
+        router.push("/infographics"); // Changed redirection route
+      } else {
         setSlides(data.slides);
         router.push("/presentation/outline");
       }
-
-
     } catch (err: any) {
       console.error("[SlidesX] Exception in handleSubmit:", err);
       setError(err.message || "Something went wrong");
@@ -216,6 +238,7 @@ export default function PresentationMaker({
 
   return (
     <Box sx={{ mx: "auto", mt: 6, width: { xs: "100%", md: "70%" } }}>
+      {/* You might need to update InputModeSelector to include "Poster" and remove "Infographic" */}
       <InputModeSelector onModeChange={setInputMode} />
 
       <PromptAttributeSelector
@@ -237,7 +260,7 @@ export default function PresentationMaker({
           borderRadius: "999px",
           border: "2px solid #8E2DE2",
           boxShadow: "4px 5px 0px 0px #8E2DE2",
-          height: {xs: 57, md: 70},
+          height: { xs: 57, md: 70 },
           px: 2,
           mb: 3,
         }}
@@ -254,7 +277,7 @@ export default function PresentationMaker({
               height: "100%",
               border: "none",
               "& fieldset": { border: "none" },
-              fontSize: {xs: "1rem", md:"1rem"},
+              fontSize: { xs: "1rem", md: "1rem" },
               px: 2,
             },
             endAdornment:
@@ -273,17 +296,16 @@ export default function PresentationMaker({
 
       {/* Show YouTube thumbnail if mode is Youtube and valid videoId */}
       {inputMode === "Youtube" && videoId && !showYoutubeError && (
-        <MuiBox
-          sx={{ width: "100%", maxWidth: 600, mx: "auto", mb: 3 }} // Increase maxWidth here for larger card
-        >
+        <MuiBox sx={{ width: "100%", maxWidth: 600, mx: "auto", mb: 3 }}>
           <Card
             sx={{ position: "relative", borderRadius: 2, overflow: "hidden" }}
           >
             <CardMedia
               component="img"
-              image={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+              // Ensure this URL is correct for your thumbnail service
+              image={`http://img.youtube.com/vi/${videoId}/hqdefault.jpg`} // Changed to a standard YouTube thumbnail URL
               alt="YouTube Thumbnail"
-              sx={{ width: "100%", height: 300, objectFit: "cover" }} // Increase height here for larger image
+              sx={{ width: "100%", height: 300, objectFit: "cover" }}
             />
             <MuiBox
               sx={{
@@ -331,7 +353,7 @@ export default function PresentationMaker({
           fontSize: "1.125rem",
           fontWeight: 600,
           mb: 4,
-          height: {xs: 57, md: 70},
+          height: { xs: 57, md: 70 },
           border: "2px solid #8E2DE2",
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
@@ -359,7 +381,12 @@ export default function PresentationMaker({
           },
         }}
       >
-        <span style={{ color: loading ? "#fff" : "#8E2DE2", transition: "color 0.6s ease" }}>
+        <span
+          style={{
+            color: loading ? "#fff" : "#8E2DE2",
+            transition: "color 0.6s ease",
+          }}
+        >
           {loading ? "Generating..." : "Generate Outlines"}
         </span>
 
@@ -370,8 +397,8 @@ export default function PresentationMaker({
             height: 22,
             ml: 1,
             background: loading
-              ? "#fff" 
-              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)", 
+              ? "#fff"
+              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",
@@ -384,7 +411,6 @@ export default function PresentationMaker({
           }}
         />
       </Button>
-
 
       {error && (
         <Typography color="error" sx={{ mt: 2 }}>
@@ -429,7 +455,6 @@ export default function PresentationMaker({
           />
         </Box>
 
-
         <Box
           sx={{
             display: "flex",
@@ -438,7 +463,7 @@ export default function PresentationMaker({
             flexWrap: { xs: "wrap", sm: "nowrap" },
             width: { xs: "100%", md: 1000 }, // Responsive width
             //justifyContent: "center", // Center children horizontally
-            alignItems: "center",     // Center children vertically (for column)
+            alignItems: "center", // Center children vertically (for column)
           }}
         >
           {promptCards.map((card, index) => (
@@ -454,18 +479,24 @@ export default function PresentationMaker({
                 borderRadius: "16px",
                 padding: 2,
                 position: "relative",
-                minHeight: {xs: 100, sm: 180},
+                minHeight: { xs: 100, sm: 180 },
                 width: {
-                  xs: index === 0 ? 270 :
-                      index === 1 ? 270 :
-                        index === 2 ? 270 :
-                          100,
+                  xs:
+                    index === 0
+                      ? 270
+                      : index === 1
+                      ? 270
+                      : index === 2
+                      ? 270
+                      : 100,
                   sm:
-                    index === 0 ? 250 :
-                      index === 1 ? 250 :
-                        index === 2 ? 250 :
-                          200,
-
+                    index === 0
+                      ? 250
+                      : index === 1
+                      ? 250
+                      : index === 2
+                      ? 250
+                      : 200,
                 },
               }}
               onClick={() => handlePromptClick(card.description)}
@@ -484,11 +515,15 @@ export default function PresentationMaker({
                   cursor: "pointer",
                 }}
               >
-                <Image src={card.icon} alt="Prompt icon" width={20} height={20} />
+                <Image
+                  src={card.icon}
+                  alt="Prompt icon"
+                  width={20}
+                  height={20}
+                />
               </Box>
             </Box>
           ))}
-
         </Box>
       </Box>
     </Box>
