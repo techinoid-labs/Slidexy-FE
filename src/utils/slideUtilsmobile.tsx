@@ -20,24 +20,45 @@ export const constrainToCanvas = (
   canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
 ) => {
   const { LEFT_PADDING } = getSlideDimensions();
-  const minX = LEFT_PADDING;
-  const minY = 60;
-  const safeHeight = height || 30; // fallback in case of 0
-  const maxX = canvasWidth - width - 10;
-  const maxY = window.innerHeight <= 830? canvasHeight - height -100 : canvasHeight - height -10 ;
+  const paddingLeft = LEFT_PADDING; // 17
+  const paddingRight = 10;
+  const paddingTop = 60;
+  const paddingBottom = window.innerHeight <= 830 ? 50 : 10;
+
+  const minX = paddingLeft;
+  const minY = paddingTop;
+  const safeHeight = height || 30;
+  // Use a less restrictive maxX to allow dragging across the canvas
+  const maxX = canvasWidth - paddingRight; // e.g., 300 - 10 = 290
+  const maxY = canvasHeight - paddingBottom;
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
 
   const isAtBoundary =
-    constrainedX === minX ||
-    constrainedX === maxX ||
-    constrainedY === minY ||
-    constrainedY === maxY;
+    (x < minX && constrainedX === minX) ||
+    (x > maxX && constrainedX === maxX) ||
+    (y < minY && constrainedY === minY) ||
+    (y > maxY && constrainedY === maxY);
+
+  console.log({
+    x,
+    y,
+    width,
+    height: safeHeight,
+    canvasWidth,
+    canvasHeight,
+    minX,
+    maxX,
+    minY,
+    maxY,
+    constrainedX,
+    constrainedY,
+    isAtBoundary,
+  });
 
   return { x: constrainedX, y: constrainedY, isAtBoundary };
 };
-
 export const getRandomSlide = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const titles: any = [
@@ -68,14 +89,15 @@ export const getRandomSlide = () => {
         text,
         konva_component: "Konva.Text",
         properties: {
-          fontSize: {xs: 12, md: 14, sm: 15, lg: 16, xl: 17},
-          fontWeight: "",
+          fontSize: 15,
+          fontWeight: "10px",
           fontFamily: "",
           fill: "#444",
+          color: "1a1a1a",
           fontStyle: "",
-          x: LEFT_PADDING,
-          y: 180,
-          width: SLIDE_WIDTH - LEFT_PADDING + 10,
+          x: LEFT_PADDING+10,
+          y: 52,
+          width: 20,
         },
       };
     });
@@ -85,13 +107,14 @@ export const getRandomSlide = () => {
     slide_title: {
       text: titles[Math.floor(Math.random() * titles.length)],
       properties: {
-        fontSize: 12,
+        fontSize: 15,
+        fontWeight: "30px", 
         fontFamily: "",
         fill: "#000",
         fontStyle: "",
-        x: LEFT_PADDING,
-        y: 50,
-        width: SLIDE_WIDTH - LEFT_PADDING,
+         x: LEFT_PADDING,
+        // y: 50,
+        // width: SLIDE_WIDTH - LEFT_PADDING,
       },
     },
     elements: getRandomBullets(3),
@@ -106,25 +129,25 @@ export const getLayoutProps = (layout: number) => {
       return {
         image: { x: 100, y: SLIDE_HEIGHT - 220 - 10, width: 700, height: 220 },
         title: { x: LEFT_PADDING, y: 60 },
-        bullets: { x: LEFT_PADDING, y: 180 },
+        bullets: { x: LEFT_PADDING, y: 62 },
       };
     case 1:
       return {
         image: { x: 100, y: 60, width: 700, height: 220 },
         title: { x: LEFT_PADDING, y: 350 },
-        bullets: { x: LEFT_PADDING, y: 420 },
+        bullets: { x: LEFT_PADDING, y: 64 },
       };
     case 2:
       return {
         image: { x: SLIDE_WIDTH - 320 - 10, y: 100, width: 320, height: 520 },
         title: { x: LEFT_PADDING, y: 100 },
-        bullets: { x: LEFT_PADDING, y: 200 },
+        bullets: { x: LEFT_PADDING, y: 66 },
       };
     case 3:
       return {
         image: { x: 60, y: 100, width: 320, height: 520 },
         title: { x: SLIDE_WIDTH / 2, y: 100 },
-        bullets: { x: SLIDE_WIDTH / 2, y: 200 },
+        bullets: { x: SLIDE_WIDTH / 2, y: 68 },
       };
     case 4:
       return {
@@ -135,13 +158,13 @@ export const getLayoutProps = (layout: number) => {
           height: 200,
         },
         title: { x: (SLIDE_WIDTH - 900) / 2, y: 80 },
-        bullets: { x: (SLIDE_WIDTH - 900) / 2, y: 540 },
+        bullets: { x: (SLIDE_WIDTH - 900) / 2, y: 70 },
       };
     case 5:
       return {
         image: null,
         title: { x: LEFT_PADDING, y: 100 },
-        bullets: { x: LEFT_PADDING, y: 200 },
+        bullets: { x: LEFT_PADDING, y: 71 },
       };
     default:
       return {
@@ -152,7 +175,7 @@ export const getLayoutProps = (layout: number) => {
           height: 600,
         },
         title: { x: LEFT_PADDING, y: 60 },
-        bullets: { x: LEFT_PADDING, y: 180 },
+        bullets: { x: LEFT_PADDING, y: 72 },
       };
   }
 };

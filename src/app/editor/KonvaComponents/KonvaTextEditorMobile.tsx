@@ -205,60 +205,68 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   );
 
   const handleDragEnd = useCallback(
-    (e: KonvaEventObject<DragEvent>) => {
-      const node = textRef.current;
-      if (!node) return;
+  (e: KonvaEventObject<DragEvent>) => {
+    const node = textRef.current;
+    if (!node) return;
 
-      const boundingBox = node.getClientRect();
-      const {
-        x: newX,
-        y: newY,
-        isAtBoundary,
-      } = constrainToCanvas(
-        node.x(),
-        node.y(),
-        node.width(),
-        boundingBox.height,
-        getSlideDimensions().SLIDE_WIDTH,
-        getSlideDimensions().SLIDE_HEIGHT
-      );
+    const boundingBox = node.getClientRect();
+    const {
+      x: newX,
+      y: newY,
+      isAtBoundary,
+    } = constrainToCanvas(
+      node.x(),
+      node.y(),
+      node.width(),
+      boundingBox.height,
+      getSlideDimensions().SLIDE_WIDTH,
+      getSlideDimensions().SLIDE_HEIGHT
+    );
 
-      if (isAtBoundary) {
-        // Snap back to last valid position
-        node.position({ x: lastValidPos.x, y: lastValidPos.y });
-      } else {
-        // Update position and state
-        node.position({ x: newX, y: newY });
-        setLastValidPos({ x: newX, y: newY });
-        updateSlides(text, {
-          x: newX,
-          y: newY,
-          width,
-          fontSize: fontSize,
-          fontFamily: fontFamily,
-          fontWeight: fontWeight,
-          fontStyle: fontStyle,
-          align: align,
-        });
-      }
-
-      setIsAtBoundary(isAtBoundary);
-    },
-    [
-      text,
-      width,
-      height,
-      fontSize,
-      fontFamily,
-      fontWeight,
-      fontStyle,
-      align,
-      updateSlides,
-      setIsAtBoundary,
+    console.log("handleDragEnd:", {
+      nodeX: node.x(),
+      nodeY: node.y(),
+      newX,
+      newY,
+      isAtBoundary,
       lastValidPos,
-    ]
-  );
+    });
 
+    if (isAtBoundary) {
+      console.log("Snapping back to lastValidPos:", lastValidPos);
+      node.position({ x: lastValidPos.x, y: lastValidPos.y });
+    } else {
+      console.log("Updating position to:", { x: newX, y: newY });
+      node.position({ x: newX, y: newY });
+      setLastValidPos({ x: newX, y: newY });
+    }
+
+    updateSlides(text, {
+      x: node.x(),
+      y: node.y(),
+      width,
+      fontSize: fontSize,
+      fontFamily: fontFamily,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
+      align: align,
+    });
+
+    setIsAtBoundary(isAtBoundary);
+  },
+  [
+    text,
+    width,
+    fontSize,
+    fontFamily,
+    fontWeight,
+    fontStyle,
+    align,
+    updateSlides,
+    setIsAtBoundary,
+    lastValidPos,
+  ]
+); 
   const handleTransformEnd = useCallback(() => {
     const node = textRef.current;
     if (!node) return;
