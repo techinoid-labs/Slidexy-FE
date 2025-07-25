@@ -129,7 +129,7 @@ export const dummyData = [
       text: "World War 3: A Hypothetical Global Conflict",
       konva_component: "Konva.Text",
       properties: {
-        fontSize: 38,
+        fontSize: {xs: 20, md: 21, sm: 22, lg: 23, xl: 24},
         fontFamily: "Inter",
         fill: "#333",
         fontStyle: "bold",
@@ -141,7 +141,7 @@ export const dummyData = [
         text: "Examining the concept of World War 3.",
         konva_component: "Konva.Text",
         properties: {
-          fontSize: 18,
+          fontSize: {xs: 12, md: 12, sm: 12, lg: 12, xl: 12},
           fontFamily: "Inter",
           fill: "#444",
           fontStyle: "normal",
@@ -152,7 +152,7 @@ export const dummyData = [
         text: "Understanding potential triggers and consequences.",
         konva_component: "Konva.Text",
         properties: {
-          fontSize: 18,
+          fontSize: {xs: 12, md: 12, sm: 12, lg: 12, xl: 12},
           fontFamily: "Inter",
           fill: "#444",
           fontStyle: "normal",
@@ -191,7 +191,7 @@ export const dummyData = [
       element_type: "title",
       konva_component: "Konva.Text",
       properties: {
-        fontSize: 38,
+        fontSize: {xs: 20, md: 21, sm: 22, lg: 23, xl: 24},
         fontFamily: "Inter",
         fill: "#333",
         fontStyle: "bold",
@@ -203,7 +203,7 @@ export const dummyData = [
         text: "Geopolitical tensions as a contributing factor.",
         konva_component: "Konva.Text",
         properties: {
-          fontSize: 18,
+          fontSize: {xs: 12, md: 12, sm: 12, lg: 12, xl: 12},
           fontFamily: "Inter",
           fill: "#444",
           fontStyle: "normal",
@@ -214,7 +214,7 @@ export const dummyData = [
         text: "Resource scarcity could be a trigger.",
         konva_component: "Konva.Text",
         properties: {
-          fontSize: 18,
+          fontSize:{xs: 12, md: 12, sm: 12, lg: 12, xl: 12} ,
           fontFamily: "Inter",
           fill: "#444",
           fontStyle: "normal",
@@ -243,7 +243,7 @@ export const dummyData = [
       element_type: "title",
       konva_component: "Konva.Text",
       properties: {
-        fontSize: 38,
+        fontSize: {xs: 20, md: 21, sm: 22, lg: 23, xl: 24},
         fontFamily: "Inter",
         fill: "#333",
         fontStyle: "bold",
@@ -255,7 +255,7 @@ export const dummyData = [
         text: "Devastating human cost and economic disruption.",
         konva_component: "Konva.Text",
         properties: {
-          fontSize: 18,
+          fontSize: {xs: 12, md: 12, sm: 12, lg: 12, xl: 12},
           fontFamily: "Inter",
           fill: "#444",
           fontStyle: "normal",
@@ -266,7 +266,7 @@ export const dummyData = [
         text: "Long-term global instability to follow.",
         konva_component: "Konva.Text",
         properties: {
-          fontSize: 18,
+          fontSize: {xs: 12, md: 12, sm: 12, lg: 12, xl: 12},
           fontFamily: "Inter",
           fill: "#444",
           fontStyle: "normal",
@@ -303,10 +303,10 @@ function stackElementY(slide: any, startY = 120, gap = 32) {
   });
 }
 
-dummyData.forEach(slide => {
-  if (slide.slide_title && slide.slide_title.properties) {
-    slide.slide_title.properties.fontSize = 48;
-  }
-});
+// dummyData.forEach(slide => {
+//   if (slide.slide_title && slide.slide_title.properties) {
+//     //slide.slide_title.properties.fontSize = 48;
+//   }
+// });
 
 dummyData.forEach(slide => stackElementY(slide));

@@ -76,7 +76,7 @@ const UpperNavBar: React.FC<{
 
   return (
     <AppBar
-      position="static"
+      position="fixed"
       elevation={0}
       sx={{
         bgcolor: "#fff",

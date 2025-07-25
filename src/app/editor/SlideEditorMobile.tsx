@@ -131,14 +131,35 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   } = dimensions;
 
   return (
+
     <main
       style={{
         flexGrow: 1,
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
+        overflow: "auto",
+        height: "100vh",
+
+
       }}
     >
+      <div style={{
+        display: "flex", flexDirection: "row",
+        overflow: "hidden", width: "900px", height: "100px",
+        marginLeft: 27, marginRight: 20, position: "fixed", borderRadius: "5px", borderBottomRightRadius: "16px", marginTop: 80,
+      }}>
+        <SlidePreviews
+          slides={slides}
+          selectedIndex={selectedIndex}
+          slide_width={SLIDE_WIDTH + 20}
+          slide_height={SLIDE_HEIGHT + 10}
+          onSelect={setSelectedIndex}
+          onAddSlide={handleAddSlide}
+          onDeleteSlide={handleDeleteSlide}
+        />
+      </div>
+
+
       <div
         style={{
           flexGrow: 1,
@@ -151,23 +172,25 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         <Box
           sx={{
             position: "fixed",
-            top: 90,
-            width: SLIDE_WIDTH + 32,
-            height: SLIDE_HEIGHT + 32,
+            top: 190,
+            width: window.innerWidth - 40,
+            height: window.innerHeight - 300,
             bgcolor: "#fff",
             border: "1px solid #E0E0E0",
             zIndex: 0,
             boxShadow: 3,
             display: "flex",
             flexDirection: "column",
-            padding: "16px",
+            padding: "12px",
             borderBottomLeftRadius: "13px",
             borderBottomRightRadius: "13px",
             borderTopLeftRadius: "13px",
             borderTopRightRadius: "13px",
-            overflowY: "auto",
+            //overflowY: "auto",
+
           }}
         >
+
           {slides.map((slide: any, index: number) => {
             const title = slide.slide_title;
             const titleProps = title.properties;
@@ -180,26 +203,43 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 key={slide.slide_id}
                 sx={{
                   width: `${SLIDE_WIDTH}px`,
-                  height: `${SLIDE_HEIGHT}px`,
+                  height: { xs: `${window.innerHeight}px`, md: `${SLIDE_HEIGHT + 100}px` },
                   border: "1px solid #ccc",
                   backgroundColor: "#fff",
                   position: "relative",
                   mb: 1,
                   display: index === selectedIndex ? "block" : "none",
+                  //maxHeight: {xs: "calc(100vh - 200px)", sm: "calc(100vh - 150px)"},
                 }}
               >
+
                 <Stage
-                  width={SLIDE_WIDTH - 10}
-                  height={SLIDE_HEIGHT - 155}
+                  width={window.innerWidth - 40}
+                  height={window.innerHeight - 320}
                   ref={(ref: any) => {
                     stageRefs.current[index] =
                       ref?.getStage()?.content?.querySelector("canvas") || null;
                   }}
+
                   onMouseDown={(e) => {
                     const clickedOnEmpty =
                       e.target === e.target.getStage() ||
                       e.target.name() === "background";
                     if (clickedOnEmpty) {
+                      console.log(window.innerHeight);
+                      setSelectedTextId(null);
+                      setSelectedImageIndex(null);
+                      setSelectedShapeIndex(null);
+                      setSelectedImage(null);
+                      setTooltip({ visible: false, x: 0, y: 0, node: null });
+                    }
+                  }}
+                  onTouchEnd={(e) => {
+                    const clickedOnEmpty =
+                      e.target === e.target.getStage() ||
+                      e.target.name() === "background";
+                    if (clickedOnEmpty) {
+                      console.log(window.innerHeight);
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
                       setSelectedShapeIndex(null);
@@ -243,7 +283,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       x={0}
                       y={0}
                       width={SLIDE_WIDTH}
-                      height={SLIDE_HEIGHT}
+                      height= {window.innerHeight -320}
                       stroke={isAtBoundary ? "red" : "transparent"}
                       strokeWidth={2}
                       listening={false}
@@ -315,6 +355,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                             setSelectedImageIndex(null);
                             setSelectedShapeIndex(null);
                             setSelectedImage(null);
+
                           }}
                           onClick={() => {
                             setTooltip({
@@ -462,16 +503,11 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
               onClose={() => setTooltip({ ...tooltip, visible: false })}
             />
           )}
-          <SlidePreviews
-            slides={slides}
-            selectedIndex={selectedIndex}
-            slide_width={SLIDE_WIDTH}
-            onSelect={setSelectedIndex}
-            onAddSlide={handleAddSlide}
-            onDeleteSlide={handleDeleteSlide}
-          />
+
+
         </Box>
       </div>
+
     </main>
   );
 };

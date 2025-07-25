@@ -362,6 +362,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         slides={slides}
         selectedIndex={selectedIndex}
         slide_width={SLIDE_WIDTH}
+        slide_height={SLIDE_HEIGHT}
         onSelect={setSelectedIndex}
         onAddSlide={handleAddSlide}
         onDeleteSlide={handleDeleteSlide}

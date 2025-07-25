@@ -5,7 +5,7 @@ export const getSlideDimensions = () => {
   const windowWidth = typeof window !== "undefined" ? window.innerWidth : 500;
   const windowHeight = typeof window !== "undefined" ? window.innerHeight : 400;
   const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 500); // 90% of window width, capped at 500
-  const SLIDE_HEIGHT = Math.min(windowHeight * 1.8, 600); // 60% of window height, capped at 400
+  const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 400); // 60% of window height, capped at 400
   const LEFT_PADDING = 17;
 
   return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING };
@@ -20,15 +20,15 @@ export const constrainToCanvas = (
   canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
 ) => {
   const { LEFT_PADDING } = getSlideDimensions();
-  const minX = LEFT_PADDING; // Left padding
-  const minY = 60; // Top margin for title
-  const maxX = canvasWidth - width - 10; // Right edge with buffer
-  const maxY = canvasHeight - height - 10; // Bottom edge with buffer
+  const minX = LEFT_PADDING;
+  const minY = 60;
+  const safeHeight = height || 30; // fallback in case of 0
+  const maxX = canvasWidth - width - 10;
+  const maxY = window.innerHeight <= 830? canvasHeight - height -100 : canvasHeight - height -10 ;
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
 
-  // Check if the element is at the canvas boundary
   const isAtBoundary =
     constrainedX === minX ||
     constrainedX === maxX ||
@@ -68,7 +68,7 @@ export const getRandomSlide = () => {
         text,
         konva_component: "Konva.Text",
         properties: {
-          fontSize: 12,
+          fontSize: {xs: 12, md: 14, sm: 15, lg: 16, xl: 17},
           fontWeight: "",
           fontFamily: "",
           fill: "#444",

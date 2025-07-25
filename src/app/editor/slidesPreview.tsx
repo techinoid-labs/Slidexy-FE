@@ -9,6 +9,7 @@ import { useSlides } from "@/app/context/SlidesContext";
 interface SlidePreviewsProps {
   slides: any[];
   slide_width: string | number;
+  slide_height: string | number;
   selectedIndex: number;
   onSelect: (index: number) => void;
   onAddSlide: () => void;
@@ -18,6 +19,7 @@ interface SlidePreviewsProps {
 const SlidePreviews: React.FC<SlidePreviewsProps> = ({
   slides,
   slide_width,
+  slide_height,
   selectedIndex,
   onSelect,
   onAddSlide,
@@ -68,13 +70,14 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
     <Box
       sx={{
         width: slide_width,
+        height: slide_height,
         overflowX: "auto",
         overflowY: "hidden",
         backgroundColor: "#f5f5fa",
         borderRadius: 1,
         mt: 1,
         px: 2,
-        py: 2,
+        py: 1,
       }}
     >
       <Box
@@ -83,6 +86,9 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
           alignItems: "center",
           gap: 2,
           minWidth: "max-content",
+          flexWrap: "nowrap",
+          overflowX: "auto",
+          flexGrow: "row",
         }}
       >
         {slides.map((slide: any, index: number) => {
@@ -94,7 +100,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
               sx={{
                 position: "relative",
                 width: 200,
-                height: 120,
+                height: 70,
                 borderLeft: isSelected
                   ? "4px solid #6941c6"
                   : "1px solid #e5e5ef",
@@ -119,8 +125,10 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
               <Typography
                 variant="subtitle2"
                 fontWeight={600}
+                //fontSize={12}
                 sx={{
                   display: "block",
+                  fontSize: {xs: 12, md: 15, sm: 16, lg: 17, xl: 18},
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -135,6 +143,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                 sx={{
                   display: "block",
                   overflow: "hidden",
+                  fontSize: {xs: 10, md: 13, sm: 16, lg: 17, xl: 18},
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
                   maxWidth: "100%",
@@ -176,8 +185,8 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
         <IconButton
           onClick={handleAddSlide}
           sx={{
-            width: 120,
-            height: 120,
+            width: 100,
+            height: 70,
             borderRadius: 1,
             border: "1px dashed #d0d5dd",
             display: "flex",
