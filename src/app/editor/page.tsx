@@ -46,53 +46,202 @@ const Page = () => {
     setSelectedTextId(null);
     setIsMobileTextSelected(false);
   };
+  // const handleExportPPTX = () => {
+  //   const structuredSlides: StructuredSlide[] = slides.map((slide) => {
+  //     const elements: StructuredSlide["elements"] = [];
+
+  //     slide.elements?.forEach((el) => {
+  //       if (el.element_type === "bullet_point") {
+  //         const textProps = el.properties as any; // Or define a better type for bullet points
+  //         elements.push({
+  //           element_type: "bullet_point",
+  //           text: el.text,
+  //           properties: {
+  //             x: 0.7,
+  //             y: undefined,
+  //             w: 8,
+  //             h: 0.6,
+  //             fontSize: textProps?.fontSize || 18,
+  //             fill: textProps?.fill || "#444444",
+  //           },
+  //         });
+  //       }
+
+  //       if (el.element_type === "image") {
+  //         const imgProps = el.properties as any; // Or define a better type for images
+  //         elements.push({
+  //           element_type: "image",
+  //           src: slide.image_url || undefined,
+  //           properties: {
+  //             imageSrc: imgProps?.imageSrc,
+  //             x: (imgProps?.x || 440) / 100,
+  //             y: (imgProps?.y || 15) / 100,
+  //             w: (imgProps?.width || 480) / 100,
+  //             h: (imgProps?.height || 400) / 100,
+  //           },
+  //         });
+  //       }
+  //     });
+
+  //     return {
+  //       slide_id: slide.slide_id,
+  //       slide_title: {
+  //         text: slide.slide_title?.text || "",
+  //         properties: {
+  //           fill: slide.slide_title?.properties?.fill?.replace("#", ""),
+  //         },
+  //       },
+  //       elements,
+  //       image_url: slide.image_url || undefined,
+  //     };
+  //   });
+
+  //   exportSlidesAsPPT(structuredSlides);
+  // };
+
   const handleExportPPTX = () => {
-    const structuredSlides: StructuredSlide[] = slides.map((slide) => {
+    const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
       const elements: StructuredSlide["elements"] = [];
 
-      slide.elements?.forEach((el) => {
-        if (el.element_type === "bullet_point") {
-          const textProps = el.properties as any; // Or define a better type for bullet points
+      slide.elements?.forEach((el: any) => {
+        const { element_type, text, properties = {}, konva_component } = el;
+        const {
+          x = 0,
+          y = 0,
+          width,
+          height,
+          w,
+          h,
+          fontSize = 18,
+          fill = "#444444",
+          fontFamily,
+          fontStyle,
+          fontWeight,
+          imageSrc,
+        } = properties;
+
+        const xIn = x / 100;
+        const yIn = y / 100;
+        const wIn = (width || w || 400) / 100;
+        const hIn = (height || h || 200) / 100;
+
+        // BULLET POINT
+        if (element_type === "bullet_point") {
           elements.push({
             element_type: "bullet_point",
-            text: el.text,
+            text,
             properties: {
-              x: 0.7,
-              y: undefined,
-              w: 8,
-              h: 0.6,
-              fontSize: textProps?.fontSize || 18,
-              fill: textProps?.fill || "#444444",
+              x: xIn,
+              y: yIn,
+              w: wIn,
+              h: hIn,
+              fontSize,
+              fill: fill.replace("#", ""),
+              fontFamily,
+              fontStyle,
+              fontWeight,
             },
           });
         }
 
-        if (el.element_type === "image") {
-          const imgProps = el.properties as any; // Or define a better type for images
+        // IMAGE
+        else if (element_type === "image" && imageSrc) {
           elements.push({
             element_type: "image",
             src: slide.image_url || undefined,
             properties: {
-              imageSrc: imgProps?.imageSrc,
-              x: (imgProps?.x || 440) / 100,
-              y: (imgProps?.y || 15) / 100,
-              w: (imgProps?.width || 480) / 100,
-              h: (imgProps?.height || 400) / 100,
+              imageSrc,
+              x: xIn,
+              y: yIn,
+              w: wIn,
+              h: hIn,
             },
           });
         }
+
+        // TEXT (like headline or custom)
+        else if (element_type === "text" && text) {
+          elements.push({
+            element_type: "text",
+            text,
+            properties: {
+              x: xIn,
+              y: yIn,
+              w: wIn,
+              h: hIn,
+              fontSize,
+              fill: fill.replace("#", ""),
+              fontFamily,
+              fontStyle,
+              fontWeight,
+            },
+          });
+        }
+
+        // Optional: shape fallback to text label
+        else if (element_type === "shape") {
+          elements.push({
+            element_type: "text",
+            text: konva_component,
+            properties: {
+              x: xIn,
+              y: yIn,
+              fontSize: 12,
+              fill: fill.replace("#", "") || "cccccc",
+            },
+          });
+        }
+
+        // if (element_type === "shape") {
+        //   // Basic shape fallback
+        //   const shapeMap: any = {
+        //     "Konva.Rect": "rect",
+        //     "Konva.Circle": "ellipse",
+        //     "Konva.Ellipse": "ellipse",
+        //     "Konva.Line": "line", // For simple horizontal/vertical line
+        //   };
+
+        //   const shapeType = shapeMap[konva_component];
+        //   if (shapeType) {
+        //     slide.addShape(shapeType, {
+        //       x,
+        //       y,
+        //       w,
+        //       h,
+        //       fill: fill,
+        //       line: { color: "000000", width: 1 },
+        //     });
+        //   } else {
+        //     // fallback to label if unsupported
+        //     slide.addText(konva_component || "shape", {
+        //       x,
+        //       y,
+        //       fontSize: 12,
+        //       color: fill,
+        //     });
+        //   }
+        // }
       });
+
+      // Handle slide title
+      const slideTitleProps: any = slide.slide_title?.properties || {};
+      const slideTitle = slide.slide_title?.text;
 
       return {
         slide_id: slide.slide_id,
-        slide_title: {
-          text: slide.slide_title?.text || "",
-          properties: {
-            fill: slide.slide_title?.properties?.fill?.replace("#", ""),
-          },
-        },
+        slide_title: slideTitle
+          ? {
+              text: slideTitle,
+              properties: {
+                fontSize: slideTitleProps.fontSize,
+                fill: slideTitleProps.fill?.replace("#", ""),
+                fontStyle: slideTitleProps.fontStyle,
+                fontFamily: slideTitleProps.fontFamily,
+              },
+            }
+          : undefined,
         elements,
-        image_url: slide.image_url || undefined,
+        image_url: slide.image_url,
       };
     });
 

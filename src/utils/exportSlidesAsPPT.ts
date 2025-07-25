@@ -15,7 +15,7 @@ export type StructuredSlide = {
     };
   };
   elements: {
-    element_type: "title" | "bullet_point" | "image";
+    element_type: "title" | "bullet_point" | "image" | "text" | "shape";
     text?: string;
     src?: string;
     properties?: {
@@ -39,55 +39,127 @@ export function exportSlidesAsPPT(structuredSlides: StructuredSlide[]) {
 
   // console.log("Structured Slides:", structuredSlides);
 
+  // structuredSlides.forEach((structuredSlide) => {
+  //   const slide = pptx.addSlide();
+
+  //   // Add slide title (left column)
+  //   const titleProps = structuredSlide.slide_title?.properties || {};
+  //   if (structuredSlide.slide_title?.text) {
+  //     slide.addText(structuredSlide.slide_title.text, {
+  //       x: 0.5,
+  //       y: 0.4,
+  //       w: 4.5,
+  //       h: 0.8,
+  //       fontSize: titleProps.fontSize || 24,
+  //       bold: true,
+  //       color: titleProps.fill || "000000",
+  //     });
+  //   }
+
+  //   // Track vertical position of bullet points
+  //   let bulletYOffset = 1.3;
+
+  //   structuredSlide.elements?.forEach((el) => {
+  //     const { element_type, text, src, properties = {} } = el;
+
+  //     const { fontSize = 14, fill = "444444", imageSrc } = properties;
+
+  //     if (element_type === "bullet_point" && typeof text === "string") {
+  //       slide.addText(text, {
+  //         x: 0.5, // left column
+  //         y: bulletYOffset,
+  //         w: 4.5,
+  //         h: 0.6,
+  //         fontSize,
+  //         color: fill,
+  //         bullet: true,
+  //       });
+  //       bulletYOffset += 0.6; // space between bullets
+  //     }
+
+  //     if (element_type === "image") {
+  //       const imagePath = imageSrc || src;
+  //       if (imagePath) {
+  //         slide.addImage({
+  //           path: imagePath,
+  //           x: 5.2, // right column
+  //           y: properties.y ?? 1,
+  //           w: properties.w ?? 4.3,
+  //           h: properties.h ?? 3.5,
+  //         });
+  //       }
+  //     }
+  //   });
+  // });
+
   structuredSlides.forEach((structuredSlide) => {
     const slide = pptx.addSlide();
 
-    // Add slide title (left column)
+    // Add slide title
     const titleProps = structuredSlide.slide_title?.properties || {};
     if (structuredSlide.slide_title?.text) {
       slide.addText(structuredSlide.slide_title.text, {
         x: 0.5,
         y: 0.4,
-        w: 4.5,
+        w: 8,
         h: 0.8,
         fontSize: titleProps.fontSize || 24,
         bold: true,
         color: titleProps.fill || "000000",
+        fontFace: titleProps.fontFamily || "Arial",
       });
     }
 
-    // Track vertical position of bullet points
-    let bulletYOffset = 1.3;
+    structuredSlide.elements.forEach((el) => {
+      const { element_type, text, properties = {}, src } = el;
+      const {
+        x = 1,
+        y = 1,
+        w = 4,
+        h = 0.6,
+        fontSize = 16,
+        fill = "444444",
+        imageSrc,
+        fontFamily,
+        fontStyle,
+        fontWeight,
+      } = properties;
 
-    structuredSlide.elements?.forEach((el) => {
-      const { element_type, text, src, properties = {} } = el;
-
-      const { fontSize = 14, fill = "444444", imageSrc } = properties;
-
-      if (element_type === "bullet_point" && typeof text === "string") {
+      if (element_type === "bullet_point" && text) {
         slide.addText(text, {
-          x: 0.5, // left column
-          y: bulletYOffset,
-          w: 4.5,
-          h: 0.6,
+          x,
+          y,
+          w,
+          h,
           fontSize,
           color: fill,
           bullet: true,
+          fontFace: fontFamily,
         });
-        bulletYOffset += 0.6; // space between bullets
       }
 
-      if (element_type === "image") {
-        const imagePath = imageSrc || src;
-        if (imagePath) {
-          slide.addImage({
-            path: imagePath,
-            x: 5.2, // right column
-            y: properties.y ?? 1,
-            w: properties.w ?? 4.3,
-            h: properties.h ?? 3.5,
-          });
-        }
+      if (element_type === "text" && text) {
+        slide.addText(text, {
+          x,
+          y,
+          w,
+          h,
+          fontSize,
+          color: fill,
+          fontFace: fontFamily,
+          bold: fontWeight === "bold" || fontWeight === "600",
+          italic: fontStyle === "italic",
+        });
+      }
+
+      if (element_type === "image" && imageSrc) {
+        slide.addImage({
+          path: imageSrc,
+          x,
+          y,
+          w,
+          h,
+        });
       }
     });
   });

@@ -59,7 +59,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const [useDummy] = useState(false);
-
+  console.log(slides);
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
     const newSlides = [...slides, structuredClone(newSlide)];
@@ -251,7 +251,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   return slide.elements
                     .filter((el: any) => el.element_type === "bullet_point")
                     .map((el: any, i: number) => {
-                      console.log(el);
                       const isBullet = el.element_type === "bullet_point";
                       const fontSize = el.properties.fontSize;
                       const fontFamily =
