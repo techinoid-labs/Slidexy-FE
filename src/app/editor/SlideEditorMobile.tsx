@@ -379,7 +379,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       return slide.elements
                         .filter((el: any) => el.element_type === "bullet_point")
                         .map((el: any, i: number) => {
-                          console.log(el);
+                          //console.log(el);
                           const isBullet = el.element_type === "bullet_point";
                           const fontSize = el.properties.fontSize;
                           const fontFamily =
