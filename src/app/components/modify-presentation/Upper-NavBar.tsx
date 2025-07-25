@@ -16,12 +16,12 @@ import {
   Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-// import { AppBar, Toolbar, Typography, Box, IconButton } from "@mui/material";
 import { useRouter } from "next/navigation";
-
+import { useSlideThemeContext } from "@/app/context/ThemeContext";
 const UpperNavBar: React.FC<{
   onExportPDF: () => void;
   onExportPPT?: () => void;
+  onReset?: any;
 }> = ({ onExportPDF, onExportPPT }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] =
@@ -29,11 +29,12 @@ const UpperNavBar: React.FC<{
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
+  const { setSelectedLayout, setSelectedTheme } = useSlideThemeContext();
   // Handlers for mobile menu
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMenuAnchor(event.currentTarget);
   };
+
   const handleMobileMenuClose = () => {
     setMobileMenuAnchor(null);
   };
@@ -384,7 +385,7 @@ const UpperNavBar: React.FC<{
               height={25}
             />
           </ListItemIcon> */}
-          Export as PDF
+          <Typography fontSize={14}>Export as PDF</Typography>
         </MenuItem>
         {onExportPPT && (
           <MenuItem
@@ -401,9 +402,26 @@ const UpperNavBar: React.FC<{
                 height={25}
               />
             </ListItemIcon> */}
-            Export as PPTX
+            <Typography fontSize={14}> Export as PPTX</Typography>
           </MenuItem>
         )}
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            console.log("Reset");
+            setSelectedTheme(null);
+          }}
+        >
+          {/* <ListItemIcon>
+            <Image
+              src="/images/file.svg"
+              alt="Export PDF"
+              width={25}
+              height={25}
+            />
+          </ListItemIcon> */}
+          <Typography fontSize={14}> Reset Themes</Typography>
+        </MenuItem>
       </Menu>
     </AppBar>
   );

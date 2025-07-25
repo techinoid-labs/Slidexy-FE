@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+const pdfFileName = localStorage.getItem("fileName");
 
 // EXPORT CANVAS AS PDF with improved quality and correct scale
 export const exportSlidesAsPDF = async (
@@ -49,5 +50,5 @@ export const exportSlidesAsPDF = async (
     );
   }
 
-  pdf.save("slides.pdf");
+  pdf.save(`${pdfFileName}.pdf` || "slides.pdf");
 };

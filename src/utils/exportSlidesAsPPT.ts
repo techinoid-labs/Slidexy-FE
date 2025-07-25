@@ -1,6 +1,7 @@
 "use client";
 
 import PptxGenJS from "pptxgenjs";
+const pptFileName = localStorage.getItem("fileName");
 
 export type StructuredSlide = {
   slide_id: string;
@@ -36,7 +37,7 @@ export type StructuredSlide = {
 export function exportSlidesAsPPT(structuredSlides: StructuredSlide[]) {
   const pptx = new PptxGenJS();
 
-  console.log("Structured Slides:", structuredSlides);
+  // console.log("Structured Slides:", structuredSlides);
 
   structuredSlides.forEach((structuredSlide) => {
     const slide = pptx.addSlide();
@@ -91,5 +92,5 @@ export function exportSlidesAsPPT(structuredSlides: StructuredSlide[]) {
     });
   });
 
-  pptx.writeFile({ fileName: "Presentation.pptx" });
+  pptx.writeFile({ fileName: `${pptFileName}.pptx` || "Presentation.pptx" });
 }
