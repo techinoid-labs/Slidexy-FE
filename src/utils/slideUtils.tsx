@@ -27,17 +27,18 @@ export const constrainToCanvas = (
   canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
 ) => {
   const { LEFT_PADDING } = getSlideDimensions();
-  const paddingLeft = LEFT_PADDING; // 17
+  const paddingLeft = LEFT_PADDING -200; // 17
   const paddingRight = 10;
   const paddingTop = 60;
   const paddingBottom = window.innerHeight <= 830 ? 50 : 10;
 
   const minX = paddingLeft;
+  
   const minY = paddingTop -80;
   const safeHeight = height || 30;
   // Use a less restrictive maxX to allow dragging across the canvas
   const maxX = canvasWidth - paddingRight; // e.g., 300 - 10 = 290
-  const maxY = canvasHeight - paddingBottom;
+  const maxY = canvasHeight - paddingBottom +50;
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
