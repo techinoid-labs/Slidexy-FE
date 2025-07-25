@@ -285,7 +285,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       width={SLIDE_WIDTH}
                       height= {window.innerHeight -320}
                       stroke={isAtBoundary ? "red" : "transparent"}
-                      strokeWidth={2}
+                      strokeWidth={1}
                       listening={false}
                     />
                     {title.text && (

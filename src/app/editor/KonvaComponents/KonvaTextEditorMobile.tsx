@@ -52,6 +52,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   verticalAlign = "start",
   align = "left",
   opacity = 1,
+  height,
   width,
   wrap = "word",
   draggable = true,
@@ -64,6 +65,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   const dispatch = useDispatch();
   const { selectedTheme } = useSlideThemeContext();
   const { slides, setTooltip, setIsAtBoundary } = useSlides();
+ const [lastValidPos, setLastValidPos] = useState({ x, y });
 
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(text);
@@ -196,43 +198,55 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   );
 
   const handleDragEnd = useCallback(
-    (e: KonvaEventObject<DragEvent>) => {
-      const node = textRef.current;
-      if (!node) return;
-      const boundingBox = node.getClientRect();
-      const { x, y, isAtBoundary } = constrainToCanvas(
-        node.x(),
-        node.y(),
-        node.width(),
-        boundingBox.height,
-        getSlideDimensions().SLIDE_WIDTH,
-        getSlideDimensions().SLIDE_HEIGHT
-      );
-      node.position({ x, y });
-      setIsAtBoundary(isAtBoundary);
+  (e: KonvaEventObject<DragEvent>) => {
+    const node = textRef.current;
+    if (!node) return;
+
+    const boundingBox = node.getClientRect();
+    const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
+      node.x(),
+      node.y(),
+      node.width(),
+      boundingBox.height,
+      getSlideDimensions().SLIDE_WIDTH,
+      getSlideDimensions().SLIDE_HEIGHT
+    );
+
+    if (isAtBoundary) {
+      // Snap back to last valid position
+      node.position({ x: lastValidPos.x, y: lastValidPos.y });
+    } else {
+      // Update position and state
+      node.position({ x: newX, y: newY });
+      setLastValidPos({ x: newX, y: newY });
       updateSlides(text, {
-        x,
-        y,
+        x: newX,
+        y: newY,
         width,
         fontSize: fontSize,
         fontFamily: fontFamily,
         fontWeight: fontWeight,
-        fontStyle: fontWeight,
+        fontStyle: fontStyle,
         align: align,
       });
-    },
-    [
-      text,
-      width,
-      currentFontSize,
-      currentFontFamily,
-      currentFontWeight,
-      currentFontStyle,
-      currentAlign,
-      updateSlides,
-      setIsAtBoundary,
-    ]
-  );
+    }
+
+    setIsAtBoundary(isAtBoundary);
+  },
+  [
+    text,
+    width,
+    height,
+    fontSize,
+    fontFamily,
+    fontWeight,
+    fontStyle,
+    align,
+    updateSlides,
+    setIsAtBoundary,
+    lastValidPos,
+  ]
+);
 
   const handleTransformEnd = useCallback(() => {
     const node = textRef.current;
