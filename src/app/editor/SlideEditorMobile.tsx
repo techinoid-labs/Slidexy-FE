@@ -101,9 +101,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           konva_component: "Konva.Image",
           element_id: uuidv4(),
           properties: {
+          
             imageSrc: slide.image_url,
             x: dimensions.SLIDE_WIDTH - 260,
-            y: (dimensions.SLIDE_HEIGHT - 20) / 2.6,
+            y: (dimensions.SLIDE_HEIGHT - 50)/2 ,
             width: 200,
             height: 150,
           },
@@ -197,10 +198,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         >
           {slides.map((slide: any, index: number) => {
             const title = slide.slide_title;
-            const titleProps = title.properties;
-            const titleY = 60;
-            const bulletGap = 2;
-            const bulletStartY = titleY + (titleProps.fontSize || 12) - 50;
+        const titleProps = title.properties;
+        const titleY = 25;
+        const bulletGap = 2;
+        const bulletStartY = 54;
 
             return (
               <Box
@@ -297,9 +298,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       <KonvaTextEditor
                         id={`title-${index}`}
                         text={title.text}
-                        x={titleProps.x || LEFT_PADDING}
+                        x={titleProps.x || LEFT_PADDING + 100}
                         y={titleProps.y || titleY}
-                        width={titleProps.width || textMaxWidth}
+                        width={titleProps.width + 100 || textMaxWidth + 100}
                         wrap="word"
                         fontSize={titleProps.fontSize}
                         fontWeight={titleProps.fontWeight}
@@ -340,12 +341,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           text={el.text}
                           x={el.properties.x || LEFT_PADDING}
                           y={el.properties.y || 300}
-                          width={el.properties.width || textMaxWidth}
+                          width={el.properties.width + 80 || textMaxWidth + 100}
                           opacity={el.properties.opacity}
                           align={el.properties.align}
                           verticalAlign={el.properties.verticalAlign}
                           wrap="word"
                           fontSize={el.properties.fontSize}
+                          fontFamily={el.properties.fontFamily}
                           fill={
                             !el.useThemeColor
                               ? el.properties.fill
@@ -353,7 +355,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           }
                           fontStyle={el.properties.fontStyle}
                           fontWeight={el.properties.fontWeight}
-                          fontFamily={el.properties.fontFamily}
                           isSelected={selectedTextId === `el-${index}-${i}`}
                           onSelect={() => {
                             setSelectedTextId(`el-${index}-${i}`);
@@ -373,19 +374,22 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       );
                     })}
                     {(() => {
-                      let currentY = bulletStartY + 70;
+                      let currentY = bulletStartY ;
 
                       return slide.elements
                         .filter((el: any) => el.element_type === "bullet_point")
                         .map((el: any, i: number) => {
+                          console.log(el);
                           const isBullet = el.element_type === "bullet_point";
                           const fontSize = el.properties.fontSize;
                           const fontFamily =
                             selectedTheme?.font || el.properties.fontFamily;
-                          const lineHeight = 1.2;
+                          const lineHeight = 0.9;
                           const bulletText = isBullet ? `${el.text}` : el.text;
 
-                          const textWidth = textMaxWidth - (isBullet ? 20 : 0);
+                          const textWidth =
+                            getDynamicConstants().textMaxWidth -
+                            (isBullet ? 1 : 0);
                           const canvas = document.createElement("canvas");
                           const context = canvas.getContext("2d");
                           context!.font = `${fontSize}px ${fontFamily}`;
@@ -413,13 +417,14 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                               id={`el-${index}-${i}`}
                               text={bulletText}
                               x={
-                                el.properties.x ||
-                                LEFT_PADDING + (isBullet ? 20 : 0)
+                                getDynamicConstants().LEFT_PADDING +
+                                (isBullet ? 4 : 0)
                               }
                               y={currentY}
+                              
                               opacity={el.properties.opacity}
                               align={el.properties.align}
-                              width={el.properties.width || textWidth}
+                              width={textWidth + 100}
                               wrap="word"
                               fontSize={fontSize}
                               fontFamily={fontFamily}
@@ -436,14 +441,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                                 setSelectedImageIndex(null);
                                 setSelectedShapeIndex(null);
                                 setSelectedImage(null);
-                              }}
-                              onClick={() => {
-                                setTooltip({
-                                  visible: true,
-                                  x: 0,
-                                  y: 0,
-                                  node: null,
-                                });
                               }}
                             />
                           );

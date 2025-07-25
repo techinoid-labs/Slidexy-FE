@@ -13,7 +13,7 @@ type LayoutType = 0 | 1 | 2 | 3 | 4 | 5;
 
 interface ThemeContextType {
   selectedTheme: Theme | null;
-  setSelectedTheme: (theme: Theme) => void;
+  setSelectedTheme: (theme: Theme | null) => void;
   selectedLayout: LayoutType;
   setSelectedLayout: (layout: LayoutType) => void;
   setPrimaryColor: (color: string) => void; // ✅ NEW
