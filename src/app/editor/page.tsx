@@ -255,7 +255,8 @@ const Page = () => {
   const handleExportPDF = () => exportSlidesAsPDF(stageRefs.current);
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
+  const isThemePanelOpen =
+    !isTextSelected && !isShapeSelected && !isImageSelected;
   return (
     <div
       style={{

@@ -54,12 +54,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     isAtBoundary,
   } = useSlides();
 
-  const { selectedTheme, selectedLayout } = useSlideThemeContext();
+  const { selectedTheme, selectedLayout, setSelectedTheme } =
+    useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const [useDummy] = useState(false);
-  console.log(slides);
+  // console.log(slides);
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
     const newSlides = [...slides, structuredClone(newSlide)];
@@ -75,7 +76,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       setSelectedIndex(Math.max(0, newSlides.length - 1));
     }
   };
-
+  useEffect(() => {
+    const preservedThemeData = localStorage.getItem("slidesTheme");
+    if (preservedThemeData) {
+      setSelectedTheme(JSON.parse(preservedThemeData));
+    }
+  }, []);
   return (
     <Box
       sx={{

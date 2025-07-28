@@ -106,12 +106,13 @@ const SideNavBar = ({
           ))}
         </Box>
       </Box>
-      {openPanel === "template" && (
-        <TemplatePanel
-          sidebarHeight={sidebarHeight}
-          onClose={() => setOpenPanel(null)}
-        />
-      )}
+      {/* {openPanel === "template" && ( */}
+      <TemplatePanel
+        sidebarHeight={sidebarHeight}
+        onClose={() => setOpenPanel(null)}
+        isOpen={openPanel === "template"}
+      />
+      {/* )} */}
       {openPanel === "text" && (
         <TextEditor
           sidebarHeight={sidebarHeight}

@@ -7,7 +7,13 @@ import type { Slide } from "../slice/slidesSlice";
 import type { RootState } from "../store/store";
 
 export type SlidesType = Slide[];
-
+interface Theme {
+  font: string;
+  primaryColor: string;
+  secondaryColor: string;
+  backgroundColor: string;
+  image_url: string;
+}
 interface SlidesContextType {
   slides: SlidesType;
   setSlides: (slides: SlidesType) => void;
@@ -32,6 +38,8 @@ interface SlidesContextType {
   }) => void;
   isAtBoundary: boolean;
   setIsAtBoundary: (value: boolean) => void;
+  aiThemes: any;
+  setAiThemes: any;
 }
 
 const SlidesContext = createContext<SlidesContextType>({
@@ -53,6 +61,8 @@ const SlidesContext = createContext<SlidesContextType>({
   setTooltip: () => {},
   isAtBoundary: false,
   setIsAtBoundary: () => {},
+  aiThemes: [],
+  setAiThemes: () => {},
 });
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
@@ -74,6 +84,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     node: null,
   });
   const [isAtBoundary, setIsAtBoundary] = useState(false);
+  const [aiThemes, setAiThemes] = useState<Theme[]>([]);
 
   const handleSetSlides = (newSlides: SlidesType) => {
     dispatch(setSlides(newSlides));
@@ -109,6 +120,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setTooltip,
         isAtBoundary,
         setIsAtBoundary,
+        aiThemes,
+        setAiThemes,
       }}
     >
       {children}

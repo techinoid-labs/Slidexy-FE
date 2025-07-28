@@ -1,5 +1,4 @@
 import jsPDF from "jspdf";
-const pdfFileName = localStorage.getItem("fileName");
 
 // EXPORT CANVAS AS PDF with improved quality and correct scale
 export const exportSlidesAsPDF = async (
@@ -7,6 +6,7 @@ export const exportSlidesAsPDF = async (
 ) => {
   const WIDTH = 800;
   const HEIGHT = 400;
+  const pdfFileName = localStorage.getItem("fileName");
 
   const pdf = new jsPDF({
     orientation: "landscape",

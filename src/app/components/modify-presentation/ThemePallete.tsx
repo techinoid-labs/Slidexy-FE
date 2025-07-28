@@ -12,6 +12,7 @@ import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { ChromePicker } from "react-color";
 import Popover from "@mui/material/Popover";
 import { useSlides } from "@/app/context/SlidesContext"; // adjust path if needed
+import { useEffect } from "react";
 
 // PaletteStack: renders a stack of overlapping color circles
 interface PaletteStackProps {
@@ -109,7 +110,7 @@ const ThemePanel = ({ resetAll }: any) => {
   const handlePaletteClick = (palette: string[]) => {
     const theme = paletteToTheme(palette);
     setSelectedTheme(theme);
-
+    localStorage.setItem("slidesTheme", JSON.stringify(theme));
     // Update all relevant text elements to use the new theme color
     const updatedSlides = slides.map((slide) => ({
       ...slide,
@@ -134,13 +135,29 @@ const ThemePanel = ({ resetAll }: any) => {
     setSlides(updatedSlides); // Dispatch to Redux
   };
 
+  // const handleAddColor = (color: string) => {
+  //   if (customColors.length < 3 && !customColors.includes(color)) {
+  //     const newColors = [...customColors, color];
+  //     setCustomColors(newColors);
+  //     if (newColors.length === 3) {
+  //       setCustomPalettes([[...newColors], ...customPalettes]);
+  //       setCustomColors([]);
+  //     }
+  //   }
+  // };
+
   const handleAddColor = (color: string) => {
     if (customColors.length < 3 && !customColors.includes(color)) {
       const newColors = [...customColors, color];
       setCustomColors(newColors);
+      localStorage.setItem("customColors", JSON.stringify(newColors));
+
       if (newColors.length === 3) {
-        setCustomPalettes([[...newColors], ...customPalettes]);
+        const newPalettes = [[...newColors], ...customPalettes];
+        setCustomPalettes(newPalettes);
         setCustomColors([]);
+        localStorage.setItem("customPalettes", JSON.stringify(newPalettes));
+        localStorage.removeItem("customColors"); // clean up
       }
     }
   };
@@ -148,12 +165,64 @@ const ThemePanel = ({ resetAll }: any) => {
   const DEFAULT_THEME = paletteToTheme(palettes[0]);
   const DEFAULT_LAYOUT = 0;
 
+  // const handleReset = () => {
+  //   setSelectedTheme(DEFAULT_THEME);
+  //   localStorage.removeItem("slidesTheme");
+  //   setSelectedLayout(DEFAULT_LAYOUT as any);
+  //   setCustomPalettes([]);
+  //   setCustomColors([]);
+  // };
+
   const handleReset = () => {
     setSelectedTheme(DEFAULT_THEME);
+    localStorage.removeItem("slidesTheme");
+
     setSelectedLayout(DEFAULT_LAYOUT as any);
+
     setCustomPalettes([]);
     setCustomColors([]);
+    localStorage.removeItem("customPalettes");
+    localStorage.removeItem("customColors");
   };
+
+  useEffect(() => {
+    // Restore saved theme
+    const savedTheme = localStorage.getItem("slidesTheme");
+    if (savedTheme) {
+      try {
+        const parsed = JSON.parse(savedTheme);
+        setSelectedTheme(parsed);
+      } catch (e) {
+        console.error("Failed to parse saved theme", e);
+      }
+    }
+
+    // Restore custom palettes if saved
+    const savedPalettes = localStorage.getItem("customPalettes");
+    if (savedPalettes) {
+      try {
+        const parsedPalettes = JSON.parse(savedPalettes);
+        if (Array.isArray(parsedPalettes)) {
+          setCustomPalettes(parsedPalettes);
+        }
+      } catch (e) {
+        console.error("Failed to parse custom palettes", e);
+      }
+    }
+
+    // Restore in-progress colors (if any)
+    const savedColors = localStorage.getItem("customColors");
+    if (savedColors) {
+      try {
+        const parsedColors = JSON.parse(savedColors);
+        if (Array.isArray(parsedColors)) {
+          setCustomColors(parsedColors);
+        }
+      } catch (e) {
+        console.error("Failed to parse custom colors", e);
+      }
+    }
+  }, []);
 
   return (
     <Box className="w-[360px] min-w-[320px] md:min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">

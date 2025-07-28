@@ -437,6 +437,7 @@ const UpperNavBar: React.FC<{
           onClick={() => {
             console.log("Reset");
             setSelectedTheme(null);
+            localStorage.removeItem("slidesTheme");
           }}
         >
           {/* <ListItemIcon>
