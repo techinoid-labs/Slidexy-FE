@@ -272,14 +272,10 @@ const UpperNavBar: React.FC<{
                   setSelectedImageIndex(null);
                   setSelectedShapeIndex(null);
                   setSelectedTextId(null);
-                  if (
-                    !selectedImage &&
-                    !selectedImageIndex &&
-                    !selectedShapeIndex &&
-                    !selectedTextId
-                  ) {
+                  setTimeout(() => {
                     onExportPDF();
-                  }
+                    handleMobileMenuClose();
+                  }, 300);
                 }}
                 sx={{
                   bgcolor: "#18181B",
@@ -401,15 +397,11 @@ const UpperNavBar: React.FC<{
             setSelectedImageIndex(null);
             setSelectedShapeIndex(null);
             setSelectedTextId(null);
-            if (
-              !selectedImage &&
-              !selectedImageIndex &&
-              !selectedShapeIndex &&
-              !selectedTextId
-            ) {
+
+            setTimeout(() => {
               onExportPDF();
-            }
-            handleMobileMenuClose();
+              handleMobileMenuClose();
+            }, 300);
           }}
         >
           {/* <ListItemIcon>
