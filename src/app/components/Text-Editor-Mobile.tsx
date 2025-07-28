@@ -24,7 +24,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
   const handleAddTextElement = (
     text: string,
     fontSize: number,
-    fontWeight: number,
+    fontWeight: string,
     color = "#222"
   ) => {
     // Get the current slide's elements
@@ -52,10 +52,10 @@ const TextEditor: React.FC<TextEditorProps> = ({
       element_type: "text",
       properties: {
         fontSize,
-        fontFamily: "Inter",
+        fontFamily: "Roboto",
         fill: color,
         fontStyle: "normal",
-        fontWeight,
+        fontWeight: fontWeight.toString(),
         y: newY,
       },
     };
@@ -126,7 +126,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
               color: "#7B4AE2",
             },
           }}
-          onClick={() => handleAddTextElement("New Text Box", 24, 600)}
+          onClick={() => handleAddTextElement("New Text Box", 24, "600")}
         >
           Add Text Box
         </Button>
@@ -146,7 +146,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
             mb: 0.5,
             textTransform: "none",
           }}
-          onClick={() => handleAddTextElement("Title Text", 32, 700)}
+          onClick={() => handleAddTextElement("Title Text", 32, "700")}
         >
           Add a Title
         </Button>
@@ -162,7 +162,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
             mb: 0.5,
             textTransform: "none",
           }}
-          onClick={() => handleAddTextElement("Headline Text", 26, 600)}
+          onClick={() => handleAddTextElement("Headline Text", 26, "600")}
         >
           Add a Headline
         </Button>
@@ -178,7 +178,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
             mb: 0.5,
             textTransform: "none",
           }}
-          onClick={() => handleAddTextElement("Sub Headline Text", 20, 500)}
+          onClick={() => handleAddTextElement("Sub Headline Text", 20, "500")}
         >
           Add a Sub Headline
         </Button>
@@ -193,7 +193,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
             color: "#888",
             textTransform: "none",
           }}
-          onClick={() => handleAddTextElement("Body Text", 16, 400, "#888")}
+          onClick={() => handleAddTextElement("Body Text", 16, "400", "#888")}
         >
           Add Body Text
         </Button>

@@ -84,27 +84,36 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
 
   const updateTextProperty = (prop: string, value: any) => {
     if (!textObj || slideIndex === -1) return;
+    console.log("[TextPanelMobile] updateTextProperty called:", { prop, value, selectedTextId, slideIndex });
+
     const updatedSlides = structuredClone(slides);
     const target: any = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title.properties
       : elementIndex !== null
         ? updatedSlides[slideIndex].elements[elementIndex].properties
         : null;
+
+    console.log("[TextPanelMobile] Target found:", { target, isTitle: selectedTextId?.startsWith("title") });
+
     if (target) {
       target[prop] = value;
+      console.log("[TextPanelMobile] Updated target:", target);
+
       // Alignment fix: adjust x when align changes
       if (prop === "align") {
-        const { SLIDE_WIDTH, LEFT_PADDING } = getSlideDimensions();
-        const width = target.width || 220; // fallback width
-        if (value === "center") {
-          target.x = (SLIDE_WIDTH - width) / 2;
-        } else if (value === "right") {
-          target.x = SLIDE_WIDTH - width - LEFT_PADDING-10;
-        } else {
-          target.x = LEFT_PADDING;
+        // Do not change x — just update the align property
+        target.align = value;
+
+        // Ensure width exists to let Konva align correctly
+        if (!target.width || target.width < 50) {
+          target.width = 220; // or any reasonable default
         }
       }
+
+
     }
+
+    console.log("[TextPanelMobile] Dispatching updated slides:", updatedSlides[slideIndex]);
     setSlides(updatedSlides);
   };
 
@@ -219,7 +228,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
         padding: "4px 4px",
         display: "flex",
         flexDirection: "column",
-        gap:  "2px",
+        gap: "2px",
         zIndex: 2,
         minWidth: "200px",
         minHeight: "10px",
