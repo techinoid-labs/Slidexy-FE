@@ -44,7 +44,7 @@ export default function Header() {
       position="sticky"
       elevation={0}
       sx={{
-        background: "#fff",       
+        background: "#fff",
         minHeight: 80,
         boxShadow: "none",
         borderBottom: `1px solid ${theme.palette.divider}`,
@@ -64,10 +64,10 @@ export default function Header() {
         <Link href="/" style={{ textDecoration: "none" }}>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Image
-              src="/images/icon.png"
+              src="/images/Logo.svg"
               alt="Slides Logo"
-              width={44}
-              height={44}
+              width={118}
+              height={36}
             />
           </Box>
         </Link>
@@ -108,7 +108,7 @@ export default function Header() {
         )}
 
         {/* Right Side Actions */}
-        <Box sx={{ display: "flex" , alignItems: "center", gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           {!isMobile && (
             <>
               <Typography

@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Typography, Link, Stack } from "@mui/material";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -15,16 +16,25 @@ export default function Footer() {
       }}
     >
       {/* Logo */}
-      <Typography
+      <Box
         sx={{
-          fontSize: { xs: "1.8rem", md: "2rem" },
-          fontWeight: 700,
-          color: "#5F00D6",
-          mb: 3,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          my: 4,
         }}
       >
-        LOGO
-      </Typography>
+        <Link href="/" style={{ textDecoration: "none" }}>
+          <Box sx={{ display: "flex" }}>
+            <Image
+              src="/images/Logo.svg"
+              alt="Slides Logo"
+              width={118}
+              height={36}
+            />
+          </Box>
+        </Link>
+      </Box>
 
       {/* Nav Links */}
       <Stack
