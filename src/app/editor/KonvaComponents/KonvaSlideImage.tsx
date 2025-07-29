@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback, useState } from "react";
 import { Image as KonvaImage, Transformer } from "react-konva";
 import useImage from "use-image";
 import { useSlides } from "@/app/context/SlidesContext";
+import { constrainImageToCanvas, getSlideDimensions } from "../../../utils/slideUtils";
 
 interface SlideImageProps {
   url?: string;
@@ -16,7 +17,7 @@ interface SlideImageProps {
   onSelect: () => void;
 }
 
-const SlideImage = ({
+const SlideImage: React.FC<SlideImageProps> = ({
   url,
   imageSrc,
   x,
@@ -25,26 +26,25 @@ const SlideImage = ({
   height,
   isSelected,
   onSelect,
-}: SlideImageProps) => {
+}) => {
   const [image] = useImage(imageSrc || url || "");
   const imageRef = useRef<any>(null);
   const trRef = useRef<any>(null);
+  const { slides, setSlides, selectedSlideIndex, setSelectedImage, setIsAtBoundary } = useSlides();
+  const [lastValidPos, setLastValidPos] = useState({ x, y });
 
-  const {
-    slides,
-    setSlides,
-    selectedSlideIndex,
-    selectedImage,
-    setSelectedImage,
-  } = useSlides();
-
+  // Attach transformer when image is selected
   useEffect(() => {
     if (isSelected && trRef.current && imageRef.current) {
       trRef.current.nodes([imageRef.current]);
       trRef.current.getLayer()?.batchDraw();
+    } else if (!isSelected && trRef.current) {
+      trRef.current.nodes([]);
+      trRef.current.getLayer()?.batchDraw();
     }
   }, [isSelected]);
 
+  // Handle delete key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -85,7 +85,135 @@ const SlideImage = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSelected, slides, url, imageSrc, selectedSlideIndex, setSlides]);
+  }, [isSelected, slides, url, imageSrc, selectedSlideIndex, setSlides, setSelectedImage]);
+
+  // Handle drag end with boundary constraints
+  const handleDragEnd = useCallback(
+    (e: any) => {
+      const node = imageRef.current;
+      if (!node) return;
+
+      const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
+      const { x: newX, y: newY, isAtBoundary } = constrainImageToCanvas(
+        node.x(),
+        node.y(),
+        node.width(),
+        node.height(),
+        SLIDE_WIDTH,
+        SLIDE_HEIGHT
+      );
+
+      if (isAtBoundary) {
+        node.position({ x: lastValidPos.x, y: lastValidPos.y });
+      } else {
+        node.position({ x: newX, y: newY });
+        setLastValidPos({ x: newX, y: newY });
+      }
+
+      setIsAtBoundary(isAtBoundary);
+
+      const newSlides = JSON.parse(JSON.stringify(slides));
+      const currentSlide = newSlides[selectedSlideIndex];
+
+      if (url && !imageSrc && currentSlide.image_url === url) {
+        currentSlide.image_url = url;
+        setSlides(newSlides);
+        setSelectedImage({
+          element_type: "image",
+          konva_component: "Konva.Image",
+          properties: {
+            x: newX,
+            y: newY,
+            width: node.width(),
+            height: node.height(),
+            imageSrc: url,
+          },
+        });
+        return;
+      }
+
+      const imageElement = currentSlide.elements.find(
+        (el: any) =>
+          el.element_type === "image" &&
+          el.konva_component === "Konva.Image" &&
+          el.properties.imageSrc === imageSrc
+      );
+
+      if (imageElement) {
+        imageElement.properties.x = newX;
+        imageElement.properties.y = newY;
+        setSlides(newSlides);
+        setSelectedImage(imageElement);
+      }
+
+      node.getLayer()?.batchDraw();
+    },
+    [slides, selectedSlideIndex, url, imageSrc, setSlides, setSelectedImage, setIsAtBoundary, lastValidPos]
+  );
+
+  // Handle transform end with boundary constraints
+  const handleTransformEnd = useCallback(() => {
+    const node = imageRef.current;
+    if (!node) return;
+
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+    node.scaleX(1);
+    node.scaleY(1);
+
+    const newWidth = node.width() * scaleX;
+    const newHeight = node.height() * scaleY;
+    const currentX = node.x();
+    const currentY = node.y();
+
+    const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
+    const { x: constrainedX, y: constrainedY, width: constrainedWidth, height: constrainedHeight, isAtBoundary } =
+      constrainImageToCanvas(currentX, currentY, newWidth, newHeight, SLIDE_WIDTH, SLIDE_HEIGHT);
+
+    node.position({ x: constrainedX, y: constrainedY });
+    node.width(constrainedWidth);
+    node.height(constrainedHeight);
+
+    setIsAtBoundary(isAtBoundary);
+
+    const newSlides = JSON.parse(JSON.stringify(slides));
+    const currentSlide = newSlides[selectedSlideIndex];
+
+    if (url && !imageSrc && currentSlide.image_url === url) {
+      currentSlide.image_url = url;
+      setSlides(newSlides);
+      setSelectedImage({
+        element_type: "image",
+        konva_component: "Konva.Image",
+        properties: {
+          x: constrainedX,
+          y: constrainedY,
+          width: constrainedWidth,
+          height: constrainedHeight,
+          imageSrc: url,
+        },
+      });
+      return;
+    }
+
+    const imageElement = currentSlide.elements.find(
+      (el: any) =>
+        el.element_type === "image" &&
+        el.konva_component === "Konva.Image" &&
+        el.properties.imageSrc === imageSrc
+    );
+
+    if (imageElement) {
+      imageElement.properties.x = constrainedX;
+      imageElement.properties.y = constrainedY;
+      imageElement.properties.width = constrainedWidth;
+      imageElement.properties.height = constrainedHeight;
+      setSlides(newSlides);
+      setSelectedImage(imageElement);
+    }
+
+    node.getLayer()?.batchDraw();
+  }, [slides, selectedSlideIndex, url, imageSrc, setSlides, setSelectedImage, setIsAtBoundary]);
 
   return (
     <>
@@ -102,102 +230,23 @@ const SlideImage = ({
         onTap={onSelect}
         onMouseDown={onSelect}
         onTouchStart={onSelect}
-        onDragEnd={(e) => {
-          const newX = e.target.x();
-          const newY = e.target.y();
-
-          const newSlides = JSON.parse(JSON.stringify(slides));
-          const currentSlide = newSlides[selectedSlideIndex];
-
-          if (url && !imageSrc && currentSlide.image_url === url) {
-            setSlides(newSlides);
-            setSelectedImage({
-              element_type: "image",
-              konva_component: "Konva.Image",
-              properties: {
-                x: newX,
-                y: newY,
-                width,
-                height,
-                imageSrc: url,
-              },
-            });
-            return;
-          }
-
-          const imageElement = currentSlide.elements.find(
-            (el: any) =>
-              el.element_type === "image" &&
-              el.konva_component === "Konva.Image" &&
-              el.properties.imageSrc === imageSrc
-          );
-
-          if (imageElement) {
-            imageElement.properties.x = newX;
-            imageElement.properties.y = newY;
-            setSlides(newSlides);
-            setSelectedImage(imageElement);
-          }
-        }}
-        onTransformEnd={(e) => {
-          const node = imageRef.current;
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
-
-          node.scaleX(1);
-          node.scaleY(1);
-
-          const newWidth = Math.max(50, node.width() * scaleX);
-          const newHeight = Math.max(50, node.height() * scaleY);
-          const newX = node.x();
-          const newY = node.y();
-
-          const newSlides = JSON.parse(JSON.stringify(slides));
-          const currentSlide = newSlides[selectedSlideIndex];
-
-          // Case 1: update slide.image_url (treated like a normal image)
-          if (url && !imageSrc && currentSlide.image_url === url) {
-            currentSlide.image_url = url; // keep image URL the same
-            setSlides(newSlides);
-            setSelectedImage({
-              element_type: "image",
-              konva_component: "Konva.Image",
-              properties: {
-                x: newX,
-                y: newY,
-                width: newWidth,
-                height: newHeight,
-                imageSrc: url,
-              },
-            });
-            return;
-          }
-
-          // Case 2: update image element
-          const imageElement = currentSlide.elements.find(
-            (el: any) =>
-              el.element_type === "image" &&
-              el.konva_component === "Konva.Image" &&
-              el.properties.imageSrc === imageSrc
-          );
-
-          if (imageElement) {
-            imageElement.properties.width = newWidth;
-            imageElement.properties.height = newHeight;
-            imageElement.properties.x = newX;
-            imageElement.properties.y = newY;
-
-            setSlides(newSlides);
-            setSelectedImage(imageElement);
-          }
-        }}
+        onDragEnd={handleDragEnd}
+        onTransformEnd={handleTransformEnd}
       />
       {isSelected && (
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
-            if (newBox.width < 50 || newBox.height < 50) return oldBox;
-            return newBox;
+            const { x, y, width, height, isAtBoundary } = constrainImageToCanvas(
+              newBox.x,
+              newBox.y,
+              newBox.width,
+              newBox.height,
+              getSlideDimensions().SLIDE_WIDTH,
+              getSlideDimensions().SLIDE_HEIGHT
+            );
+            setIsAtBoundary(isAtBoundary);
+            return { ...newBox, x, y, width, height };
           }}
           rotateEnabled
           enabledAnchors={[

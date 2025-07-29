@@ -1,16 +1,74 @@
-// export const SLIDE_WIDTH = 500;
-// export const SLIDE_HEIGHT = 400;
-// export const LEFT_PADDING = 17;
 export const getSlideDimensions = () => {
   const windowWidth = typeof window !== "undefined" ? window.innerWidth : 500;
   const windowHeight = typeof window !== "undefined" ? window.innerHeight : 400;
-  const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 500); // 90% of window width, capped at 500
-  const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 400); // 60% of window height, capped at 400
+  const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 500);
+  const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 400);
   const LEFT_PADDING = 17;
 
   return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING };
 };
 
+export const restrictShapeBounds = (
+  x: number,
+  y: number,
+  shapeType: string,
+  properties: any,
+  canvasWidth: number = getSlideDimensions().SLIDE_WIDTH,
+  canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
+) => {
+  const { LEFT_PADDING } = getSlideDimensions();
+  const paddingLeft = LEFT_PADDING-20;
+  const paddingRight = -40;
+  const paddingTop = 10;
+  const paddingBottom = Math.max(window.innerHeight * 0.01, 10);
+
+  const minWidth = 30;
+  const minHeight = 30;
+
+  let width = properties.width || 50;
+  let height = properties.height || 50;
+
+  switch (shapeType) {
+    case "Konva.Circle":
+      width = (properties.radius || 25) * 2;
+      height = width;
+      break;
+    case "Konva.Star":
+      width = (properties.outerRadius || 25) * 2;
+      height = width;
+      break;
+    case "Konva.Line":
+    case "Konva.Arrow":
+      const points = properties.points || [0, 0, 100, 100];
+      width = Math.max(...points.filter((_: number, idx: number) => idx % 2 === 0)) -
+              Math.min(...points.filter((_: number, idx: number) => idx % 2 === 0));
+      height = Math.max(...points.filter((_: number, idx: number) => idx % 2 !== 0)) -
+               Math.min(...points.filter((_: number, idx: number) => idx % 2 !== 0));
+      break;
+  }
+
+  const isAtMinSize = width <= minWidth || height <= minHeight;
+
+  const minX = isAtMinSize ? paddingLeft - 45 : paddingLeft;
+  const minY = isAtMinSize ? -10 : paddingTop;
+  const maxX = canvasWidth - (isAtMinSize ? paddingRight : Math.max(width, minWidth) + paddingRight);
+  const maxY = canvasHeight - (isAtMinSize ? paddingBottom : Math.max(height, minHeight) + paddingBottom);
+
+  const constrainedX = Math.max(minX, Math.min(x, maxX));
+  const constrainedY = Math.max(minY, Math.min(y, maxY));
+  const constrainedWidth = Math.max(minWidth, Math.min(width, canvasWidth - constrainedX - paddingRight));
+  const constrainedHeight = Math.max(minHeight, Math.min(height, canvasHeight - constrainedY - paddingBottom));
+
+  const isAtBoundary =
+    x !== constrainedX ||
+    y !== constrainedY ||
+    width !== constrainedWidth ||
+    height !== constrainedHeight;
+
+  return { x: constrainedX, y: constrainedY, width: constrainedWidth, height: constrainedHeight, isAtBoundary };
+};
+
+// ... (other existing functions: constrainToCanvas, constrainImageToCanvas, getRandomSlide, getLayoutProps remain unchanged)
 export const constrainToCanvas = (
   x: number,
   y: number,
@@ -20,22 +78,17 @@ export const constrainToCanvas = (
   canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
 ) => {
   const { LEFT_PADDING } = getSlideDimensions();
-  const paddingLeft = LEFT_PADDING; // 17
-  const paddingRight = Math.max(window.innerWidth * 0.02, 8);       // at least 8px
-  const paddingTop = 60;        // at least 40px
-  const paddingBottom = Math.max(window.innerHeight , 30);     // at least 30px
-console.log("window height"+ window.innerHeight);
- console.log("window width" + window.innerWidth);
+  const paddingLeft = LEFT_PADDING;
+  const paddingRight = Math.max(window.innerWidth * 0.02, 8);
+  const paddingTop = 60;
+  const paddingBottom = Math.max(window.innerHeight * 0.02, 30);
 
   const minX = -80;
-  const minY = paddingTop-60;
+  const minY = paddingTop - 60;
   const safeHeight = height || 30;
-  // Use a less restrictive maxX to allow dragging across the canvas
-  const maxX = window.innerWidth - 80; // e.g., 300 - 10 = 290
+  const maxX = window.innerWidth - 80;
   const maxY = window.innerHeight - 330;
-console.log("canvas height" + canvasHeight);
-console.log("padding bottom" + paddingBottom);
-console.log("canvas width" + canvasWidth)
+
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
 
@@ -45,24 +98,51 @@ console.log("canvas width" + canvasWidth)
     (y < minY && constrainedY === minY) ||
     (y > maxY && constrainedY === maxY);
 
-  console.log({
-    x,
-    y,
-    width,
-    height: safeHeight,
-    canvasWidth,
-    canvasHeight,
-    minX,
-    maxX,
-    minY,
-    maxY,
-    constrainedX,
-    constrainedY,
-    isAtBoundary,
-  });
-
   return { x: constrainedX, y: constrainedY, isAtBoundary };
 };
+
+export const constrainImageToCanvas = (
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  canvasWidth: number = getSlideDimensions().SLIDE_WIDTH,
+  canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
+) => {
+  const { LEFT_PADDING } = getSlideDimensions();
+  const paddingLeft = LEFT_PADDING - 50;
+  const paddingRight = Math.max(window.innerWidth * 0.01, 10);
+  const paddingTop = -10;
+  const paddingBottom = Math.max(window.innerHeight * 0.07, 30);
+
+  const minWidth = 50;
+  const minHeight = 50;
+
+  const isAtMinSize = width <= minWidth || height <= minHeight;
+
+  const minX = isAtMinSize ? LEFT_PADDING - 45 : paddingLeft;
+  const minY = isAtMinSize ? -20 : paddingTop;
+  const maxX = isAtMinSize
+    ? canvasWidth - paddingRight
+    : canvasWidth - minWidth - paddingRight;
+  const maxY = isAtMinSize
+    ? window.innerHeight - 350
+    : window.innerHeight - 330;
+
+  const constrainedX = Math.max(minX, Math.min(x, maxX));
+  const constrainedY = Math.max(minY, Math.min(y, maxY));
+  const constrainedWidth = Math.max(minWidth, Math.min(width, canvasWidth - constrainedX - paddingRight));
+  const constrainedHeight = Math.max(minHeight, Math.min(height, canvasHeight - constrainedY - paddingBottom));
+
+  const isAtBoundary =
+    x !== constrainedX ||
+    y !== constrainedY ||
+    width !== constrainedWidth ||
+    height !== constrainedHeight;
+
+  return { x: constrainedX, y: constrainedY, width: constrainedWidth, height: constrainedHeight, isAtBoundary };
+};
+
 export const getRandomSlide = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const titles: any = [
@@ -99,7 +179,7 @@ export const getRandomSlide = () => {
           fill: "#444",
           color: "1a1a1a",
           fontStyle: "",
-          x: LEFT_PADDING+10,
+          x: LEFT_PADDING + 10,
           y: 52,
           width: 20,
         },
