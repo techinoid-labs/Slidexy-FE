@@ -13,7 +13,7 @@ import {
   useTheme,
   alpha,
 } from "@mui/material";
-import { KeyboardArrowDown } from "@mui/icons-material";
+import { ArrowForward, KeyboardArrowDown } from "@mui/icons-material";
 import ResponsivePageWrapper from "@/lib/responsive-page-wrapper";
 import Image from "next/image";
 import Link from "next/link";
@@ -127,7 +127,14 @@ export default function HeroSection() {
           }}
         >
           {/* Badge */}
-          <Box sx={{ display: "flex", justifyContent: "center", mt: {xs: 2, md:7}, mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              mt: { xs: 2, md: 7 },
+              mb: 2,
+            }}
+          >
             <Chip
               icon={
                 <Image
@@ -194,7 +201,9 @@ export default function HeroSection() {
                 textAlign: "center", // Ensure text is centered
               }}
             >
-              <span>Turn any thought into a polished, on-brand presentation </span>
+              <span>
+                Turn any thought into a polished, on-brand presentation{" "}
+              </span>
               <Box
                 component="span"
                 sx={{
@@ -220,157 +229,83 @@ export default function HeroSection() {
                 sx={{
                   display: "flex",
                   justifyContent: "center",
+                  gap: "10px",
                   alignItems: "center",
-                  gap: -9,
                   mb: 2,
+                  mt: 5,
+                  ml: { xs: 0, md: 15 },
                   flexDirection: { xs: "column", md: "row" },
                 }}
               >
-                {/* Input Field with Voice Icon */}
+                {/* Get Started Button */}
                 <Box
                   sx={{
+                    mb: { xs: -6, md: 2 },
+                    alignItems: "center",
                     display: "flex",
-                    alignItems: "center",
-                    backgroundColor: "#fff",
-                    borderRadius: "999px",
-                    paddingLeft: 2,
-                    mt: 0.5,
-                    paddingRight: 0.5,
-                    border: "2px solid #8E2DE2",
-                    boxShadow: "4px 5px 0px 0px #8E2DE2",
-                    width: { xs: "90vw", sm: "100%", md: 660 },
-                    maxWidth: { xs: 370, md: 500 },
-                    height: { xs: 60, md: 65 },
-
-                  }}
-                >
-                  <TextField
-                    fullWidth
-                    variant="outlined"
-                    placeholder="e.g Pitch deck for a health tech startup |"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleRedirect();
-                      }
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        border: "none",
-                        "& fieldset": { border: "none" },
-                        fontSize: { xs: "0.9rem", md: "1.1rem" },
-                        px: 0.5,
-                        py: 1,
-
-                      },
-                    }}
-                  />
-
-                  <IconButton
-                    color="primary"
-                    sx={{
-                      p: 1,
-                      "&:hover": {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      },
-                      width: { xs: 36, md: 38 },
-                      height: { xs: 36, md: 38 },
-                    }}
-                  >
-                    <Image
-                      src="/images/voice-icon.svg"
-                      alt="Voice Icon"
-                      width={35}
-                      height={35}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </IconButton>
-                </Box>
-                <Box
-                  sx={{
-                    // display: { xs: "none", md: "flex" },
-                    mb: { xs: -10, md: 5 },
-                    alignItems: "center",
-                    mt: 0,
                   }}
                 >
                   <Button
                     onClick={() => handleRedirect()}
-                    // component={Link}
-                    // href="/presentation/create"
+                    variant="contained"
+                    endIcon={<ArrowForward />}
                     sx={{
-                      p: 0,
-                      minWidth: "auto",
                       ml: 2,
-                      mt: { xs: 1, md: 6 },
+                      mt: { xs: 1, md: 10 },
+                      px: 3,
+                      py: 1.5,
+                      width: "200px",
+                      height: "48px",
+                      fontSize: { xs: "0.875rem", md: "1rem" },
+                      background: "#4A00E0",
+                      color: "#fff",
+                      textTransform: "none",
+                      borderRadius: 2,
+                      "&:hover": {
+                        background: "#4A00E0",
+                      },
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: { xs: 90, md: 130 }, // Responsive width
-                        height: { xs: 90, md: 130 }, // Fixed height to match Image
-                        display: "flex",
-                      }}
-                    >
-                      <Image
-                        src="/images/try-for-free-arrow.svg"
-                        alt="Try for free Icon"
-                        width={130}
-                        height={130}
-                        style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                      />
-                    </Box>
+                    Get Started
                   </Button>
                 </Box>
-              </Box>
-              {/* Try for Free text - hide on mobile */}
-              <Box
-                sx={{
-                  display: { xs: "none", md: "flex" },
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  justifyContent: "center",
-                  mt: -27,
-                  ml: { xs: 0, md: 100 },
-                  mr: { xs: 2, md: 20 },
-                  px: 2,
-                  position: "relative",
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: { xs: "0.875rem", sm: "1rem" },
-                    fontWeight: 500,
-                    color: "#454545",
-                    whiteSpace: "nowrap",
-                    textAlign: "right",
 
+                {/* Try for Free Text */}
+                <Box
+                  sx={{
+                    display: { xs: "none", md: "flex" },
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    justifyContent: "center",
+                    ml: 3,
+                    mt: { xs: 0, md: 2 },
                   }}
                 >
-                  Try for Free
-                </Typography>
-              </Box>
-              {/* Try for Free vector - hide on mobile */}
-              <Box
-                sx={{
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: { xs: "0.875rem", sm: "1rem" },
+                      fontWeight: 500,
+                      color: "#454545",
+                      whiteSpace: "nowrap",
+                      rotate: "10deg",
+                      ml: "40px",
+                    }}
+                  >
+                    Try for Free
+                  </Typography>
 
-                  display: { xs: "none", md: "flex" },
-                  justifyContent: "flex-end",
-                  width: "100%",
-                  ml: 10,
-                  md: 5,
-                }}
-              >
-                <Image
-                  src="/images/try-for-free-vector.svg"
-                  alt="Arrow under text"
-                  width={90}
-                  height={90}
-                  style={{ maxWidth: "100%", height: "auto" }}
-                />
+                  {/* Try for Free Icon */}
+                  <Box sx={{ mt: 1 }}>
+                    <Image
+                      src="/images/try-for-free-vector.svg"
+                      alt="Arrow under text"
+                      width={90}
+                      height={90}
+                      style={{ maxWidth: "100%", height: "auto" }}
+                    />
+                  </Box>
+                </Box>
               </Box>
             </Box>
           </Box>

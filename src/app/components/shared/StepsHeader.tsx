@@ -98,10 +98,10 @@ export default function StepsHeader() {
         <Link href="/" style={{ textDecoration: "none" }}>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Image
-              src="/app-icon.svg"
+              src="/images/Logo.svg"
               alt="Slides Logo"
-              width={40}
-              height={40}
+              width={118}
+              height={36}
             />
           </Box>
         </Link>
