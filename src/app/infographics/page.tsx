@@ -1,43 +1,45 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Box, TextField, Button, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 
 export default function PosterTemplateDisplay() {
   const [imageUrl, setImageUrl] = useState("");
-  const [editableText, setEditableText] = useState("Your text here"); // State for editable text
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imageRef = useRef<HTMLImageElement | null>(null); // To hold the image object
+  const [textFields, setTextFields] = useState([
+    { label: "Top Left", x: "5%", y: "5%", value: "Top Left" },
+    { label: "Top Right", x: "75%", y: "5%", value: "Top Right" },
+    { label: "Bottom Left", x: "5%", y: "85%", value: "Bottom Left" },
+    { label: "Bottom Right", x: "75%", y: "85%", value: "Bottom Right" },
+    { label: "Center", x: "35%", y: "45%", value: "Center" },
+  ]);
 
-  // Function to draw the image and text on the canvas
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     const image = imageRef.current;
 
     if (canvas && ctx && image && image.complete) {
-      // Set canvas dimensions to match image
       canvas.width = image.naturalWidth;
       canvas.height = image.naturalHeight;
-
-      // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw the image
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-      // Draw the editable text at the center
-      ctx.font = `${canvas.height * 0.05}px Arial`; // Adjust font size relative to image height
-      ctx.fillStyle = "black"; // Text color
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      
-      const x = canvas.width / 2;
-      const y = canvas.height / 2;
-      ctx.fillText(editableText, x, y);
-    }
-  }, [editableText]); // Redraw when editableText changes
+      textFields.forEach((field) => {
+        const fontSize = canvas.height * 0.035;
+        ctx.font = `${fontSize}px Arial`;
+        ctx.fillStyle = "black";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
 
-  // Load image from localStorage and trigger drawing
+        const x = (parseFloat(field.x) / 100) * canvas.width;
+        const y = (parseFloat(field.y) / 100) * canvas.height;
+        ctx.fillText(field.value, x, y);
+      });
+    }
+  }, [textFields]);
+
   useEffect(() => {
     const stored = localStorage.getItem("posterTemplateData");
     if (stored) {
@@ -46,34 +48,31 @@ export default function PosterTemplateDisplay() {
       setImageUrl(url);
 
       if (url) {
-        // Create a new Image object to ensure it's loaded before drawing
         const img = new Image();
         img.src = url;
         img.onload = () => {
-          imageRef.current = img; // Store the image object
-          drawCanvas(); // Draw once the image is loaded
+          imageRef.current = img;
+          drawCanvas();
         };
         img.onerror = () => {
           console.error("Failed to load image from URL:", url);
-          setImageUrl(""); // Clear image if loading fails
+          setImageUrl("");
         };
       }
     }
   }, [drawCanvas]);
 
-  // Redraw when editableText changes
   useEffect(() => {
     drawCanvas();
-  }, [editableText, drawCanvas]);
+  }, [textFields, drawCanvas]);
 
-  // Handle download of the modified image
   const handleDownload = () => {
     const canvas = canvasRef.current;
     if (canvas) {
-      const dataURL = canvas.toDataURL("image/png"); // Get image as data URL
+      const dataURL = canvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.href = dataURL;
-      link.download = "modified_poster.png"; // File name for download
+      link.download = "modified_poster.png";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -89,36 +88,51 @@ export default function PosterTemplateDisplay() {
   }
 
   return (
-    <Box sx={{ textAlign: "center", padding: "2rem" }}>
+    <Box sx={{ position: "relative", textAlign: "center", padding: "2rem" }}>
       <Typography variant="h5" sx={{ mb: 2 }}>
         Edit Your Poster Template
       </Typography>
 
-      {/* Canvas will display the image with overlaid text */}
-      <canvas
-        ref={canvasRef}
-        style={{
-          maxWidth: "100%",
-          height: "auto",
-          border: "1px solid #ddd",
-          borderRadius: "10px",
-        }}
-      />
+      <Box sx={{ position: "relative", display: "inline-block" }}>
+        <canvas
+          ref={canvasRef}
+          style={{
+            maxWidth: "100%",
+            height: "auto",
+            border: "1px solid #ddd",
+            borderRadius: "10px",
+          }}
+        />
 
-      {/* Text field for editing */}
-      <TextField
-        fullWidth
-        label="Edit Text on Poster"
-        variant="outlined"
-        value={editableText}
-        onChange={(e) => setEditableText(e.target.value)}
-        sx={{ mt: 3, maxWidth: "600px" }}
-      />
+        {/* Overlay text inputs */}
+        {textFields.map((field, index) => (
+          <textarea
+            key={index}
+            value={field.value}
+            onChange={(e) => {
+              const updated = [...textFields];
+              updated[index].value = e.target.value;
+              setTextFields(updated);
+            }}
+            style={{
+              position: "absolute",
+              top: field.y,
+              left: field.x,
+              width: "150px",
+              padding: "6px",
+              resize: "none",
+              background: "rgba(255,255,255,0.7)",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              fontSize: "14px",
+            }}
+          />
+        ))}
+      </Box>
 
-      {/* Download button */}
       <Button
         variant="contained"
-        sx={{ mt: 2, bgcolor: "#8E2DE2", "&:hover": { bgcolor: "#4A00E0" } }}
+        sx={{ mt: 3, bgcolor: "#8E2DE2", "&:hover": { bgcolor: "#4A00E0" } }}
         onClick={handleDownload}
       >
         Download Modified Poster
