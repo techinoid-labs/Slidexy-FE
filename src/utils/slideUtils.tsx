@@ -71,7 +71,70 @@ export const constrainToCanvas = (
 
   return { x: constrainedX, y: constrainedY, isAtBoundary };
 };
+export const constrainImageToCanvas = (
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  canvasWidth: number = getSlideDimensions().SLIDE_WIDTH,
+  canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
+) => {
+  const { LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT } = getSlideDimensions();
+  const paddingLeft = LEFT_PADDING - 200; // Adjusted for web context
+  const paddingRight = 10; // Minimum 10px
+  const paddingTop = -100; // Minimum 60px
+  const paddingBottom = window.innerHeight <= 830 ? 50 : 10; // Responsive padding
 
+  const minWidth = 50; // Minimum image width
+  const minHeight = 50; // Minimum image height
+
+  // Check if image is at minimum size
+  const isAtMinSize = width <= minWidth || height <= minHeight;
+
+  // Expand boundaries when at minimum size
+  const minX = isAtMinSize ? LEFT_PADDING - 45 : paddingLeft;
+  const minY = isAtMinSize ? -10 : paddingTop;
+  const maxX = isAtMinSize
+    ? canvasWidth - paddingRight
+    : canvasWidth - minWidth - paddingRight;
+  const maxY = isAtMinSize
+    ? canvasHeight - paddingBottom+ (minWidth -10)
+    : canvasHeight - paddingBottom + 40;
+
+  const constrainedX = Math.max(minX, Math.min(x, maxX));
+  const constrainedY = Math.max(minY, Math.min(y, maxY));
+  const constrainedWidth = Math.max(minWidth, Math.min(width, canvasWidth - constrainedX - paddingRight));
+  const constrainedHeight = Math.max(minHeight, Math.min(height, canvasHeight - constrainedY - paddingBottom));
+
+  const isAtBoundary =
+    x !== constrainedX ||
+    y !== constrainedY ||
+    width !== constrainedWidth ||
+    height !== constrainedHeight;
+
+  console.log("[constrainImageToCanvas]", {
+    x,
+    y,
+    width,
+    height,
+    canvasWidth,
+    canvasHeight,
+    minX,
+    maxX,
+    minY,
+    maxY,
+    minWidth,
+    minHeight,
+    constrainedX,
+    constrainedY,
+    constrainedWidth,
+    constrainedHeight,
+    isAtMinSize,
+    isAtBoundary,
+  });
+
+  return { x: constrainedX, y: constrainedY, width: constrainedWidth, height: constrainedHeight, isAtBoundary };
+};
 export const getRandomSlide = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const titles: any = [

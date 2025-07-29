@@ -37,7 +37,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
         fontFamily: "Inter",
         fill: color,
         fontStyle: "normal",
-        fontWeight,
+        fontWeight: fontWeight.toString(),
         x: 200,
         y: 300,
       },

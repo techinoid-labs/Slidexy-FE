@@ -10,7 +10,7 @@ import { dummyData } from "./dummy";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import SlidePreviews from "./slidesPreview";
 import { useDispatch } from "react-redux";
-import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
+import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRendererMobile";
 import { useSlides } from "../context/SlidesContext";
 import {
   getRandomSlide,
