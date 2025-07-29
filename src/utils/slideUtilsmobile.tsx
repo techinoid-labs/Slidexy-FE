@@ -28,7 +28,7 @@ console.log("window height"+ window.innerHeight);
  console.log("window width" + window.innerWidth);
 
   const minX = -80;
-  const minY = paddingTop-80;
+  const minY = paddingTop-60;
   const safeHeight = height || 30;
   // Use a less restrictive maxX to allow dragging across the canvas
   const maxX = window.innerWidth - 80; // e.g., 300 - 10 = 290
@@ -93,7 +93,7 @@ export const getRandomSlide = () => {
         text,
         konva_component: "Konva.Text",
         properties: {
-          fontSize: 15,
+          fontSize: 12,
           fontWeight: "10px",
           fontFamily: "",
           fill: "#444",
@@ -111,14 +111,15 @@ export const getRandomSlide = () => {
     slide_title: {
       text: titles[Math.floor(Math.random() * titles.length)],
       properties: {
-        fontSize: 15,
-        fontWeight: "30px", 
-        fontFamily: "",
+        fontSize: 14,
+        fontWeight: "normal",
+        fontFamily: "Roboto",
         fill: "#000",
-        fontStyle: "",
-         x: LEFT_PADDING,
-        // y: 50,
-        // width: SLIDE_WIDTH - LEFT_PADDING,
+        fontStyle: "normal",
+        align: "left",
+        x: LEFT_PADDING,
+        y: 25,
+        width: 220,
       },
     },
     elements: getRandomBullets(3),

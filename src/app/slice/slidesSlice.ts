@@ -5,7 +5,7 @@ interface KonvaTextProperties {
   fontFamily?: string;
   fill: string;
   fontStyle?: string;
-  // fontWeight?: string;
+  fontWeight?: string;
   // shape-specific
   x?: number;
   y?: number;

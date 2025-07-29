@@ -101,10 +101,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           konva_component: "Konva.Image",
           element_id: uuidv4(),
           properties: {
-          
+
             imageSrc: slide.image_url,
             x: dimensions.SLIDE_WIDTH - 260,
-            y: (dimensions.SLIDE_HEIGHT - 50)/2 ,
+            y: (dimensions.SLIDE_HEIGHT - 50) / 2,
             width: 200,
             height: 150,
           },
@@ -170,7 +170,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       <div
         style={{
           flexGrow: 1,
-          overflowY: "auto",
+          overflow: "auto",
           padding: 16,
           display: "flex",
           justifyContent: "center",
@@ -181,10 +181,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             position: "fixed",
             top: 190,
             width: window.innerWidth - 40,
-            height: window.innerHeight - 300,
+            height: window.innerHeight - 290,
             bgcolor: "#fff",
             border: "1px solid #E0E0E0",
-            zIndex: 0,
+            zIndex: 1,
             boxShadow: 3,
             display: "flex",
             flexDirection: "column",
@@ -193,21 +193,31 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             borderBottomRightRadius: "13px",
             borderTopLeftRadius: "13px",
             borderTopRightRadius: "13px",
-            //overflowY: "auto",
+            //paddingRight: "17px",
+            //overflowX: "hidden",
           }}
         >
           {slides.map((slide: any, index: number) => {
             const title = slide.slide_title;
-        const titleProps = title.properties;
-        const titleY = 25;
-        const bulletGap = 2;
-        const bulletStartY = 54;
+            const titleProps = title.properties;
+            const titleY = 30;
+            const bulletGap = 1;
+            const bulletStartY = 60;
+
+            // Debug: Log title properties
+            console.log(`[SlideEditorMobile] Title ${index} properties:`, {
+              fontFamily: titleProps.fontFamily,
+              fontSize: titleProps.fontSize,
+              fontWeight: titleProps.fontWeight,
+              align: titleProps.align,
+              text: title.text
+            });
 
             return (
               <Box
                 key={slide.slide_id}
                 sx={{
-                  width: `${SLIDE_WIDTH}px`,
+                  width: `${SLIDE_WIDTH + 10}px`,
                   height: {
                     xs: `${window.innerHeight}px`,
                     md: `${SLIDE_HEIGHT + 100}px`,
@@ -215,13 +225,20 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   border: "1px solid #ccc",
                   backgroundColor: "#fff",
                   position: "relative",
-                  mb: 1,
+                  mb: 1.7,
                   display: index === selectedIndex ? "block" : "none",
+                  align: "center",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  marginTop: "auto",
+                  marginBottom: "auto"
+
+
                   //maxHeight: {xs: "calc(100vh - 200px)", sm: "calc(100vh - 150px)"},
                 }}
               >
                 <Stage
-                  width={window.innerWidth - 40}
+                  width={window.innerWidth - 69}
                   height={window.innerHeight - 320}
                   ref={(ref: any) => {
                     stageRefs.current[index] =
@@ -296,18 +313,45 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     />
                     {title.text && (
                       <KonvaTextEditor
+                        key={`title-${index}-${titleProps.fontFamily || "Roboto"}-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"}-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"}-${titleProps.fill || "#000"}-${titleProps.opacity || 1}`}
                         id={`title-${index}`}
                         text={title.text}
-                        x={titleProps.x || LEFT_PADDING + 100}
+                        x={titleProps.x || LEFT_PADDING }
                         y={titleProps.y || titleY}
-                        width={titleProps.width + 100 || textMaxWidth + 100}
+                        width={(() => {
+                          // Calculate dynamic width like bullets
+                          const textWidth = getDynamicConstants().textMaxWidth; // Increased width
+                          const canvas = document.createElement("canvas");
+                          const context = canvas.getContext("2d");
+                          const fontSize = titleProps.fontSize || 14; // Reduced default font size
+                          const fontFamily = titleProps.fontFamily || "Roboto";
+                          context!.font = `${fontSize}px ${fontFamily}`;
+                          const words = title.text.split(" ");
+                          let lines = [];
+                          let line = "";
+
+                          for (let word of words) {
+                            const testLine = line + word + " ";
+                            const metrics = context!.measureText(testLine);
+                            if (metrics.width > textWidth && line !== "") {
+                              lines.push(line.trim());
+                              line = word + " ";
+                            } else {
+                              line = testLine;
+                            }
+                          }
+                          if (line) lines.push(line.trim());
+
+                          // Return the calculated width with more padding and less right constraint
+                          return Math.min(textWidth + 200, window.innerWidth - 80); // Reduced right padding constraint
+                        })()}
                         wrap="word"
-                        fontSize={titleProps.fontSize}
-                        fontWeight={titleProps.fontWeight}
-                        fontFamily={titleProps.fontFamily}
-                        opacity={titleProps.opacity}
-                        align={titleProps.align}
-                        verticalAlign={titleProps.verticalAlign}
+                        fontSize={titleProps.fontSize || 14}
+                        fontWeight={titleProps.fontWeight || "normal"}
+                        fontFamily={titleProps.fontFamily || "Roboto"}
+                        opacity={titleProps.opacity || 1}
+                        align={titleProps.align || "left"}
+                        verticalAlign={titleProps.verticalAlign || "top"}
                         fill={
                           !title.useThemeColor
                             ? titleProps.fill
@@ -320,12 +364,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           setSelectedImageIndex(null);
                           setSelectedShapeIndex(null);
                           setSelectedImage(null);
-                        }}
-                        onClick={() => {
                           setTooltip({
                             visible: true,
-                            x: tooltip.x,
-                            y: tooltip.y,
+                            x: titleProps.x || LEFT_PADDING + 100,
+                            y: (titleProps.y || titleY) - 40, // Move tooltip 40px above the title
                             node: null,
                           });
                         }}
@@ -336,7 +378,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
 
                       return (
                         <KonvaTextEditor
-                          key={`el-${index}-${i}`}
+                          key={`el-${index}-${i}-${el.properties.fontFamily}-${el.properties.fontSize}-${el.properties.fontWeight}-${el.properties.align}`}
                           id={`el-${index}-${i}`}
                           text={el.text}
                           x={el.properties.x || LEFT_PADDING}
@@ -374,7 +416,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       );
                     })}
                     {(() => {
-                      let currentY = bulletStartY ;
+                      let currentY = bulletStartY;
 
                       return slide.elements
                         .filter((el: any) => el.element_type === "bullet_point")
@@ -413,7 +455,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
 
                           const editor = (
                             <KonvaTextEditor
-                              key={`el-${index}-${i}`}
+                              key={`el-${index}-${i}-${fontFamily}-${fontSize}-${el.properties.fontWeight}-${el.properties.align}`}
                               id={`el-${index}-${i}`}
                               text={bulletText}
                               x={
@@ -421,7 +463,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                                 (isBullet ? 4 : 0)
                               }
                               y={currentY}
-                              
+
                               opacity={el.properties.opacity}
                               align={el.properties.align}
                               width={textWidth + 100}

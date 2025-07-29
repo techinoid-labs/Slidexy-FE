@@ -317,13 +317,40 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 {title.text && (
                   <>
                     <KonvaTextEditor
+                      key={`title-${index}-${titleProps.fontFamily || "Roboto"}-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"}-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"}-${titleProps.fill || "#000"}-${titleProps.opacity || 1}`}
                       id={`title-${index}`}
                       text={title.text}
                       x={titleProps.x || titleY}
                       y={titleProps.y || getDynamicConstants().LEFT_PADDING}
-                      width={getDynamicConstants().textMaxWidth}
+                      width={(() => {
+                        // Calculate dynamic width like bullets
+                        const textWidth = getDynamicConstants().textMaxWidth + 200; // Increased width
+                        const canvas = document.createElement("canvas");
+                        const context = canvas.getContext("2d");
+                        const fontSize = titleProps.fontSize || 14; // Reduced default font size
+                        const fontFamily = titleProps.fontFamily || "Roboto";
+                        context!.font = `${fontSize}px ${fontFamily}`;
+                        const words = title.text.split(" ");
+                        let lines = [];
+                        let line = "";
+
+                        for (let word of words) {
+                          const testLine = line + word + " ";
+                          const metrics = context!.measureText(testLine);
+                          if (metrics.width > textWidth && line !== "") {
+                            lines.push(line.trim());
+                            line = word + " ";
+                          } else {
+                            line = testLine;
+                          }
+                        }
+                        if (line) lines.push(line.trim());
+
+                        // Return the calculated width with more padding and less right constraint
+                        return Math.min(textWidth + 200, window.innerWidth - 80); // Reduced right padding constraint
+                      })()}
                       wrap="word"
-                      fontSize={titleProps.fontSize}
+                      fontSize={titleProps.fontSize || 14}
                       fontWeight={titleProps.fontWeight}
                       fontFamily={titleProps.fontFamily}
                       opacity={titleProps.opacity}

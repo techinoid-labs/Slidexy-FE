@@ -32,11 +32,17 @@ export const constrainToCanvas = (
 
   const minX = paddingLeft;
 
-  const minY = paddingTop - 80;
+  // const minY = paddingTop - 80;
+  // const safeHeight = height || 30;
+  // // Use a less restrictive maxX to allow dragging across the canvas
+  // const maxX = canvasWidth - paddingRight; // e.g., 300 - 10 = 290
+  // const maxY = canvasHeight - paddingBottom + 50;
+
+  const minY = paddingTop - 70;
   const safeHeight = height || 30;
   // Use a less restrictive maxX to allow dragging across the canvas
   const maxX = canvasWidth - paddingRight; // e.g., 300 - 10 = 290
-  const maxY = canvasHeight - paddingBottom + 50;
+  const maxY = canvasHeight - paddingBottom + 40;
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
@@ -98,7 +104,7 @@ export const getRandomSlide = () => {
         properties: {
           fontSize: 18,
           fontWeight: "",
-          fontFamily: "",
+          fontFamily: "Roboto",
           fill: "#444",
           fontStyle: "",
         },
@@ -110,7 +116,7 @@ export const getRandomSlide = () => {
     slide_title: {
       text: titles[Math.floor(Math.random() * titles.length)],
       properties: {
-        fontSize: 24,
+        fontSize: 14,
         fontFamily: "",
         fill: "#000",
         fontWeight: "bold",

@@ -130,7 +130,7 @@ export const dummyData = [
       konva_component: "Konva.Text",
       properties: {
         fontSize: {xs: 20, md: 21, sm: 22, lg: 23, xl: 24},
-        fontFamily: "Inter",
+        fontFamily: "Roboto",
         fill: "#333",
         fontStyle: "bold",
       },
@@ -142,7 +142,7 @@ export const dummyData = [
         konva_component: "Konva.Text",
         properties: {
           fontSize: {xs: 12, md: 12, sm: 12, lg: 12, xl: 12},
-          fontFamily: "Inter",
+          fontFamily: "Roboto",
           fill: "#444",
           fontStyle: "normal",
         },
@@ -153,7 +153,7 @@ export const dummyData = [
         konva_component: "Konva.Text",
         properties: {
           fontSize: {xs: 12, md: 12, sm: 12, lg: 12, xl: 12},
-          fontFamily: "Inter",
+          fontFamily: "Roboto",
           fill: "#444",
           fontStyle: "normal",
         },
@@ -192,7 +192,7 @@ export const dummyData = [
       konva_component: "Konva.Text",
       properties: {
         fontSize: {xs: 20, md: 21, sm: 22, lg: 23, xl: 24},
-        fontFamily: "Inter",
+        fontFamily: "Roboto",
         fill: "#333",
         fontStyle: "bold",
       },
@@ -204,7 +204,7 @@ export const dummyData = [
         konva_component: "Konva.Text",
         properties: {
           fontSize: {xs: 12, md: 12, sm: 12, lg: 12, xl: 12},
-          fontFamily: "Inter",
+          fontFamily: "Roboto",
           fill: "#444",
           fontStyle: "normal",
         },
@@ -215,7 +215,7 @@ export const dummyData = [
         konva_component: "Konva.Text",
         properties: {
           fontSize:{xs: 12, md: 12, sm: 12, lg: 12, xl: 12} ,
-          fontFamily: "Inter",
+          fontFamily: "Roboto",
           fill: "#444",
           fontStyle: "normal",
         },

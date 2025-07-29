@@ -163,7 +163,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
               </Typography>
 
               {slides.length > 1 && (
-                <Tooltip title="Delete Slide">
+                <Tooltip title="">
                   <IconButton
                     onClick={(e) => {
                       e.stopPropagation();
