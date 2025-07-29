@@ -38,6 +38,8 @@ const TextEditor: React.FC<TextEditorProps> = ({
         fill: color,
         fontStyle: "normal",
         fontWeight,
+        x: 200,
+        y: 300,
       },
     };
 

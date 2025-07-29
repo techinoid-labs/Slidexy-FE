@@ -113,6 +113,7 @@
 
 //   pptx.writeFile({ fileName: `${pptFileName}.pptx` || "Presentation.pptx" });
 // }
+
 import PptxGenJS from "pptxgenjs";
 import { get } from "idb-keyval";
 
@@ -183,13 +184,7 @@ export async function exportSlidesAsPPT(structuredSlides: StructuredSlide[]) {
   const defaultColor = theme?.primaryColor || "000000";
   const defaultFontWeight = theme?.fontWeight || "normal";
   const defaultFontStyle = theme?.fontStyle || "normal";
-  // console.log({
-  //   defaultFont,
-  //   defaultColor,
-  //   defaultFontWeight,
-  //   defaultFontStyle,
-  // });
-  // return;
+
   structuredSlides.forEach((structuredSlide) => {
     const slide = pptx.addSlide();
 

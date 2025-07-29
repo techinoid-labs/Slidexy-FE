@@ -4,18 +4,16 @@
 // export const IMG_WIDTH = 380;
 // export const IMG_HEIGHT = 320;
 
-
-
 export const getSlideDimensions = () => {
   const windowWidth = typeof window !== "undefined" ? window.innerWidth : 800;
   const windowHeight = typeof window !== "undefined" ? window.innerHeight : 400;
   const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 800); // 90% of window width, capped at 500
   const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 400); // 60% of window height, capped at 400
-  const LEFT_PADDING = 30;
-  const IMAGE_WIDTH= 380;
-  const IMAGE_HEIGHT=320;
+  const LEFT_PADDING = 20;
+  const IMAGE_WIDTH = 380;
+  const IMAGE_HEIGHT = 320;
 
-  return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH,IMAGE_HEIGHT };
+  return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT };
 };
 
 export const constrainToCanvas = (
@@ -27,18 +25,18 @@ export const constrainToCanvas = (
   canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
 ) => {
   const { LEFT_PADDING } = getSlideDimensions();
-  const paddingLeft = LEFT_PADDING -200; // 17
+  const paddingLeft = LEFT_PADDING - 200; // 17
   const paddingRight = 10;
   const paddingTop = 60;
   const paddingBottom = window.innerHeight <= 830 ? 50 : 10;
 
   const minX = paddingLeft;
-  
-  const minY = paddingTop -80;
+
+  const minY = paddingTop - 80;
   const safeHeight = height || 30;
   // Use a less restrictive maxX to allow dragging across the canvas
   const maxX = canvasWidth - paddingRight; // e.g., 300 - 10 = 290
-  const maxY = canvasHeight - paddingBottom +50;
+  const maxY = canvasHeight - paddingBottom + 50;
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
@@ -67,7 +65,6 @@ export const constrainToCanvas = (
 
   return { x: constrainedX, y: constrainedY, isAtBoundary };
 };
-
 
 export const getRandomSlide = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
