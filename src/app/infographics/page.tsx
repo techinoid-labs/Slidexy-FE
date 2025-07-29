@@ -1,19 +1,47 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Typography, TextField } from "@mui/material";
 
 export default function PosterTemplateDisplay() {
   const [imageUrl, setImageUrl] = useState("");
   const [textFields, setTextFields] = useState([
-    { label: "Top Left", x: "5%", y: "5%", value: "Top Left" },
-    { label: "Top Right", x: "75%", y: "5%", value: "Top Right" },
-    { label: "Bottom Left", x: "5%", y: "85%", value: "Bottom Left" },
-    { label: "Bottom Right", x: "75%", y: "85%", value: "Bottom Right" },
-    { label: "Center", x: "35%", y: "45%", value: "Center" },
+    { id: "topLeft", label: "Top Left", x: "5%", y: "5%", value: "Top Left" },
+    {
+      id: "topRight",
+      label: "Top Right",
+      x: "75%",
+      y: "5%",
+      value: "Top Right",
+    },
+    {
+      id: "bottomLeft",
+      label: "Bottom Left",
+      x: "5%",
+      y: "85%",
+      value: "Bottom Left",
+    },
+    {
+      id: "bottomRight",
+      label: "Bottom Right",
+      x: "75%",
+      y: "85%",
+      value: "Bottom Right",
+    },
+    { id: "center", label: "Center", x: "35%", y: "45%", value: "Center" },
   ]);
+
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartIndex, setDragStartIndex] = useState<number | null>(null);
+  const [dragStartMousePos, setDragStartMousePos] = useState({ x: 0, y: 0 });
+
+  // Define a fixed width for the text input fields
+  const INPUT_FIELD_WIDTH_PX = 200; // pixels
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -26,19 +54,30 @@ export default function PosterTemplateDisplay() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-      textFields.forEach((field) => {
+      textFields.forEach((field, index) => {
         const fontSize = canvas.height * 0.035;
-        ctx.font = `${fontSize}px Arial`;
+        ctx.font = `bold ${fontSize}px Arial`;
         ctx.fillStyle = "black";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
 
+        // Calculate actual pixel positions
         const x = (parseFloat(field.x) / 100) * canvas.width;
         const y = (parseFloat(field.y) / 100) * canvas.height;
+
+        // Draw the text
         ctx.fillText(field.value, x, y);
+
+        // Draw a transparent overlay for click/drag detection if not editing
+        if (editingIndex !== index) {
+          const textWidth = ctx.measureText(field.value).width;
+          const textHeight = fontSize * 1.2; // Approximate height for click area
+          ctx.fillStyle = "rgba(0,0,0,0)"; // Make it transparent
+          ctx.fillRect(x, y, textWidth, textHeight);
+        }
       });
     }
-  }, [textFields]);
+  }, [textFields, editingIndex]);
 
   useEffect(() => {
     const stored = localStorage.getItem("posterTemplateData");
@@ -65,6 +104,156 @@ export default function PosterTemplateDisplay() {
   useEffect(() => {
     drawCanvas();
   }, [textFields, drawCanvas]);
+
+  useEffect(() => {
+    if (editingIndex !== null && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editingIndex]);
+
+  // --- Drag & Drop Logic ---
+
+  const getCanvasMouseCoordinates = (
+    event: React.MouseEvent<HTMLCanvasElement>
+  ) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mouseX = (event.clientX - rect.left) * scaleX;
+    const mouseY = (event.clientY - rect.top) * scaleY;
+    return { x: mouseX, y: mouseY };
+  };
+
+  const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (editingIndex !== null) return; // Don't drag if currently editing
+
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d"); // <--- Declare ctx here
+    if (!canvas || !ctx) return;
+
+    const { x: mouseX, y: mouseY } = getCanvasMouseCoordinates(event);
+
+    textFields.forEach((field, index) => {
+      const fontSize = canvas.height * 0.035;
+      ctx.font = `bold ${fontSize}px Arial`;
+      const textX = (parseFloat(field.x) / 100) * canvas.width;
+      const textY = (parseFloat(field.y) / 100) * canvas.height;
+      const textWidth = ctx.measureText(field.value).width;
+      const textHeight = fontSize * 1.2;
+
+      if (
+        mouseX >= textX &&
+        mouseX <= textX + textWidth &&
+        mouseY >= textY &&
+        mouseY <= textY + textHeight
+      ) {
+        setIsDragging(true);
+        setDragStartIndex(index);
+        setDragStartMousePos({ x: mouseX, y: mouseY });
+      }
+    });
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging || dragStartIndex === null) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d"); // <--- Declare ctx here as well for measureText
+    if (!canvas || !ctx) return;
+
+    const { x: currentMouseX, y: currentMouseY } =
+      getCanvasMouseCoordinates(event);
+
+    const deltaX = currentMouseX - dragStartMousePos.x;
+    const deltaY = currentMouseY - dragStartMousePos.y;
+
+    const updatedTextFields = [...textFields];
+    const fieldToMove = updatedTextFields[dragStartIndex];
+
+    // Convert existing % to pixels for calculation
+    let currentPxX = (parseFloat(fieldToMove.x) / 100) * canvas.width;
+    let currentPxY = (parseFloat(fieldToMove.y) / 100) * canvas.height;
+
+    let newPxX = currentPxX + deltaX;
+    let newPxY = currentPxY + deltaY;
+
+    // --- Boundary Checks (Pixel based) ---
+    // Ensure text does not go off the right or bottom edge
+    const textWidth = ctx.measureText(fieldToMove.value).width;
+    const textHeight = canvas.height * 0.035 * 1.2; // Approximate height
+
+    newPxX = Math.max(0, Math.min(newPxX, canvas.width - textWidth));
+    newPxY = Math.max(0, Math.min(newPxY, canvas.height - textHeight));
+
+    // Convert back to percentage
+    fieldToMove.x = `${(newPxX / canvas.width) * 100}%`;
+    fieldToMove.y = `${(newPxY / canvas.height) * 100}%`;
+
+    setTextFields(updatedTextFields);
+    setDragStartMousePos({ x: currentMouseX, y: currentMouseY }); // Update start position for continuous drag
+  };
+
+  const handleMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isDragging && dragStartIndex !== null) {
+      // If a drag occurred, we don't want to trigger an edit if it was a significant drag
+      const { x: currentMouseX, y: currentMouseY } =
+        getCanvasMouseCoordinates(event);
+      const deltaX = currentMouseX - dragStartMousePos.x;
+      const deltaY = currentMouseY - dragStartMousePos.y;
+
+      // Small threshold to differentiate click from drag
+      if (Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) {
+        // This was more of a click than a drag, so initiate edit
+        handleCanvasClick(event);
+      }
+    }
+    setIsDragging(false);
+    setDragStartIndex(null);
+  };
+
+  // --- Click to Edit Logic (modified to be called by mouseUp if not dragging) ---
+  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d"); // <--- Declare ctx here
+    if (!canvas || !ctx) return;
+
+    const { x: mouseX, y: mouseY } = getCanvasMouseCoordinates(event);
+
+    let clickedFieldIndex: number | null = null;
+    textFields.forEach((field, index) => {
+      const fontSize = canvas.height * 0.035;
+      ctx.font = `bold ${fontSize}px Arial`; // Set font for measureText
+      const x = (parseFloat(field.x) / 100) * canvas.width;
+      const y = (parseFloat(field.y) / 100) * canvas.height;
+      const textWidth = ctx.measureText(field.value).width;
+      const textHeight = fontSize * 1.2;
+
+      if (
+        mouseX >= x &&
+        mouseX <= x + textWidth &&
+        mouseY >= y &&
+        mouseY <= y + textHeight
+      ) {
+        clickedFieldIndex = index;
+      }
+    });
+
+    setEditingIndex(clickedFieldIndex);
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (editingIndex !== null) {
+      const updated = [...textFields];
+      updated[editingIndex].value = e.target.value;
+      setTextFields(updated);
+    }
+  };
+
+  const handleInputBlur = () => {
+    setEditingIndex(null); // Exit editing mode when input loses focus
+  };
 
   const handleDownload = () => {
     const canvas = canvasRef.current;
@@ -96,38 +285,49 @@ export default function PosterTemplateDisplay() {
       <Box sx={{ position: "relative", display: "inline-block" }}>
         <canvas
           ref={canvasRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp} // End drag if mouse leaves canvas
           style={{
             maxWidth: "100%",
             height: "auto",
             border: "1px solid #ddd",
             borderRadius: "10px",
+            cursor: isDragging ? "grabbing" : "pointer", // Change cursor during drag
           }}
         />
 
-        {/* Overlay text inputs */}
-        {textFields.map((field, index) => (
-          <textarea
-            key={index}
-            value={field.value}
-            onChange={(e) => {
-              const updated = [...textFields];
-              updated[index].value = e.target.value;
-              setTextFields(updated);
-            }}
-            style={{
+        {/* Conditionally render TextField when editing */}
+        {editingIndex !== null && (
+          <TextField
+            inputRef={inputRef}
+            value={textFields[editingIndex].value}
+            onChange={handleTextChange}
+            onBlur={handleInputBlur}
+            sx={{
               position: "absolute",
-              top: field.y,
-              left: field.x,
-              width: "150px",
-              padding: "6px",
-              resize: "none",
-              background: "rgba(255,255,255,0.7)",
+              top: textFields[editingIndex].y,
+              left: textFields[editingIndex].x,
+              width: `${INPUT_FIELD_WIDTH_PX}px`, // Fixed width
+              minWidth: `${INPUT_FIELD_WIDTH_PX}px`,
+              maxWidth: `${INPUT_FIELD_WIDTH_PX}px`,
+              background: "rgba(255,255,255,0.9)",
               border: "1px solid #ccc",
               borderRadius: "4px",
-              fontSize: "14px",
+              transform: "translate(-50%, -50%)", // Center input field over the text point
+              "& .MuiInputBase-input": {
+                padding: "6px",
+                fontSize: "14px",
+                overflow: "hidden", // Hide overflow text
+                whiteSpace: "nowrap", // Prevent wrapping
+                textOverflow: "ellipsis", // Show ellipsis for overflow
+              },
             }}
+            size="small"
+            autoFocus
           />
-        ))}
+        )}
       </Box>
 
       <Button
