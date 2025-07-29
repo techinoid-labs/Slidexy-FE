@@ -100,13 +100,19 @@ export const constrainImageToCanvas = (
     ? canvasWidth - paddingRight
     : canvasWidth - minWidth - paddingRight;
   const maxY = isAtMinSize
-    ? canvasHeight - paddingBottom+ (minWidth -10)
+    ? canvasHeight - paddingBottom + (minWidth - 10)
     : canvasHeight - paddingBottom + 40;
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
-  const constrainedWidth = Math.max(minWidth, Math.min(width, canvasWidth - constrainedX - paddingRight));
-  const constrainedHeight = Math.max(minHeight, Math.min(height, canvasHeight - constrainedY - paddingBottom));
+  const constrainedWidth = Math.max(
+    minWidth,
+    Math.min(width, canvasWidth - constrainedX - paddingRight)
+  );
+  const constrainedHeight = Math.max(
+    minHeight,
+    Math.min(height, canvasHeight - constrainedY - paddingBottom)
+  );
 
   const isAtBoundary =
     x !== constrainedX ||
@@ -135,7 +141,13 @@ export const constrainImageToCanvas = (
     isAtBoundary,
   });
 
-  return { x: constrainedX, y: constrainedY, width: constrainedWidth, height: constrainedHeight, isAtBoundary };
+  return {
+    x: constrainedX,
+    y: constrainedY,
+    width: constrainedWidth,
+    height: constrainedHeight,
+    isAtBoundary,
+  };
 };
 export const getRandomSlide = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
@@ -176,52 +188,52 @@ export const getRandomSlide = () => {
       };
     });
 
-  return {
-    slide_id: `slide-${Date.now()}`,
-    slide_title: {
-      text: titles[Math.floor(Math.random() * titles.length)],
-      properties: {
-        fontSize: 24,
-        fontFamily: "",
-        fill: "#000",
-        fontWeight: "bold",
-      },
-    },
-    elements: [
-      ...getRandomBullets(3),
-      {
-        element_type: "image",
-        konva_component: "Konva.Image",
-        properties: {
-          imageSrc: "/images/create-presentation/new-slide-img.png",
-          // x: SLIDE_WIDTH - 500,
-          // y: (SLIDE_HEIGHT - 400) / 2,
-          // width: 480,
-          // height: 400,
-          x: SLIDE_WIDTH - 400,
-          y: (SLIDE_HEIGHT - 320) / 2,
-          width: getSlideDimensions().IMAGE_WIDTH,
-          height: getSlideDimensions().IMAGE_HEIGHT,
-        },
-      },
-    ],
-    image_url: "/images/create-presentation/new-slide-img.png",
-  };
-
   // return {
   //   slide_id: `slide-${Date.now()}`,
   //   slide_title: {
-  //     text: "",
+  //     text: titles[Math.floor(Math.random() * titles.length)],
   //     properties: {
   //       fontSize: 24,
-  //       fontFamily: "Arial",
+  //       fontFamily: "",
   //       fill: "#000",
-  //       fontStyle: "normal",
+  //       fontWeight: "bold",
   //     },
   //   },
-  //   elements: [],
-  //   image_url: null,
+  //   elements: [
+  //     ...getRandomBullets(3),
+  //     {
+  //       element_type: "image",
+  //       konva_component: "Konva.Image",
+  //       properties: {
+  //         imageSrc: "/images/create-presentation/new-slide-img.png",
+  //         // x: SLIDE_WIDTH - 500,
+  //         // y: (SLIDE_HEIGHT - 400) / 2,
+  //         // width: 480,
+  //         // height: 400,
+  //         x: SLIDE_WIDTH - 400,
+  //         y: (SLIDE_HEIGHT - 320) / 2,
+  //         width: getSlideDimensions().IMAGE_WIDTH,
+  //         height: getSlideDimensions().IMAGE_HEIGHT,
+  //       },
+  //     },
+  //   ],
+  //   image_url: "/images/create-presentation/new-slide-img.png",
   // };
+
+  return {
+    slide_id: `slide-${Date.now()}`,
+    slide_title: {
+      text: "",
+      properties: {
+        fontSize: 24,
+        fontFamily: "Arial",
+        fill: "#000",
+        fontStyle: "normal",
+      },
+    },
+    elements: [],
+    image_url: null,
+  };
 };
 
 export const getLayoutProps = (layout: number) => {

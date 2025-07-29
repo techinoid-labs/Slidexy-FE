@@ -78,11 +78,10 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
   return (
     <Box
       sx={{
-        // width: slide_width,
+        width: slide_width,
         // height: slide_height,
-        // overflowX: "hidden",
-        // overflowY: "hidden",
-        overflow: "hidden",
+        overflowX: "auto",
+        // overflowY: "auto",
         backgroundColor: "#f5f5fa",
         borderRadius: 1,
         my: 1,
@@ -95,7 +94,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
           display: "flex",
           alignItems: "center",
           gap: 2,
-          // minWidth: "max-content",
+          minWidth: "max-content",
           flexWrap: "nowrap",
           overflowX: "auto",
           flexGrow: "row",
