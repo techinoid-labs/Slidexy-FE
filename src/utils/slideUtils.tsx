@@ -5,10 +5,12 @@
 // export const IMG_HEIGHT = 320;
 
 export const getSlideDimensions = () => {
-  const windowWidth = typeof window !== "undefined" ? window.innerWidth : 800;
-  const windowHeight = typeof window !== "undefined" ? window.innerHeight : 400;
-  const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 800); // 90% of window width, capped at 500
-  const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 400); // 60% of window height, capped at 400
+  const windowWidth = typeof window !== "undefined" ? window.innerWidth : 960;
+  const windowHeight = typeof window !== "undefined" ? window.innerHeight : 540;
+  // const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 960); // 90% of window width, capped at 500
+  // const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 540); // 60% of window height, capped at 400
+  const SLIDE_WIDTH = 960; // 90% of window width, capped at 500
+  const SLIDE_HEIGHT = 540; // 60% of window height, capped at 400
   const LEFT_PADDING = 20;
   const IMAGE_WIDTH = 380;
   const IMAGE_HEIGHT = 320;
@@ -116,7 +118,7 @@ export const getRandomSlide = () => {
     slide_title: {
       text: titles[Math.floor(Math.random() * titles.length)],
       properties: {
-        fontSize: 14,
+        fontSize: 24,
         fontFamily: "",
         fill: "#000",
         fontWeight: "bold",

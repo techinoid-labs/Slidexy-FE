@@ -16,11 +16,10 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
 import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";
-import { useTheme, useMediaQuery } from "@mui/material";
+import { useTheme, useMediaQuery, Box } from "@mui/material";
 import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mobile";
 import MobileSlideEditor from "./SlideEditorMobile";
 import TextSettingsPanelMobile from "@/app/components/modify-presentation/TextPanelMobile";
-import { Button } from "@mui/material"; // Optional: MUI or use your own toggle icon
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
@@ -46,58 +45,6 @@ const Page = () => {
     setSelectedTextId(null);
     setIsMobileTextSelected(false);
   };
-  // const handleExportPPTX = () => {
-  //   const structuredSlides: StructuredSlide[] = slides.map((slide) => {
-  //     const elements: StructuredSlide["elements"] = [];
-
-  //     slide.elements?.forEach((el) => {
-  //       if (el.element_type === "bullet_point") {
-  //         const textProps = el.properties as any; // Or define a better type for bullet points
-  //         elements.push({
-  //           element_type: "bullet_point",
-  //           text: el.text,
-  //           properties: {
-  //             x: 0.7,
-  //             y: undefined,
-  //             w: 8,
-  //             h: 0.6,
-  //             fontSize: textProps?.fontSize || 18,
-  //             fill: textProps?.fill || "#444444",
-  //           },
-  //         });
-  //       }
-
-  //       if (el.element_type === "image") {
-  //         const imgProps = el.properties as any; // Or define a better type for images
-  //         elements.push({
-  //           element_type: "image",
-  //           src: slide.image_url || undefined,
-  //           properties: {
-  //             imageSrc: imgProps?.imageSrc,
-  //             x: (imgProps?.x || 440) / 100,
-  //             y: (imgProps?.y || 15) / 100,
-  //             w: (imgProps?.width || 480) / 100,
-  //             h: (imgProps?.height || 400) / 100,
-  //           },
-  //         });
-  //       }
-  //     });
-
-  //     return {
-  //       slide_id: slide.slide_id,
-  //       slide_title: {
-  //         text: slide.slide_title?.text || "",
-  //         properties: {
-  //           fill: slide.slide_title?.properties?.fill?.replace("#", ""),
-  //         },
-  //       },
-  //       elements,
-  //       image_url: slide.image_url || undefined,
-  //     };
-  //   });
-
-  //   exportSlidesAsPPT(structuredSlides);
-  // };
 
   const handleExportPPTX = () => {
     const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
@@ -191,36 +138,6 @@ const Page = () => {
             },
           });
         }
-
-        // if (element_type === "shape") {
-        //   // Basic shape fallback
-        //   const shapeMap: any = {
-        //     "Konva.Rect": "rect",
-        //     "Konva.Circle": "ellipse",
-        //     "Konva.Ellipse": "ellipse",
-        //     "Konva.Line": "line", // For simple horizontal/vertical line
-        //   };
-
-        //   const shapeType = shapeMap[konva_component];
-        //   if (shapeType) {
-        //     slide.addShape(shapeType, {
-        //       x,
-        //       y,
-        //       w,
-        //       h,
-        //       fill: fill,
-        //       line: { color: "000000", width: 1 },
-        //     });
-        //   } else {
-        //     // fallback to label if unsupported
-        //     slide.addText(konva_component || "shape", {
-        //       x,
-        //       y,
-        //       fontSize: 12,
-        //       color: fill,
-        //     });
-        //   }
-        // }
       });
 
       // Handle slide title
@@ -319,9 +236,15 @@ const Page = () => {
               />
             </div>
 
-            <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
+            <Box
+              className="flex-1 overflow-y-auto z-0"
+              style={{
+                marginTop: 12,
+                marginBottom: 12,
+              }}
+            >
               <SlideEditor slides={slides} stageRefs={stageRefs} />
-            </div>
+            </Box>
             <div
               className={`
     ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}

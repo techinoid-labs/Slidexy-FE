@@ -338,13 +338,15 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
               top: (() => {
                 const nodePos = textRef.current.absolutePosition();
                 const slideDimensions = getSlideDimensions();
-                const maxY = slideDimensions.SLIDE_HEIGHT - textRef.current.height();
+                const maxY =
+                  slideDimensions.SLIDE_HEIGHT - textRef.current.height();
                 return Math.max(0, Math.min(nodePos.y, maxY));
               })(),
               left: (() => {
                 const nodePos = textRef.current.absolutePosition();
                 const slideDimensions = getSlideDimensions();
-                const maxX = slideDimensions.SLIDE_WIDTH - textRef.current.width();
+                const maxX =
+                  slideDimensions.SLIDE_WIDTH - textRef.current.width();
                 return Math.max(0, Math.min(nodePos.x, maxX));
               })(),
               fontSize: `${fontSize}px`,
@@ -360,12 +362,14 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
               transform: `rotate(${textRef.current.rotation()}deg)`,
               width: (() => {
                 const slideDimensions = getSlideDimensions();
-                const maxWidth = slideDimensions.SLIDE_WIDTH - textRef.current.x();
+                const maxWidth =
+                  slideDimensions.SLIDE_WIDTH - textRef.current.x();
                 return Math.min(textRef.current.width(), maxWidth);
               })(),
               height: (() => {
                 const slideDimensions = getSlideDimensions();
-                const maxHeight = slideDimensions.SLIDE_HEIGHT - textRef.current.y();
+                const maxHeight =
+                  slideDimensions.SLIDE_HEIGHT - textRef.current.y();
                 return Math.min(textRef.current.height(), maxHeight);
               })(),
               zIndex: 999,

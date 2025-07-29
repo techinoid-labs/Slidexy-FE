@@ -1,119 +1,3 @@
-// "use client";
-
-// import PptxGenJS from "pptxgenjs";
-
-// export type StructuredSlide = {
-//   slide_id: string;
-//   slide_title?: {
-//     text: string;
-//     properties?: {
-//       fontSize?: number;
-//       fontFamily?: string;
-//       fill?: string;
-//       fontStyle?: string;
-//     };
-//   };
-//   elements: {
-//     element_type: "title" | "bullet_point" | "image" | "text" | "shape";
-//     text?: string;
-//     src?: string;
-//     properties?: {
-//       x?: number;
-//       y?: number;
-//       w?: number;
-//       h?: number;
-//       fontSize?: number;
-//       fontFamily?: string;
-//       fill?: string;
-//       fontStyle?: string;
-//       fontWeight?: string;
-//       imageSrc?: string;
-//     };
-//   }[];
-//   image_url?: string;
-// };
-
-// export function exportSlidesAsPPT(structuredSlides: StructuredSlide[]) {
-//   const pptx = new PptxGenJS();
-//   const pptFileName = localStorage.getItem("fileName");
-
-//   // console.log("Structured Slides:", structuredSlides);
-
-//   structuredSlides.forEach((structuredSlide) => {
-//     const slide = pptx.addSlide();
-
-//     // Add slide title
-//     const titleProps = structuredSlide.slide_title?.properties || {};
-//     if (structuredSlide.slide_title?.text) {
-//       slide.addText(structuredSlide.slide_title.text, {
-//         x: 0.5,
-//         y: 0.4,
-//         w: 8,
-//         h: 0.8,
-//         fontSize: titleProps.fontSize || 24,
-//         bold: true,
-//         color: titleProps.fill || "000000",
-//         fontFace: titleProps.fontFamily || "Arial",
-//       });
-//     }
-
-//     structuredSlide.elements.forEach((el) => {
-//       const { element_type, text, properties = {}, src } = el;
-//       const {
-//         x = 1,
-//         y = 1,
-//         w = 4,
-//         h = 0.6,
-//         fontSize = 16,
-//         fill = "444444",
-//         imageSrc,
-//         fontFamily,
-//         fontStyle,
-//         fontWeight,
-//       } = properties;
-
-//       if (element_type === "bullet_point" && text) {
-//         slide.addText(text, {
-//           x,
-//           y,
-//           w,
-//           h,
-//           fontSize,
-//           color: fill,
-//           bullet: true,
-//           fontFace: fontFamily,
-//         });
-//       }
-
-//       if (element_type === "text" && text) {
-//         slide.addText(text, {
-//           x,
-//           y,
-//           w,
-//           h,
-//           fontSize,
-//           color: fill,
-//           fontFace: fontFamily,
-//           bold: fontWeight === "bold" || fontWeight === "600",
-//           italic: fontStyle === "italic",
-//         });
-//       }
-
-//       if (element_type === "image" && imageSrc) {
-//         slide.addImage({
-//           path: imageSrc,
-//           x,
-//           y,
-//           w,
-//           h,
-//         });
-//       }
-//     });
-//   });
-
-//   pptx.writeFile({ fileName: `${pptFileName}.pptx` || "Presentation.pptx" });
-// }
-
 import PptxGenJS from "pptxgenjs";
 import { get } from "idb-keyval";
 
@@ -260,8 +144,8 @@ export async function exportSlidesAsPPT(structuredSlides: StructuredSlide[]) {
         slide.addText(text, {
           x,
           y,
-          w,
-          h,
+          w: w + 0.5,
+          h: h + 0.2,
           fontSize,
           color: colorToUse,
           fontFace: fontToUse,
@@ -280,6 +164,77 @@ export async function exportSlidesAsPPT(structuredSlides: StructuredSlide[]) {
           h,
         });
       }
+
+      // const bulletPoints = structuredSlide.elements
+      //   .filter((el) => el.element_type === "bullet_point" && el.text)
+      //   .map((el) => `${el.text}`); // prefixing is optional; pptxgen will handle bullets
+
+      // if (bulletPoints.length > 0) {
+      //   slide.addText(bulletPoints.join("\n"), {
+      //     x: 0.8,
+      //     y: 1.4,
+      //     w: 8.4,
+      //     h: 3,
+      //     fontSize: 16,
+      //     color: defaultColor,
+      //     fontFace: defaultFont,
+      //     bullet: true,
+      //   });
+      // }
+
+      // // 2. Add non-bullet text and other elements (e.g., shapes, images)
+      // structuredSlide.elements.forEach((el) => {
+      //   const { element_type, text, properties = {}, src } = el;
+
+      //   if (element_type !== "bullet_point") {
+      //     const {
+      //       x = 1,
+      //       y = 1,
+      //       w = 4,
+      //       h = 0.6,
+      //       fontSize = 16,
+      //       fill,
+      //       fontFamily,
+      //       fontStyle,
+      //       fontWeight,
+      //       imageSrc,
+      //     } = properties;
+
+      //     const colorToUse =
+      //       el.useThemeColor === false ? fill : defaultColor || fill;
+      //     const fontToUse = fontFamily || defaultFont;
+      //     const isBold =
+      //       fontWeight === "bold" ||
+      //       fontWeight === "600" ||
+      //       defaultFontWeight === "bold";
+      //     const isItalic =
+      //       fontStyle === "italic" || defaultFontStyle === "italic";
+
+      //     if (element_type === "text" && text) {
+      //       slide.addText(text, {
+      //         x,
+      //         y,
+      //         w,
+      //         h,
+      //         fontSize,
+      //         color: colorToUse,
+      //         fontFace: fontToUse,
+      //         bold: isBold,
+      //         italic: isItalic,
+      //       });
+      //     }
+
+      //     if (element_type === "image" && (imageSrc || src)) {
+      //       slide.addImage({
+      //         path: imageSrc || src!,
+      //         x,
+      //         y,
+      //         w,
+      //         h,
+      //       });
+      //     }
+      //   }
+      // });
     });
   });
 
