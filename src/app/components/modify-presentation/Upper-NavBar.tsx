@@ -42,7 +42,7 @@ const UpperNavBar: React.FC<{
     selectedShapeIndex,
     selectedTextId,
   } = useSlides();
- 
+
   // Handlers for mobile menu
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMenuAnchor(event.currentTarget);
@@ -238,7 +238,7 @@ const UpperNavBar: React.FC<{
                 </Box>
               )}
 
-              <Box
+              {/* <Box
                 onClick={() => {
                   setSelectedImage(null);
                   setSelectedImageIndex(null);
@@ -265,7 +265,7 @@ const UpperNavBar: React.FC<{
                 }}
               >
                 Clear Canvas
-              </Box>
+              </Box> */}
             </>
           )}
 
@@ -316,7 +316,7 @@ const UpperNavBar: React.FC<{
             <Typography fontSize={14}>Export as PPTX</Typography>
           </MenuItem>
         )}
-        <MenuItem
+        {/* <MenuItem
           onClick={() => {
             setSelectedImage(null);
             setSelectedImageIndex(null);
@@ -329,7 +329,7 @@ const UpperNavBar: React.FC<{
           }}
         >
           <Typography fontSize={14}>Clear Canvas</Typography>
-        </MenuItem>
+        </MenuItem> */}
         <Divider />
         <MenuItem
           onClick={() => {

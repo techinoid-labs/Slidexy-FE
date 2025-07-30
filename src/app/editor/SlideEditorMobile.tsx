@@ -228,7 +228,7 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                 sx={{
                   width: `${window.innerWidth - 67}px`,
                   height: {
-                    xs: `${window.innerHeight-320}px`,
+                    xs: `${window.innerHeight - 320}px`,
                     md: `${SLIDE_HEIGHT + 100}px`,
                   },
                   border: "1px solid #ccc",
@@ -317,7 +317,15 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                     />
                     {title.text && (
                       <KonvaTextEditor
-                        key={`title-${index}-${titleProps.fontFamily || "Roboto"}-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"}-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"}-${titleProps.fill || "#000"}-${titleProps.opacity || 1}`}
+                        key={`title-${index}-${
+                          titleProps.fontFamily || "Roboto"
+                        }-${titleProps.fontSize || 18}-${
+                          titleProps.fontWeight || "normal"
+                        }-${titleProps.align || "left"}-${
+                          titleProps.fontStyle || "normal"
+                        }-${titleProps.fill || "#000"}-${
+                          titleProps.opacity || 1
+                        }`}
                         id={`title-${index}`}
                         text={title.text}
                         x={titleProps.x || LEFT_PADDING}
@@ -344,7 +352,10 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                             }
                           }
                           if (line) lines.push(line.trim());
-                          return Math.min(textWidth + 200, window.innerWidth - 80);
+                          return Math.min(
+                            textWidth + 200,
+                            window.innerWidth - 80
+                          );
                         })()}
                         wrap="word"
                         fontSize={titleProps.fontSize || 14}

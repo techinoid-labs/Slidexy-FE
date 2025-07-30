@@ -49,8 +49,7 @@ export const restrictShapeBounds = (
     const maxY = Math.max(...ys);
     width = Math.max(minSize, maxX - minX);
     height = Math.max(minSize, maxY - minY);
-  }
-  else {
+  } else {
     width = Math.max(width, minSize);
     height = Math.max(height, minSize);
   }
@@ -134,8 +133,14 @@ export const constrainImageToCanvas = (
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
-  const constrainedWidth = Math.max(minWidth, Math.min(width, canvasWidth - constrainedX - paddingRight));
-  const constrainedHeight = Math.max(minHeight, Math.min(height, canvasHeight - constrainedY - paddingBottom));
+  const constrainedWidth = Math.max(
+    minWidth,
+    Math.min(width, canvasWidth - constrainedX - paddingRight)
+  );
+  const constrainedHeight = Math.max(
+    minHeight,
+    Math.min(height, canvasHeight - constrainedY - paddingBottom)
+  );
 
   const isAtBoundary =
     x !== constrainedX ||
@@ -143,30 +148,36 @@ export const constrainImageToCanvas = (
     width !== constrainedWidth ||
     height !== constrainedHeight;
 
-  return { x: constrainedX, y: constrainedY, width: constrainedWidth, height: constrainedHeight, isAtBoundary };
+  return {
+    x: constrainedX,
+    y: constrainedY,
+    width: constrainedWidth,
+    height: constrainedHeight,
+    isAtBoundary,
+  };
 };
-// export const clearCanvas = () => {
-//   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
-//   return {
-//     slide_id: `slide-${Date.now()}`,
-//     slide_title: {
-//       text: "",
-//       properties: {
-//         fontSize: 14,
-//         fontWeight: "normal",
-//         fontFamily: "Roboto",
-//         fill: "#000",
-//         fontStyle: "normal",
-//         align: "left",
-//         x: LEFT_PADDING,
-//         y: 25,
-//         width: 220,
-//       },
-//     },
-//     elements: [],
-//     image_url: null,
-//   };
-// };
+export const clearCanvas = () => {
+  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
+  return {
+    slide_id: `slide-${Date.now()}`,
+    slide_title: {
+      text: "",
+      properties: {
+        fontSize: 14,
+        fontWeight: "normal",
+        fontFamily: "Roboto",
+        fill: "#000",
+        fontStyle: "normal",
+        align: "left",
+        x: LEFT_PADDING,
+        y: 25,
+        width: 220,
+      },
+    },
+    elements: [],
+    image_url: null,
+  };
+};
 export const getRandomSlide = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const titles: any = [
