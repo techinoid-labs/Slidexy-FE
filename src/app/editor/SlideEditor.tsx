@@ -6,40 +6,25 @@ import useImage from "use-image";
 import { Box } from "@mui/material";
 import SlideImage from "./KonvaComponents/KonvaSlideImage";
 import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor";
+import { dummyData } from "./dummy";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import SlidePreviews from "./slidesPreview";
+import { useDispatch } from "react-redux";
 import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
-import { getRandomSlide, getSlideDimensions } from "../../utils/slideUtils";
-
-import { applyElementPositioning } from "@/utils/slideTextPositioningUtils";
-
-// const getDefaultPosition = (elementType: string) => {
-//   switch (elementType) {
-//     case "title":
-//     case "slide_title":
-//       return { x: getDynamicConstants().LEFT_PADDING, y: 25 };
-//     case "bullet_point":
-//       const isBullet = elementType === "bullet_point";
-
-//       const bulletStartY = 25 + 38 + 20;
-//       let currentY = bulletStartY + 70;
-
-//       return {
-//         x: getDynamicConstants().LEFT_PADDING + (isBullet ? 20 : 0),
-//         y: currentY,
-//       };
-//     case "image":
-//       return { x: 150, y: 300 };
-//     default:
-//       return { x: getDynamicConstants().LEFT_PADDING, y: 300 };
-//   }
-// };
+import {
+  getRandomSlide,
+  getLayoutProps,
+  // SLIDE_WIDTH as slide_width,
+  // SLIDE_HEIGHT as slide_height,
+  getSlideDimensions,
+} from "../../utils/slideUtils";
+import { v4 as uuidv4 } from "uuid";
+import { useTheme, useMediaQuery } from "@mui/material";
 
 // const IMAGE_WIDTH = 400;
 // const IMAGE_PADDING = 40;
 // const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
-
 const getDynamicConstants = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const IMAGE_WIDTH = 400;
@@ -69,15 +54,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     isAtBoundary,
   } = useSlides();
 
-  const { selectedTheme, selectedLayout, setSelectedTheme } =
-    useSlideThemeContext();
+  const { selectedTheme, selectedLayout } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const [useDummy] = useState(false);
-
   console.log(slides);
-
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
     const newSlides = [...slides, structuredClone(newSlide)];
@@ -93,125 +75,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       setSelectedIndex(Math.max(0, newSlides.length - 1));
     }
   };
-
-  useEffect(() => {
-    const preservedThemeData = localStorage.getItem("slidesTheme");
-    if (preservedThemeData) {
-      setSelectedTheme(JSON.parse(preservedThemeData));
-    }
-  }, []);
-
-  // const ensureElementPositioning = () => {
-  //   let updated = false;
-
-  //   const clonedSlides = structuredClone(slides); // or use lodash.cloneDeep if needed
-
-  //   const updatedSlides = clonedSlides.map((slide: any) => {
-  //     // Update title position
-  //     if (
-  //       slide.slide_title &&
-  //       (slide.slide_title.properties?.x == null ||
-  //         slide.slide_title.properties?.y == null)
-  //     ) {
-  //       const { x, y } = getDefaultPosition("slide_title");
-  //       updated = true;
-  //       slide.slide_title.properties = {
-  //         ...slide.slide_title.properties,
-  //         x: slide.slide_title.properties.x ?? x,
-  //         y: slide.slide_title.properties.y ?? y,
-  //       };
-  //     }
-
-  //     // Position bullet points with spacing logic
-  //     const bulletStartY =
-  //       (slide.slide_title?.properties?.y ?? 25) +
-  //       (slide.slide_title?.properties?.fontSize ?? 38) +
-  //       70;
-
-  //     let currentBulletY = bulletStartY;
-  //     const bulletGap = 10;
-  //     const lineHeight = 1.2;
-
-  //     slide.elements = slide.elements.map((el: any) => {
-  //       if (el.element_type === "bullet_point") {
-  //         const fontSize = el.properties?.fontSize ?? 20;
-  //         const fontFamily =
-  //           selectedTheme?.font || el.properties?.fontFamily || "Arial";
-  //         const text = el.text || "";
-
-  //         const textWidth =
-  //           getDynamicConstants().textMaxWidth -
-  //           (el.element_type === "bullet_point" ? 20 : 0);
-
-  //         const canvas = document.createElement("canvas");
-  //         const context = canvas.getContext("2d");
-  //         context!.font = `${fontSize}px ${fontFamily}`;
-  //         const words = text.split(" ");
-  //         let lines: string[] = [];
-  //         let line = "";
-
-  //         for (let word of words) {
-  //           const testLine = line + word + " ";
-  //           const metrics = context!.measureText(testLine);
-  //           if (metrics.width > textWidth && line !== "") {
-  //             lines.push(line.trim());
-  //             line = word + " ";
-  //           } else {
-  //             line = testLine;
-  //           }
-  //         }
-  //         if (line) lines.push(line.trim());
-
-  //         const estimatedHeight = lines.length * fontSize * lineHeight;
-
-  //         // Set bullet position immutably
-  //         updated = true;
-  //         const updatedBullet = {
-  //           ...el,
-  //           properties: {
-  //             ...el.properties,
-  //             x: el.properties?.x ?? getDynamicConstants().LEFT_PADDING + 20,
-  //             y: currentBulletY,
-  //           },
-  //         };
-
-  //         currentBulletY += estimatedHeight + bulletGap;
-  //         return updatedBullet;
-  //       }
-
-  //       // Handle other element types
-  //       if (el.properties?.x == null || el.properties?.y == null) {
-  //         const { x, y } = getDefaultPosition(el.element_type);
-  //         updated = true;
-  //         return {
-  //           ...el,
-  //           properties: {
-  //             ...el.properties,
-  //             x: el.properties.x ?? x,
-  //             y: el.properties.y ?? y,
-  //           },
-  //         };
-  //       }
-
-  //       return el;
-  //     });
-
-  //     return slide;
-  //   });
-
-  //   if (updated) {
-  //     setSlides(updatedSlides);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   ensureElementPositioning();
-  // }, [slides?.length]); // only once on mount
-
-  useEffect(() => {
-    const positionedSlides = applyElementPositioning(slides, selectedTheme);
-    setSlides(positionedSlides);
-  }, [slides?.length]);
 
   return (
     <Box
@@ -317,40 +180,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 {title.text && (
                   <>
                     <KonvaTextEditor
-                      key={`title-${index}-${titleProps.fontFamily || "Roboto"}-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"}-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"}-${titleProps.fill || "#000"}-${titleProps.opacity || 1}`}
                       id={`title-${index}`}
                       text={title.text}
                       x={titleProps.x || titleY}
                       y={titleProps.y || getDynamicConstants().LEFT_PADDING}
-                      width={(() => {
-                        // Calculate dynamic width like bullets
-                        const textWidth = getDynamicConstants().textMaxWidth + 200; // Increased width
-                        const canvas = document.createElement("canvas");
-                        const context = canvas.getContext("2d");
-                        const fontSize = titleProps.fontSize || 14; // Reduced default font size
-                        const fontFamily = titleProps.fontFamily || "Roboto";
-                        context!.font = `${fontSize}px ${fontFamily}`;
-                        const words = title.text.split(" ");
-                        let lines = [];
-                        let line = "";
-
-                        for (let word of words) {
-                          const testLine = line + word + " ";
-                          const metrics = context!.measureText(testLine);
-                          if (metrics.width > textWidth && line !== "") {
-                            lines.push(line.trim());
-                            line = word + " ";
-                          } else {
-                            line = testLine;
-                          }
-                        }
-                        if (line) lines.push(line.trim());
-
-                        // Return the calculated width with more padding and less right constraint
-                        return Math.min(textWidth + 200, window.innerWidth - 80); // Reduced right padding constraint
-                      })()}
+                      width={getDynamicConstants().textMaxWidth}
                       wrap="word"
-                      fontSize={titleProps.fontSize || 14}
+                      fontSize={titleProps.fontSize}
                       fontWeight={titleProps.fontWeight}
                       fontFamily={titleProps.fontFamily}
                       opacity={titleProps.opacity}
@@ -372,12 +208,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     />
                   </>
                 )}
-                {/* {slide.elements.map((el: any, i: number) => {
+                {slide.elements.map((el: any, i: number) => {
                   if (el.element_type !== "text") return null;
-                  // console.log("title", {
-                  //   x: getDynamicConstants().LEFT_PADDING,
-                  //   y: 300,
-                  // });
                   return (
                     <KonvaTextEditor
                       key={`el-${index}-${i}`}
@@ -449,12 +281,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       if (line) lines.push(line.trim());
 
                       const height = lines.length * fontSize * lineHeight;
-                      // console.log("BULLETS POSITION", {
-                      //   x:
-                      //     getDynamicConstants().LEFT_PADDING +
-                      //     (isBullet ? 20 : 0),
-                      //   y: currentY,
-                      // });
+
                       const editor = (
                         <KonvaTextEditor
                           key={`el-${index}-${i}`}
@@ -492,54 +319,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       currentY += height + bulletGap;
                       return editor;
                     });
-                })()} */}
-
-                {slide.elements.map((el: any, i: number) => {
-                  if (
-                    el.element_type !== "text" &&
-                    el.element_type !== "bullet_point"
-                  )
-                    return null;
-
-                  return (
-                    <KonvaTextEditor
-                      key={`el-${index}-${i}`}
-                      id={`el-${index}-${i}`}
-                      text={el.text}
-                      x={el.properties.x}
-                      y={el.properties.y}
-                      width={
-                        el.properties.width ||
-                        getDynamicConstants().textMaxWidth -
-                          (el.element_type === "bullet_point" ? 20 : 0)
-                      }
-                      opacity={el.properties.opacity}
-                      align={el.properties.align}
-                      verticalAlign={el.properties.verticalAlign}
-                      wrap="word"
-                      fontSize={el.properties.fontSize}
-                      fontFamily={
-                        selectedTheme?.font ||
-                        el.properties.fontFamily ||
-                        "Arial"
-                      }
-                      fill={
-                        !el.useThemeColor
-                          ? el.properties.fill
-                          : selectedTheme?.primaryColor
-                      }
-                      fontStyle={el.properties.fontStyle}
-                      fontWeight={el.properties.fontWeight}
-                      isSelected={selectedTextId === `el-${index}-${i}`}
-                      onSelect={() => {
-                        setSelectedTextId(`el-${index}-${i}`);
-                        setSelectedImageIndex(null);
-                        setSelectedShapeIndex(null);
-                        setSelectedImage(null);
-                      }}
-                    />
-                  );
-                })}
+                })()}
 
                 <KonvaShapeRenderer
                   elements={slide.elements}

@@ -19,11 +19,12 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { useRouter } from "next/navigation";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
+
 const UpperNavBar: React.FC<{
   onExportPDF: () => void;
   onExportPPT?: () => void;
-  onReset?: any;
-}> = ({ onExportPDF, onExportPPT }) => {
+  onClearCanvas?: () => void; // New prop for clearing canvas
+}> = ({ onExportPDF, onExportPPT, onClearCanvas }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] =
     React.useState<null | HTMLElement>(null);
@@ -41,6 +42,7 @@ const UpperNavBar: React.FC<{
     selectedShapeIndex,
     selectedTextId,
   } = useSlides();
+ 
   // Handlers for mobile menu
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMenuAnchor(event.currentTarget);
@@ -131,24 +133,6 @@ const UpperNavBar: React.FC<{
               display: { xs: "none", md: "block" },
             }}
           />
-          {/* <IconButton sx={{ p: 1.5 }}>
-            <Image
-              src="/images/list-icon.svg"
-              alt="List"
-              width={25}
-              height={25}
-            />
-          </IconButton>
-          <IconButton sx={{ p: 1.5 }}>
-            <Image
-              src="/images/ai-star.svg"
-              alt="Star"
-              width={25}
-              height={25}
-            />
-          </IconButton> */}
-
-          {/* File title/type always visible */}
           <Box
             sx={{
               display: "flex",
@@ -157,13 +141,6 @@ const UpperNavBar: React.FC<{
               ml: 1,
             }}
           >
-            {/* <Typography
-              variant="subtitle1"
-              sx={{ fontWeight: { xs: 400, md: 600 }, fontSize: 16 }}
-            >
-              File Name Here
-            </Typography> */}
-
             {editing ? (
               <input
                 ref={inputRef}
@@ -207,63 +184,7 @@ const UpperNavBar: React.FC<{
 
         {/* Right Icons */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {/* <IconButton sx={{ p: 1.5 }}>
-            <Image
-              src="/images/profile-icon.svg"
-              alt="Profile"
-              width={40}
-              height={40}
-            />
-          </IconButton>
-          <IconButton sx={{ p: 1.5 }}>
-            <Image
-              src="/images/bell-icon.svg"
-              alt="Notifications"
-              width={40}
-              height={40}
-            />
-          </IconButton>
-          <IconButton sx={{ p: 1.5 }}>
-            <Image
-              src="/images/play-button.svg"
-              alt="Play"
-              width={40}
-              height={40}
-            />
-          </IconButton> */}
-
-          {/* Share Button */}
-          {/* <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              bgcolor: "#18181B",
-              background:
-                "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-              color: "#fff",
-              borderRadius: { xs: "800px", md: "999px" },
-              px: { xs: 1.5, md: 3 },
-              py: { xs: 1, md: 1.2 },
-              ml: { xs: -1, md: 3 },
-              mr: { xs: -1, md: 1 },
-              cursor: "pointer",
-              gap: { xs: 1, md: 1.5 },
-              fontSize: { xs: 12, md: 14 },
-              fontWeight: 600,
-              transition: "background 0.2s",
-              "&:hover": { bgcolor: "#333" },
-            }}
-          >
-            Share
-            <Image
-              src="/images/share-icon.svg"
-              alt="Share"
-              width={26}
-              height={26}
-            />
-          </Box> */}
-
-          {/* Desktop Export Buttons */}
+          {/* Desktop Export and Clear Buttons */}
           {!isMobile && (
             <>
               <Box
@@ -316,6 +237,35 @@ const UpperNavBar: React.FC<{
                   Export as PPTX
                 </Box>
               )}
+
+              <Box
+                onClick={() => {
+                  setSelectedImage(null);
+                  setSelectedImageIndex(null);
+                  setSelectedShapeIndex(null);
+                  setSelectedTextId(null);
+                  setTimeout(() => {
+                    onClearCanvas?.();
+                    handleMobileMenuClose();
+                  }, 300);
+                }}
+                sx={{
+                  bgcolor: "#18181B",
+                  background:
+                    "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                  color: "#fff",
+                  borderRadius: "999px",
+                  px: 3,
+                  py: 1.2,
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  ml: 1,
+                  "&:hover": { bgcolor: "#333" },
+                }}
+              >
+                Clear Canvas
+              </Box>
             </>
           )}
 
@@ -341,77 +291,19 @@ const UpperNavBar: React.FC<{
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
-        {/* <MenuItem
-          onClick={() => {
-            router.push("/home");
-            handleMobileMenuClose();
-          }}
-        >
-          <ListItemIcon>
-            <Image
-              src="/images/home-icon.svg"
-              alt="Home"
-              width={25}
-              height={25}
-            />
-          </ListItemIcon>
-          Home
-        </MenuItem>
-        <MenuItem onClick={handleMobileMenuClose}>
-          <ListItemIcon>
-            <Image
-              src="/images/list-icon.svg"
-              alt="List"
-              width={25}
-              height={25}
-            />
-          </ListItemIcon>
-          List
-        </MenuItem>
-        <MenuItem onClick={handleMobileMenuClose}>
-          <ListItemIcon>
-            <Image
-              src="/images/ai-star.svg"
-              alt="Star"
-              width={25}
-              height={25}
-            />
-          </ListItemIcon>
-          AI Star
-        </MenuItem> */}
         <Divider />
-        {/* <MenuItem onClick={handleMobileMenuClose}>
-          <ListItemIcon>
-            <Image
-              src="/images/bell-icon.svg"
-              alt="Notifications"
-              width={25}
-              height={25}
-            />
-          </ListItemIcon>
-          Notifications
-        </MenuItem> */}
         <MenuItem
           onClick={() => {
             setSelectedImage(null);
             setSelectedImageIndex(null);
             setSelectedShapeIndex(null);
             setSelectedTextId(null);
-
             setTimeout(() => {
               onExportPDF();
               handleMobileMenuClose();
             }, 300);
           }}
         >
-          {/* <ListItemIcon>
-            <Image
-              src="/images/file.svg"
-              alt="Export PDF"
-              width={25}
-              height={25}
-            />
-          </ListItemIcon> */}
           <Typography fontSize={14}>Export as PDF</Typography>
         </MenuItem>
         {onExportPPT && (
@@ -421,17 +313,23 @@ const UpperNavBar: React.FC<{
               handleMobileMenuClose();
             }}
           >
-            {/* <ListItemIcon>
-              <Image
-                src="/images/file.svg"
-                alt="Export PPTX"
-                width={25}
-                height={25}
-              />
-            </ListItemIcon> */}
-            <Typography fontSize={14}> Export as PPTX</Typography>
+            <Typography fontSize={14}>Export as PPTX</Typography>
           </MenuItem>
         )}
+        <MenuItem
+          onClick={() => {
+            setSelectedImage(null);
+            setSelectedImageIndex(null);
+            setSelectedShapeIndex(null);
+            setSelectedTextId(null);
+            setTimeout(() => {
+              onClearCanvas?.();
+              handleMobileMenuClose();
+            }, 300);
+          }}
+        >
+          <Typography fontSize={14}>Clear Canvas</Typography>
+        </MenuItem>
         <Divider />
         <MenuItem
           onClick={() => {
@@ -440,15 +338,7 @@ const UpperNavBar: React.FC<{
             localStorage.removeItem("slidesTheme");
           }}
         >
-          {/* <ListItemIcon>
-            <Image
-              src="/images/file.svg"
-              alt="Export PDF"
-              width={25}
-              height={25}
-            />
-          </ListItemIcon> */}
-          <Typography fontSize={14}> Reset Themes</Typography>
+          <Typography fontSize={14}>Reset Themes</Typography>
         </MenuItem>
       </Menu>
     </AppBar>

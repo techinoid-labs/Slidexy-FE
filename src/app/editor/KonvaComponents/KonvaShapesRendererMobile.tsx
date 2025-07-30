@@ -14,15 +14,15 @@ import {
     Transformer,
 } from "react-konva";
 import { useSlides } from "@/app/context/SlidesContext";
-import { getSlideDimensions, restrictShapeBounds } from "../../../utils/slideUtilsmobile";
+import { restrictShapeBounds } from "@/utils/slideUtilsmobile";
 
-interface KonvaShapesRendererMobileProps {
-    elements: any[];
+interface KonvaShapeRendererProps {
+    elements: any;
     selectedShapeIndex: number | null;
     onSelectShape: (index: number | null) => void;
 }
 
-const KonvaShapesRendererMobile: React.FC<KonvaShapesRendererMobileProps> = ({
+const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
     elements,
     selectedShapeIndex,
     onSelectShape,
@@ -30,7 +30,6 @@ const KonvaShapesRendererMobile: React.FC<KonvaShapesRendererMobileProps> = ({
     const shapeRefs = useRef<(any | null)[]>([]);
     const trRef = useRef<any>(null);
     const { slides, setSlides, selectedSlideIndex: slideIdx } = useSlides();
-    const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -39,6 +38,7 @@ const KonvaShapesRendererMobile: React.FC<KonvaShapesRendererMobileProps> = ({
                 selectedShapeIndex !== null
             ) {
                 e.preventDefault();
+
                 const updatedSlides = structuredClone(slides);
                 updatedSlides[slideIdx].elements.splice(selectedShapeIndex, 1);
                 setSlides(updatedSlides);
@@ -63,10 +63,9 @@ const KonvaShapesRendererMobile: React.FC<KonvaShapesRendererMobileProps> = ({
 
     return (
         <>
-            {elements.map((el, i) => {
+            {elements.map((el: any, i: number) => {
                 if (el.element_type !== "shape") return null;
 
-                const shapeType = el.konva_component;
                 const commonProps = {
                     ref: (node: any) => (shapeRefs.current[i] = node),
                     ...el.properties,
@@ -75,20 +74,6 @@ const KonvaShapesRendererMobile: React.FC<KonvaShapesRendererMobileProps> = ({
                     onTap: () => onSelectShape(i),
                     onMouseDown: () => onSelectShape(i),
                     onTouchStart: () => onSelectShape(i),
-                    dragBoundFunc: (pos: { x: number; y: number }) => {
-                        const node = shapeRefs.current[i];
-                        if (!node) return pos;
-
-                        const { x, y } = restrictShapeBounds(
-                            pos.x,
-                            pos.y,
-                            shapeType,
-                            el.properties,
-                            SLIDE_WIDTH,
-                            SLIDE_HEIGHT
-                        );
-                        return { x, y };
-                    },
                     onTransformEnd: () => {
                         const node = shapeRefs.current[i];
                         if (!node) return;
@@ -99,11 +84,12 @@ const KonvaShapesRendererMobile: React.FC<KonvaShapesRendererMobileProps> = ({
                         const scaleX = node.scaleX();
                         const scaleY = node.scaleY();
 
+                        // Reset scale first to avoid compounding
+                        node.scaleX(1);
+                        node.scaleY(1);
+
                         updated.x = node.x();
                         updated.y = node.y();
-
-                        let width = updated.width || 50;
-                        let height = updated.height || 50;
 
                         switch (shapeType) {
                             case "Konva.Rect":
@@ -111,133 +97,203 @@ const KonvaShapesRendererMobile: React.FC<KonvaShapesRendererMobileProps> = ({
                             case "Konva.Wedge":
                             case "Konva.Arc":
                             case "Konva.RegularPolygon":
-                                width = node.width() * scaleX;
-                                height = node.height() * scaleY;
+                                updated.width = Math.max(node.width() * scaleX, 50);
+                                updated.height = Math.max(node.height() * scaleY, 50);
                                 break;
 
                             case "Konva.Circle":
-                                updated.radius = node.radius() * Math.max(scaleX, scaleY);
+                                updated.radius = Math.max(node.radius() * Math.max(scaleX, scaleY), 25);
                                 break;
 
-
                             case "Konva.Star":
-                                updated.outerRadius = node.outerRadius() * Math.max(scaleX, scaleY);
-                                if (updated.innerRadius)
+                                updated.outerRadius = Math.max(node.outerRadius() * Math.max(scaleX, scaleY), 25);
+                                if (updated.innerRadius) {
                                     updated.innerRadius = updated.outerRadius / 2;
-                                width = updated.outerRadius * 2;
-                                height = width;
+                                }
                                 break;
 
                             case "Konva.Line":
+                                console.log("Line is clicked");
                             case "Konva.Arrow":
                                 const scaledPoints = node
                                     .points()
                                     .map((point: number, idx: number) => {
                                         return idx % 2 === 0 ? point * scaleX : point * scaleY;
                                     });
+
                                 updated.points = scaledPoints;
-                                width = Math.max(...scaledPoints.filter((_: number, idx: number) => idx % 2 === 0)) -
-                                    Math.min(...scaledPoints.filter((_: number, idx: number) => idx % 2 === 0));
-                                height = Math.max(...scaledPoints.filter((_: number, idx: number) => idx % 2 !== 0)) -
-                                    Math.min(...scaledPoints.filter((_: number, idx: number) => idx % 2 !== 0));
+
+                                // Reset scale to avoid compounding
+                                node.scaleX(1);
+                                node.scaleY(1);
                                 break;
                         }
 
-                        const { x, y, width: constrainedWidth, height: constrainedHeight } = restrictShapeBounds(
-                            node.x(),
-                            node.y(),
-                            shapeType,
-                            { ...updated, width, height },
-                            SLIDE_WIDTH,
-                            SLIDE_HEIGHT
-                        );
+                        // Clamp position and apply min-size enforcement centrally
+                        const bounds = restrictShapeBounds(updated.x, updated.y, shapeType, updated);
 
-                        updated.x = x;
-                        updated.y = y;
-                        if (shapeType !== "Konva.Circle" && shapeType !== "Konva.Star") {
-                            updated.width = constrainedWidth;
-                            updated.height = constrainedHeight;
-                        }
+                        updated.x = bounds.x;
+                        updated.y = bounds.y;
 
-                        node.scaleX(1);
-                        node.scaleY(1);
+                        // Only apply width/height if applicable
+                        if ('width' in updated) updated.width = bounds.width;
+                        if ('height' in updated) updated.height = bounds.height;
 
                         const updatedSlides = structuredClone(slides);
                         updatedSlides[slideIdx].elements[i].properties = updated;
+
+                        // Also update node position
+                        node.x(bounds.x);
+                        node.y(bounds.y);
+
+                        setSlides(updatedSlides);
+                    }
+                    , onDragEnd: () => {
+                        const node = shapeRefs.current[i];
+                        if (!node) return;
+
+                        const shapeType = el.konva_component;
+                        const shapeProps = el.properties;
+
+                        const bounds = restrictShapeBounds(node.x(), node.y(), shapeType, shapeProps);
+
+                        // Apply constraints to node
+                        node.x(bounds.x);
+                        node.y(bounds.y);
+
+                        const updatedSlides = structuredClone(slides);
+                        updatedSlides[slideIdx].elements[i].properties.x = bounds.x;
+                        updatedSlides[slideIdx].elements[i].properties.y = bounds.y;
+
                         setSlides(updatedSlides);
                     },
+
                 };
 
-                switch (shapeType) {
+                switch (el.konva_component) {
                     case "Konva.Circle":
-                        return <Circle key={`shape-${i}`} {...commonProps} />;
+                        return (
+                            <Circle
+                                onClick={onSelectShape}
+                                onTap={onSelectShape}
+                                onMouseDown={onSelectShape}
+                                onTouchStart={onSelectShape}
+                                key={`shape-${i}`}
+                                {...commonProps}
+                            />
+                        );
                     case "Konva.Rect":
-                        return <Rect key={`shape-${i}`} {...commonProps} />;
+                        return (
+                            <Rect
+                                onClick={onSelectShape}
+                                onTap={onSelectShape}
+                                onMouseDown={onSelectShape}
+                                onTouchStart={onSelectShape}
+                                key={`shape-${i}`}
+                                {...commonProps}
+                            />
+                        );
                     case "Konva.RegularPolygon":
-                        return <RegularPolygon key={`shape-${i}`} {...commonProps} />;
+                        return (
+                            <RegularPolygon
+                                onClick={onSelectShape}
+                                onTap={onSelectShape}
+                                onMouseDown={onSelectShape}
+                                onTouchStart={onSelectShape}
+                                key={`shape-${i}`}
+                                {...commonProps}
+                            />
+                        );
                     case "Konva.Star":
-                        return <Star key={`shape-${i}`} {...commonProps} />;
+                        return (
+                            <Star
+                                onClick={onSelectShape}
+                                onTap={onSelectShape}
+                                onMouseDown={onSelectShape}
+                                onTouchStart={onSelectShape}
+                                key={`shape-${i}`}
+                                {...commonProps}
+                            />
+                        );
                     case "Konva.Line":
-                        return <Line key={`shape-${i}`} {...commonProps} stroke={el.properties.fill} fill={el.properties.fill} />;
+                        return (
+                            <Line
+                                onClick={onSelectShape}
+                                onTap={onSelectShape}
+                                onMouseDown={onSelectShape}
+                                onTouchStart={onSelectShape}
+                                key={`shape-${i}`}
+                                {...commonProps}
+                                fill={el.properties.fill}
+                                stroke={el.properties.fill}
+                            />
+                        );
                     case "Konva.Arrow":
-                        return <Arrow key={`shape-${i}`} {...commonProps} stroke={el.properties.fill} fill={el.properties.fill} />;
+                        return (
+                            <Arrow
+                                onClick={onSelectShape}
+                                onTap={onSelectShape}
+                                onMouseDown={onSelectShape}
+                                onTouchStart={onSelectShape}
+                                key={`shape-${i}`}
+                                {...commonProps}
+                                stroke={el.properties.fill}
+                                fill={el.properties.fill}
+                            />
+                        );
                     case "Konva.Ellipse":
-                        return <Ellipse key={`shape-${i}`} {...commonProps} />;
+                        return (
+                            <Ellipse
+                                onClick={onSelectShape}
+                                onTap={onSelectShape}
+                                onMouseDown={onSelectShape}
+                                onTouchStart={onSelectShape}
+                                key={`shape-${i}`}
+                                {...commonProps}
+                            />
+                        );
                     case "Konva.Arc":
-                        return <Arc key={`shape-${i}`} {...commonProps} />;
+                        return (
+                            <Arc
+                                onClick={onSelectShape}
+                                onTap={onSelectShape}
+                                onMouseDown={onSelectShape}
+                                onTouchStart={onSelectShape}
+                                key={`shape-${i}`}
+                                {...commonProps}
+                            />
+                        );
                     case "Konva.Wedge":
-                        return <Wedge key={`shape-${i}`} {...commonProps} />;
+                        return (
+                            <Wedge
+                                onClick={onSelectShape}
+                                onTap={onSelectShape}
+                                onMouseDown={onSelectShape}
+                                onTouchStart={onSelectShape}
+                                key={`shape-${i}`}
+                                {...commonProps}
+                            />
+                        );
                     default:
                         return null;
                 }
             })}
+
             {selectedShapeIndex !== null && (
                 <Transformer
                     ref={trRef}
-                    enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
-                    boundBoxFunc={(oldBox, newBox) => {
-                        const shape = shapeRefs.current[selectedShapeIndex];
-                        if (!shape) return oldBox;
-
-                        const shapeType = elements[selectedShapeIndex].konva_component;
-                        const scaleX = newBox.width / oldBox.width;
-                        const scaleY = newBox.height / oldBox.height;
-
-                        let width = newBox.width;
-                        let height = newBox.height;
-
-                        switch (shapeType) {
-                            case "Konva.Circle":
-                                width = height = Math.max(newBox.width, newBox.height);
-                                break;
-                            case "Konva.Star":
-                                width = height = Math.max(newBox.width, newBox.height);
-                                break;
-                            case "Konva.Line":
-                            case "Konva.Arrow":
-                                // Allow scaling points, but ensure minimum size
-                                width = Math.max(newBox.width, 30);
-                                height = Math.max(newBox.height, 30);
-                                break;
-                        }
-
-                        const { x, y, width: constrainedWidth, height: constrainedHeight } = restrictShapeBounds(
-                            newBox.x,
-                            newBox.y,
-                            shapeType,
-                            { width, height },
-                            SLIDE_WIDTH,
-                            SLIDE_HEIGHT
-                        );
-
-                        if (constrainedWidth < 30 || constrainedHeight < 30) return oldBox;
-
-                        return { ...newBox, x, y, width: constrainedWidth, height: constrainedHeight };
-                    }}
+                    enabledAnchors={[
+                        // "middle-left",
+                        // "middle-right",
+                        "top-left",
+                        "top-right",
+                        "bottom-left",
+                        "bottom-right",
+                    ]}
                 />
             )}
         </>
     );
 };
 
-export default KonvaShapesRendererMobile;
+export default KonvaShapeRenderer;

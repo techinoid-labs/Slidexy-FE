@@ -26,6 +26,7 @@ const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const {
     slides,
+    selectedSlideIndex, setSlides,
     setSelectedTextId,
     selectedTextId,
     selectedImageIndex,
@@ -98,6 +99,20 @@ const Page = () => {
 
   //   exportSlidesAsPPT(structuredSlides);
   // };
+
+const handleClearCanvas = () => {
+  if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
+
+  const newSlides = [...slides];
+  newSlides[selectedSlideIndex] = {
+    ...newSlides[selectedSlideIndex],
+    elements: [], // Clear images, shapes, text, etc.
+    slide_title: { text: "", properties: {} }, // Clear title
+    image_url: "", // Clear background
+  };
+
+  setSlides(newSlides); // Dispatches to Redux
+};
 
   const handleExportPPTX = () => {
     const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
@@ -285,6 +300,7 @@ const Page = () => {
         <UpperNavBar
           onExportPDF={handleExportPDF}
           onExportPPT={handleExportPPTX}
+          onClearCanvas={handleClearCanvas}
         />
       )}
 

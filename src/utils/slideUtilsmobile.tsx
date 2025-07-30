@@ -16,56 +16,59 @@ export const restrictShapeBounds = (
   canvasWidth: number = getSlideDimensions().SLIDE_WIDTH,
   canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
 ) => {
-  const { LEFT_PADDING } = getSlideDimensions();
-  const paddingLeft = LEFT_PADDING-20;
-  const paddingRight = -40;
-  const paddingTop = 10;
-  const paddingBottom = Math.max(window.innerHeight * 0.01, 10);
+  const minSize = 50;
+  let width = properties.width || minSize;
+  let height = properties.height || minSize;
 
-  const minWidth = 30;
-  const minHeight = 30;
-
-  let width = properties.width || 50;
-  let height = properties.height || 50;
-
-  switch (shapeType) {
-    case "Konva.Circle":
-      width = (properties.radius || 25) * 2;
-      height = width;
-      break;
-    case "Konva.Star":
-      width = (properties.outerRadius || 25) * 2;
-      height = width;
-      break;
-    case "Konva.Line":
-    case "Konva.Arrow":
-      const points = properties.points || [0, 0, 100, 100];
-      width = Math.max(...points.filter((_: number, idx: number) => idx % 2 === 0)) -
-              Math.min(...points.filter((_: number, idx: number) => idx % 2 === 0));
-      height = Math.max(...points.filter((_: number, idx: number) => idx % 2 !== 0)) -
-               Math.min(...points.filter((_: number, idx: number) => idx % 2 !== 0));
-      break;
+  // Special case for radius-based shapes
+  if (shapeType === "Konva.Circle") {
+    const radius = Math.max(properties.radius || 25, minSize / 2);
+    width = height = radius * 2;
+  } else if (shapeType === "Konva.Star") {
+    const outerRadius = Math.max(properties.outerRadius || 25, minSize / 2);
+    width = height = outerRadius * 2;
+  } else if (shapeType === "Konva.Line") {
+    const points = [0, 0, 100, 100];
+    const xs = points.filter((_, idx) => idx % 2 === 0);
+    const ys = points.filter((_, idx) => idx % 2 !== 0);
+    const minX = Math.min(...xs);
+    const minY = Math.min(...ys);
+    const maxX = Math.max(...xs);
+    const maxY = Math.max(...ys);
+    width = Math.max(minSize, maxX - minX);
+    height = Math.max(minSize, maxY - minY);
+    console.log("inserting line: " + points);
+    console.log(xs, ys, minX, minY, maxX, maxY);
+  } else if (shapeType === "Konva.Arrow") {
+    const points = [0, 0, 100, 100];
+    const xs = points.filter((_, idx) => idx % 2 === 0);
+    const ys = points.filter((_, idx) => idx % 2 !== 0);
+    const minX = Math.min(...xs);
+    const minY = Math.min(...ys);
+    const maxX = Math.max(...xs);
+    const maxY = Math.max(...ys);
+    width = Math.max(minSize, maxX - minX);
+    height = Math.max(minSize, maxY - minY);
+  }
+  else {
+    width = Math.max(width, minSize);
+    height = Math.max(height, minSize);
   }
 
-  const isAtMinSize = width <= minWidth || height <= minHeight;
+  // Clamp position so shape doesn't overflow canvas
+  const maxX = canvasWidth - width + 50;
+  const maxY = canvasHeight - height;
 
-  const minX = isAtMinSize ? paddingLeft - 45 : paddingLeft;
-  const minY = isAtMinSize ? -10 : paddingTop;
-  const maxX = canvasWidth - (isAtMinSize ? paddingRight : Math.max(width, minWidth) + paddingRight);
-  const maxY = canvasHeight - (isAtMinSize ? paddingBottom : Math.max(height, minHeight) + paddingBottom);
+  const constrainedX = Math.max(0, Math.min(x, maxX));
+  const constrainedY = Math.max(0, Math.min(y, maxY));
 
-  const constrainedX = Math.max(minX, Math.min(x, maxX));
-  const constrainedY = Math.max(minY, Math.min(y, maxY));
-  const constrainedWidth = Math.max(minWidth, Math.min(width, canvasWidth - constrainedX - paddingRight));
-  const constrainedHeight = Math.max(minHeight, Math.min(height, canvasHeight - constrainedY - paddingBottom));
-
-  const isAtBoundary =
-    x !== constrainedX ||
-    y !== constrainedY ||
-    width !== constrainedWidth ||
-    height !== constrainedHeight;
-
-  return { x: constrainedX, y: constrainedY, width: constrainedWidth, height: constrainedHeight, isAtBoundary };
+  return {
+    x: constrainedX,
+    y: constrainedY,
+    width,
+    height,
+    isAtBoundary: x !== constrainedX || y !== constrainedY,
+  };
 };
 
 // ... (other existing functions: constrainToCanvas, constrainImageToCanvas, getRandomSlide, getLayoutProps remain unchanged)
@@ -86,7 +89,7 @@ export const constrainToCanvas = (
   const minX = -80;
   const minY = paddingTop - 60;
   const safeHeight = height || 30;
-  const maxX = window.innerWidth - 80;
+  const maxX = window.innerWidth - 220;
   const maxY = window.innerHeight - 330;
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
@@ -142,7 +145,28 @@ export const constrainImageToCanvas = (
 
   return { x: constrainedX, y: constrainedY, width: constrainedWidth, height: constrainedHeight, isAtBoundary };
 };
-
+export const clearCanvas = () => {
+  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
+  return {
+    slide_id: `slide-${Date.now()}`,
+    slide_title: {
+      text: "",
+      properties: {
+        fontSize: 14,
+        fontWeight: "normal",
+        fontFamily: "Roboto",
+        fill: "#000",
+        fontStyle: "normal",
+        align: "left",
+        x: LEFT_PADDING,
+        y: 25,
+        width: 220,
+      },
+    },
+    elements: [],
+    image_url: null,
+  };
+};
 export const getRandomSlide = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const titles: any = [
