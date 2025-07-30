@@ -16,6 +16,7 @@ import {
   getRandomSlide,
   getLayoutProps,
   getSlideDimensions,
+  clearCanvas,
 } from "../../utils/slideUtilsmobile";
 import { v4 as uuidv4 } from "uuid";
 import TextSettingsPanelMobile from "../components/modify-presentation/TextPanelMobile";
@@ -38,7 +39,7 @@ const getDynamicConstants = () => {
   };
 };
 
-const SlideEditor = ({ slides = [], stageRefs }: any) => {
+const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
   const dispatch = useDispatch();
   const {
     selectedImageIndex,
@@ -83,6 +84,18 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     }
   };
 
+  const handleClearCanvas = () => {
+    const newSlides = [...slides];
+    newSlides[selectedIndex] = clearCanvas();
+    setSlides(newSlides);
+    setSelectedImage(null);
+    setSelectedImageIndex(null);
+    setSelectedShapeIndex(null);
+    setSelectedTextId(null);
+    setTooltip({ visible: false, x: 0, y: 0, node: null });
+    console.log("[SlideEditor] Canvas cleared, updated slides:", newSlides);
+  };
+
   useEffect(() => {
     if (!slides || slides.length === 0) return;
 
@@ -101,7 +114,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           konva_component: "Konva.Image",
           element_id: uuidv4(),
           properties: {
-
             imageSrc: slide.image_url,
             x: dimensions.SLIDE_WIDTH - 260,
             y: (dimensions.SLIDE_HEIGHT - 50) / 2,
@@ -193,8 +205,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             borderBottomRightRadius: "13px",
             borderTopLeftRadius: "13px",
             borderTopRightRadius: "13px",
-            //paddingRight: "17px",
-            //overflowX: "hidden",
           }}
         >
           {slides.map((slide: any, index: number) => {
@@ -204,42 +214,38 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             const bulletGap = 1;
             const bulletStartY = 60;
 
-            // Debug: Log title properties
             console.log(`[SlideEditorMobile] Title ${index} properties:`, {
               fontFamily: titleProps.fontFamily,
               fontSize: titleProps.fontSize,
               fontWeight: titleProps.fontWeight,
               align: titleProps.align,
-              text: title.text
+              text: title.text,
             });
 
             return (
               <Box
                 key={slide.slide_id}
                 sx={{
-                  width: `${SLIDE_WIDTH + 10}px`,
+                  width: `${window.innerWidth - 67}px`,
                   height: {
-                    xs: `${window.innerHeight}px`,
+                    xs: `${window.innerHeight-320}px`,
                     md: `${SLIDE_HEIGHT + 100}px`,
                   },
                   border: "1px solid #ccc",
                   backgroundColor: "#fff",
-                  position: "relative",
+                  position: "fixed",
                   mb: 1.7,
                   display: index === selectedIndex ? "block" : "none",
                   align: "center",
                   marginLeft: "auto",
                   marginRight: "auto",
                   marginTop: "auto",
-                  marginBottom: "auto"
-
-
-                  //maxHeight: {xs: "calc(100vh - 200px)", sm: "calc(100vh - 150px)"},
+                  marginBottom: "auto",
                 }}
               >
                 <Stage
                   width={window.innerWidth - 69}
-                  height={window.innerHeight - 320}
+                  height={window.innerHeight - 323}
                   ref={(ref: any) => {
                     stageRefs.current[index] =
                       ref?.getStage()?.content?.querySelector("canvas") || null;
@@ -249,7 +255,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       e.target === e.target.getStage() ||
                       e.target.name() === "background";
                     if (clickedOnEmpty) {
-                      console.log(window.innerHeight);
+                      console.log("[SlideEditor] Deselect all on empty click");
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
                       setSelectedShapeIndex(null);
@@ -262,7 +268,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       e.target === e.target.getStage() ||
                       e.target.name() === "background";
                     if (clickedOnEmpty) {
-                      console.log(window.innerHeight);
+                      console.log("[SlideEditor] Deselect all on empty touch");
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
                       setSelectedShapeIndex(null);
@@ -307,8 +313,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       y={0}
                       width={SLIDE_WIDTH}
                       height={window.innerHeight - 320}
-                      // stroke={isAtBoundary ? "red" : "transparent"}
-                      // strokeWidth={1}
                       listening={false}
                     />
                     {title.text && (
@@ -316,14 +320,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         key={`title-${index}-${titleProps.fontFamily || "Roboto"}-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"}-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"}-${titleProps.fill || "#000"}-${titleProps.opacity || 1}`}
                         id={`title-${index}`}
                         text={title.text}
-                        x={titleProps.x || LEFT_PADDING }
+                        x={titleProps.x || LEFT_PADDING}
                         y={titleProps.y || titleY}
                         width={(() => {
-                          // Calculate dynamic width like bullets
-                          const textWidth = getDynamicConstants().textMaxWidth; // Increased width
+                          const textWidth = getDynamicConstants().textMaxWidth;
                           const canvas = document.createElement("canvas");
                           const context = canvas.getContext("2d");
-                          const fontSize = titleProps.fontSize || 14; // Reduced default font size
+                          const fontSize = titleProps.fontSize || 14;
                           const fontFamily = titleProps.fontFamily || "Roboto";
                           context!.font = `${fontSize}px ${fontFamily}`;
                           const words = title.text.split(" ");
@@ -341,9 +344,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                             }
                           }
                           if (line) lines.push(line.trim());
-
-                          // Return the calculated width with more padding and less right constraint
-                          return Math.min(textWidth + 200, window.innerWidth - 80); // Reduced right padding constraint
+                          return Math.min(textWidth + 200, window.innerWidth - 80);
                         })()}
                         wrap="word"
                         fontSize={titleProps.fontSize || 14}
@@ -367,7 +368,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           setTooltip({
                             visible: true,
                             x: titleProps.x || LEFT_PADDING + 100,
-                            y: (titleProps.y || titleY) - 40, // Move tooltip 40px above the title
+                            y: (titleProps.y || titleY) - 40,
                             node: null,
                           });
                         }}
@@ -421,7 +422,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       return slide.elements
                         .filter((el: any) => el.element_type === "bullet_point")
                         .map((el: any, i: number) => {
-                          //console.log(el);
                           const isBullet = el.element_type === "bullet_point";
                           const fontSize = el.properties.fontSize;
                           const fontFamily =
@@ -463,7 +463,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                                 (isBullet ? 4 : 0)
                               }
                               y={currentY}
-
                               opacity={el.properties.opacity}
                               align={el.properties.align}
                               width={textWidth + 100}
