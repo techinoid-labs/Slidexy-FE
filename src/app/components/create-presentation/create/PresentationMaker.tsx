@@ -197,9 +197,7 @@ export default function PresentationMaker({
         };
 
         // Store for retrieval on /poster-templates page
-        
-        localStorage.clear();
-        
+              
         localStorage.setItem(
           "posterTemplateData", // Changed localStorage key
           JSON.stringify(posterPayload)
@@ -220,6 +218,7 @@ export default function PresentationMaker({
 
   useEffect(() => {
     const prompt = searchParams.get("prompt");
+     localStorage.clear();
 
     if (prompt) {
       setInputValue(prompt);
@@ -233,6 +232,8 @@ export default function PresentationMaker({
       const newUrl = newQuery ? `${pathname}?${newQuery}` : pathname;
 
       router.replace(newUrl, { scroll: false });
+
+      
     }
   }, []);
 
