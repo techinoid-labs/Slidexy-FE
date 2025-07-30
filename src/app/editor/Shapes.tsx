@@ -170,49 +170,49 @@ const shapes = [
       </svg>
     ),
   },
-  {
-    name: "Arc",
-    konva_component: "Konva.Arc",
-    defaultProps: {
-      x: 150,
-      y: 150,
-      innerRadius: 20,
-      outerRadius: 40,
-      angle: 90,
-      fill: "#9b59b6",
-    },
-    svg: (
-      <svg width="64" height="64">
-        <path
-          d="M32,32 L52,32 A20,20 0 0,1 46,52 z"
-          stroke="#222"
-          strokeWidth="2"
-          fill="none"
-        />
-      </svg>
-    ),
-  },
-  {
-    name: "Wedge",
-    konva_component: "Konva.Wedge",
-    defaultProps: {
-      x: 150,
-      y: 150,
-      radius: 40,
-      angle: 60,
-      fill: "#34495e",
-    },
-    svg: (
-      <svg width="64" height="64">
-        <path
-          d="M32,32 L52,32 A20,20 0 0,1 44,52 z"
-          stroke="#222"
-          strokeWidth="2"
-          fill="none"
-        />
-      </svg>
-    ),
-  },
+  // {
+  //   name: "Arc",
+  //   konva_component: "Konva.Arc",
+  //   defaultProps: {
+  //     x: 150,
+  //     y: 150,
+  //     innerRadius: 20,
+  //     outerRadius: 40,
+  //     angle: 90,
+  //     fill: "#9b59b6",
+  //   },
+  //   svg: (
+  //     <svg width="64" height="64">
+  //       <path
+  //         d="M32,32 L52,32 A20,20 0 0,1 46,52 z"
+  //         stroke="#222"
+  //         strokeWidth="2"
+  //         fill="none"
+  //       />
+  //     </svg>
+  //   ),
+  // },
+  // {
+  //   name: "Wedge",
+  //   konva_component: "Konva.Wedge",
+  //   defaultProps: {
+  //     x: 150,
+  //     y: 150,
+  //     radius: 40,
+  //     angle: 60,
+  //     fill: "#34495e",
+  //   },
+  //   svg: (
+  //     <svg width="64" height="64">
+  //       <path
+  //         d="M32,32 L52,32 A20,20 0 0,1 44,52 z"
+  //         stroke="#222"
+  //         strokeWidth="2"
+  //         fill="none"
+  //       />
+  //     </svg>
+  //   ),
+  // },
 ];
 
 interface ShapedProps {

@@ -123,18 +123,27 @@ const Page = () => {
               fontWeight,
             },
           });
-        }
-
-        // Optional: shape fallback to text label
-        else if (element_type === "shape") {
+        } else if (element_type === "shape") {
           elements.push({
-            element_type: "text",
+            element_type: "shape",
             text: konva_component,
             properties: {
+              ...properties,
               x: xIn,
               y: yIn,
-              fontSize: 12,
-              fill: fill.replace("#", "") || "cccccc",
+              w: wIn,
+              h: hIn,
+              fill: fill?.replace("#", "") || "cccccc",
+              stroke: properties.stroke?.replace("#", ""),
+              strokeWidth: properties.strokeWidth,
+              points: properties.points,
+              radius: properties.radius,
+              radiusX: properties.radiusX,
+              radiusY: properties.radiusY,
+              innerRadius: properties.innerRadius,
+              outerRadius: properties.outerRadius,
+              angle: properties.angle,
+              sides: properties.sides,
             },
           });
         }
