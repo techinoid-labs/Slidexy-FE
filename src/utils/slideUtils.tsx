@@ -3,7 +3,72 @@
 // export const LEFT_PADDING = 30;
 // export const IMG_WIDTH = 380;
 // export const IMG_HEIGHT = 320;
+export const restrictShapeBounds = (
+  x: number,
+  y: number,
+  shapeType: string,
+  properties: any,
+  canvasWidth: number = getSlideDimensions().SLIDE_WIDTH,
+  canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
+) => {
+  const minSize = 50;
+  let width = properties.width || minSize;
+  let height = properties.height || minSize;
+  let maxX, maxY;
+  // Special case for radius-based shapes
+  if (shapeType === "Konva.Circle") {
+    const radius = Math.max(properties.radius || 25, minSize / 2);
+    width = height = radius * 2;
+  } else if (shapeType === "Konva.Star") {
+    const outerRadius = Math.max(properties.outerRadius || 25, minSize / 2);
+    width = height = outerRadius * 2;
+  } else if (shapeType === "Konva.Line") {
+    const points = [20, 20, 60, 60];
+    const xs = points.filter((_, idx) => idx % 2 === 0);
+    const ys = points.filter((_, idx) => idx % 2 !== 0);
+    const minX = Math.min(...xs);
+    const minY = Math.min(...ys);
+    const maxX = Math.max(...xs);
+    const maxY = Math.max(...ys);
+    width = Math.max(minSize, maxX - minX);
+    height = Math.max(minSize, maxY - minY);
+    console.log("inserting line: " + points);
+    console.log(xs, ys, minX, minY, maxX, maxY);
+  } else if (shapeType === "Konva.Arrow") {
+    const points = [0, 0, 100, 100];
+    const xs = points.filter((_, idx) => idx % 2 === 0);
+    const ys = points.filter((_, idx) => idx % 2 !== 0);
+    const minX = Math.min(...xs);
+    const minY = Math.min(...ys);
+    const maxX = Math.max(...xs);
+    const maxY = Math.max(...ys);
+    width = Math.max(minSize, maxX - minX);
+    height = Math.max(minSize, maxY - minY);
+  } else {
+    width = Math.max(width, minSize);
+    height = Math.max(height, minSize);
+  }
+const paddingBottom = window.innerHeight <= 830 ? 50 : 10;
+  // Clamp position so shape doesn't overflow canvas
+  if (["Konva.Line"].includes(shapeType)) {
+    maxX = canvasWidth - width;  // extra padding for small shapes
+    maxY = canvasHeight - paddingBottom ;
+  } else {
+    maxX = canvasWidth - width + 50;
+    maxY = canvasHeight - paddingBottom + 30;
+  }
 
+  const constrainedX = Math.max(0, Math.min(x, maxX));
+  const constrainedY = Math.max(0, Math.min(y, maxY));
+
+  return {
+    x: constrainedX,
+    y: constrainedY,
+    width,
+    height,
+    isAtBoundary: x !== constrainedX || y !== constrainedY,
+  };
+};
 export const getSlideDimensions = () => {
   const windowWidth = typeof window !== "undefined" ? window.innerWidth : 960;
   const windowHeight = typeof window !== "undefined" ? window.innerHeight : 540;
@@ -17,28 +82,30 @@ export const getSlideDimensions = () => {
 
   return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT };
 };
-export const clearCanvas = () => {
-  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
-  return {
-    slide_id: `slide-${Date.now()}`,
-    slide_title: {
-      text: "",
-      properties: {
-        fontSize: 14,
-        fontWeight: "normal",
-        fontFamily: "Roboto",
-        fill: "#000",
-        fontStyle: "normal",
-        align: "left",
-        x: LEFT_PADDING,
-        y: 25,
-        width: 220,
-      },
-    },
-    elements: [],
-    image_url: null,
-  };
-};
+
+
+// export const clearCanvas = () => {
+//   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
+//   return {
+//     slide_id: `slide-${Date.now()}`,
+//     slide_title: {
+//       text: "",
+//       properties: {
+//         fontSize: 14,
+//         fontWeight: "normal",
+//         fontFamily: "Roboto",
+//         fill: "#000",
+//         fontStyle: "normal",
+//         align: "left",
+//         x: LEFT_PADDING,
+//         y: 25,
+//         width: 220,
+//       },
+//     },
+//     elements: [],
+//     image_url: null,
+//   };
+// };
 
 export const constrainToCanvas = (
   x: number,

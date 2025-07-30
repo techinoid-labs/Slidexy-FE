@@ -16,16 +16,18 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
 import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";
-import { useTheme, useMediaQuery, Box } from "@mui/material";
+import { useTheme, useMediaQuery } from "@mui/material";
 import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mobile";
 import MobileSlideEditor from "./SlideEditorMobile";
 import TextSettingsPanelMobile from "@/app/components/modify-presentation/TextPanelMobile";
-
+import { Button } from "@mui/material"; // Optional: MUI or use your own toggle icon
+import { setSlides as setSlidesAction } from "@/app/slice/slidesSlice";
+import type Konva from "konva";
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const {
     slides,
-    selectedSlideIndex,
+    selectedSlideIndex, setSlides,
     setSelectedTextId,
     selectedTextId,
     selectedImageIndex,
@@ -42,10 +44,62 @@ const Page = () => {
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
 
   const resetAll = () => {
-    dispatch(setSlides(initialSlides));
+    dispatch(setSlidesAction(initialSlides));
     setSelectedTextId(null);
     setIsMobileTextSelected(false);
   };
+  // const handleExportPPTX = () => {
+  //   const structuredSlides: StructuredSlide[] = slides.map((slide) => {
+  //     const elements: StructuredSlide["elements"] = [];
+
+  //     slide.elements?.forEach((el) => {
+  //       if (el.element_type === "bullet_point") {
+  //         const textProps = el.properties as any; // Or define a better type for bullet points
+  //         elements.push({
+  //           element_type: "bullet_point",
+  //           text: el.text,
+  //           properties: {
+  //             x: 0.7,
+  //             y: undefined,
+  //             w: 8,
+  //             h: 0.6,
+  //             fontSize: textProps?.fontSize || 18,
+  //             fill: textProps?.fill || "#444444",
+  //           },
+  //         });
+  //       }
+
+  //       if (el.element_type === "image") {
+  //         const imgProps = el.properties as any; // Or define a better type for images
+  //         elements.push({
+  //           element_type: "image",
+  //           src: slide.image_url || undefined,
+  //           properties: {
+  //             imageSrc: imgProps?.imageSrc,
+  //             x: (imgProps?.x || 440) / 100,
+  //             y: (imgProps?.y || 15) / 100,
+  //             w: (imgProps?.width || 480) / 100,
+  //             h: (imgProps?.height || 400) / 100,
+  //           },
+  //         });
+  //       }
+  //     });
+
+  //     return {
+  //       slide_id: slide.slide_id,
+  //       slide_title: {
+  //         text: slide.slide_title?.text || "",
+  //         properties: {
+  //           fill: slide.slide_title?.properties?.fill?.replace("#", ""),
+  //         },
+  //       },
+  //       elements,
+  //       image_url: slide.image_url || undefined,
+  //     };
+  //   });
+
+  //   exportSlidesAsPPT(structuredSlides);
+  // };
 
   const handleClearCanvas = () => {
     if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
@@ -53,17 +107,28 @@ const Page = () => {
     const newSlides = [...slides];
     newSlides[selectedSlideIndex] = {
       ...newSlides[selectedSlideIndex],
-      elements: [], // Clear images, shapes, text, etc.
+      // Clear images, shapes, text, etc.
       slide_title: {
+        konva_component : "Konva.Text",
         text: "",
         properties: {
-          fontSize: 24,
-          fontFamily: "Arial",
-          fill: "#000",
+          fontSize: 14,
+          fontWeight: "normal",
+          fontFamily: "Roboto",
+          fill: "#444",
           fontStyle: "normal",
+          align: "left",
+          x: 0,
+          y: 25,
+          width: 220,
+          height : 0,
+          radius : 0,
+          numPoints: 0,
+          innerRadius : 0,
+          outerRadius : 0,
         },
-        konva_component: "",
-      }, // Clear title
+      },
+      elements: [], // Clear title
       image_url: "", // Clear background
     };
 
@@ -147,30 +212,51 @@ const Page = () => {
               fontWeight,
             },
           });
-        } else if (element_type === "shape") {
+        }
+
+        // Optional: shape fallback to text label
+        else if (element_type === "shape") {
           elements.push({
-            element_type: "shape",
+            element_type: "text",
             text: konva_component,
             properties: {
-              ...properties,
               x: xIn,
               y: yIn,
-              w: wIn,
-              h: hIn,
-              fill: fill?.replace("#", "") || "cccccc",
-              stroke: properties.stroke?.replace("#", ""),
-              strokeWidth: properties.strokeWidth,
-              points: properties.points,
-              radius: properties.radius,
-              radiusX: properties.radiusX,
-              radiusY: properties.radiusY,
-              innerRadius: properties.innerRadius,
-              outerRadius: properties.outerRadius,
-              angle: properties.angle,
-              sides: properties.sides,
+              fontSize: 12,
+              fill: fill.replace("#", "") || "cccccc",
             },
           });
         }
+
+        // if (element_type === "shape") {
+        //   // Basic shape fallback
+        //   const shapeMap: any = {
+        //     "Konva.Rect": "rect",
+        //     "Konva.Circle": "ellipse",
+        //     "Konva.Ellipse": "ellipse",
+        //     "Konva.Line": "line", // For simple horizontal/vertical line
+        //   };
+
+        //   const shapeType = shapeMap[konva_component];
+        //   if (shapeType) {
+        //     slide.addShape(shapeType, {
+        //       x,
+        //       y,
+        //       w,
+        //       h,
+        //       fill: fill,
+        //       line: { color: "000000", width: 1 },
+        //     });
+        //   } else {
+        //     // fallback to label if unsupported
+        //     slide.addText(konva_component || "shape", {
+        //       x,
+        //       y,
+        //       fontSize: 12,
+        //       color: fill,
+        //     });
+        //   }
+        // }
       });
 
       // Handle slide title
@@ -181,14 +267,14 @@ const Page = () => {
         slide_id: slide.slide_id,
         slide_title: slideTitle
           ? {
-              text: slideTitle,
-              properties: {
-                fontSize: slideTitleProps.fontSize,
-                fill: slideTitleProps.fill?.replace("#", ""),
-                fontStyle: slideTitleProps.fontStyle,
-                fontFamily: slideTitleProps.fontFamily,
-              },
-            }
+            text: slideTitle,
+            properties: {
+              fontSize: slideTitleProps.fontSize,
+              fill: slideTitleProps.fill?.replace("#", ""),
+              fontStyle: slideTitleProps.fontStyle,
+              fontFamily: slideTitleProps.fontFamily,
+            },
+          }
           : undefined,
         elements,
         image_url: slide.image_url,
@@ -229,6 +315,7 @@ const Page = () => {
           <UpperNavBar
             onExportPDF={handleExportPDF}
             onExportPPT={handleExportPPTX}
+            onClearCanvas={handleClearCanvas}
           />
         </div>
       ) : (
@@ -270,22 +357,15 @@ const Page = () => {
               />
             </div>
 
-            <Box
-              className="flex-1 overflow-y-auto z-0"
-              style={{
-                marginTop: 12,
-                marginBottom: 12,
-              }}
-            >
+            <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
               <SlideEditor slides={slides} stageRefs={stageRefs} />
-            </Box>
+            </div>
             <div
               className={`
     ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
     bg-white shadow-md transition-all duration-300 ease-in-out flex
-     ${
-       !isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[360px]" : "w-0"
-     }
+     ${!isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[360px]" : "w-0"
+                }
   `}
             >
               {/* Toggle Tab */}
@@ -308,11 +388,10 @@ const Page = () => {
 
               {/* Content area only shows if expanded */}
               <div
-                className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
-                  !showRightPanel && !isLGScreen
-                    ? "opacity-0 pointer-events-none"
-                    : "opacity-100"
-                }`}
+                className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${!showRightPanel && !isLGScreen
+                  ? "opacity-0 pointer-events-none"
+                  : "opacity-100"
+                  }`}
               >
                 {(isTextSelected || isShapeSelected) && (
                   <TextSettingsPanel resetAll={resetAll} />

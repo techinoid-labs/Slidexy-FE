@@ -100,13 +100,14 @@ const shapes = [
     name: "Line",
     konva_component: "Konva.Line",
     defaultProps: {
-      points: [20, 20, 60, 60],
+      points: [100, 100, 160, 160], // Position near the middle of the canvas
       stroke: "#2ecc71",
+      fill: "#2ecc71",
       strokeWidth: 4,
     },
     svg: (
       <svg width="64" height="64">
-        <line x1="16" y1="16" x2="48" y2="48" stroke="#222" strokeWidth="2" />
+        <line x1="16" y1="16" x2="48" y2="48" stroke="#222" strokeWidth="2" refX = "10" refY = "10"/>
       </svg>
     ),
   },
@@ -114,7 +115,7 @@ const shapes = [
     name: "Arrow",
     konva_component: "Konva.Arrow",
     defaultProps: {
-      points: [20, 20, 60, 60],
+      points: [100, 100, 160, 160],
       stroke: "#e67e22",
       fill: "#e67e22",
       strokeWidth: 4,
@@ -126,8 +127,8 @@ const shapes = [
             id="arrow"
             markerWidth="10"
             markerHeight="10"
-            refX="0"
-            refY="3"
+            refX="5"
+            refY="5"
             orient="auto"
           >
             <path d="M0,0 L0,6 L9,3 z" fill="#222" />
@@ -247,7 +248,7 @@ const MobileShapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
         position: "fixed",
         bottom: 0,
         left: "8%",
-         width: window.innerWidth * 0.84,
+        width: window.innerWidth * 0.84,
         height: window.innerHeight * 0.5,
         bgcolor: "#fff",
         border: "1px solid #E0E0E0",
@@ -298,7 +299,7 @@ const MobileShapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
       </Box> */}
 
       <Box sx={{ pb: 2 }}>
-        
+
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
           {shapes.map((shape, idx) => (
             <Box

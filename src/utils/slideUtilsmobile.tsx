@@ -19,7 +19,7 @@ export const restrictShapeBounds = (
   const minSize = 50;
   let width = properties.width || minSize;
   let height = properties.height || minSize;
-
+  let maxX, maxY;
   // Special case for radius-based shapes
   if (shapeType === "Konva.Circle") {
     const radius = Math.max(properties.radius || 25, minSize / 2);
@@ -28,7 +28,7 @@ export const restrictShapeBounds = (
     const outerRadius = Math.max(properties.outerRadius || 25, minSize / 2);
     width = height = outerRadius * 2;
   } else if (shapeType === "Konva.Line") {
-    const points = [0, 0, 100, 100];
+    const points = [20, 20, 60, 60];
     const xs = points.filter((_, idx) => idx % 2 === 0);
     const ys = points.filter((_, idx) => idx % 2 !== 0);
     const minX = Math.min(...xs);
@@ -55,8 +55,13 @@ export const restrictShapeBounds = (
   }
 
   // Clamp position so shape doesn't overflow canvas
-  const maxX = canvasWidth - width + 50;
-  const maxY = canvasHeight - height;
+  if (["Konva.Line", "Konva.Arrow", "Konva.Circle", "Konva.Star"].includes(shapeType)) {
+    maxX = canvasWidth - width ;  // extra padding for small shapes
+    maxY = window.innerHeight - 500 ;
+  } else {
+    maxX = canvasWidth - width + 50;
+    maxY = window.innerHeight - 330;
+  }
 
   const constrainedX = Math.max(0, Math.min(x, maxX));
   const constrainedY = Math.max(0, Math.min(y, maxY));
@@ -156,28 +161,28 @@ export const constrainImageToCanvas = (
     isAtBoundary,
   };
 };
-export const clearCanvas = () => {
-  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
-  return {
-    slide_id: `slide-${Date.now()}`,
-    slide_title: {
-      text: "",
-      properties: {
-        fontSize: 14,
-        fontWeight: "normal",
-        fontFamily: "Roboto",
-        fill: "#000",
-        fontStyle: "normal",
-        align: "left",
-        x: LEFT_PADDING,
-        y: 25,
-        width: 220,
-      },
-    },
-    elements: [],
-    image_url: null,
-  };
-};
+// export const clearCanvas = () => {
+//   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
+//   return {
+//     slide_id: `slide-${Date.now()}`,
+//     slide_title: {
+//       text: "",
+//       properties: {
+//         fontSize: 14,
+//         fontWeight: "normal",
+//         fontFamily: "Roboto",
+//         fill: "#000",
+//         fontStyle: "normal",
+//         align: "left",
+//         x: LEFT_PADDING,
+//         y: 25,
+//         width: 220,
+//       },
+//     },
+//     elements: [],
+//     image_url: null,
+//   };
+// };
 export const getRandomSlide = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const titles: any = [

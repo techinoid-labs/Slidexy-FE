@@ -65,7 +65,8 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
         <>
             {elements.map((el: any, i: number) => {
                 if (el.element_type !== "shape") return null;
-
+                console.log(el.konva_component);
+                console.log(el.properties);
                 const commonProps = {
                     ref: (node: any) => (shapeRefs.current[i] = node),
                     ...el.properties,
@@ -102,6 +103,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                                 break;
 
                             case "Konva.Circle":
+                                console.log("rendering circle");
                                 updated.radius = Math.max(node.radius() * Math.max(scaleX, scaleY), 25);
                                 break;
 
@@ -113,7 +115,6 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                                 break;
 
                             case "Konva.Line":
-                                console.log("Line is clicked");
                             case "Konva.Arrow":
                                 const scaledPoints = node
                                     .points()
@@ -169,7 +170,6 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                     },
 
                 };
-
                 switch (el.konva_component) {
                     case "Konva.Circle":
                         return (
@@ -216,6 +216,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                             />
                         );
                     case "Konva.Line":
+                        const { points, stroke, strokeWidth } = el.properties;
                         return (
                             <Line
                                 onClick={onSelectShape}
@@ -224,8 +225,9 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                                 onTouchStart={onSelectShape}
                                 key={`shape-${i}`}
                                 {...commonProps}
-                                fill={el.properties.fill}
                                 stroke={el.properties.fill}
+                                fill={el.properties.fill}
+                                hitStrokeWidth={30}
                             />
                         );
                     case "Konva.Arrow":
@@ -239,6 +241,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                                 {...commonProps}
                                 stroke={el.properties.fill}
                                 fill={el.properties.fill}
+                                hitStrokeWidth={30}
                             />
                         );
                     case "Konva.Ellipse":

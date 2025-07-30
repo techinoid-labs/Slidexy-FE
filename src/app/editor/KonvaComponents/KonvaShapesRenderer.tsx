@@ -14,6 +14,7 @@ import {
   Transformer,
 } from "react-konva";
 import { useSlides } from "@/app/context/SlidesContext";
+import { restrictShapeBounds } from "@/utils/slideUtils";
 
 interface KonvaShapeRendererProps {
   elements: any;
@@ -64,7 +65,6 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
     <>
       {elements.map((el: any, i: number) => {
         if (el.element_type !== "shape") return null;
-
         const commonProps = {
           ref: (node: any) => (shapeRefs.current[i] = node),
           ...el.properties,
@@ -83,6 +83,10 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
             const scaleX = node.scaleX();
             const scaleY = node.scaleY();
 
+            // Reset scale first to avoid compounding
+            node.scaleX(1);
+            node.scaleY(1);
+
             updated.x = node.x();
             updated.y = node.y();
 
@@ -92,32 +96,24 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
               case "Konva.Wedge":
               case "Konva.Arc":
               case "Konva.RegularPolygon":
-                const oldWidth = node.width();
-                const newWidth = oldWidth * scaleX;
-                const dx = (newWidth - oldWidth) / 2;
-
-                updated.x = node.x();
-                updated.y = node.y();
-
-                updated.width = newWidth;
-                updated.height = node.height() * scaleY;
-
+                updated.width = Math.max(node.width() * scaleX, 50);
+                updated.height = Math.max(node.height() * scaleY, 50);
                 break;
 
               case "Konva.Circle":
-                updated.radius = node.radius() * Math.max(scaleX, scaleY);
+                console.log("rendering circle");
+                updated.radius = Math.max(node.radius() * Math.max(scaleX, scaleY), 25);
                 break;
 
               case "Konva.Star":
-                updated.outerRadius =
-                  node.outerRadius() * Math.max(scaleX, scaleY);
-                if (updated.innerRadius)
+                updated.outerRadius = Math.max(node.outerRadius() * Math.max(scaleX, scaleY), 25);
+                if (updated.innerRadius) {
                   updated.innerRadius = updated.outerRadius / 2;
+                }
                 break;
 
               case "Konva.Line":
               case "Konva.Arrow":
-                // Scale each point
                 const scaledPoints = node
                   .points()
                   .map((point: number, idx: number) => {
@@ -132,28 +128,45 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                 break;
             }
 
-            // Reset scale
-            node.scaleX(1);
-            node.scaleY(1);
+            // Clamp position and apply min-size enforcement centrally
+            const bounds = restrictShapeBounds(updated.x, updated.y, shapeType, updated);
+
+            updated.x = bounds.x;
+            updated.y = bounds.y;
+
+            // Only apply width/height if applicable
+            if ('width' in updated) updated.width = bounds.width;
+            if ('height' in updated) updated.height = bounds.height;
 
             const updatedSlides = structuredClone(slides);
             updatedSlides[slideIdx].elements[i].properties = updated;
+
+            // Also update node position
+            node.x(bounds.x);
+            node.y(bounds.y);
+
             setSlides(updatedSlides);
-          },
-          onDragEnd: () => {
+          }
+          , onDragEnd: () => {
             const node = shapeRefs.current[i];
             if (!node) return;
 
-            const updatedSlides = structuredClone(slides);
-            const shape = updatedSlides[slideIdx].elements[i];
+            const shapeType = el.konva_component;
+            const shapeProps = el.properties;
 
-            shape.properties.x = node.x();
-            shape.properties.y = node.y();
+            const bounds = restrictShapeBounds(node.x(), node.y(), shapeType, shapeProps);
+
+            // Apply constraints to node
+            node.x(bounds.x);
+            node.y(bounds.y);
+
+            const updatedSlides = structuredClone(slides);
+            updatedSlides[slideIdx].elements[i].properties.x = bounds.x;
+            updatedSlides[slideIdx].elements[i].properties.y = bounds.y;
 
             setSlides(updatedSlides);
           },
         };
-
         switch (el.konva_component) {
           case "Konva.Circle":
             return (

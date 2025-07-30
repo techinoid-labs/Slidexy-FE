@@ -10,6 +10,7 @@ interface KonvaTextProperties {
   x?: number;
   y?: number;
   width?: number;
+  align ? : string;
   height?: number;
   radius?: number;
   sides?: number;
