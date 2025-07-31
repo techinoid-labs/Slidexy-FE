@@ -40,8 +40,7 @@ export default function PosterTemplateDisplay() {
   const [dragStartIndex, setDragStartIndex] = useState<number | null>(null);
   const [dragStartMousePos, setDragStartMousePos] = useState({ x: 0, y: 0 });
 
-  // Define a fixed width for the text input fields
-  const INPUT_FIELD_WIDTH_PX = 200; // pixels
+  const INPUT_FIELD_WIDTH_PX = 200;
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -61,18 +60,15 @@ export default function PosterTemplateDisplay() {
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
 
-        // Calculate actual pixel positions
         const x = (parseFloat(field.x) / 100) * canvas.width;
         const y = (parseFloat(field.y) / 100) * canvas.height;
 
-        // Draw the text
         ctx.fillText(field.value, x, y);
 
-        // Draw a transparent overlay for click/drag detection if not editing
         if (editingIndex !== index) {
           const textWidth = ctx.measureText(field.value).width;
-          const textHeight = fontSize * 1.2; // Approximate height for click area
-          ctx.fillStyle = "rgba(0,0,0,0)"; // Make it transparent
+          const textHeight = fontSize * 1.2;
+          ctx.fillStyle = "rgba(0,0,0,0)";
           ctx.fillRect(x, y, textWidth, textHeight);
         }
       });
@@ -111,8 +107,6 @@ export default function PosterTemplateDisplay() {
     }
   }, [editingIndex]);
 
-  // --- Drag & Drop Logic ---
-
   const getCanvasMouseCoordinates = (
     event: React.MouseEvent<HTMLCanvasElement>
   ) => {
@@ -127,10 +121,10 @@ export default function PosterTemplateDisplay() {
   };
 
   const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (editingIndex !== null) return; // Don't drag if currently editing
+    if (editingIndex !== null) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d"); // <--- Declare ctx here
+    const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
 
     const { x: mouseX, y: mouseY } = getCanvasMouseCoordinates(event);
@@ -160,7 +154,7 @@ export default function PosterTemplateDisplay() {
     if (!isDragging || dragStartIndex === null) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d"); // <--- Declare ctx here as well for measureText
+    const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
 
     const { x: currentMouseX, y: currentMouseY } =
@@ -172,40 +166,33 @@ export default function PosterTemplateDisplay() {
     const updatedTextFields = [...textFields];
     const fieldToMove = updatedTextFields[dragStartIndex];
 
-    // Convert existing % to pixels for calculation
     let currentPxX = (parseFloat(fieldToMove.x) / 100) * canvas.width;
     let currentPxY = (parseFloat(fieldToMove.y) / 100) * canvas.height;
 
     let newPxX = currentPxX + deltaX;
     let newPxY = currentPxY + deltaY;
 
-    // --- Boundary Checks (Pixel based) ---
-    // Ensure text does not go off the right or bottom edge
     const textWidth = ctx.measureText(fieldToMove.value).width;
-    const textHeight = canvas.height * 0.035 * 1.2; // Approximate height
+    const textHeight = canvas.height * 0.035 * 1.2;
 
     newPxX = Math.max(0, Math.min(newPxX, canvas.width - textWidth));
     newPxY = Math.max(0, Math.min(newPxY, canvas.height - textHeight));
 
-    // Convert back to percentage
     fieldToMove.x = `${(newPxX / canvas.width) * 100}%`;
     fieldToMove.y = `${(newPxY / canvas.height) * 100}%`;
 
     setTextFields(updatedTextFields);
-    setDragStartMousePos({ x: currentMouseX, y: currentMouseY }); // Update start position for continuous drag
+    setDragStartMousePos({ x: currentMouseX, y: currentMouseY });
   };
 
   const handleMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (isDragging && dragStartIndex !== null) {
-      // If a drag occurred, we don't want to trigger an edit if it was a significant drag
       const { x: currentMouseX, y: currentMouseY } =
         getCanvasMouseCoordinates(event);
       const deltaX = currentMouseX - dragStartMousePos.x;
       const deltaY = currentMouseY - dragStartMousePos.y;
 
-      // Small threshold to differentiate click from drag
       if (Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) {
-        // This was more of a click than a drag, so initiate edit
         handleCanvasClick(event);
       }
     }
@@ -213,10 +200,9 @@ export default function PosterTemplateDisplay() {
     setDragStartIndex(null);
   };
 
-  // --- Click to Edit Logic (modified to be called by mouseUp if not dragging) ---
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d"); // <--- Declare ctx here
+    const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
 
     const { x: mouseX, y: mouseY } = getCanvasMouseCoordinates(event);
@@ -224,7 +210,7 @@ export default function PosterTemplateDisplay() {
     let clickedFieldIndex: number | null = null;
     textFields.forEach((field, index) => {
       const fontSize = canvas.height * 0.035;
-      ctx.font = `bold ${fontSize}px Arial`; // Set font for measureText
+      ctx.font = `bold ${fontSize}px Arial`;
       const x = (parseFloat(field.x) / 100) * canvas.width;
       const y = (parseFloat(field.y) / 100) * canvas.height;
       const textWidth = ctx.measureText(field.value).width;
@@ -252,7 +238,7 @@ export default function PosterTemplateDisplay() {
   };
 
   const handleInputBlur = () => {
-    setEditingIndex(null); // Exit editing mode when input loses focus
+    setEditingIndex(null);
   };
 
   const handleDownload = () => {
@@ -288,17 +274,16 @@ export default function PosterTemplateDisplay() {
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp} // End drag if mouse leaves canvas
+          onMouseLeave={handleMouseUp}
           style={{
             maxWidth: "100%",
             height: "auto",
             border: "1px solid #ddd",
             borderRadius: "10px",
-            cursor: isDragging ? "grabbing" : "pointer", // Change cursor during drag
+            cursor: isDragging ? "grabbing" : "pointer",
           }}
         />
 
-        {/* Conditionally render TextField when editing */}
         {editingIndex !== null && (
           <TextField
             inputRef={inputRef}
@@ -309,19 +294,19 @@ export default function PosterTemplateDisplay() {
               position: "absolute",
               top: textFields[editingIndex].y,
               left: textFields[editingIndex].x,
-              width: `${INPUT_FIELD_WIDTH_PX}px`, // Fixed width
+              width: `${INPUT_FIELD_WIDTH_PX}px`,
               minWidth: `${INPUT_FIELD_WIDTH_PX}px`,
               maxWidth: `${INPUT_FIELD_WIDTH_PX}px`,
               background: "rgba(255,255,255,0.9)",
               border: "1px solid #ccc",
               borderRadius: "4px",
-              transform: "translate(-50%, -50%)", // Center input field over the text point
+              transform: "translate(-50%, -50%)",
               "& .MuiInputBase-input": {
                 padding: "6px",
                 fontSize: "14px",
-                overflow: "hidden", // Hide overflow text
-                whiteSpace: "nowrap", // Prevent wrapping
-                textOverflow: "ellipsis", // Show ellipsis for overflow
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
               },
             }}
             size="small"

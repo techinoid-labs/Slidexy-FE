@@ -17,6 +17,7 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useSearchParams } from "next/navigation";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { Card, CardMedia, Box as MuiBox } from "@mui/material";
+import { TextareaAutosize } from "@mui/material";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 console.log("[SlidesX] API_BASE_URL:", API_BASE_URL);
@@ -37,6 +38,7 @@ export default function PresentationMaker({
   const { setSlides } = useSlides();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [paragraphs, setParagraphs] = useState<string[]>([]);
 
   const [goal, setGoal] = useState("");
   const [tone, setTone] = useState("");
@@ -253,47 +255,80 @@ export default function PresentationMaker({
         setLength={setLength}
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          backgroundColor: "#fff",
-          borderRadius: "999px",
-          border: "2px solid #8E2DE2",
-          boxShadow: "4px 5px 0px 0px #8E2DE2",
-          height: { xs: 57, md: 70 },
-          px: 2,
-          mb: 3,
-        }}
-      >
-        <TextField
-          fullWidth
-          type="url"
-          variant="outlined"
-          placeholder={getPlaceholder()}
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          InputProps={{
-            sx: {
-              height: "100%",
-              border: "none",
-              "& fieldset": { border: "none" },
-              fontSize: { xs: "1rem", md: "1rem" },
-              px: 2,
-            },
-            endAdornment:
-              inputMode === "Website" && faviconUrl ? (
-                <InputAdornment position="end">
-                  <Avatar
-                    src={faviconUrl}
-                    alt="Favicon"
-                    sx={{ width: 32, height: 32, bgcolor: "transparent" }}
-                  />
-                </InputAdornment>
-              ) : undefined,
+      {/* Poster Mode Fields */}
+      {inputMode === "Poster" ? (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            backgroundColor: "#fff",
+            borderRadius: "999px",
+            border: "2px solid #8E2DE2",
+            boxShadow: "4px 5px 0px 0px #8E2DE2",
+            px: 2,
+            mb: 3,
           }}
-        />
-      </Box>
+        >
+          <TextField
+            fullWidth
+            multiline
+            minRows={5}
+            placeholder="Enter poster topic and content.\nFirst line = topic, rest = paragraphs."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            InputProps={{
+              sx: {
+                border: "none",
+                "& fieldset": { border: "none" },
+                fontSize: { xs: "1rem", md: "1rem" },
+                px: 2,
+              },
+            }}
+          />
+        </Box>
+      ) : (
+        // Default TextField UI for non-Poster modes
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            backgroundColor: "#fff",
+            borderRadius: "999px",
+            border: "2px solid #8E2DE2",
+            boxShadow: "4px 5px 0px 0px #8E2DE2",
+            height: { xs: 57, md: 70 },
+            px: 2,
+            mb: 3,
+          }}
+        >
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder={getPlaceholder()}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            InputProps={{
+              sx: {
+                height: "100%",
+                border: "none",
+                "& fieldset": { border: "none" },
+                fontSize: { xs: "1rem", md: "1rem" },
+                px: 2,
+              },
+              endAdornment:
+                inputMode === "Website" && faviconUrl ? (
+                  <InputAdornment position="end">
+                    <Avatar
+                      src={faviconUrl}
+                      alt="Favicon"
+                      sx={{ width: 32, height: 32, bgcolor: "transparent" }}
+                    />
+                  </InputAdornment>
+                ) : undefined,
+            }}
+          />
+        </Box>
+      )}
 
       {/* Show YouTube thumbnail if mode is Youtube and valid videoId */}
       {inputMode === "Youtube" && videoId && !showYoutubeError && (
