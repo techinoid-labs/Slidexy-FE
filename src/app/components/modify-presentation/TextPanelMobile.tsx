@@ -81,13 +81,6 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
   const verticalAlign = rawProps.verticalAlign ?? "top";
   const originalX = rawProps.x ?? 0; // Preserve original x position
   const originalY = rawProps.y ?? 0; // Preserve original y position
-  function measureTextWidth(text: string, fontSize: number, fontFamily: string, fontWeight: string): number {
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-    if (!context) return 0;
-    context.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-    return context.measureText(text).width;
-  }
 
   const updateTextProperty = (prop: string, value: any) => {
     if (!textObj || slideIndex === -1) return;
@@ -102,29 +95,23 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
 
     console.log("[TextPanelMobile] Target found:", { target, isTitle: selectedTextId?.startsWith("title") });
 
-    if (prop === "align") {
-      target.align = value;
+    if (target) {
+      target[prop] = value;
+      console.log("[TextPanelMobile] Updated target:", target);
 
-      const { SLIDE_WIDTH } = getSlideDimensions();
+      // Alignment fix: adjust x when align changes
+      if (prop === "align") {
+        // Do not change x — just update the align property
+        target.align = value;
 
-      const fontSize = target.fontSize ?? 24;
-      const fontFamily = target.fontFamily ?? "Roboto";
-      const fontWeight = target.fontWeight ?? "normal";
-      const text = textObj.text ?? "";
-
-      const textWidth = measureTextWidth(text, fontSize, fontFamily, fontWeight);
-
-      if (value === "right") {
-        target.x = SLIDE_WIDTH - textWidth - 200; // 16px padding
-      } else if (value === "center") {
-        target.x = (SLIDE_WIDTH - textWidth) / 2;
-      } else {
-        target.x = 16; // left padding
+        // Ensure width exists to let Konva align correctly
+        if (!target.width || target.width < 50) {
+          target.width = 220; // or any reasonable default
+        }
       }
+
+
     }
-
-
-
 
     console.log("[TextPanelMobile] Dispatching updated slides:", updatedSlides[slideIndex]);
     setSlides(updatedSlides);
