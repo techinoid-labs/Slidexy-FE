@@ -4,8 +4,10 @@ export const getSlideDimensions = () => {
   const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 500);
   const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 400);
   const LEFT_PADDING = 17;
+  const IMAGE_WIDTH = 200;
+  const IMAGE_HEIGHT = 190;
 
-  return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING };
+  return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT };
 };
 
 export const restrictShapeBounds = (
@@ -56,8 +58,8 @@ export const restrictShapeBounds = (
 
   // Clamp position so shape doesn't overflow canvas
   if (["Konva.Line", "Konva.Arrow", "Konva.Circle", "Konva.Star"].includes(shapeType)) {
-    maxX = canvasWidth - width ;  // extra padding for small shapes
-    maxY = window.innerHeight - 500 ;
+    maxX = canvasWidth - width;  // extra padding for small shapes
+    maxY = window.innerHeight - 500;
   } else {
     maxX = canvasWidth - width + 50;
     maxY = window.innerHeight - 330;
@@ -217,11 +219,11 @@ export const getRandomSlide = () => {
           fontWeight: "10px",
           fontFamily: "",
           fill: "#444",
-          color: "1a1a1a",
+          //fill:  "#FF0000",
           fontStyle: "",
           x: LEFT_PADDING + 10,
           y: 52,
-          width: 20,
+          width: 500,
         },
       };
     });
@@ -242,7 +244,24 @@ export const getRandomSlide = () => {
         width: 220,
       },
     },
-    elements: getRandomBullets(3),
+    elements: [
+      ...getRandomBullets(3),
+      {
+        element_type: "image",
+        konva_component: "Konva.Image",
+        properties: {
+          imageSrc: "/images/create-presentation/new-slide-img.png",
+          // x: SLIDE_WIDTH - 500,
+          // y: (SLIDE_HEIGHT - 400) / 2,
+          // width: 480,
+          // height: 400,
+          x: SLIDE_WIDTH - 250,
+          y : SLIDE_HEIGHT - 250,
+          width: getSlideDimensions().IMAGE_WIDTH,
+          height: getSlideDimensions().IMAGE_HEIGHT,
+        },
+      },
+    ],
     image_url: "/images/create-presentation/new-slide-img.png",
   };
 };
