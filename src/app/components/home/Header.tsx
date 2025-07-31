@@ -32,11 +32,11 @@ export default function Header() {
   };
 
   const navigationItems = [
-    { label: "Templates", hasDropdown: true },
-    { label: "Features", hasDropdown: true },
-    { label: "Reports", hasDropdown: false },
-    { label: "Product", hasDropdown: false },
-    { label: "Blog", hasDropdown: false },
+    { label: "Templates", hasDropdown: false, link: "/templates" },
+    { label: "Features", hasDropdown: false, link: "/features" },
+    { label: "Reports", hasDropdown: false, link: "/reports" },
+    { label: "Product", hasDropdown: false, link: "/product" },
+    { label: "Blog", hasDropdown: false, link: "/blog" },
   ];
 
   return (
@@ -81,7 +81,7 @@ export default function Header() {
               height: "100%",
             }}
           >
-            {navigationItems.map((item) => (
+            {/* {navigationItems.map((item) => (
               <Button
                 key={item.label}
                 color="inherit"
@@ -103,6 +103,30 @@ export default function Header() {
               >
                 {item.label}
               </Button>
+            ))} */}
+            {navigationItems.map((item) => (
+              <Link key={item.label} href={item.link} passHref>
+                <Button
+                  color="inherit"
+                  endIcon={item.hasDropdown ? <KeyboardArrowDown /> : null}
+                  sx={{
+                    color: "text.secondary",
+                    fontSize: "1.35rem",
+                    fontWeight: 500,
+                    letterSpacing: 1,
+                    px: 3,
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    "&:hover": {
+                      color: "text.primary",
+                      backgroundColor: "transparent",
+                    },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              </Link>
             ))}
           </Box>
         )}
@@ -111,7 +135,7 @@ export default function Header() {
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           {!isMobile && (
             <>
-              <Typography
+              {/* <Typography
                 sx={{
                   mt: 0.5,
                   color: "#4A00E0",
@@ -129,7 +153,7 @@ export default function Header() {
                 }}
               >
                 Login
-              </Typography>
+              </Typography> */}
 
               {/* Try for Free button */}
               <Link href="/presentation/create" passHref>
@@ -176,12 +200,23 @@ export default function Header() {
                   },
                 }}
               >
-                {navigationItems.map((item) => (
+                {/* {navigationItems.map((item) => (
                   <MenuItem key={item.label} onClick={handleMenuClose}>
                     {item.label}
                   </MenuItem>
+                ))} */}
+                {navigationItems.map((item) => (
+                  <MenuItem
+                    key={item.label}
+                    component={Link}
+                    href={item.link}
+                    onClick={handleMenuClose}
+                  >
+                    {item.label}
+                  </MenuItem>
                 ))}
-                <MenuItem onClick={handleMenuClose}>Login</MenuItem>
+
+                {/* <MenuItem onClick={handleMenuClose}>Login</MenuItem> */}
                 <MenuItem
                   component={Link}
                   href="/presentation/create"

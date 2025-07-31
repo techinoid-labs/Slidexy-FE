@@ -27,7 +27,8 @@ const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const {
     slides,
-    selectedSlideIndex, setSlides,
+    selectedSlideIndex,
+    setSlides,
     setSelectedTextId,
     selectedTextId,
     selectedImageIndex,
@@ -48,58 +49,6 @@ const Page = () => {
     setSelectedTextId(null);
     setIsMobileTextSelected(false);
   };
-  // const handleExportPPTX = () => {
-  //   const structuredSlides: StructuredSlide[] = slides.map((slide) => {
-  //     const elements: StructuredSlide["elements"] = [];
-
-  //     slide.elements?.forEach((el) => {
-  //       if (el.element_type === "bullet_point") {
-  //         const textProps = el.properties as any; // Or define a better type for bullet points
-  //         elements.push({
-  //           element_type: "bullet_point",
-  //           text: el.text,
-  //           properties: {
-  //             x: 0.7,
-  //             y: undefined,
-  //             w: 8,
-  //             h: 0.6,
-  //             fontSize: textProps?.fontSize || 18,
-  //             fill: textProps?.fill || "#444444",
-  //           },
-  //         });
-  //       }
-
-  //       if (el.element_type === "image") {
-  //         const imgProps = el.properties as any; // Or define a better type for images
-  //         elements.push({
-  //           element_type: "image",
-  //           src: slide.image_url || undefined,
-  //           properties: {
-  //             imageSrc: imgProps?.imageSrc,
-  //             x: (imgProps?.x || 440) / 100,
-  //             y: (imgProps?.y || 15) / 100,
-  //             w: (imgProps?.width || 480) / 100,
-  //             h: (imgProps?.height || 400) / 100,
-  //           },
-  //         });
-  //       }
-  //     });
-
-  //     return {
-  //       slide_id: slide.slide_id,
-  //       slide_title: {
-  //         text: slide.slide_title?.text || "",
-  //         properties: {
-  //           fill: slide.slide_title?.properties?.fill?.replace("#", ""),
-  //         },
-  //       },
-  //       elements,
-  //       image_url: slide.image_url || undefined,
-  //     };
-  //   });
-
-  //   exportSlidesAsPPT(structuredSlides);
-  // };
 
   const handleClearCanvas = () => {
     if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
@@ -109,7 +58,7 @@ const Page = () => {
       ...newSlides[selectedSlideIndex],
       // Clear images, shapes, text, etc.
       slide_title: {
-        konva_component : "Konva.Text",
+        konva_component: "Konva.Text",
         text: "",
         properties: {
           fontSize: 14,
@@ -121,18 +70,18 @@ const Page = () => {
           x: 0,
           y: 25,
           width: 220,
-          height : 0,
-          radius : 0,
+          height: 0,
+          radius: 0,
           numPoints: 0,
-          innerRadius : 0,
-          outerRadius : 0,
+          innerRadius: 0,
+          outerRadius: 0,
         },
       },
-      elements: [], // Clear title
-      image_url: "", // Clear background
+      elements: [],
+      image_url: "",
     };
 
-    setSlides(newSlides); // Dispatches to Redux
+    setSlides(newSlides);
   };
 
   const handleExportPPTX = () => {
@@ -267,14 +216,14 @@ const Page = () => {
         slide_id: slide.slide_id,
         slide_title: slideTitle
           ? {
-            text: slideTitle,
-            properties: {
-              fontSize: slideTitleProps.fontSize,
-              fill: slideTitleProps.fill?.replace("#", ""),
-              fontStyle: slideTitleProps.fontStyle,
-              fontFamily: slideTitleProps.fontFamily,
-            },
-          }
+              text: slideTitle,
+              properties: {
+                fontSize: slideTitleProps.fontSize,
+                fill: slideTitleProps.fill?.replace("#", ""),
+                fontStyle: slideTitleProps.fontStyle,
+                fontFamily: slideTitleProps.fontFamily,
+              },
+            }
           : undefined,
         elements,
         image_url: slide.image_url,
@@ -338,13 +287,14 @@ const Page = () => {
               stageRefs={stageRefs}
               setIsMobileTextSelected={setIsMobileTextSelected}
             />
-            {/* Only show mobile text panel on mobile */}
-            {/* {isTextSelected && <TextSettingsPanelMobile resetAll={resetAll} />} */}
+
+            {/* <SlideEditor slides={slides} stageRefs={stageRefs} /> */}
+
             {isMobileTextSelected && (
               <TextSettingsPanelMobile
                 resetAll={resetAll}
-                onClose={() => setIsMobileTextSelected(false)} // Function to close the panel
-                style={{ top: 100, left: 100 }} // Example style with positioning
+                onClose={() => setIsMobileTextSelected(false)}
+                style={{ top: 100, left: 100 }}
               />
             )}
           </>
@@ -364,8 +314,9 @@ const Page = () => {
               className={`
     ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
     bg-white shadow-md transition-all duration-300 ease-in-out flex
-     ${!isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[360px]" : "w-0"
-                }
+     ${
+       !isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[360px]" : "w-0"
+     }
   `}
             >
               {/* Toggle Tab */}
@@ -386,12 +337,12 @@ const Page = () => {
                 </div>
               )}
 
-              {/* Content area only shows if expanded */}
               <div
-                className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${!showRightPanel && !isLGScreen
-                  ? "opacity-0 pointer-events-none"
-                  : "opacity-100"
-                  }`}
+                className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
+                  !showRightPanel && !isLGScreen
+                    ? "opacity-0 pointer-events-none"
+                    : "opacity-100"
+                }`}
               >
                 {(isTextSelected || isShapeSelected) && (
                   <TextSettingsPanel resetAll={resetAll} />

@@ -1,9 +1,12 @@
 import React from "react";
+import ComingSoonPage from "../components/coming-soon/ComingSoon";
+import Header from "../components/home/Header";
 
 export default function Template() {
   return (
-    <div>
-      <h1>Template</h1>
-    </div>
+    <>
+      <Header />
+      <ComingSoonPage />;
+    </>
   );
 }
