@@ -87,101 +87,101 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
 
 
 
-useEffect(() => {
-  if (!slides || slides.length === 0) return;
+  useEffect(() => {
+    if (!slides || slides.length === 0) return;
 
-  const normalizedSlides = slides.map((slide: any) => {
-    const newElements = [...(slide.elements || [])];
-    const elementsToAdd = [];
+    const normalizedSlides = slides.map((slide: any) => {
+      const newElements = [...(slide.elements || [])];
+      const elementsToAdd = [];
 
-    // Add image if missing
-    if (
-      slide.image_url &&
-      !newElements.some(
-        (el: any) =>
-          el.element_type === "image" &&
-          el.konva_component === "Konva.Image" &&
-          el.properties.imageSrc === slide.image_url
-      )
-    ) {
-      const defaultImageElement = {
-        element_type: "image",
-        konva_component: "Konva.Image",
-        element_id: uuidv4(),
-        properties: {
-          imageSrc: slide.image_url,
-          x: getDynamicConstants().SLIDE_WIDTH - 250,
-          y: getSlideDimensions().SLIDE_HEIGHT - 250,
-          width: getDynamicConstants().IMAGE_WIDTH,
-          height: getDynamicConstants().IMAGE_HEIGHT,
-        },
+      // Add image if missing
+      if (
+        slide.image_url &&
+        !newElements.some(
+          (el: any) =>
+            el.element_type === "image" &&
+            el.konva_component === "Konva.Image" &&
+            el.properties.imageSrc === slide.image_url
+        )
+      ) {
+        const defaultImageElement = {
+          element_type: "image",
+          konva_component: "Konva.Image",
+          element_id: uuidv4(),
+          properties: {
+            imageSrc: slide.image_url,
+            x: getDynamicConstants().SLIDE_WIDTH - 250,
+            y: getSlideDimensions().SLIDE_HEIGHT - 250,
+            width: getDynamicConstants().IMAGE_WIDTH,
+            height: getDynamicConstants().IMAGE_HEIGHT,
+          },
+        };
+        elementsToAdd.push(defaultImageElement);
+      }
+
+      // // Add title text if missing
+      // const title = slide.slide_title;
+      // if (
+      //   title?.text &&
+      //   !newElements.some((el: any) => el.text === title.text)
+      // ) {
+      //   const defaultTextElement = {
+      //     element_type: "text",
+      //     konva_component: "Konva.Text",
+      //     element_id: uuidv4(),
+      //     text: title.text,
+      //     properties: {
+      //       ...title.properties,
+      //       x: getDynamicConstants().LEFT_PADDING,
+      //       y: 25,
+      //       width: 20,
+      //       opacity: 1,
+      //       fill: "#000000",
+      //       align: title.properties?.align ?? "left",
+      //       fontSize: 14,
+      //       fontFamily: "Roboto",
+      //     },
+      //   };
+      //   elementsToAdd.push(defaultTextElement);
+      // }
+
+      // if (
+      //   !newElements.some((el: any) => el.element_type === "bullet_point") &&
+      //   Array.isArray(slide.bullets)
+      // ) {
+      //   slide.bullets.forEach((bullet: any, i: number) => {
+      //     const defaultBulletElement = {
+      //       element_type: "bullet_point",
+      //       konva_component: "Konva.Text",
+      //       element_id: uuidv4(),
+      //       text: bullet.text,
+      //       properties: {
+      //         x: getDynamicConstants().LEFT_PADDING + 10,
+      //         y: 52 + i * 20,
+      //         fontSize: 12,
+      //         fontFamily: "Roboto",
+      //         fontWeight: "normal",
+      //         align: "left",
+      //         fill: "#444",
+      //         width: window.innerWidth - 200,
+      //         opacity: 1,
+      //       },
+      //     };
+      //     elementsToAdd.push(defaultBulletElement);
+      //   });
+      // }
+
+      return {
+        ...slide,
+        elements: [...newElements, ...elementsToAdd],
+        image_url: null,
       };
-      elementsToAdd.push(defaultImageElement);
+    });
+
+    if (JSON.stringify(slides) !== JSON.stringify(normalizedSlides)) {
+      setSlides(normalizedSlides);
     }
-
-    // Add title text if missing
-    const title = slide.slide_title;
-    if (
-      title?.text &&
-      !newElements.some((el: any) => el.text === title.text)
-    ) {
-      const defaultTextElement = {
-        element_type: "text",
-        konva_component: "Konva.Text",
-        element_id: uuidv4(),
-        text: title.text,
-        properties: {
-          ...title.properties,
-          x: getDynamicConstants().LEFT_PADDING,
-          y: 25,
-          width:20,
-          opacity: 1,
-          fill :  "#000000",
-          align: title.properties?.align ?? "left",
-          fontSize: 14,
-          fontFamily: "Roboto",
-        },
-      };
-      elementsToAdd.push(defaultTextElement);
-    }
-
-    // if (
-    //   !newElements.some((el: any) => el.element_type === "bullet_point") &&
-    //   Array.isArray(slide.bullets)
-    // ) {
-    //   slide.bullets.forEach((bullet: any, i: number) => {
-    //     const defaultBulletElement = {
-    //       element_type: "bullet_point",
-    //       konva_component: "Konva.Text",
-    //       element_id: uuidv4(),
-    //       text: bullet.text,
-    //       properties: {
-    //         x: getDynamicConstants().LEFT_PADDING + 10,
-    //         y: 52 + i * 20,
-    //         fontSize: 12,
-    //         fontFamily: "Roboto",
-    //         fontWeight: "normal",
-    //         align: "left",
-    //         fill:  "#FF0000",
-    //         width: window.innerWidth - 200,
-    //         opacity: 1,
-    //       },
-    //     };
-    //     elementsToAdd.push(defaultBulletElement);
-    //   });
-    // }
-
-    return {
-      ...slide,
-      elements: [...newElements, ...elementsToAdd],
-      image_url: null, 
-    };
-  });
-
-  if (JSON.stringify(slides) !== JSON.stringify(normalizedSlides)) {
-    setSlides(normalizedSlides);
-  }
-}, [slides, dimensions.SLIDE_WIDTH, dimensions.SLIDE_HEIGHT, setSlides]);
+  }, [slides, dimensions.SLIDE_WIDTH, dimensions.SLIDE_HEIGHT, setSlides]);
 
 
   const {
@@ -364,7 +364,7 @@ useEffect(() => {
                       height={window.innerHeight - 320}
                       listening={false}
                     />
-                    {/* {title.text && (
+                    {title.text && (
                       <KonvaTextEditor
                         key={`title-${index}-${titleProps.fontFamily || "Roboto"
                           }-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"
@@ -429,7 +429,7 @@ useEffect(() => {
                           });
                         }}
                       />
-                    )} */}
+                    )}
                     {slide.elements.map((el: any, i: number) => {
                       if (el.element_type !== "text") return null;
 
@@ -445,7 +445,7 @@ useEffect(() => {
                           align={el.properties.align}
                           verticalAlign={el.properties.verticalAlign}
                           wrap="word"
-                          fontSize={el.properties.fontSize}
+                          fontSize={el.properties.fontSize || 10}
                           fontFamily={el.properties.fontFamily}
                           fill={
                             !el.useThemeColor
@@ -479,14 +479,15 @@ useEffect(() => {
                         .filter((el: any) => el.element_type === "bullet_point")
                         .map((el: any, i: number) => {
                           const isBullet = el.element_type === "bullet_point";
-                          const fontSize = el.properties.fontSize < title.fontSize ? el.properties.fonrSize : 12;
+                          const fontSize = el.properties.fontSize || (el.element_type === "bullet_point" ? 12 : 10);
+
                           console.log(el.properties.fontSize);
                           const fontFamily =
                             selectedTheme?.font || el.properties.fontFamily;
                           const lineHeight = 1;
                           const bulletText = isBullet ? `${el.text}` : el.text;
 
-                          const textWidth = window.innerWidth - 200 ;
+                          const textWidth = window.innerWidth - 200;
                           const canvas = document.createElement("canvas");
                           const context = canvas.getContext("2d");
                           context!.font = `${fontSize}px ${fontFamily}`;
@@ -565,10 +566,10 @@ useEffect(() => {
                           <SlideImage
                             key={`image-${i}`}
                             imageSrc={el.properties.imageSrc}
-                            x={el.properties.x}
-                            y={el.properties.y}
-                            width={el.properties.width}
-                            height={el.properties.height}
+                            x={getDynamicConstants().SLIDE_WIDTH - 250}
+                            y={getDynamicConstants().SLIDE_HEIGHT - 250}
+                            width={getSlideDimensions().IMAGE_WIDTH}
+                            height={getSlideDimensions().IMAGE_HEIGHT}
                             isSelected={selectedImageIndex === i}
                             onSelect={() => {
                               setSelectedImage({ ...el });

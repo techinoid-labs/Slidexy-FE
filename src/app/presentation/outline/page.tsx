@@ -588,6 +588,7 @@ import type { Slide } from "@/app/slice/slidesSlice";
 import StepIndicator from "@/app/components/shared/StepIndicator";
 import StepsHeader from "@/app/components/shared/StepsHeader";
 import { getSlideDimensions } from "@/utils/slideUtils";
+import { getSlideDimensions as getMobileSlideDimensions } from "@/utils/slideUtilsmobile";
 const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT } =
   getSlideDimensions();
 // API response type and map helper
@@ -647,14 +648,28 @@ function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
 //     image_caption: "",
 //   }));
 // }
+
 function mapCardsToSlides(cards: any[]): Slide[] {
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+
+  const {
+    SLIDE_WIDTH,
+    SLIDE_HEIGHT,
+    LEFT_PADDING,
+    IMAGE_WIDTH,
+    IMAGE_HEIGHT,
+  } = isMobile ? getMobileSlideDimensions() : getSlideDimensions();
+
+  const bulletFontSize = isMobile ? 12 : 18;
+  const titleFontSize = isMobile ? 14 : 32;
+
   return cards.map((card, index) => {
     const bulletElements = (card.bullets || []).map((text: string) => ({
       element_type: "bullet_point",
       text,
       konva_component: "Konva.Text",
       properties: {
-        fontSize: 18,
+        fontSize: bulletFontSize,
         fontFamily: "Inter",
         fill: "#444",
         fontStyle: "normal",
@@ -668,14 +683,12 @@ function mapCardsToSlides(cards: any[]): Slide[] {
             konva_component: "Konva.Image",
             properties: {
               imageSrc: card.images[0],
-              // x: SLIDE_WIDTH - 500,
-              // y: (SLIDE_HEIGHT - 400) / 2,
-              // width: 480,
-              // height: 400,
-              x: SLIDE_WIDTH - 400,
-              y: (SLIDE_HEIGHT - 320) / 2,
-              width: IMAGE_WIDTH,
-              height: IMAGE_HEIGHT,
+              x: isMobile ? SLIDE_WIDTH - 250 : SLIDE_WIDTH - IMAGE_WIDTH - 20,
+              y: isMobile
+                ? SLIDE_HEIGHT - 250
+                : (SLIDE_HEIGHT - IMAGE_HEIGHT) / 2,
+              width: isMobile ? 230 : IMAGE_WIDTH,
+              height: isMobile ? 230 : IMAGE_HEIGHT,
             },
           },
         ]
@@ -687,7 +700,7 @@ function mapCardsToSlides(cards: any[]): Slide[] {
         text: card.title,
         konva_component: "Konva.Text",
         properties: {
-          fontSize: 32,
+          fontSize: titleFontSize,
           fontFamily: "Inter",
           fill: "#333",
           fontWeight: "bold",
@@ -700,6 +713,9 @@ function mapCardsToSlides(cards: any[]): Slide[] {
     };
   });
 }
+
+
+
 
 // export default function OutlinePage() {
 //   const { slides }: any = useSlides();
@@ -1250,12 +1266,12 @@ export default function OutlinePage() {
         i !== idx
           ? c
           : {
-              ...c,
-              bullets: editingBulletsValue
-                .split(/\r?\n/)
-                .filter((l) => l.trim() !== ""),
-              images: "images" in c ? c.images ?? [] : [],
-            }
+            ...c,
+            bullets: editingBulletsValue
+              .split(/\r?\n/)
+              .filter((l) => l.trim() !== ""),
+            images: "images" in c ? c.images ?? [] : [],
+          }
       );
       // Dispatch updated slides to Redux store
       const mappedSlides = mapCardsToSlides(newCards);
@@ -1668,13 +1684,13 @@ export default function OutlinePage() {
                   const newCards = prev.map((card, idx) =>
                     idx === imageSuggestionsBox.slideIndex
                       ? {
-                          ...card,
-                          images: [
-                            ...(card.images || []).map((img, j) =>
-                              j === imageSuggestionsBox.imageIndex ? url : img
-                            ),
-                          ],
-                        }
+                        ...card,
+                        images: [
+                          ...(card.images || []).map((img, j) =>
+                            j === imageSuggestionsBox.imageIndex ? url : img
+                          ),
+                        ],
+                      }
                       : card
                   );
                   // Dispatch updated slides to Redux store
