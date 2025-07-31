@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 import { useSlides } from "@/app/context/SlidesContext";
 import { addTextElementToSlide } from "@/app/slice/slidesSlice";
 import { v4 as uuidv4 } from "uuid";
+
 interface TextEditorProps {
   sidebarHeight?: string | number;
   onClose?: () => void;

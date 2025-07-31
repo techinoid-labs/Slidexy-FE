@@ -213,6 +213,7 @@ export default function PresentationMaker({
         <TextField
           fullWidth
           type="url"
+          disabled={loading ? true : false}
           variant="outlined"
           placeholder={getPlaceholder()}
           value={inputValue}
