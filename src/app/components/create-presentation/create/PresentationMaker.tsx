@@ -272,7 +272,7 @@ export default function PresentationMaker({
           <TextField
             fullWidth
             multiline
-            minRows={5}
+            minRows={2}
             placeholder="Enter poster topic and content.\nFirst line = topic, rest = paragraphs."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
