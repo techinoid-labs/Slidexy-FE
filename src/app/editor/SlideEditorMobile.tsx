@@ -16,7 +16,6 @@ import {
   getRandomSlide,
   getLayoutProps,
   getSlideDimensions,
-  clearCanvas,
 } from "../../utils/slideUtilsmobile";
 import { v4 as uuidv4 } from "uuid";
 import TextSettingsPanelMobile from "../components/modify-presentation/TextPanelMobile";
@@ -84,17 +83,7 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
     }
   };
 
-  const handleClearCanvas = () => {
-    const newSlides = [...slides];
-    newSlides[selectedIndex] = clearCanvas();
-    setSlides(newSlides);
-    setSelectedImage(null);
-    setSelectedImageIndex(null);
-    setSelectedShapeIndex(null);
-    setSelectedTextId(null);
-    setTooltip({ visible: false, x: 0, y: 0, node: null });
-    console.log("[SlideEditor] Canvas cleared, updated slides:", newSlides);
-  };
+ 
 
   useEffect(() => {
     if (!slides || slides.length === 0) return;
