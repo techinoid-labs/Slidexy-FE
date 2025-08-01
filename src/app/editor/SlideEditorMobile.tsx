@@ -85,8 +85,6 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
     }
   };
 
-
-
   useEffect(() => {
     if (!slides || slides.length === 0) return;
 
@@ -182,7 +180,6 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
       setSlides(normalizedSlides);
     }
   }, [slides, dimensions.SLIDE_WIDTH, dimensions.SLIDE_HEIGHT, setSlides]);
-
 
   const {
     SLIDE_WIDTH,
@@ -366,11 +363,15 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                     />
                     {title.text && (
                       <KonvaTextEditor
-                        key={`title-${index}-${titleProps.fontFamily || "Roboto"
-                          }-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"
-                          }-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"
-                          }-${titleProps.fill || "#000"}-${titleProps.opacity || 1
-                          }`}
+                        key={`title-${index}-${
+                          titleProps.fontFamily || "Roboto"
+                        }-${titleProps.fontSize || 18}-${
+                          titleProps.fontWeight || "normal"
+                        }-${titleProps.align || "left"}-${
+                          titleProps.fontStyle || "normal"
+                        }-${titleProps.fill || "#000"}-${
+                          titleProps.opacity || 1
+                        }`}
                         id={`title-${index}`}
                         text={title.text}
                         x={titleProps.x || LEFT_PADDING}
@@ -479,7 +480,9 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                         .filter((el: any) => el.element_type === "bullet_point")
                         .map((el: any, i: number) => {
                           const isBullet = el.element_type === "bullet_point";
-                          const fontSize = el.properties.fontSize || (el.element_type === "bullet_point" ? 12 : 10);
+                          const fontSize =
+                            el.properties.fontSize ||
+                            (el.element_type === "bullet_point" ? 12 : 10);
 
                           console.log(el.properties.fontSize);
                           const fontFamily =
