@@ -40,28 +40,34 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     setSelectedTextId,
     selectedShapeIndex,
     setSelectedShapeIndex,
+    selectedSlideIndex,
+    setSelectedSlideIndex,
     setSlides,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useSlides();
 
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scale, setScale] = useState(1);
-  console.log(slides);
+  // console.log(slides);
 
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
     const newSlides = [...slides, structuredClone(newSlide)];
     setSlides(newSlides);
-    setSelectedIndex(newSlides.length - 1);
+    setSelectedSlideIndex(newSlides.length - 1);
   };
 
   const handleDeleteSlide = (index: number) => {
     const newSlides = [...slides];
     newSlides.splice(index, 1);
     setSlides(newSlides);
-    if (selectedIndex >= newSlides.length) {
-      setSelectedIndex(Math.max(0, newSlides.length - 1));
+    if (selectedSlideIndex >= newSlides.length) {
+      setSelectedSlideIndex(Math.max(0, newSlides.length - 1));
     }
   };
 
@@ -89,6 +95,36 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+
+      if (isCtrlOrCmd && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (canUndo) undo();
+      }
+
+      if (
+        isCtrlOrCmd &&
+        (e.key.toLowerCase() === "y" ||
+          (e.shiftKey && e.key.toLowerCase() === "z"))
+      ) {
+        e.preventDefault();
+        if (canRedo) redo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [undo, redo, canUndo, canRedo]);
+
+  useEffect(() => {
+    if (slides.length < selectedSlideIndex + 1) {
+      setSelectedSlideIndex(selectedSlideIndex - 1);
+      // setSelectedIndex(selectedSlideIndex - 1);
+    }
+  }, [slides.length]);
+
   return (
     <Box
       sx={{
@@ -113,7 +149,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
               backgroundColor: "#fff",
               position: "relative",
               mb: 1,
-              display: index === selectedIndex ? "block" : "none",
+              display: index === selectedSlideIndex ? "block" : "none",
               transform: `scale(${scale})`,
             }}
           >
@@ -352,10 +388,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       <SlidePreviews
         slides={slides}
         scale={scale}
-        selectedIndex={selectedIndex}
+        selectedIndex={selectedSlideIndex}
         slide_width={getDynamicConstants().SLIDE_WIDTH}
         slide_height={getDynamicConstants().SLIDE_HEIGHT}
-        onSelect={setSelectedIndex}
+        onSelect={setSelectedSlideIndex}
         onAddSlide={handleAddSlide}
         onDeleteSlide={handleDeleteSlide}
       />
