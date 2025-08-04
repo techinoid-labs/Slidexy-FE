@@ -16,6 +16,8 @@ import {
   Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import UndoIcon from "@mui/icons-material/Undo";
+import RedoIcon from "@mui/icons-material/Redo";
 import { useRouter } from "next/navigation";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
@@ -180,8 +182,22 @@ const UpperNavBar: React.FC<{
               File Type
             </Typography>
           </Box>
+        </Box>      
+        <Box>
+          <IconButton
+            sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, 
+              ml : {xs: 12, md: 100 }, mr: {xs:-2}}}
+          >
+            <UndoIcon sx = {{fontWeight : 200, fontSize: 20}}  />
+         </IconButton >
         </Box>
-
+        <Box>
+          <IconButton
+            sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2,  ml: { xs: 2, md: 0}}}
+          >
+            <RedoIcon sx = {{fontWeight : 200, fontSize: 20}}  />
+         </IconButton >
+        </Box>
         {/* Right Icons */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           {/* Desktop Export and Clear Buttons */}
@@ -238,7 +254,7 @@ const UpperNavBar: React.FC<{
                 </Box>
               )}
 
-               <Box
+              <Box
                 onClick={() => {
                   setSelectedImage(null);
                   setSelectedImageIndex(null);
@@ -265,7 +281,7 @@ const UpperNavBar: React.FC<{
                 }}
               >
                 Clear Canvas
-              </Box> 
+              </Box>
             </>
           )}
 
@@ -316,7 +332,7 @@ const UpperNavBar: React.FC<{
             <Typography fontSize={14}>Export as PPTX</Typography>
           </MenuItem>
         )}
-         <MenuItem
+        <MenuItem
           onClick={() => {
             setSelectedImage(null);
             setSelectedImageIndex(null);
@@ -329,7 +345,7 @@ const UpperNavBar: React.FC<{
           }}
         >
           <Typography fontSize={14}>Clear Canvas</Typography>
-        </MenuItem> 
+        </MenuItem>
         <Divider />
         <MenuItem
           onClick={() => {

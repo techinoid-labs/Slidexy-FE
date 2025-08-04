@@ -46,18 +46,18 @@ const FontPanel: React.FC<FontPanelProps> = ({
   return (
     <Box
       sx={{
-        position: "absolute",
-        bottom: "0%",
-        left: "8%",
+        position: "fixed",
+        bottom: 143,
         width: 320,
-        maxHeight: 500,
-        overflowY: "auto",
+        maxHeight: 420,
         backgroundColor: "#fff",
         borderTopLeftRadius: "10px",
         borderTopRightRadius: "10px",
         boxShadow: 3,
+        right: "5%",
         p: 2,
-        zIndex: 2,
+        zIndex: 4,
+        overflowY: "auto",
       }}
     >
       {/* Header */}

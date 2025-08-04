@@ -59,13 +59,13 @@ const ColorPanelMobile: React.FC<ColorPanelMobileProps> = ({ color: initialColor
     >
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <IconButton onClick={onClose} sx={{ color: "#6B48FF" }}>
+        <IconButton onClick={onClose} sx={{ color: "#1a1a1a" }}>
           <CloseIcon />
         </IconButton>
-        <Typography variant="h6" sx={{ fontSize: 16, color: "#000000" }}>
+        <Typography variant="h6" sx={{ fontSize: 16, color: "#1a1a1a" }}>
           Select Color
         </Typography>
-        <IconButton sx={{ color: "#6B48FF" }} onClick={() => setIsColorPickerOpen(true)}>
+        <IconButton sx={{ color: "#000000" }} onClick={() => setIsColorPickerOpen(true)}>
           <AddIcon />
         </IconButton>
       </Box>

@@ -23,7 +23,7 @@ import ColorPanelMobile from "./Color-Panel";
 import FormatItalicIcon from "@mui/icons-material/FormatItalic";
 import { v4 as uuidv4 } from "uuid";
 import OpacityPanel from "./Opacity-Panel";
-
+import FontSizePanel from "./Font-Size";
 const fontOptions = ["Raleway", "Roboto", "Arial", "Oswald", "Playfair Display", "Roboto Serif", "Arial Rounded", "Times New Roman",
     "Helvetica", "Open Sans", "Montserrat", "Bebas Neue", "Lobster", "Courier New", "Consolas", "Menlo"
 ];
@@ -186,7 +186,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     const [fontPanelOpen, setFontPanelOpen] = useState(false);
     const [isColorPanelOpen, setIsColorPanelOpen] = useState(false);
     const [isOpacityPanelOpen, setIsOpacityPanelOpen] = useState(false);
-
+    const [isFontSizePanelOpen, setIsFontSizePanelOpen] = useState(false);
     const handleToggle = () => {
         if (isBulleted) {
             unbulletText();
@@ -270,10 +270,11 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
         }
 
         setSlides(updatedSlides);
-        
+
     };
 
     return (
+
         <Box
             sx={{
                 width: "100%",
@@ -295,6 +296,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                 gap: 2,
             }}
         >
+
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <IconButton
                     onClick={() => setFontPanelOpen(!fontPanelOpen)}
@@ -320,9 +322,10 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                     onClose={() => setFontPanelOpen(false)}
                 />
             )}
+
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <IconButton
-                    onClick={() => setFontPanelOpen(!fontPanelOpen)}
+                    onClick={() => setIsFontSizePanelOpen(!isFontSizePanelOpen)}
                     sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, }}
                 >
                     <img src="/font-size.svg" alt="font style" style={{ width: 12, height: 12 }} />
@@ -335,6 +338,13 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                     marginBottom: 5,
                 }}>Size</Typography>
             </Box>
+            {isFontSizePanelOpen && (
+                <FontSizePanel
+                    fontSize = {fontSize}
+                    onFontSizeChange={(fontSize) => updateTextProperty( "fontSize", Number(fontSize))}
+                    onClose={() => setIsFontSizePanelOpen(false)}
+                />
+            )}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <IconButton
                     onClick={toggleBold}
