@@ -57,7 +57,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
 
   const dispatch = useDispatch();
   const { selectedTheme } = useSlideThemeContext();
-  const { slides, setIsAtBoundary } = useSlides();
+  const { slides, setSlides, setIsAtBoundary } = useSlides();
 
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(text);
@@ -93,8 +93,8 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
           slide.elements[elementIndex]
         );
       }
-
-      dispatch(setSlides(updatedSlides));
+      setSlides(updatedSlides);
+      // dispatch(setSlides(updatedSlides));
     },
     [dispatch, slides, slideIndex, elementIndex, id]
   );
@@ -117,8 +117,8 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     } else if (elementIndex !== null && slide.elements[elementIndex]) {
       slide.elements.splice(elementIndex, 1);
     }
-
-    dispatch(setSlides(updatedSlides));
+    setSlides(updatedSlides);
+    // dispatch(setSlides(updatedSlides));
     setIsEditing(false);
   }, [dispatch, slideIndex, elementIndex, slides, id]);
 

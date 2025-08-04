@@ -2,13 +2,16 @@
 
 import React from "react";
 import Image from "next/image";
-import { Box, Tooltip, IconButton } from "@mui/material";
+import { Box, Tooltip, IconButton, Button, Divider } from "@mui/material";
 import { useRouter } from "next/navigation";
 import TemplatePanel from "../Template";
 // import TextEditorPanel from "../TextEditor";
 import TextEditor from "./TextEditor";
 import MediaPanel from "../Media";
 import ShapesPanel from "../../editor/Shapes";
+import { useSlides } from "@/app/context/SlidesContext";
+import UndoIcon from "@mui/icons-material/Undo";
+import RedoIcon from "@mui/icons-material/Redo";
 
 type PanelType = null | "template" | "text" | "media" | "shapes";
 
@@ -32,6 +35,7 @@ const SideNavBar = ({
 
   console.log(selectedIdx);
   const [openPanel, setOpenPanel] = React.useState<PanelType>(null);
+  const { undo, redo, canUndo, canRedo } = useSlides();
   const sidebarHeight = "88.5vh";
   return (
     <Box sx={{ position: "relative", display: "flex" }}>
@@ -105,6 +109,60 @@ const SideNavBar = ({
             </Tooltip>
           ))}
         </Box>
+        <Divider className=" w-full" sx={{ mb: 1 }} />
+        <div className="flex flex-col items-center justify-center w-full gap-4">
+          <IconButton
+            color="primary"
+            onClick={undo}
+            disabled={!canUndo}
+            sx={{
+              color: "#222",
+              backgroundColor: "#F8F8FA",
+              padding: "2px",
+              width: 32,
+              height: 30,
+              mb: 0.2,
+              // ml: { xs: 12, md: 100 },
+              // mr: { xs: -2 },
+            }}
+          >
+            <UndoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
+          </IconButton>
+          <IconButton
+            color="primary"
+            onClick={redo}
+            disabled={!canRedo}
+            sx={{
+              color: "#222",
+              backgroundColor: "#F8F8FA",
+              padding: "2px",
+              width: 32,
+              height: 30,
+              mb: 0.2,
+              // ml: { xs: 2, md: 0 },
+            }}
+          >
+            <RedoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
+          </IconButton>
+        </div>
+        {/* <Box>
+          <IconButton
+            color="primary"
+            onClick={redo}
+            disabled={!canRedo}
+            sx={{
+              color: "#222",
+              backgroundColor: "#F8F8FA",
+              padding: "2px",
+              width: 32,
+              height: 30,
+              mb: 0.2,
+              // ml: { xs: 2, md: 0 },
+            }}
+          >
+            <RedoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
+          </IconButton>
+        </Box> */}
       </Box>
       {/* {openPanel === "template" && ( */}
       <TemplatePanel

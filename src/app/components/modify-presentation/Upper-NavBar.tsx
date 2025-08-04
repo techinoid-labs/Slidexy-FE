@@ -43,6 +43,10 @@ const UpperNavBar: React.FC<{
     selectedImageIndex,
     selectedShapeIndex,
     selectedTextId,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useSlides();
 
   // Handlers for mobile menu
@@ -190,6 +194,8 @@ const UpperNavBar: React.FC<{
             <>
               <Box>
                 <IconButton
+                  onClick={undo}
+                  disabled={!canUndo}
                   sx={{
                     color: "#222",
                     backgroundColor: "#F8F8FA",
@@ -206,6 +212,8 @@ const UpperNavBar: React.FC<{
               </Box>
               <Box>
                 <IconButton
+                  onClick={redo}
+                  disabled={!canRedo}
                   sx={{
                     color: "#222",
                     backgroundColor: "#F8F8FA",

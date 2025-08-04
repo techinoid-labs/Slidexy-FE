@@ -10,7 +10,7 @@ interface KonvaTextProperties {
   x?: number;
   y?: number;
   width?: number;
-  align ? : string;
+  align?: string;
   height?: number;
   radius?: number;
   sides?: number;
@@ -82,19 +82,6 @@ const slidesSlice = createSlice({
       if (!state.slides[slideIndex]) return;
       state.slides[slideIndex].elements.push(newElement);
     },
-    updateSlide: (
-      state,
-      action: PayloadAction<{
-        slideIndex: number;
-        updated: Partial<Slide>;
-      }>
-    ) => {
-      const { slideIndex, updated } = action.payload;
-      state.slides[slideIndex] = {
-        ...state.slides[slideIndex],
-        ...updated,
-      };
-    },
   },
 });
 
@@ -102,7 +89,6 @@ export const {
   setSlides,
   updateSlideImages,
   addTextElementToSlide,
-  updateSlide,
   removeSlides,
 } = slidesSlice.actions;
 

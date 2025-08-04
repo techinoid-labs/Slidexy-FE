@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import SlideImage from "./KonvaComponents/KonvaSlideImage";
 import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
@@ -12,7 +12,8 @@ import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 import { getRandomSlide, getSlideDimensions } from "../../utils/slideUtils";
 import { applyElementPositioning } from "@/utils/slideTextPositioningUtils";
-
+import { setSlides as setSlidesRedux } from "../slice/slidesSlice";
+import { useDispatch } from "react-redux";
 const getDynamicConstants = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const IMAGE_WIDTH = 400;
@@ -30,6 +31,7 @@ const getDynamicConstants = () => {
   };
 };
 const SlideEditor = ({ slides = [], stageRefs }: any) => {
+  const dispatch = useDispatch();
   const {
     selectedImageIndex,
     setSelectedImageIndex,
@@ -39,14 +41,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     selectedShapeIndex,
     setSelectedShapeIndex,
     setSlides,
-    isAtBoundary,
   } = useSlides();
 
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scale, setScale] = useState(1);
-  // console.log(slides);
+  console.log(slides);
 
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
@@ -73,7 +74,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
 
   useEffect(() => {
     const positionedSlides = applyElementPositioning(slides, selectedTheme);
-    setSlides(positionedSlides);
+    dispatch(setSlidesRedux(positionedSlides)); // Using direct redux for preventing excess stores for undo feature
+    // setSlides(positionedSlides);
   }, [slides?.length]);
 
   useEffect(() => {
