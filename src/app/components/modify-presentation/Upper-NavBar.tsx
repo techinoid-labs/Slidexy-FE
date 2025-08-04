@@ -182,24 +182,45 @@ const UpperNavBar: React.FC<{
               File Type
             </Typography>
           </Box>
-        </Box>      
-        <Box>
-          <IconButton
-            sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, 
-              ml : {xs: 12, md: 100 }, mr: {xs:-2}}}
-          >
-            <UndoIcon sx = {{fontWeight : 200, fontSize: 20}}  />
-         </IconButton >
         </Box>
-        <Box>
-          <IconButton
-            sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2,  ml: { xs: 2, md: 0}}}
-          >
-            <RedoIcon sx = {{fontWeight : 200, fontSize: 20}}  />
-         </IconButton >
-        </Box>
+
         {/* Right Icons */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {isMobile && (
+            <>
+              <Box>
+                <IconButton
+                  sx={{
+                    color: "#222",
+                    backgroundColor: "#F8F8FA",
+                    padding: "2px",
+                    width: 32,
+                    height: 30,
+                    mb: 0.2,
+                    ml: { xs: 12, md: 100 },
+                    mr: { xs: -2 },
+                  }}
+                >
+                  <UndoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
+                </IconButton>
+              </Box>
+              <Box>
+                <IconButton
+                  sx={{
+                    color: "#222",
+                    backgroundColor: "#F8F8FA",
+                    padding: "2px",
+                    width: 32,
+                    height: 30,
+                    mb: 0.2,
+                    ml: { xs: 2, md: 0 },
+                  }}
+                >
+                  <RedoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
+                </IconButton>
+              </Box>
+            </>
+          )}
           {/* Desktop Export and Clear Buttons */}
           {!isMobile && (
             <>
