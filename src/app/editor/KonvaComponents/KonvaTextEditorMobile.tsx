@@ -499,7 +499,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
         fontSize={fontSize}
         fontFamily={fontFamily?.trim() || selectedTheme?.font || "Roboto"}
         fontStyle={fontWeight && fontWeight !== "10px" ? fontWeight : "normal"}
-        fontWeight={fontWeight && fontWeight !== "10px" ? fontWeight : "normal"}
+        // fontWeight={fontWeight && fontWeight !== "10px" ? fontWeight : "normal"}
         fill={selectedTheme?.primaryColor || fill}
         align={align}
         verticalAlign={verticalAlign}

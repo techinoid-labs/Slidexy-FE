@@ -18,7 +18,7 @@ import {
   getSlideDimensions,
 } from "../../utils/slideUtilsmobile";
 import { v4 as uuidv4 } from "uuid";
-import TextSettingsPanelMobile from "../components/modify-presentation/TextPanelMobile";
+import TextSettingsPanelMobile from "../components/new-ui/Text-Panel";
 
 const getDynamicConstants = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
@@ -188,6 +188,27 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
     textMaxWidth,
     textMaxHeight,
   } = dimensions;
+  const BASE_SLIDE_WIDTH = 960;
+  const BASE_SLIDE_HEIGHT = 540;
+
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const updateScale = () => {
+      const padding = 32; // Adjust as needed
+      const maxWidth = window.innerWidth - padding;
+      const maxHeight = window.innerHeight - 290; // Reserve top/bottom UI space
+
+      const widthScale = maxWidth / BASE_SLIDE_WIDTH;
+      const heightScale = maxHeight / BASE_SLIDE_HEIGHT;
+
+      setScale(Math.min(widthScale, heightScale));
+    };
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, []);
 
   return (
     <main
@@ -363,15 +384,11 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                     />
                     {title.text && (
                       <KonvaTextEditor
-                        key={`title-${index}-${
-                          titleProps.fontFamily || "Roboto"
-                        }-${titleProps.fontSize || 18}-${
-                          titleProps.fontWeight || "normal"
-                        }-${titleProps.align || "left"}-${
-                          titleProps.fontStyle || "normal"
-                        }-${titleProps.fill || "#000"}-${
-                          titleProps.opacity || 1
-                        }`}
+                        key={`title-${index}-${titleProps.fontFamily || "Roboto"
+                          }-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"
+                          }-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"
+                          }-${titleProps.fill || "#000"}-${titleProps.opacity || 1
+                          }`}
                         id={`title-${index}`}
                         text={title.text}
                         x={titleProps.x || LEFT_PADDING}

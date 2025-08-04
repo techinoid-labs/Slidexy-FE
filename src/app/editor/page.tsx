@@ -19,7 +19,7 @@ import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";
 import { useTheme, useMediaQuery } from "@mui/material";
 import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mobile";
 import MobileSlideEditor from "./SlideEditorMobile";
-import TextSettingsPanelMobile from "@/app/components/modify-presentation/TextPanelMobile";
+import TextSettingsPanelMobile from "@/app/components/new-ui/Text-Panel";
 import { Button } from "@mui/material"; // Optional: MUI or use your own toggle icon
 import { setSlides as setSlidesAction } from "@/app/slice/slidesSlice";
 import type Konva from "konva";
