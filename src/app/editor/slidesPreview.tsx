@@ -81,12 +81,13 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
         width: slide_width,
         // height: slide_height,
         overflowX: "auto",
-        // overflowY: "auto",
+        overflowY: "auto",
         backgroundColor: "#f5f5fa",
         borderRadius: 1,
         my: 1,
         px: 2,
         py: 1,
+        mt: isMobile?  -170 : 0
       }}
     >
       <Box
@@ -99,6 +100,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
           overflowX: "auto",
           flexGrow: "row",
           transform: `scale(${scale})`,
+
         }}
       >
         {slides.map((slide: any, index: number) => {

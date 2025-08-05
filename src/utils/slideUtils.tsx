@@ -134,7 +134,7 @@ export const constrainToCanvas = (
   const safeHeight = height || 30;
   // Use a less restrictive maxX to allow dragging across the canvas
   const maxX = canvasWidth - paddingRight; // e.g., 300 - 10 = 290
-  const maxY = canvasHeight - paddingBottom + 40;
+  const maxY = canvasHeight - paddingBottom + 10;
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
