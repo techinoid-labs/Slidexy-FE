@@ -7,7 +7,7 @@ import ThemePanel from "../components/modify-presentation/ThemePallete";
 import SlideEditor from "./SlideEditor";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useDispatch } from "react-redux";
-import { setSlides } from "@/app/slice/slidesSlice";
+import { setSlides as setSlidesAction } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import { exportSlidesAsPDF } from "@/utils/exportSlides";
 import { exportSlidesAsPPT } from "@/utils/exportSlidesAsPPT";
@@ -18,11 +18,12 @@ import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
 import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";
 import { useTheme, useMediaQuery } from "@mui/material";
 import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mobile";
-import MobileSlideEditor from "./SlideEditorMobile";
+//import MobileSlideEditor from "./SlideEditorMobile";
+import SlideEditorMobile from "./SlideEditor-NewMobile";
+import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
 import TextSettingsPanelMobile from "@/app/components/new-ui/Text-Panel";
-import { Button } from "@mui/material"; // Optional: MUI or use your own toggle icon
-import { setSlides as setSlidesAction } from "@/app/slice/slidesSlice";
-import type Konva from "konva";
+import { Button } from "@mui/material";
+
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const {
@@ -32,14 +33,18 @@ const Page = () => {
     setSelectedTextId,
     selectedTextId,
     selectedImageIndex,
+    selectedImage,
     selectedShapeIndex,
+    setSelectedImageIndex,
+    setSelectedImage,
+    isMobileImageSelected, // Use from context
+    setIsMobileImageSelected, // Use from context
   } = useSlides();
   const dispatch = useDispatch();
   const router = useRouter();
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const [initialSlides] = useState(() => slides);
-  // Separate state for mobile text selection
-  const [isMobileTextSelected, setIsMobileTextSelected] = useState(false);
+  const [isMobileTextSelected, setIsMobileTextSelected] = useState(false); // Keep for text panel
   const [showRightPanel, setShowRightPanel] = useState(false);
   const theme = useTheme();
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
@@ -47,7 +52,10 @@ const Page = () => {
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
     setSelectedTextId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
     setIsMobileTextSelected(false);
+    setIsMobileImageSelected(false);
   };
 
   const handleClearCanvas = () => {
@@ -56,7 +64,6 @@ const Page = () => {
     const newSlides = [...slides];
     newSlides[selectedSlideIndex] = {
       ...newSlides[selectedSlideIndex],
-      // Clear images, shapes, text, etc.
       slide_title: {
         konva_component: "Konva.Text",
         text: "",
@@ -110,7 +117,6 @@ const Page = () => {
         const wIn = (width || w || 400) / 100;
         const hIn = (height || h || 200) / 100;
 
-        // BULLET POINT
         if (element_type === "bullet_point") {
           elements.push({
             element_type: "bullet_point",
@@ -127,10 +133,7 @@ const Page = () => {
               fontWeight,
             },
           });
-        }
-
-        // IMAGE
-        else if (element_type === "image" && imageSrc) {
+        } else if (element_type === "image" && imageSrc) {
           elements.push({
             element_type: "image",
             src: slide.image_url || undefined,
@@ -142,10 +145,7 @@ const Page = () => {
               h: hIn,
             },
           });
-        }
-
-        // TEXT (like headline or custom)
-        else if (element_type === "text" && text) {
+        } else if (element_type === "text" && text) {
           elements.push({
             element_type: "text",
             text,
@@ -161,10 +161,7 @@ const Page = () => {
               fontWeight,
             },
           });
-        }
-
-        // Optional: shape fallback to text label
-        else if (element_type === "shape") {
+        } else if (element_type === "shape") {
           elements.push({
             element_type: "text",
             text: konva_component,
@@ -176,39 +173,8 @@ const Page = () => {
             },
           });
         }
-
-        // if (element_type === "shape") {
-        //   // Basic shape fallback
-        //   const shapeMap: any = {
-        //     "Konva.Rect": "rect",
-        //     "Konva.Circle": "ellipse",
-        //     "Konva.Ellipse": "ellipse",
-        //     "Konva.Line": "line", // For simple horizontal/vertical line
-        //   };
-
-        //   const shapeType = shapeMap[konva_component];
-        //   if (shapeType) {
-        //     slide.addShape(shapeType, {
-        //       x,
-        //       y,
-        //       w,
-        //       h,
-        //       fill: fill,
-        //       line: { color: "000000", width: 1 },
-        //     });
-        //   } else {
-        //     // fallback to label if unsupported
-        //     slide.addText(konva_component || "shape", {
-        //       x,
-        //       y,
-        //       fontSize: 12,
-        //       color: fill,
-        //     });
-        //   }
-        // }
       });
 
-      // Handle slide title
       const slideTitleProps: any = slide.slide_title?.properties || {};
       const slideTitle = slide.slide_title?.text;
 
@@ -242,6 +208,8 @@ const Page = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isThemePanelOpen =
     !isTextSelected && !isShapeSelected && !isImageSelected;
+  console.log("isimage" + isImageSelected);
+
   return (
     <div
       style={{
@@ -274,7 +242,6 @@ const Page = () => {
           onClearCanvas={handleClearCanvas}
         />
       )}
-
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         {isMobile ? (
           <>
@@ -282,18 +249,27 @@ const Page = () => {
               showTemplatePanel={showTemplatePanel}
               setShowTemplatePanel={setShowTemplatePanel}
             />
-            <MobileSlideEditor
+            {/* <MobileSlideEditor
               slides={slides}
               stageRefs={stageRefs}
-              setIsMobileTextSelected={setIsMobileTextSelected}
-            />
-
-            {/* <SlideEditor slides={slides} stageRefs={stageRefs} /> */}
-
+              onClearCanvas={handleClearCanvas}
+            /> */}
+            <SlideEditorMobile slides={slides} stageRefs={stageRefs} />
             {isMobileTextSelected && (
               <TextSettingsPanelMobile
                 resetAll={resetAll}
                 onClose={() => setIsMobileTextSelected(false)}
+                style={{ top: 100, left: 100 }}
+              />
+            )}
+            {isMobileImageSelected && (
+              <ImageSettingsPanelMobile
+                resetAll={resetAll}
+                onClose={() => {
+                  setIsMobileImageSelected(false);
+                  setSelectedImageIndex(null);
+                  setSelectedImage(null);
+                }}
                 style={{ top: 100, left: 100 }}
               />
             )}
@@ -306,27 +282,23 @@ const Page = () => {
                 setShowTemplatePanel={setShowTemplatePanel}
               />
             </div>
-
             <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
               <SlideEditor slides={slides} stageRefs={stageRefs} />
             </div>
             <div
               className={`
-    ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
-    bg-white shadow-md transition-all duration-300 ease-in-out flex
-     ${
-       !isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[360px]" : "w-0"
-     }
-  `}
+                ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
+                bg-white shadow-md transition-all duration-300 ease-in-out flex
+                ${!isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[360px]" : "w-0"}
+              `}
             >
-              {/* Toggle Tab */}
               {!isLGScreen && (
                 <div
                   className={`
-      absolute -left-5 top-24
-      bg-white border-r-0 border border-gray-200 shadow-xl
-      rounded-l-md px-2 py-2 cursor-pointer z-50
-    `}
+                    absolute -left-5 top-24
+                    bg-white border-r-0 border border-gray-200 shadow-xl
+                    rounded-l-md px-2 py-2 cursor-pointer z-50
+                  `}
                   onClick={() => setShowRightPanel(!showRightPanel)}
                 >
                   {showRightPanel ? (
@@ -336,7 +308,6 @@ const Page = () => {
                   )}
                 </div>
               )}
-
               <div
                 className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
                   !showRightPanel && !isLGScreen

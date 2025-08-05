@@ -109,8 +109,8 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
               key={slide.slide_id}
               sx={{
                 position: "relative",
-                width: 200,
-                height: isMobile ? 60 : 120,
+                width: isMobile ? 340 :200,
+                height: isMobile ? 150 : 120,
                 borderLeft: isSelected
                   ? "4px solid #6941c6"
                   : "1px solid #e5e5ef",
@@ -127,10 +127,11 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                 py: 1.5,
                 cursor: "pointer",
                 boxShadow: isSelected ? "4px 0 0 0 #e9d7fe" : "none",
-                flex: "0 0 auto",
+                flex: "0 0 auto",               
                 "&:hover .delete-button": { opacity: 1 },
               }}
               onClick={() => handleSelect(index)}
+              
             >
               <Typography
                 variant="subtitle2"
@@ -138,7 +139,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                 //fontSize={12}
                 sx={{
                   display: "block",
-                  fontSize: { xs: 14 },
+                  fontSize: { xs: 20 },
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -153,7 +154,8 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                 sx={{
                   display: "block",
                   overflow: "hidden",
-                  fontSize: { xs: 10 },
+                  fontSize: { xs: 20 },
+                  fontWeight : {xs : 500},
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
                   maxWidth: "100%",
@@ -196,7 +198,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
           onClick={handleAddSlide}
           sx={{
             width: 100,
-            height: isMobile ? 60 : 100,
+            height: isMobile ? 120 : 100,
             borderRadius: 1,
             border: "1px dashed #d0d5dd",
             display: "flex",

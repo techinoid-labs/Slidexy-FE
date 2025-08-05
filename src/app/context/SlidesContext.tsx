@@ -7,6 +7,7 @@ import type { Slide } from "../slice/slidesSlice";
 import type { RootState } from "../store/store";
 
 export type SlidesType = Slide[];
+
 interface Theme {
   font: string;
   primaryColor: string;
@@ -14,6 +15,7 @@ interface Theme {
   backgroundColor: string;
   image_url: string;
 }
+
 interface SlidesContextType {
   slides: SlidesType;
   setSlides: (slides: SlidesType) => void;
@@ -38,8 +40,10 @@ interface SlidesContextType {
   }) => void;
   isAtBoundary: boolean;
   setIsAtBoundary: (value: boolean) => void;
-  aiThemes: any;
-  setAiThemes: any;
+  aiThemes: Theme[];
+  setAiThemes: (themes: Theme[]) => void;
+  isMobileImageSelected: boolean;
+  setIsMobileImageSelected: (value: boolean) => void;
 }
 
 const SlidesContext = createContext<SlidesContextType>({
@@ -63,20 +67,18 @@ const SlidesContext = createContext<SlidesContextType>({
   setIsAtBoundary: () => {},
   aiThemes: [],
   setAiThemes: () => {},
+  isMobileImageSelected: false,
+  setIsMobileImageSelected: () => {},
 });
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch();
-  const slides = useSelector((state: any) => state.slidesData.slides);
+  const slides = useSelector((state: RootState) => state.slidesData.slides);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<any | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<any | null>(
-    null
-  );
-  const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
-    null
-  );
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState({
     visible: false,
     x: 50,
@@ -85,6 +87,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   });
   const [isAtBoundary, setIsAtBoundary] = useState(false);
   const [aiThemes, setAiThemes] = useState<Theme[]>([]);
+  const [isMobileImageSelected, setIsMobileImageSelected] = useState(false); // Add state
 
   const handleSetSlides = (newSlides: SlidesType) => {
     dispatch(setSlides(newSlides));
@@ -94,7 +97,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     dispatch(setSlides([]));
   };
 
-  const handleUpdateSlides = (slides: any) => {
+  const handleUpdateSlides = (slides: SlidesType) => {
     dispatch(updateSlide(slides));
   };
 
@@ -104,7 +107,6 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         slides,
         setSlides: handleSetSlides,
         removeSlides: handleDeleteSlides,
-        // updateSlides: handleUpdateSlides,
         updateSlides: handleUpdateSlides,
         selectedSlideIndex,
         setSelectedSlideIndex,
@@ -122,6 +124,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setIsAtBoundary,
         aiThemes,
         setAiThemes,
+        isMobileImageSelected, // Include in value
+        setIsMobileImageSelected, // Include in value
       }}
     >
       {children}

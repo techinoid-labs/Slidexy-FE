@@ -19,7 +19,7 @@ import {
 } from "../../utils/slideUtilsmobile";
 import { v4 as uuidv4 } from "uuid";
 import TextSettingsPanelMobile from "../components/new-ui/Text-Panel";
-
+import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
 const getDynamicConstants = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const IMAGE_WIDTH = 200;
@@ -46,6 +46,7 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
     selectedImageIndex,
     setSelectedImageIndex,
     setSelectedImage,
+    selectedImage,
     selectedTextId,
     setSelectedTextId,
     selectedShapeIndex,
@@ -54,7 +55,10 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
     tooltip,
     setTooltip,
     isAtBoundary,
+    isMobileImageSelected,
+    setIsMobileImageSelected,
   } = useSlides();
+
   const { selectedTheme, selectedLayout } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -322,12 +326,13 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                       e.target === e.target.getStage() ||
                       e.target.name() === "background";
                     if (clickedOnEmpty) {
-                      console.log("[SlideEditor] Deselect all on empty click");
+                      //console.log("[SlideEditor] Deselect all on empty click");
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
                       setSelectedShapeIndex(null);
                       setSelectedImage(null);
                       setTooltip({ visible: false, x: 0, y: 0, node: null });
+                      setIsMobileImageSelected(false);
                     }
                   }}
                   onTouchEnd={(e) => {
@@ -335,12 +340,13 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                       e.target === e.target.getStage() ||
                       e.target.name() === "background";
                     if (clickedOnEmpty) {
-                      console.log("[SlideEditor] Deselect all on empty touch");
+                      //console.log("[SlideEditor] Deselect all on empty touch");
                       setSelectedTextId(null);
                       setSelectedImageIndex(null);
                       setSelectedShapeIndex(null);
                       setSelectedImage(null);
                       setTooltip({ visible: false, x: 0, y: 0, node: null });
+                      setIsMobileImageSelected(false);
                     }
                   }}
                 >
@@ -356,6 +362,7 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                           setSelectedTextId(null);
                           setSelectedImageIndex(null);
                           setSelectedShapeIndex(null);
+                          setIsMobileImageSelected(false);
                           setSelectedImage(null);
                           setTooltip({
                             visible: false,
@@ -478,6 +485,7 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                             setSelectedImageIndex(null);
                             setSelectedShapeIndex(null);
                             setSelectedImage(null);
+                            setIsMobileImageSelected(false);
                           }}
                           onClick={() => {
                             setTooltip({
@@ -501,7 +509,7 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                             el.properties.fontSize ||
                             (el.element_type === "bullet_point" ? 12 : 10);
 
-                          console.log(el.properties.fontSize);
+                          //console.log(el.properties.fontSize);
                           const fontFamily =
                             selectedTheme?.font || el.properties.fontFamily;
                           const lineHeight = 1;
@@ -558,6 +566,7 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                                 setSelectedImageIndex(null);
                                 setSelectedShapeIndex(null);
                                 setSelectedImage(null);
+                                setIsMobileImageSelected(false);
                               }}
                             />
                           );
@@ -575,6 +584,7 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                         setSelectedImageIndex(null);
                         setSelectedImage(null);
                         setTooltip({ visible: false, x: 0, y: 0, node: null });
+                        setIsMobileImageSelected(false);
                       }}
                     />
                     {slide.elements.map((el: any, i: number) => {
@@ -594,6 +604,7 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                             onSelect={() => {
                               setSelectedImage({ ...el });
                               setSelectedImageIndex(i);
+                              setIsMobileImageSelected(true);
                               setSelectedShapeIndex(null);
                               setSelectedTextId(null);
                               setTooltip({
@@ -621,6 +632,20 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
               onClose={() => setTooltip({ ...tooltip, visible: false })}
             />
           )}
+          {isMobileImageSelected && (
+            <ImageSettingsPanelMobile
+              style={{
+                top: 100,
+                left: 100,
+              }}
+              onClose={() => {
+                setIsMobileImageSelected(false);
+                setSelectedImageIndex(null);
+                setSelectedImage(null);
+              }}
+            />
+          )}
+
         </Box>
       </div>
     </main>

@@ -29,7 +29,7 @@ const getDynamicConstants = () => {
     textMaxHeight,
   };
 };
-const SlideEditor = ({ slides = [], stageRefs }: any) => {
+const SlideEditorMobile = ({ slides = [], stageRefs }: any) => {
   const {
     selectedImageIndex,
     setSelectedImageIndex,
@@ -361,4 +361,4 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   );
 };
 
-export default SlideEditor;
+export default SlideEditorMobile;

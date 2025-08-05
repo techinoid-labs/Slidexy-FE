@@ -34,8 +34,8 @@ const weightOptions = [
 ];
 
 interface TextSettingsPanelProps {
-    onClose: () => void;
-    style: React.CSSProperties;
+    onClose?: () => void;
+    style?: React.CSSProperties;
     resetAll?: () => void;
 }
 
@@ -292,7 +292,6 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                 bottom: 83,
                 paddingLeft: 22,
                 paddingRight: 3,
-                left: 0,
                 gap: 2,
             }}
         >
