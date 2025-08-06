@@ -16,6 +16,7 @@ interface KonvaTextEditorProps {
   y: number;
   fontSize?: number;
   fontFamily?: string;
+  zIndex?: number | string;
   fill?: string;
   fontStyle?: string;
   fontWeight?: string;
@@ -48,6 +49,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   wrap = "word",
   draggable = true,
   isSelected,
+  zIndex,
   onSelect,
 }) => {
   const textRef = useRef<any>(null);
@@ -279,14 +281,16 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
         text={text}
         x={x}
         y={y}
-        zIndex={999}
+        zIndex={zIndex || 10}
         fontSize={fontSize}
+        // height={50}
         fill={fill}
         verticalAlign={verticalAlign}
         fontFamily={fontFamily?.trim() || selectedTheme?.font || "Roboto"}
         fontStyle={fontWeight || "normal"}
         fontWeight={fontWeight || "normal"}
         align={align}
+        padding={12}
         opacity={opacity}
         width={width}
         wrap={wrap}
@@ -351,13 +355,15 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
               })(),
               fontSize: `${fontSize}px`,
               fontFamily: fontFamily?.trim() || selectedTheme?.font || "Roboto",
-              fontStyle: fontWeight || "normal",
+              // fontStyle: fontWeight || "normal",
               fontWeight: fontWeight || "normal",
+              padding: "12px",
+
               outline: "none",
-              background: "white",
-              border: "1px solid #ccc",
-              paddingLeft: "6px",
-              lineHeight: 1.2,
+              // background: "white",
+              // border: "1px solid #ccc",
+              paddingLeft: "10px",
+              lineHeight: 0.9,
               resize: "none",
               transform: `rotate(${textRef.current.rotation()}deg)`,
               width: (() => {
@@ -372,7 +378,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
                   slideDimensions.SLIDE_HEIGHT - textRef.current.y();
                 return Math.min(textRef.current.height(), maxHeight);
               })(),
-              zIndex: 999,
+              zIndex,
             }}
           />
         </Html>

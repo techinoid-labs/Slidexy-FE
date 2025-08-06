@@ -47,6 +47,8 @@ interface SlidesContextType {
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  bringElementForward: (el: any) => void;
+  sendElementBackward: (el: any) => void;
 }
 
 const SlidesContext = createContext<SlidesContextType>({} as SlidesContextType);
@@ -116,6 +118,155 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const canUndo = pastSlides.length > 0;
   const canRedo = futureSlides.length > 0;
 
+  const getSelectedElement = (el: number | string) => {
+    let selectedElementIndex;
+
+    if (typeof el == "string") {
+      selectedElementIndex = el.split("-").at(-1);
+    } else {
+      selectedElementIndex = el;
+    }
+    return selectedElementIndex;
+  };
+
+  // const bringElementForward = (el: any) => {
+  //   const selectedElementIndex = Number(getSelectedElement(el));
+  //   const currentSlide = slides[selectedSlideIndex];
+  //   if (!currentSlide) return;
+
+  //   const elements = currentSlide.elements.map((el: any) => ({
+  //     ...el,
+  //     properties: { ...el.properties },
+  //   }));
+
+  //   const selected = elements[selectedElementIndex];
+  //   if (!selected) return;
+
+  //   const currentZIndex =
+  //     selected.properties.zIndex ?? selectedElementIndex ?? 1;
+
+  //   if (currentZIndex >= elements.length - 1) return;
+
+  //   selected.properties.zIndex = currentZIndex + 1;
+
+  //   const updatedSlides = structuredClone(slides);
+  //   updatedSlides[selectedSlideIndex] = {
+  //     ...updatedSlides[selectedSlideIndex],
+  //     elements,
+  //   };
+
+  //   handleSetSlides(updatedSlides);
+  // };
+
+  // const sendElementBackward = (el: any) => {
+  //   const selectedElementIndex = Number(getSelectedElement(el));
+  //   const currentSlide = slides[selectedSlideIndex];
+  //   if (!currentSlide) return;
+
+  //   const elements = currentSlide.elements.map((el: any) => ({
+  //     ...el,
+  //     properties: { ...el.properties },
+  //   }));
+
+  //   const selected = elements[selectedElementIndex];
+  //   if (!selected) return;
+
+  //   const currentZIndex =
+  //     selected.properties.zIndex ?? selectedElementIndex ?? 1;
+  //   console.log("Before", currentZIndex);
+  //   selected.properties.zIndex = currentZIndex - 1;
+
+  //   if (currentZIndex <= 1) selected.properties.zIndex = 1;
+
+  //   console.log("after", currentZIndex);
+  //   const updatedSlides = structuredClone(slides);
+  //   updatedSlides[selectedSlideIndex] = {
+  //     ...updatedSlides[selectedSlideIndex],
+  //     elements,
+  //   };
+
+  //   handleSetSlides(updatedSlides);
+  // };
+
+  const bringElementForward = (el: any) => {
+    const selectedElementIndex = Number(getSelectedElement(el));
+    const currentSlide = slides[selectedSlideIndex];
+    if (!currentSlide) return;
+
+    const elements = currentSlide.elements.map((el: any) => ({
+      ...el,
+      properties: { ...el.properties },
+    }));
+
+    const selected = elements[selectedElementIndex];
+    if (!selected) return;
+
+    const currentZIndex =
+      selected.properties.zIndex ?? selectedElementIndex ?? 1;
+
+    // Don't exceed the max possible zIndex
+    if (currentZIndex >= elements.length) return;
+
+    const newZIndex = currentZIndex + 1;
+
+    // Find any element with the newZIndex and shift it down
+    const conflictIndex = elements.findIndex(
+      (el: any) => (el.properties.zIndex ?? 1) === newZIndex
+    );
+    if (conflictIndex !== -1) {
+      elements[conflictIndex].properties.zIndex = currentZIndex;
+    }
+
+    selected.properties.zIndex = newZIndex;
+
+    const updatedSlides = structuredClone(slides);
+    updatedSlides[selectedSlideIndex] = {
+      ...updatedSlides[selectedSlideIndex],
+      elements,
+    };
+
+    handleSetSlides(updatedSlides);
+  };
+
+  const sendElementBackward = (el: any) => {
+    const selectedElementIndex = Number(getSelectedElement(el));
+    const currentSlide = slides[selectedSlideIndex];
+    if (!currentSlide) return;
+
+    const elements = currentSlide.elements.map((el: any) => ({
+      ...el,
+      properties: { ...el.properties },
+    }));
+
+    const selected = elements[selectedElementIndex];
+    if (!selected) return;
+
+    const currentZIndex =
+      selected.properties.zIndex ?? selectedElementIndex ?? 1;
+
+    if (currentZIndex <= 1) return; // Don't go below 1
+
+    const newZIndex = currentZIndex - 1;
+
+    // Find any element with the newZIndex and shift it up
+    const conflictIndex = elements.findIndex(
+      (el: any) => (el.properties.zIndex ?? 1) === newZIndex
+    );
+    if (conflictIndex !== -1) {
+      elements[conflictIndex].properties.zIndex = currentZIndex;
+    }
+
+    selected.properties.zIndex = newZIndex;
+
+    const updatedSlides = structuredClone(slides);
+    updatedSlides[selectedSlideIndex] = {
+      ...updatedSlides[selectedSlideIndex],
+      elements,
+    };
+
+    handleSetSlides(updatedSlides);
+  };
+
   return (
     <SlidesContext.Provider
       value={{
@@ -144,6 +295,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         redo,
         canUndo,
         canRedo,
+        bringElementForward,
+        sendElementBackward,
       }}
     >
       {children}
@@ -202,6 +355,8 @@ interface SlidesContextType {
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  bringElementForward: () => void;
+  sendElementBackward: () => void;
 }
 
 const SlidesContext = createContext<SlidesContextType>({} as SlidesContextType);
@@ -284,7 +439,56 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
 
   const canUndo = pastSlides.length > 0;
   const canRedo = futureSlides.length > 0;
-  console.log({ slides, pastSlides, futureSlides, canRedo, canUndo });
+
+  const bringElementForward = () => {
+    const currentSlide = slides[selectedSlideIndex];
+    if (!currentSlide || selectedShapeIndex === null) return;
+
+    console.log("clicked");
+
+    const newIndex = selectedShapeIndex + 1;
+    if (newIndex >= currentSlide.elements.length) {
+      setIsAtBoundary(true);
+      return;
+    }
+
+    const updatedSlides = structuredClone(slides);
+    const elements = updatedSlides[selectedSlideIndex].elements;
+
+    [elements[selectedShapeIndex], elements[newIndex]] = [
+      elements[newIndex],
+      elements[selectedShapeIndex],
+    ];
+
+    setSelectedShapeIndex(newIndex);
+    setIsAtBoundary(false);
+    handleSetSlides(updatedSlides);
+  };
+
+  const sendElementBackward = () => {
+    const currentSlide = slides[selectedSlideIndex];
+    if (!currentSlide || selectedShapeIndex === null) return;
+
+    const newIndex = selectedShapeIndex - 1;
+    if (newIndex < 0) {
+      setIsAtBoundary(true);
+      return;
+    }
+
+    const updatedSlides = structuredClone(slides);
+    const elements = updatedSlides[selectedSlideIndex].elements;
+
+    [elements[selectedShapeIndex], elements[newIndex]] = [
+      elements[newIndex],
+      elements[selectedShapeIndex],
+    ];
+
+    setSelectedShapeIndex(newIndex);
+    setIsAtBoundary(false);
+    handleSetSlides(updatedSlides);
+  };
+
+  // console.log({ slides, pastSlides, futureSlides, canRedo, canUndo });
   return (
     <SlidesContext.Provider
       value={{
@@ -311,6 +515,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         redo,
         canUndo,
         canRedo,
+        bringElementForward,
+        sendElementBackward,
       }}
     >
       {children}

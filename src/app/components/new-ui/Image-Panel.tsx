@@ -49,8 +49,8 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
     if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null)
       return;
     const updatedSlides = structuredClone(slides);
-    const target = updatedSlides[selectedSlideIndex].elements[selectedImageIndex]
-      .properties;
+    const target: any =
+      updatedSlides[selectedSlideIndex].elements[selectedImageIndex].properties;
 
     if (target) {
       target[prop] = value;
@@ -113,7 +113,9 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
       }}
     >
       {/* Opacity Button */}
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <IconButton
           onClick={() => setIsOpacityPanelOpen(!isOpacityPanelOpen)}
           sx={{
@@ -154,7 +156,9 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
       )}
 
       {/* Duplicate Button */}
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <IconButton
           onClick={handleDuplicateImage}
           sx={{
@@ -186,7 +190,9 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
       </Box>
 
       {/* Delete Button */}
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <IconButton
           onClick={handleDeleteImage}
           sx={{

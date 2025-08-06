@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { useSlides } from "@/app/context/SlidesContext";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   sidebarHeight,
@@ -24,6 +26,8 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     selectedSlideIndex,
     slides,
     setSlides,
+    bringElementForward,
+    sendElementBackward,
   } = useSlides();
 
   const [imageWidth, setImageWidth] = useState<number>(
@@ -293,7 +297,63 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
             onChange={handleImageChange}
           />
         </Box>
+        <Divider sx={{ my: 2 }} />
 
+        <Box sx={{ px: 3, mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+            <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+              Layer Order
+            </Typography>
+          </Box>
+          <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => bringElementForward(selectedImageIndex)}
+              endIcon={<ArrowUpwardIcon />}
+              sx={{
+                borderRadius: 2,
+                fontWeight: 600,
+                fontSize: 12,
+                bgcolor: "#F8F8FA",
+                borderColor: "#E0E0E0",
+                color: "#222",
+                textTransform: "none",
+                whiteSpace: "nowrap",
+                minWidth: 140,
+                "&:hover": {
+                  bgcolor: "#F3EDFF",
+                  borderColor: "#7B4AE2",
+                  color: "#7B4AE2",
+                },
+              }}
+            >
+              Bring Forward
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => sendElementBackward(selectedImageIndex)}
+              endIcon={<ArrowDownwardIcon />}
+              sx={{
+                borderRadius: 2,
+                fontWeight: 600,
+                fontSize: 12,
+                bgcolor: "#F8F8FA",
+                borderColor: "#E0E0E0",
+                color: "#222",
+                textTransform: "none",
+                whiteSpace: "nowrap",
+                minWidth: 140,
+                "&:hover": {
+                  bgcolor: "#F3EDFF",
+                  borderColor: "#7B4AE2",
+                  color: "#7B4AE2",
+                },
+              }}
+            >
+              Send Backward
+            </Button>
+          </Box>
+        </Box>
         {/* Set as Background */}
         {/* <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography sx={{ fontWeight: 500, fontSize: 15, flex: 1 }}>

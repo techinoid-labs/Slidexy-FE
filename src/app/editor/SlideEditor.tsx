@@ -47,13 +47,15 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     redo,
     canUndo,
     canRedo,
+    bringElementForward,
+    sendElementBackward,
   } = useSlides();
 
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scale, setScale] = useState(1);
-  // console.log(slides);
+  console.log(slides);
 
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
@@ -134,12 +136,17 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         overflow: "auto",
       }}
     >
+      {/* <Button onClick={() => bringElementForward(selectedTextId)}>
+        Forward
+      </Button>
+      <Button onClick={() => sendElementBackward(selectedTextId)}>
+        Backward
+      </Button> */}
+
       {slides.map((slide: any, index: number) => {
         const title = slide.slide_title;
         const titleProps = title.properties;
         const titleY = 25;
-        // const bulletGap = 10;
-        // const bulletStartY = titleY + titleProps.fontSize + 20;
 
         return (
           <Box
@@ -239,6 +246,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       text={title.text}
                       x={titleProps.x || titleY}
                       y={titleProps.y || getDynamicConstants().LEFT_PADDING}
+                      zIndex={titleProps.zIndex}
                       width={(() => {
                         const textWidth =
                           getDynamicConstants().textMaxWidth + 200;
@@ -294,6 +302,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   </>
                 )}
                 {slide.elements.map((el: any, i: number) => {
+                  console.log({ Text_zIndex: el.properties.zIndex });
+
                   if (
                     el.element_type !== "text" &&
                     el.element_type !== "bullet_point"
@@ -301,6 +311,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     return null;
 
                   // if (el.element_type !== "text") return null;
+
                   return (
                     <KonvaTextEditor
                       key={`el-${index}-${i}`}
@@ -308,6 +319,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       text={el.text}
                       x={el.properties.x}
                       y={el.properties.y}
+                      zIndex={el.properties.zIndex}
                       width={
                         el.properties.width ||
                         getDynamicConstants().textMaxWidth -
@@ -357,6 +369,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   }}
                 />
                 {slide.elements.map((el: any, i: number) => {
+                  console.log({ IMG_zIndex: el.properties.zIndex });
                   if (
                     el.element_type === "image" &&
                     el.konva_component === "Konva.Image"
@@ -367,6 +380,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         imageSrc={el.properties.imageSrc}
                         x={el.properties.x}
                         y={el.properties.y}
+                        zIndex={el.properties.zIndex}
                         width={el.properties.width}
                         height={el.properties.height}
                         isSelected={selectedImageIndex === i}

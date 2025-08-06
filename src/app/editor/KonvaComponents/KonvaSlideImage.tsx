@@ -4,7 +4,10 @@ import React, { useEffect, useRef, useCallback, useState } from "react";
 import { Image as KonvaImage, Transformer } from "react-konva";
 import useImage from "use-image";
 import { useSlides } from "@/app/context/SlidesContext";
-import { constrainImageToCanvas, getSlideDimensions } from "../../../utils/slideUtils";
+import {
+  constrainImageToCanvas,
+  getSlideDimensions,
+} from "../../../utils/slideUtils";
 
 interface SlideImageProps {
   url?: string;
@@ -14,6 +17,7 @@ interface SlideImageProps {
   width: number;
   height: number;
   isSelected: boolean;
+  zIndex?: number | string;
   onSelect: () => void;
 }
 
@@ -25,12 +29,19 @@ const SlideImage: React.FC<SlideImageProps> = ({
   width,
   height,
   isSelected,
+  zIndex,
   onSelect,
 }) => {
   const [image] = useImage(imageSrc || url || "");
   const imageRef = useRef<any>(null);
   const trRef = useRef<any>(null);
-  const { slides, setSlides, selectedSlideIndex, setSelectedImage, setIsAtBoundary } = useSlides();
+  const {
+    slides,
+    setSlides,
+    selectedSlideIndex,
+    setSelectedImage,
+    setIsAtBoundary,
+  } = useSlides();
   const [lastValidPos, setLastValidPos] = useState({ x, y });
 
   // Attach transformer when image is selected
@@ -85,7 +96,15 @@ const SlideImage: React.FC<SlideImageProps> = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSelected, slides, url, imageSrc, selectedSlideIndex, setSlides, setSelectedImage]);
+  }, [
+    isSelected,
+    slides,
+    url,
+    imageSrc,
+    selectedSlideIndex,
+    setSlides,
+    setSelectedImage,
+  ]);
 
   // Handle drag end with boundary constraints
   const handleDragEnd = useCallback(
@@ -94,7 +113,11 @@ const SlideImage: React.FC<SlideImageProps> = ({
       if (!node) return;
 
       const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
-      const { x: newX, y: newY, isAtBoundary } = constrainImageToCanvas(
+      const {
+        x: newX,
+        y: newY,
+        isAtBoundary,
+      } = constrainImageToCanvas(
         node.x(),
         node.y(),
         node.width(),
@@ -148,7 +171,16 @@ const SlideImage: React.FC<SlideImageProps> = ({
 
       node.getLayer()?.batchDraw();
     },
-    [slides, selectedSlideIndex, url, imageSrc, setSlides, setSelectedImage, setIsAtBoundary, lastValidPos]
+    [
+      slides,
+      selectedSlideIndex,
+      url,
+      imageSrc,
+      setSlides,
+      setSelectedImage,
+      setIsAtBoundary,
+      lastValidPos,
+    ]
   );
 
   // Handle transform end with boundary constraints
@@ -167,8 +199,20 @@ const SlideImage: React.FC<SlideImageProps> = ({
     const currentY = node.y();
 
     const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
-    const { x: constrainedX, y: constrainedY, width: constrainedWidth, height: constrainedHeight, isAtBoundary } =
-      constrainImageToCanvas(currentX, currentY, newWidth, newHeight, SLIDE_WIDTH, SLIDE_HEIGHT);
+    const {
+      x: constrainedX,
+      y: constrainedY,
+      width: constrainedWidth,
+      height: constrainedHeight,
+      isAtBoundary,
+    } = constrainImageToCanvas(
+      currentX,
+      currentY,
+      newWidth,
+      newHeight,
+      SLIDE_WIDTH,
+      SLIDE_HEIGHT
+    );
 
     node.position({ x: constrainedX, y: constrainedY });
     node.width(constrainedWidth);
@@ -213,7 +257,15 @@ const SlideImage: React.FC<SlideImageProps> = ({
     }
 
     node.getLayer()?.batchDraw();
-  }, [slides, selectedSlideIndex, url, imageSrc, setSlides, setSelectedImage, setIsAtBoundary]);
+  }, [
+    slides,
+    selectedSlideIndex,
+    url,
+    imageSrc,
+    setSlides,
+    setSelectedImage,
+    setIsAtBoundary,
+  ]);
 
   return (
     <>
@@ -222,7 +274,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
         image={image}
         x={x}
         y={y}
-        zIndex={1}
+        zIndex={zIndex}
         width={width}
         height={height}
         draggable
@@ -237,14 +289,15 @@ const SlideImage: React.FC<SlideImageProps> = ({
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
-            const { x, y, width, height, isAtBoundary } = constrainImageToCanvas(
-              newBox.x,
-              newBox.y,
-              newBox.width,
-              newBox.height,
-              getSlideDimensions().SLIDE_WIDTH,
-              getSlideDimensions().SLIDE_HEIGHT
-            );
+            const { x, y, width, height, isAtBoundary } =
+              constrainImageToCanvas(
+                newBox.x,
+                newBox.y,
+                newBox.width,
+                newBox.height,
+                getSlideDimensions().SLIDE_WIDTH,
+                getSlideDimensions().SLIDE_HEIGHT
+              );
             setIsAtBoundary(isAtBoundary);
             return { ...newBox, x, y, width, height };
           }}

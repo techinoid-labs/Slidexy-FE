@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useTheme, useMediaQuery } from "@mui/material";
+import { useTheme, useMediaQuery, Button } from "@mui/material";
 import {
   Box,
   Divider,
@@ -20,6 +20,8 @@ import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
 import VerticalAlignTopIcon from "@mui/icons-material/VerticalAlignTop";
 import VerticalAlignBottomIcon from "@mui/icons-material/VerticalAlignBottom";
 import VerticalAlignCenterIcon from "@mui/icons-material/VerticalAlignCenter";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 
@@ -27,7 +29,7 @@ const fontOptions = ["Raleway", "Roboto", "Arial"];
 
 const weightOptions = [
   { label: "Regular", value: "normal" },
-  // { label: "Semibold", value: "600" },
+  { label: "Italic", value: "italic" },
   { label: "Bold", value: "bold" },
 ];
 
@@ -49,6 +51,8 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     selectedTextId,
     selectedShapeIndex,
     selectedSlideIndex,
+    bringElementForward,
+    sendElementBackward,
     setSlides,
   } = useSlides();
   const { setPrimaryColor } = useSlideThemeContext();
@@ -145,36 +149,6 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         >
           Settings
         </Box>
-        {/* <Box
-          sx={{
-            color: "#888",
-            fontWeight: 500,
-            fontSize: 15,
-            mr: 2,
-            py: 1,
-            cursor: "pointer",
-          }}
-        >
-          Animate
-        </Box> */}
-        {/* <Box sx={{ flex: 1 }} />
-        <Select
-          value={50}
-          size="small"
-          sx={{
-            fontSize: 15,
-            bgcolor: "#F5F5F5",
-            borderRadius: 2,
-            width: 70,
-            height: 32,
-          }}
-          displayEmpty
-          inputProps={{ "aria-label": "Percentage" }}
-        >
-          <MenuItem value={50}>50%</MenuItem>
-          <MenuItem value={75}>75%</MenuItem>
-          <MenuItem value={100}>100%</MenuItem>
-        </Select> */}
       </Box>
 
       <Divider sx={{ my: 2 }} />
@@ -352,7 +326,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             value={`${Math.round(opacity * 100)}%`}
             readOnly
             sx={{
-              width: 54,
+              width: 64,
               fontWeight: 600,
               fontSize: 16,
               bgcolor: "#F8F8FA",
@@ -362,6 +336,67 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
               textAlign: "center",
             }}
           />
+        </Box>
+      </Box>
+      <Divider sx={{ my: 2 }} />
+
+      <Box sx={{ px: 3, mb: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+            Layer Order
+          </Typography>
+        </Box>
+        <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() =>
+              bringElementForward(selectedTextId || selectedShapeIndex)
+            }
+            endIcon={<ArrowUpwardIcon />}
+            sx={{
+              borderRadius: 2,
+              fontWeight: 600,
+              fontSize: 12,
+              bgcolor: "#F8F8FA",
+              borderColor: "#E0E0E0",
+              color: "#222",
+              textTransform: "none",
+              whiteSpace: "nowrap",
+              minWidth: 140,
+              "&:hover": {
+                bgcolor: "#F3EDFF",
+                borderColor: "#7B4AE2",
+                color: "#7B4AE2",
+              },
+            }}
+          >
+            Bring Forward
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() =>
+              sendElementBackward(selectedTextId || selectedShapeIndex)
+            }
+            endIcon={<ArrowDownwardIcon />}
+            sx={{
+              borderRadius: 2,
+              fontWeight: 600,
+              fontSize: 12,
+              bgcolor: "#F8F8FA",
+              borderColor: "#E0E0E0",
+              color: "#222",
+              textTransform: "none",
+              whiteSpace: "nowrap",
+              minWidth: 140,
+              "&:hover": {
+                bgcolor: "#F3EDFF",
+                borderColor: "#7B4AE2",
+                color: "#7B4AE2",
+              },
+            }}
+          >
+            Send Backward
+          </Button>
         </Box>
       </Box>
     </Box>

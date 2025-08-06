@@ -287,10 +287,12 @@ const Page = () => {
             </div>
             <div
               className={`
-                ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
-                bg-white shadow-md transition-all duration-300 ease-in-out flex
-                ${!isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[360px]" : "w-0"}
-              `}
+    ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
+    bg-white shadow-md transition-all duration-300 ease-in-out flex
+     ${
+       !isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[375px]" : "w-0"
+     }
+  `}
             >
               {!isLGScreen && (
                 <div

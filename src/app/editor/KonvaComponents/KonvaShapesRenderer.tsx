@@ -64,9 +64,12 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
   return (
     <>
       {elements.map((el: any, i: number) => {
+        console.log({ Shapes_zIndex: el.properties.zIndex });
+
         if (el.element_type !== "shape") return null;
         const commonProps = {
           ref: (node: any) => (shapeRefs.current[i] = node),
+          style: { zIndex: el.properties.zIndex },
           ...el.properties,
           draggable: true,
           onClick: () => onSelectShape(i),
@@ -102,11 +105,17 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
 
               case "Konva.Circle":
                 console.log("rendering circle");
-                updated.radius = Math.max(node.radius() * Math.max(scaleX, scaleY), 25);
+                updated.radius = Math.max(
+                  node.radius() * Math.max(scaleX, scaleY),
+                  25
+                );
                 break;
 
               case "Konva.Star":
-                updated.outerRadius = Math.max(node.outerRadius() * Math.max(scaleX, scaleY), 25);
+                updated.outerRadius = Math.max(
+                  node.outerRadius() * Math.max(scaleX, scaleY),
+                  25
+                );
                 if (updated.innerRadius) {
                   updated.innerRadius = updated.outerRadius / 2;
                 }
@@ -129,14 +138,19 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
             }
 
             // Clamp position and apply min-size enforcement centrally
-            const bounds = restrictShapeBounds(updated.x, updated.y, shapeType, updated);
+            const bounds = restrictShapeBounds(
+              updated.x,
+              updated.y,
+              shapeType,
+              updated
+            );
 
             updated.x = bounds.x;
             updated.y = bounds.y;
 
             // Only apply width/height if applicable
-            if ('width' in updated) updated.width = bounds.width;
-            if ('height' in updated) updated.height = bounds.height;
+            if ("width" in updated) updated.width = bounds.width;
+            if ("height" in updated) updated.height = bounds.height;
 
             const updatedSlides = structuredClone(slides);
             updatedSlides[slideIdx].elements[i].properties = updated;
@@ -146,15 +160,20 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
             node.y(bounds.y);
 
             setSlides(updatedSlides);
-          }
-          , onDragEnd: () => {
+          },
+          onDragEnd: () => {
             const node = shapeRefs.current[i];
             if (!node) return;
 
             const shapeType = el.konva_component;
             const shapeProps = el.properties;
 
-            const bounds = restrictShapeBounds(node.x(), node.y(), shapeType, shapeProps);
+            const bounds = restrictShapeBounds(
+              node.x(),
+              node.y(),
+              shapeType,
+              shapeProps
+            );
 
             // Apply constraints to node
             node.x(bounds.x);
@@ -279,6 +298,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
       {selectedShapeIndex !== null && (
         <Transformer
           ref={trRef}
+          zIndex
           enabledAnchors={[
             // "middle-left",
             // "middle-right",
