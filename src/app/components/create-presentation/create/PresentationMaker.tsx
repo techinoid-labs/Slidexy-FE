@@ -17,6 +17,7 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useSearchParams } from "next/navigation";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { Card, CardMedia, Box as MuiBox } from "@mui/material";
+import { TextareaAutosize } from "@mui/material";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 console.log("[SlidesX] API_BASE_URL:", API_BASE_URL);
@@ -38,6 +39,7 @@ export default function PresentationMaker({
   const { setSlides } = useSlides();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [paragraphs, setParagraphs] = useState<string[]>([]);
 
   const [goal, setGoal] = useState("");
   const [tone, setTone] = useState("");
@@ -50,6 +52,8 @@ export default function PresentationMaker({
         return "Paste a YouTube video URL...";
       case "Website":
         return "Paste a website link to summarize...";
+      case "Poster": // New case for Poster
+        return "Describe your poster idea... e.g., 'A poster for a charity event'";
       default:
         return "Describe your idea... e.g., 'Pitch for a new mental health app'";
     }
@@ -63,14 +67,39 @@ export default function PresentationMaker({
   const extractVideoId = (inputUrl: string) => {
     try {
       const urlObj = new URL(inputUrl);
-      if (urlObj.hostname.includes("youtube.com")) {
+      // Standard YouTube URLs
+      if (
+        urlObj.hostname === "www.youtube.com" ||
+        urlObj.hostname === "youtube.com"
+      ) {
         return urlObj.searchParams.get("v");
-      } else if (urlObj.hostname === "youtu.be") {
+      }
+      if (urlObj.hostname === "youtu.be") {
         return urlObj.pathname.slice(1);
+      }
+      // googleusercontent.com YouTube URLs
+      if (
+        urlObj.hostname === "googleusercontent.com" &&
+        urlObj.pathname.startsWith("/youtube.com/")
+      ) {
+        const videoIdFromQuery = urlObj.searchParams.get("v");
+        if (videoIdFromQuery) {
+          return videoIdFromQuery;
+        }
+        // This assumes the video ID is the last segment after /youtube.com/N/
+        const parts = urlObj.pathname.split("/");
+        if (
+          parts.length > 3 &&
+          parts[1] === "youtube.com" &&
+          parts[2].match(/^\d+$/)
+        ) {
+          return parts[3]; // Returns VIDEO_ID from /youtube.com/N/VIDEO_ID
+        }
       }
     } catch (error) {
       return null;
     }
+    return null;
   };
 
   const isValidYoutubeUrl = (inputUrl: string) => {
@@ -125,17 +154,26 @@ export default function PresentationMaker({
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
         ? { source: "website", inputWebsiteUrl: inputValue }
+        : inputMode === "Poster" // Changed from "Infographic" to "Poster"
+        ? { topic: inputValue } // Payload for poster, assuming it takes a topic
         : { source: "text", textContent: inputValue };
 
     const promptMeta = { goal, tone, audience, length };
     const payload = { ...base, meta: promptMeta };
-
+    console.log("[SlidesX] Payload to backend:", payload);
     try {
-      const res = await fetch(`${API_BASE_URL}/generate-slides`, {
+      const endpoint =
+        inputMode === "Poster" // Changed from "Infographic" to "Poster"
+          ? "/generate-poster-template" // Changed endpoint
+          : "/generate-slides";
+
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      console.log("[SlidesX] Raw response:", res);
 
       if (!res.ok) {
         let errorData: any = {};
@@ -148,6 +186,31 @@ export default function PresentationMaker({
       }
 
       const data = await res.json();
+
+      if (inputMode === "Poster") {
+        // Changed from "Infographic" to "Poster"
+        const { imageUrl } = data; // Assuming the response contains an imageUrl
+
+        if (!imageUrl) {
+          throw new Error("No poster image URL returned from backend.");
+        }
+
+        const posterPayload = {
+          imageUrl: imageUrl,
+        };
+
+        // Store for retrieval on /poster-templates page
+
+        localStorage.setItem(
+          "posterTemplateData", // Changed localStorage key
+          JSON.stringify(posterPayload)
+        );
+
+        router.push("/infographics"); // Changed redirection route
+      } else {
+        setSlides(data.slides);
+        router.push("/presentation/outline");
+      }
 
       const elapsed = Date.now() - startTime;
       const minDelay = 1200;
@@ -171,6 +234,7 @@ export default function PresentationMaker({
 
   useEffect(() => {
     const prompt = searchParams.get("prompt");
+
     if (prompt) {
       setInputValue(prompt);
       const params = new URLSearchParams(Array.from(searchParams.entries()));
@@ -184,6 +248,7 @@ export default function PresentationMaker({
 
   return (
     <Box sx={{ mx: "auto", mt: 6, width: { xs: "100%", md: "70%" } }}>
+      {/* You might need to update InputModeSelector to include "Poster" and remove "Infographic" */}
       <InputModeSelector onModeChange={setInputMode} />
 
       <PromptAttributeSelector
@@ -213,7 +278,6 @@ export default function PresentationMaker({
         <TextField
           fullWidth
           type="url"
-          disabled={loading ? true : false}
           variant="outlined"
           placeholder={getPlaceholder()}
           value={inputValue}
@@ -247,7 +311,8 @@ export default function PresentationMaker({
           >
             <CardMedia
               component="img"
-              image={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+              // Ensure this URL is correct for your thumbnail service
+              image={`http://img.youtube.com/vi/${videoId}/hqdefault.jpg`} // Changed to a standard YouTube thumbnail URL
               alt="YouTube Thumbnail"
               sx={{ width: "100%", height: 300, objectFit: "cover" }}
             />
@@ -298,7 +363,7 @@ export default function PresentationMaker({
           fontWeight: 600,
           mb: 4,
           height: { xs: 57, md: 70 },
-          border: `2px solid ${!inputValue.trim() ? "grey" : "#8E2DE2"}`,
+          border: "2px solid #8E2DE2",
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
@@ -323,15 +388,11 @@ export default function PresentationMaker({
       >
         <span
           style={{
-            color: loading ? "#fff" : !inputValue.trim() ? "grey" : "#8E2DE2",
-            textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
-            transition: "color 0.6s ease, text-shadow 0.6s ease",
-            fontWeight: 600,
+            color: loading ? "#fff" : "#8E2DE2",
+            transition: "color 0.6s ease",
           }}
         >
-          {loading
-            ? `Generating... ${Math.round(progress)}%`
-            : "Generate Outlines"}
+          {loading ? "Generating..." : "Generate Outlines"}
         </span>
         <Box
           className="icon"
@@ -340,11 +401,8 @@ export default function PresentationMaker({
             height: 22,
             ml: 1,
             background: loading
-              ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
-              : !inputValue.trim()
-              ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+              ? "#fff"
               : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
-
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",
@@ -407,8 +465,9 @@ export default function PresentationMaker({
             flexDirection: { xs: "column", md: "row" },
             gap: 2,
             flexWrap: { xs: "wrap", sm: "nowrap" },
-            width: { xs: "100%", md: 1000 },
-            alignItems: "center",
+            width: { xs: "100%", md: 1000 }, // Responsive width
+            //justifyContent: "center", // Center children horizontally
+            alignItems: "center", // Center children vertically (for column)
           }}
         >
           {promptCards.map((card, index) => (
@@ -425,7 +484,24 @@ export default function PresentationMaker({
                 padding: 2,
                 position: "relative",
                 minHeight: { xs: 100, sm: 180 },
-                width: index === 0 || index === 1 || index === 2 ? 270 : 100,
+                width: {
+                  xs:
+                    index === 0
+                      ? 270
+                      : index === 1
+                      ? 270
+                      : index === 2
+                      ? 270
+                      : 100,
+                  sm:
+                    index === 0
+                      ? 250
+                      : index === 1
+                      ? 250
+                      : index === 2
+                      ? 250
+                      : 200,
+                },
               }}
               onClick={() => handlePromptClick(card.description)}
             >
