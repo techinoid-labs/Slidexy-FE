@@ -52,3 +52,4 @@ export const exportSlidesAsPDF = async (
 
   pdf.save(`${pdfFileName}.pdf` || "slides.pdf");
 };
+ 
