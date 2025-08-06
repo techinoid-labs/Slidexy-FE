@@ -36,11 +36,11 @@ const SlideImage: React.FC<SlideImageProps> = ({
   // Attach transformer when image is selected
   useEffect(() => {
     if (isSelected && trRef.current && imageRef.current) {
-      console.log("[SlideImage] Attaching transformer to image node:", { isSelected });
+      //console.log("[SlideImage] Attaching transformer to image node:", { isSelected });
       trRef.current.nodes([imageRef.current]);
       trRef.current.getLayer()?.batchDraw();
     } else if (!isSelected && trRef.current) {
-      console.log("[SlideImage] Detaching transformer from image node:", { isSelected });
+      //console.log("[SlideImage] Detaching transformer from image node:", { isSelected });
       trRef.current.nodes([]);
       trRef.current.getLayer()?.batchDraw();
     }
@@ -68,7 +68,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
 
         if (url && !imageSrc) {
           currentSlide.image_url = null;
-          console.log("[SlideImage] Cleared slide.image_url");
+          //console.log("[SlideImage] Cleared slide.image_url");
         }
 
         if (imageSrc) {
@@ -80,20 +80,20 @@ const SlideImage: React.FC<SlideImageProps> = ({
                 el.properties.imageSrc === imageSrc
               )
           );
-          console.log("[SlideImage] Removed image element from slide.elements");
+          //console.log("[SlideImage] Removed image element from slide.elements");
         }
 
         setSlides(newSlides);
         setSelectedImage(null);
-        console.log("[SlideImage] Dispatched updated slides and cleared selected image");
+        //console.log("[SlideImage] Dispatched updated slides and cleared selected image");
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    console.log("[SlideImage] Keydown listener added");
+    //console.log("[SlideImage] Keydown listener added");
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      console.log("[SlideImage] Keydown listener removed");
+      //console.log("[SlideImage] Keydown listener removed");
     };
   }, [isSelected, slides, url, imageSrc, selectedSlideIndex, setSlides, setSelectedImage]);
 
@@ -102,7 +102,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
     (e: any) => {
       const node = imageRef.current;
       if (!node) {
-        console.log("[SlideImage] handleDragEnd: No image node found");
+        //console.log("[SlideImage] handleDragEnd: No image node found");
         return;
       }
 
@@ -117,10 +117,10 @@ const SlideImage: React.FC<SlideImageProps> = ({
       );
 
       if (isAtBoundary) {
-        console.log("[SlideImage] Snapping back to last valid position:", lastValidPos);
+        //console.log("[SlideImage] Snapping back to last valid position:", lastValidPos);
         node.position({ x: lastValidPos.x, y: lastValidPos.y });
       } else {
-        console.log("[SlideImage] Updating position to:", { newX, newY });
+        //console.log("[SlideImage] Updating position to:", { newX, newY });
         node.position({ x: newX, y: newY });
         setLastValidPos({ x: newX, y: newY });
       }
@@ -145,7 +145,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
             imageSrc: url,
           },
         });
-        console.log("[SlideImage] Updated slide.image_url position");
+        //console.log("[SlideImage] Updated slide.image_url position");
         return;
       }
 

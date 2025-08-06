@@ -3,6 +3,7 @@ export const getSlideDimensions = () => {
   const windowHeight = typeof window !== "undefined" ? window.innerHeight : 400;
   const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 500);
   const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 400);
+  
   const LEFT_PADDING = 17;
   const IMAGE_WIDTH = 200;
   const IMAGE_HEIGHT = 190;

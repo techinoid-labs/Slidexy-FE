@@ -4,6 +4,165 @@ import React, { createContext, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSlides } from "../slice/slidesSlice";
 import type { Slide } from "../slice/slidesSlice";
+import type { RootState } from "../store/store";
+
+export type SlidesType = Slide[];
+
+interface Theme {
+  font: string;
+  primaryColor: string;
+  secondaryColor: string;
+  backgroundColor: string;
+  image_url: string;
+}
+
+interface SlidesContextType {
+  slides: SlidesType;
+  setSlides: (slides: SlidesType) => void;
+  removeSlides: () => void;
+  selectedSlideIndex: number;
+  setSelectedSlideIndex: (index: number) => void;
+  selectedImage: any | null;
+  setSelectedImage: (image: any | null) => void;
+  selectedImageIndex: number | null;
+  setSelectedImageIndex: (index: number | null) => void;
+  selectedTextId: string | null;
+  setSelectedTextId: (id: string | null) => void;
+  selectedShapeIndex: number | null;
+  setSelectedShapeIndex: (index: number | null) => void;
+  tooltip: { visible: boolean; x: number; y: number; node: any | null };
+  setTooltip: (tooltip: {
+    visible: boolean;
+    x: number;
+    y: number;
+    node: any | null;
+  }) => void;
+  isAtBoundary: boolean;
+  setIsAtBoundary: (value: boolean) => void;
+  aiThemes: Theme[];
+  setAiThemes: (themes: Theme[]) => void;
+  isMobileImageSelected: boolean;
+  setIsMobileImageSelected: (value: boolean) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+}
+
+const SlidesContext = createContext<SlidesContextType>({} as SlidesContextType);
+
+export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
+  const dispatch = useDispatch();
+  const slides = useSelector((state: any) => state.slidesData.slides);
+
+  const [pastSlides, setPastSlides] = useState<SlidesType[]>([]);
+  const [futureSlides, setFutureSlides] = useState<SlidesType[]>([]);
+
+  const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
+  const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<any | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null
+  );
+  const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
+    null
+  );
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    x: 50,
+    y: 10,
+    node: null,
+  });
+  const [isAtBoundary, setIsAtBoundary] = useState(false);
+  const [aiThemes, setAiThemes] = useState<Theme[]>([]);
+  const [isMobileImageSelected, setIsMobileImageSelected] = useState(false);
+
+  const deepEqual = (a: any, b: any): boolean => {
+    return JSON.stringify(a) === JSON.stringify(b);
+  };
+
+  const handleSetSlides = (newSlides: SlidesType) => {
+    if (!deepEqual(slides, newSlides)) {
+      setPastSlides((prev) => [...prev, slides]);
+      setFutureSlides([]);
+      dispatch(setSlides(newSlides));
+    }
+  };
+
+  const handleDeleteSlides = () => {
+    setPastSlides((prev) => [...prev, slides]);
+    setFutureSlides([]);
+    dispatch(setSlides([]));
+  };
+
+  const undo = () => {
+    if (pastSlides.length === 0) return;
+    const previous = pastSlides[pastSlides.length - 1];
+    const newPast = pastSlides.slice(0, -1);
+    setPastSlides(newPast);
+    setFutureSlides((prev) => [slides, ...prev]);
+    dispatch(setSlides(previous));
+  };
+
+  const redo = () => {
+    if (futureSlides.length === 0) return;
+    const next = futureSlides[0];
+    const newFuture = futureSlides.slice(1);
+    setFutureSlides(newFuture);
+    setPastSlides((prev) => [...prev, slides]);
+    dispatch(setSlides(next));
+  };
+
+  const canUndo = pastSlides.length > 0;
+  const canRedo = futureSlides.length > 0;
+
+  return (
+    <SlidesContext.Provider
+      value={{
+        slides,
+        setSlides: handleSetSlides,
+        removeSlides: handleDeleteSlides,
+        selectedSlideIndex,
+        setSelectedSlideIndex,
+        selectedImage,
+        setSelectedImage,
+        selectedImageIndex,
+        setSelectedImageIndex,
+        selectedTextId,
+        setSelectedTextId,
+        selectedShapeIndex,
+        setSelectedShapeIndex,
+        tooltip,
+        setTooltip,
+        isAtBoundary,
+        setIsAtBoundary,
+        aiThemes,
+        setAiThemes,
+        isMobileImageSelected,
+        setIsMobileImageSelected,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+      }}
+    >
+      {children}
+    </SlidesContext.Provider>
+  );
+};
+
+export const useSlides = () => useContext(SlidesContext);
+
+{
+  /*
+  CURRENT
+
+  "use client";
+
+import React, { createContext, useContext, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setSlides } from "../slice/slidesSlice";
+import type { Slide } from "../slice/slidesSlice";
 
 export type SlidesType = Slide[];
 interface Theme {
@@ -160,3 +319,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useSlides = () => useContext(SlidesContext);
+
+  
+  */
+}

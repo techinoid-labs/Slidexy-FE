@@ -75,12 +75,13 @@ export const getSlideDimensions = () => {
   // const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 960); // 90% of window width, capped at 500
   // const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 540); // 60% of window height, capped at 400
   const SLIDE_WIDTH = 960; // 90% of window width, capped at 500
-  const SLIDE_HEIGHT = 540; // 60% of window height, capped at 400
+  const SLIDE_HEIGHT = 600; // 60% of window height, capped at 400
   const LEFT_PADDING = 20;
   const IMAGE_WIDTH = 380;
   const IMAGE_HEIGHT = 320;
-
-  return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT };
+  const SLIDE_WIDTH_MOBILE = Math.min(windowWidth * 0.8, 500);
+  const SLIDE_HEIGHT_MOBILE = Math.min(windowHeight * 0.6, 400);
+  return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT, SLIDE_HEIGHT_MOBILE,SLIDE_WIDTH_MOBILE };
 };
 
 
@@ -133,7 +134,7 @@ export const constrainToCanvas = (
   const safeHeight = height || 30;
   // Use a less restrictive maxX to allow dragging across the canvas
   const maxX = canvasWidth - paddingRight; // e.g., 300 - 10 = 290
-  const maxY = canvasHeight - paddingBottom + 40;
+  const maxY = canvasHeight - paddingBottom + 10;
 
   const constrainedX = Math.max(minX, Math.min(x, maxX));
   const constrainedY = Math.max(minY, Math.min(y, maxY));
