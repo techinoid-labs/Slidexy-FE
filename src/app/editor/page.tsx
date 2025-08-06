@@ -23,7 +23,8 @@ import SlideEditorMobile from "./SlideEditor-NewMobile";
 import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
 import TextSettingsPanelMobile from "@/app/components/new-ui/Text-Panel";
 import { Button } from "@mui/material";
-
+import SlideShowPlayer from "@/app/components/modify-presentation/Slide-Preview";
+import { useSlideThemeContext } from "../context/ThemeContext";
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const {
@@ -40,6 +41,7 @@ const Page = () => {
     isMobileImageSelected, // Use from context
     setIsMobileImageSelected, // Use from context
   } = useSlides();
+  const { selectedTheme, setSelectedTheme} = useSlideThemeContext();
   const dispatch = useDispatch();
   const router = useRouter();
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
@@ -48,7 +50,7 @@ const Page = () => {
   const [showRightPanel, setShowRightPanel] = useState(false);
   const theme = useTheme();
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
-
+  const [previewOpen, setPreviewOpen] = useState(false);
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
     setSelectedTextId(null);
@@ -182,14 +184,14 @@ const Page = () => {
         slide_id: slide.slide_id,
         slide_title: slideTitle
           ? {
-              text: slideTitle,
-              properties: {
-                fontSize: slideTitleProps.fontSize,
-                fill: slideTitleProps.fill?.replace("#", ""),
-                fontStyle: slideTitleProps.fontStyle,
-                fontFamily: slideTitleProps.fontFamily,
-              },
-            }
+            text: slideTitle,
+            properties: {
+              fontSize: slideTitleProps.fontSize,
+              fill: slideTitleProps.fill?.replace("#", ""),
+              fontStyle: slideTitleProps.fontStyle,
+              fontFamily: slideTitleProps.fontFamily,
+            },
+          }
           : undefined,
         elements,
         image_url: slide.image_url,
@@ -233,6 +235,7 @@ const Page = () => {
             onExportPDF={handleExportPDF}
             onExportPPT={handleExportPPTX}
             onClearCanvas={handleClearCanvas}
+            onPreview={() => setPreviewOpen(true)}
           />
         </div>
       ) : (
@@ -240,6 +243,8 @@ const Page = () => {
           onExportPDF={handleExportPDF}
           onExportPPT={handleExportPPTX}
           onClearCanvas={handleClearCanvas}
+          onPreview={() => setPreviewOpen(true)}
+
         />
       )}
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
@@ -255,6 +260,12 @@ const Page = () => {
               onClearCanvas={handleClearCanvas}
             /> */}
             <SlideEditorMobile slides={slides} stageRefs={stageRefs} />
+            <SlideShowPlayer
+              slides={slides}
+              theme = {selectedTheme}
+              open={previewOpen}
+              onClose={() => setPreviewOpen(false)}
+            />
             {isMobileTextSelected && (
               <TextSettingsPanelMobile
                 resetAll={resetAll}
@@ -284,6 +295,12 @@ const Page = () => {
             </div>
             <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
               <SlideEditor slides={slides} stageRefs={stageRefs} />
+              <SlideShowPlayer
+              slides={slides}
+              theme = {selectedTheme}
+              open={previewOpen}
+              onClose={() => setPreviewOpen(false)}
+            />
             </div>
             <div
               className={`
@@ -311,11 +328,10 @@ const Page = () => {
                 </div>
               )}
               <div
-                className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
-                  !showRightPanel && !isLGScreen
+                className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${!showRightPanel && !isLGScreen
                     ? "opacity-0 pointer-events-none"
                     : "opacity-100"
-                }`}
+                  }`}
               >
                 {(isTextSelected || isShapeSelected) && (
                   <TextSettingsPanel resetAll={resetAll} />

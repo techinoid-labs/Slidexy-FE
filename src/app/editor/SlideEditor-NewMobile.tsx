@@ -566,6 +566,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 flexDirection: "column",
                 alignItems: "center",
                 overflow: "hidden",
+                
             }}
         >
             {slides.map((slide: any, index: number) => {
@@ -580,12 +581,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         key={slide.slide_id}
                         sx={{
                             position: "relative",
-                            mb: 1,
-                            top: -15,
+                            mb: {xs: 7, md : -1, sm: -1 },
+                            top: {xs: -30, sm : 20, lg : 20 },
                             display: index === selectedIndex ? "block" : "none",
                             transform: `scale(${scale})`,
                             width: `${getDynamicConstants().SLIDE_WIDTH}px`,
                             height: `${getDynamicConstants().SLIDE_HEIGHT}px`,
+                           
                         }}
                     >
                         <Stage

@@ -87,7 +87,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
         my: 1,
         px: 2,
         py: 1,
-        mt: isMobile?  -170 : 0
+        mt: {xs: -75, md: 0, sm : -5, lg: -5}
       }}
     >
       <Box
