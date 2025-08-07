@@ -207,6 +207,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       text={title.text}
                       x={titleProps.x || titleY}
                       y={titleProps.y || getDynamicConstants().LEFT_PADDING}
+                      zIndex={titleProps.zIndex}
                       width={(() => {
                         const textWidth =
                           getDynamicConstants().textMaxWidth + 200;
@@ -276,6 +277,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       text={el.text}
                       x={el.properties.x}
                       y={el.properties.y}
+                      zIndex={el.properties.zIndex}
                       width={
                         el.properties.width ||
                         getDynamicConstants().textMaxWidth -
@@ -336,6 +338,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         imageSrc={el.properties.imageSrc}
                         x={el.properties.x}
                         y={el.properties.y}
+                        zIndex={el.properties.zIndex}
                         width={el.properties.width}
                         height={el.properties.height}
                         isSelected={selectedImageId === `el-${index}-${i}`}
