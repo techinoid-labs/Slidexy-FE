@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useRef, useCallback, useState } from "react";
 import { Image as KonvaImage, Transformer } from "react-konva";
 import useImage from "use-image";
@@ -273,7 +271,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
     <>
       <KonvaImage
         ref={imageRef}
-        id={image_id || imageSrc || url} // Use image_id for Konva node ID, fallback to imageSrc or url
+        id={image_id} // Use image_id for Konva node ID, fallback to imageSrc or url
         image={image}
         x={x}
         y={y}
@@ -288,7 +286,8 @@ const SlideImage: React.FC<SlideImageProps> = ({
         onDragEnd={handleDragEnd}
         onTransformEnd={handleTransformEnd}
       />
-      {isSelected && (
+      {isSelected
+       && (
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
@@ -304,6 +303,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
             setIsAtBoundary(isAtBoundary);
             return { ...newBox, x, y, width, height };
           }}
+
           rotateEnabled
           enabledAnchors={[
             "middle-left",
@@ -314,9 +314,13 @@ const SlideImage: React.FC<SlideImageProps> = ({
             "bottom-right",
           ]}
         />
+       
       )}
     </>
+    
   );
+  
+  
 };
 
-export default SlideImage;
+export default SlideImage; 

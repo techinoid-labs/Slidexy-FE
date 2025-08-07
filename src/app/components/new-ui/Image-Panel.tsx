@@ -1,13 +1,9 @@
-"use client";
-
 import React, { useState, useRef } from "react";
-import { Box, IconButton, Typography } from "@mui/material";
-import OpacityPanel from "./Opacity-Panel";
+import { Box, IconButton, Typography, CircularProgress } from "@mui/material";
 import { useSlides } from "@/app/context/SlidesContext";
 import { v4 as uuidv4 } from "uuid";
-import Image from "next/image";
+import CropModal from "./CropModal";
 import { removeBackground } from "@imgly/background-removal";
-import { CircularProgress } from "@mui/material";
 
 interface ImageSettingsPanelMobileProps {
   onClose: () => void;
@@ -31,11 +27,9 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
     sendElementBackward,
   } = useSlides();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [imageSrc, setImageSrc] = useState<string>(
-    selectedImage?.properties?.imageSrc || "/sample-content-image.jpg"
-  );
   const [isOpacityPanelOpen, setIsOpacityPanelOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
 
   // Get the selected image object
   let imageObj: any = null;
@@ -56,7 +50,6 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
   const originalY = rawProps.y ?? 0;
   const width = rawProps.width ?? 200;
   const height = rawProps.height ?? 190;
-  const slideIndex = selectedSlideIndex;
 
   const updateImageProperty = (prop: string, value: any) => {
     if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null)
@@ -110,7 +103,7 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
     const updatedSlides = structuredClone(slides);
     updatedSlides[selectedSlideIndex].elements.splice(selectedImageIndex, 1);
     setSlides(updatedSlides);
-    onClose(); // Close the panel after deletion
+    onClose();
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,8 +113,6 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
     const reader = new FileReader();
     reader.onloadend = () => {
       const result = reader.result as string;
-      setImageSrc(result);
-
       if (
         selectedSlideIndex === null ||
         selectedImageIndex === null ||
@@ -157,8 +148,6 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
       const reader = new FileReader();
       reader.onloadend = () => {
         const resultUrl = reader.result as string;
-        setImageSrc(resultUrl);
-
         if (
           selectedSlideIndex !== null &&
           selectedImageIndex !== null &&
@@ -170,7 +159,6 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
           ].properties.imageSrc = resultUrl;
           setSlides(updatedSlides);
         }
-
         setIsLoading(false);
       };
 
@@ -182,241 +170,292 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
   };
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        height: 60,
-        bgcolor: "#fff",
-        borderTop: "1px solid #E0E0E0",
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "center",
-        py: 1.2,
-        overflow: "auto",
-        zIndex: 3,
-        boxSizing: "border-box",
-        position: "fixed",
-        bottom: 83,
-        paddingLeft: 3,
-        paddingRight: 3,
-        left: 0,
-        gap: 1.5,
-      }}
-    >
-      {/* Duplicate Button */}
+    <>
       <Box
-        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+        sx={{
+          width: "100%",
+          height: 60,
+          bgcolor: "#fff",
+          borderTop: "1px solid #E0E0E0",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          py: 1.2,
+          overflow: "auto",
+          zIndex: 3,
+          boxSizing: "border-box",
+          position: "fixed",
+          bottom: 83,
+          paddingLeft: 3,
+          paddingRight: 3,
+          left: 0,
+          gap: 1.5,
+        }}
       >
-        <IconButton
-          onClick={handleDuplicateImage}
-          sx={{
-            color: "#222",
-            backgroundColor: "#F8F8FA",
-            padding: "2px",
-            width: 32,
-            height: 30,
-            mb: 0.2,
-          }}
+        {/* Duplicate Button */}
+        <Box
+          sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
         >
-          <img
-            src="/duplicate-icon.svg"
-            alt="duplicate"
-            style={{ width: 15, height: 15 }}
-          />
-        </IconButton>
-        <Typography
-          sx={{
-            fontSize: "9px",
-            color: "#222",
-            textTransform: "none",
-            letterSpacing: "0.5px",
-            marginBottom: 0.5,
-          }}
-        >
-          Duplicate
-        </Typography>
-      </Box>
-
-      {/* Delete Button */}
-      <Box
-        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-      >
-        <IconButton
-          onClick={handleDeleteImage}
-          sx={{
-            color: "#C00",
-            backgroundColor: "#F8F8FA",
-            padding: "2px",
-            width: 32,
-            height: 30,
-            mb: 0.2,
-          }}
-        >
-          <img
-            src="/delete-icon.svg"
-            alt="delete"
-            style={{ width: 15, height: 15 }}
-          />
-        </IconButton>
-        <Typography
-          sx={{
-            fontSize: "9px",
-            color: "#222",
-            textTransform: "none",
-            letterSpacing: "0.5px",
-            marginBottom: 0.5,
-          }}
-        >
-          Delete
-        </Typography>
-      </Box>
-
-      {/* Replace Button */}
-      <Box
-        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-      >
-        <IconButton
-          onClick={() => fileInputRef.current?.click()}
-          sx={{
-            color: "#222",
-            backgroundColor: "#F8F8FA",
-            padding: "2px",
-            width: 32,
-            height: 30,
-            mb: 0.2,
-          }}
-        >
-          <img
-            src="/replace.svg"
-            alt="replace"
-            style={{ width: 15, height: 15 }}
-          />
-        </IconButton>
-        <Typography
-          sx={{
-            fontSize: "9px",
-            color: "#222",
-            textTransform: "none",
-            letterSpacing: "0.5px",
-            marginBottom: 0.5,
-          }}
-        >
-          Replace
-        </Typography>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handleImageChange}
-        />
-      </Box>
-
-      {/* Background Remover Button */}
-      <Box
-        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-      >
-        <IconButton
-          onClick={handleRemoveBackground}
-          sx={{
-            color: "#222",
-            backgroundColor: "#F8F8FA",
-            padding: "2px",
-            width: 32,
-            height: 30,
-            mb: 0.2,
-          }}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <CircularProgress size={15} sx={{ color: "#222" }} />
-          ) : (
+          <IconButton
+            onClick={handleDuplicateImage}
+            sx={{
+              color: "#222",
+              backgroundColor: "#F8F8FA",
+              padding: "2px",
+              width: 32,
+              height: 30,
+              mb: 0.2,
+            }}
+          >
             <img
-              src="/bg-remove.svg"
-              alt="remove-bg"
+              src="/duplicate-icon.svg"
+              alt="duplicate"
               style={{ width: 15, height: 15 }}
             />
-          )}
-        </IconButton>
-        <Typography
-          sx={{
-            fontSize: "9px",
-            color: "#222",
-            textTransform: "none",
-            letterSpacing: "0.5px",
-            marginBottom: 0.5,
-            whiteSpace: "nowrap",
-          }}
+          </IconButton>
+          <Typography
+            sx={{
+              fontSize: "9px",
+              color: "#222",
+              textTransform: "none",
+              letterSpacing: "0.5px",
+              marginBottom: 0.5,
+            }}
+          >
+            Duplicate
+          </Typography>
+        </Box>
+
+        {/* Delete Button */}
+        <Box
+          sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
         >
-          BG Remover
-        </Typography>
-      </Box>
-      <Box
-        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-      >
-        <IconButton
-          onClick={() => bringElementForward(selectedImageIndex)}
-          sx={{
-            color: "#C00",
-            backgroundColor: "#F8F8FA",
-            padding: "2px",
-            width: 32,
-            height: 30,
-            mb: 0.2,
-          }}
+          <IconButton
+            onClick={handleDeleteImage}
+            sx={{
+              color: "#C00",
+              backgroundColor: "#F8F8FA",
+              padding: "2px",
+              width: 32,
+              height: 30,
+              mb: 0.2,
+            }}
+          >
+            <img
+              src="/delete-icon.svg"
+              alt="delete"
+              style={{ width: 15, height: 15 }}
+            />
+          </IconButton>
+          <Typography
+            sx={{
+              fontSize: "9px",
+              color: "#222",
+              textTransform: "none",
+              letterSpacing: "0.5px",
+              marginBottom: 0.5,
+            }}
+          >
+            Delete
+          </Typography>
+        </Box>
+
+        {/* Replace Button */}
+        <Box
+          sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
         >
-          <img
-            src="/forward.svg"
-            alt="delete"
-            style={{ width: 15, height: 15, stroke: "#000000" }}
+          <IconButton
+            onClick={() => fileInputRef.current?.click()}
+            sx={{
+              color: "#222",
+              backgroundColor: "#F8F8FA",
+              padding: "2px",
+              width: 32,
+              height: 30,
+              mb: 0.2,
+            }}
+          >
+            <img
+              src="/replace.svg"
+              alt="replace"
+              style={{ width: 15, height: 15 }}
+            />
+          </IconButton>
+          <Typography
+            sx={{
+              fontSize: "9px",
+              color: "#222",
+              textTransform: "none",
+              letterSpacing: "0.5px",
+              marginBottom: 0.5,
+            }}
+          >
+            Replace
+          </Typography>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleImageChange}
           />
-        </IconButton>
-        <Typography
-          sx={{
-            fontSize: "9px",
-            color: "#222",
-            textTransform: "none",
-            letterSpacing: "0.5px",
-            marginBottom: 0.5,
-          }}
+        </Box>
+
+        {/* Background Remover Button */}
+        <Box
+          sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
         >
-          Forward
-        </Typography>
+          <IconButton
+            onClick={handleRemoveBackground}
+            sx={{
+              color: "#222",
+              backgroundColor: "#F8F8FA",
+              padding: "2px",
+              width: 32,
+              height: 30,
+              mb: 0.2,
+            }}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <CircularProgress size={15} sx={{ color: "#222" }} />
+            ) : (
+              <img
+                src="/bg-remove.svg"
+                alt="remove-bg"
+                style={{ width: 15, height: 15 }}
+              />
+            )}
+          </IconButton>
+          <Typography
+            sx={{
+              fontSize: "9px",
+              color: "#222",
+              textTransform: "none",
+              letterSpacing: "0.5px",
+              marginBottom: 0.5,
+              whiteSpace: "nowrap",
+            }}
+          >
+            BG Remover
+          </Typography>
+        </Box>
+
+        {/* Forward Button */}
+        <Box
+          sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+        >
+          <IconButton
+            onClick={() => bringElementForward(selectedImageIndex)}
+            sx={{
+              color: "#222",
+              backgroundColor: "#F8F8FA",
+              padding: "2px",
+              width: 32,
+              height: 30,
+              mb: 0.2,
+            }}
+          >
+            <img
+              src="/forward.svg"
+              alt="forward"
+              style={{ width: 15, height: 15 }}
+            />
+          </IconButton>
+          <Typography
+            sx={{
+              fontSize: "9px",
+              color: "#222",
+              textTransform: "none",
+              letterSpacing: "0.5px",
+              marginBottom: 0.5,
+            }}
+          >
+            Forward
+          </Typography>
+        </Box>
+
+        {/* Backward Button */}
+        <Box
+          sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+        >
+          <IconButton
+            onClick={() => sendElementBackward(selectedImageIndex)}
+            sx={{
+              color: "#222",
+              backgroundColor: "#F8F8FA",
+              padding: "2px",
+              width: 32,
+              height: 30,
+              mb: 0.2,
+            }}
+          >
+            <img
+              src="/backward.svg"
+              alt="backward"
+              style={{ width: 15, height: 15 }}
+            />
+          </IconButton>
+          <Typography
+            sx={{
+              fontSize: "9px",
+              color: "#222",
+              textTransform: "none",
+              letterSpacing: "0.5px",
+              marginBottom: 0.5,
+            }}
+          >
+            Backward
+          </Typography>
+        </Box>
+
+        {/* Crop Button */}
+        <Box
+          sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+        >
+          <IconButton
+            onClick={() => setIsCropModalOpen(true)}
+            sx={{
+              color: "#222",
+              backgroundColor: "#F8F8FA",
+              padding: "2px",
+              width: 32,
+              height: 30,
+              mb: 0.2,
+            }}
+            disabled={!imageObj?.properties?.imageSrc}
+          >
+            <img
+              src="/crop.svg"
+              alt="crop"
+              style={{ width: 15, height: 15 }}
+            />
+          </IconButton>
+          <Typography
+            sx={{
+              fontSize: "9px",
+              color: "#222",
+              textTransform: "none",
+              letterSpacing: "0.5px",
+              marginBottom: 0.5,
+            }}
+          >
+            Crop
+          </Typography>
+        </Box>
       </Box>
-      <Box
-        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-      >
-        <IconButton
-          onClick={() => sendElementBackward(selectedImageIndex)}
-          sx={{
-            color: "#C00",
-            backgroundColor: "#F8F8FA",
-            padding: "2px",
-            width: 32,
-            height: 30,
-            mb: 0.2,
-          }}
-        >
-          <img
-            src="/backward.svg"
-            alt="delete"
-            style={{ width: 15, height: 15, stroke: "#000000" }}
-          />
-        </IconButton>
-        <Typography
-          sx={{
-            fontSize: "9px",
-            color: "#222",
-            textTransform: "none",
-            letterSpacing: "0.5px",
-            marginBottom: 0.5,
-          }}
-        >
-          Backward
-        </Typography>
-      </Box>
-    </Box>
+
+      {/* Crop Modal */}
+      <CropModal
+        open={isCropModalOpen}
+        onClose={() => setIsCropModalOpen(false)}
+        imageSrc={imageObj?.properties?.imageSrc || ""}
+        selectedSlideIndex={selectedSlideIndex}
+        selectedImageIndex={selectedImageIndex}
+        updateImageProperty={updateImageProperty}
+      />
+    </>
   );
 };
 
