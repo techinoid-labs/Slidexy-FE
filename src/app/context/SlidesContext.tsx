@@ -147,7 +147,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (currentZIndex >= elements.length) return;
 
-    const newZIndex = currentZIndex + 10;
+    const newZIndex = currentZIndex + 1;
 
     const conflictIndex = elements.findIndex(
       (el: any) => (el.properties.zIndex || 1) === newZIndex

@@ -299,7 +299,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
         </Box>
         <Divider sx={{ my: 2 }} />
 
-        {/* <Box sx={{ px: 3, mb: 2 }}>
+        <Box sx={{ px: 3, mb: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
             <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
               Layer Order
@@ -353,7 +353,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
               Send Backward
             </Button>
           </Box>
-        </Box> */}
+        </Box>
         {/* Set as Background */}
         {/* <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography sx={{ fontWeight: 500, fontSize: 15, flex: 1 }}>

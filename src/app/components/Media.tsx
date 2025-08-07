@@ -58,10 +58,12 @@ const Media: React.FC<MediaPanelProps> = ({
   } = useSlides();
 
   const insertImageIntoRedux = (base64: string, width = 400, height = 400) => {
-    const SLIDE_WIDTH = 920;
-    const SLIDE_HEIGHT = 430;
+    const SLIDE_WIDTH = 960;
+    const SLIDE_HEIGHT = 540;
     const x = (SLIDE_WIDTH - width) / 2;
     const y = (SLIDE_HEIGHT - height) / 2;
+
+    const elementIndex = slides[selectedSlideIndex].elements.length;
 
     const newImageElement = {
       konva_component: "Konva.Image",
@@ -73,6 +75,7 @@ const Media: React.FC<MediaPanelProps> = ({
         width,
         height,
         imageSrc: base64,
+        zIndex: elementIndex,
       },
     };
 

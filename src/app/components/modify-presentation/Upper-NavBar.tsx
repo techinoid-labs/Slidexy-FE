@@ -147,7 +147,6 @@ const UpperNavBar: React.FC<{
               flexDirection: "column",
               alignItems: "flex-start",
               ml: 1,
-
             }}
           >
             {editing ? (
@@ -166,7 +165,7 @@ const UpperNavBar: React.FC<{
                   background: "transparent",
                   padding: 0,
                   margin: 0,
-                  whiteSpace: "nowrap"
+                  whiteSpace: "nowrap",
                 }}
               />
             ) : (
@@ -178,8 +177,7 @@ const UpperNavBar: React.FC<{
                   fontSize: 16,
                   cursor: "pointer",
                   "&:hover": { textDecoration: "underline" },
-                  whiteSpace: "nowrap"
-
+                  whiteSpace: "nowrap",
                 }}
               >
                 {fileName || "File Name Here"}
@@ -187,8 +185,12 @@ const UpperNavBar: React.FC<{
             )}
             <Typography
               variant="caption"
-              sx={{ color: "#888", mt: -0.5, fontSize: 12, whiteSpace: "nowrap" }}
-
+              sx={{
+                color: "#888",
+                mt: -0.5,
+                fontSize: 12,
+                whiteSpace: "nowrap",
+              }}
             >
               File Type
             </Typography>
@@ -234,8 +236,7 @@ const UpperNavBar: React.FC<{
                   <RedoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
                 </IconButton>
               </Box>
-              <Box
-              >
+              <Box>
                 <IconButton
                   onClick={() => {
                     setSelectedImage(null);
@@ -251,12 +252,11 @@ const UpperNavBar: React.FC<{
                     backgroundColor: "rgba(242, 240, 255, 1)",
                     color: "#222",
                     padding: "2px",
-                    width: {xs: 32, lg: 39, sm: 40, md: 30},
-                    height: {xs: 30, lg : 40, sm: 40, md: 30},
+                    width: { xs: 32, lg: 39, sm: 40, md: 30 },
+                    height: { xs: 30, lg: 40, sm: 40, md: 30 },
                     mb: 0.2,
                     ml: { xs: 2, md: 0 },
-                    mr: {xs: -0.5, md: 0}
-                    
+                    mr: { xs: -0.5, md: 0 },
                   }}
                 >
                   <Box
@@ -270,17 +270,13 @@ const UpperNavBar: React.FC<{
                     }}
                   />
                 </IconButton>
-
-
               </Box>
-
             </>
           )}
           {/* Desktop Export and Clear Buttons */}
           {!isMobile && (
             <>
-            <Box
-              >
+              <Box>
                 <IconButton
                   onClick={() => {
                     setSelectedImage(null);
@@ -296,11 +292,10 @@ const UpperNavBar: React.FC<{
                     backgroundColor: "rgba(242, 240, 255, 1)",
                     color: "#222",
                     padding: "2px",
-                    width: {xs: 32, lg: 39, sm: 40},
-                    height: {xs: 30, lg : 40, sm: 40},
+                    width: { xs: 32, lg: 39, sm: 40 },
+                    height: { xs: 30, lg: 40, sm: 40 },
                     mb: 0.2,
                     ml: { xs: 2, md: 0 },
-                    
                   }}
                 >
                   <Box
@@ -308,14 +303,12 @@ const UpperNavBar: React.FC<{
                     src="/preview.svg"
                     alt="Preview"
                     sx={{
-                      width: { xs: 15, sm: 20, md: 20, lg:20  },
+                      width: { xs: 15, sm: 20, md: 20, lg: 20 },
                       height: { xs: 15, sm: 20, md: 20, lg: 20 },
                       ml: 0.5,
                     }}
                   />
                 </IconButton>
-
-
               </Box>
               <Box
                 onClick={() => {
