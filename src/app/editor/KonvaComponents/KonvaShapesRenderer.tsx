@@ -64,7 +64,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
   return (
     <>
       {elements.map((el: any, i: number) => {
-        console.log({ Shapes_zIndex: el.properties.zIndex });
+        // console.log({ Shapes_zIndex: el.properties.zIndex });
 
         if (el.element_type !== "shape") return null;
         const commonProps = {

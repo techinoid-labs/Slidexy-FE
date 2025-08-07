@@ -48,11 +48,11 @@ export const restrictShapeBounds = (
     width = Math.max(width, minSize);
     height = Math.max(height, minSize);
   }
-const paddingBottom = window.innerHeight <= 830 ? 50 : 10;
+  const paddingBottom = window.innerHeight <= 830 ? 50 : 10;
   // Clamp position so shape doesn't overflow canvas
   if (["Konva.Line"].includes(shapeType)) {
-    maxX = canvasWidth - width;  // extra padding for small shapes
-    maxY = canvasHeight - paddingBottom ;
+    maxX = canvasWidth - width; // extra padding for small shapes
+    maxY = canvasHeight - paddingBottom;
   } else {
     maxX = canvasWidth - width + 50;
     maxY = canvasHeight - paddingBottom + 30;
@@ -75,15 +75,22 @@ export const getSlideDimensions = () => {
   // const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 960); // 90% of window width, capped at 500
   // const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 540); // 60% of window height, capped at 400
   const SLIDE_WIDTH = 960; // 90% of window width, capped at 500
-  const SLIDE_HEIGHT = 600; // 60% of window height, capped at 400
+  const SLIDE_HEIGHT = 540; // 60% of window height, capped at 400
   const LEFT_PADDING = 20;
   const IMAGE_WIDTH = 380;
   const IMAGE_HEIGHT = 320;
   const SLIDE_WIDTH_MOBILE = Math.min(windowWidth * 0.8, 500);
   const SLIDE_HEIGHT_MOBILE = Math.min(windowHeight * 0.6, 400);
-  return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT, SLIDE_HEIGHT_MOBILE,SLIDE_WIDTH_MOBILE };
+  return {
+    SLIDE_WIDTH,
+    SLIDE_HEIGHT,
+    LEFT_PADDING,
+    IMAGE_WIDTH,
+    IMAGE_HEIGHT,
+    SLIDE_HEIGHT_MOBILE,
+    SLIDE_WIDTH_MOBILE,
+  };
 };
-
 
 // export const clearCanvas = () => {
 //   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
@@ -262,7 +269,7 @@ export const getRandomSlide = () => {
   ];
 
   const getRandomBullets = (count: number) =>
-    Array.from({ length: count }, () => {
+    Array.from({ length: count }, (_, index) => {
       const text = bullets[Math.floor(Math.random() * bullets.length)];
       return {
         element_type: "bullet_point",
@@ -274,6 +281,7 @@ export const getRandomSlide = () => {
           fontFamily: "Roboto",
           fill: "#444",
           fontStyle: "",
+          zIndex: index + 1,
         },
       };
     });
@@ -304,6 +312,7 @@ export const getRandomSlide = () => {
           y: (SLIDE_HEIGHT - 320) / 2,
           width: getSlideDimensions().IMAGE_WIDTH,
           height: getSlideDimensions().IMAGE_HEIGHT,
+          zIndex: 4,
         },
       },
     ],

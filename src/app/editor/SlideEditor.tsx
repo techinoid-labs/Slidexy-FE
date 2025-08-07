@@ -47,14 +47,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     redo,
     canUndo,
     canRedo,
-    bringElementForward,
-    sendElementBackward,
   } = useSlides();
 
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scale, setScale] = useState(1);
+
   console.log(slides);
 
   const handleAddSlide = () => {
@@ -302,7 +301,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   </>
                 )}
                 {slide.elements.map((el: any, i: number) => {
-                  console.log({ Text_zIndex: el.properties.zIndex });
+                  // console.log({ Text_zIndex: el.properties.zIndex });
 
                   if (
                     el.element_type !== "text" &&
@@ -369,7 +368,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   }}
                 />
                 {slide.elements.map((el: any, i: number) => {
-                  console.log({ IMG_zIndex: el.properties.zIndex });
+                  // console.log({ IMG_zIndex: el.properties.zIndex });
                   if (
                     el.element_type === "image" &&
                     el.konva_component === "Konva.Image"

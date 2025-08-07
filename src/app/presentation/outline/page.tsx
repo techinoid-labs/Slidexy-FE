@@ -93,6 +93,7 @@ function mapCardsToSlides(cards: any[]): Slide[] {
         fontFamily: "Inter",
         fill: "#444",
         fontStyle: "normal",
+        zIndex: index + 1,
       },
     }));
 
@@ -109,6 +110,7 @@ function mapCardsToSlides(cards: any[]): Slide[] {
                 : (SLIDE_HEIGHT - IMAGE_HEIGHT) / 2,
               width: isMobile ? 230 : IMAGE_WIDTH,
               height: isMobile ? 230 : IMAGE_HEIGHT,
+              zIndex: 4,
             },
           },
         ]

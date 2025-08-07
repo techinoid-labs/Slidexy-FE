@@ -340,7 +340,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       </Box>
       <Divider sx={{ my: 2 }} />
 
-      <Box sx={{ px: 3, mb: 2 }}>
+      {/* <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
             Layer Order
@@ -398,7 +398,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             Send Backward
           </Button>
         </Box>
-      </Box>
+      </Box> */}
     </Box>
   );
 };
