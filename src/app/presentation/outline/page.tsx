@@ -44,36 +44,6 @@ function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
   }));
 }
 
-// Map UI cards back to Redux Slide[] format
-// function mapCardsToSlides(cards: any[]): Slide[] {
-//   return cards.map((card, index) => ({
-//     slide_id: `slide-${index + 1}`,
-//     slide_title: {
-//       text: card.title,
-//       konva_component: "Konva.Text",
-//       properties: {
-//         fontSize: 32,
-//         fontFamily: "Inter",
-//         fill: "#333",
-//         fontStyle: "bold",
-//       },
-//     },
-//     elements: (card.bullets || []).map((text: string) => ({
-//       element_type: "bullet_point",
-//       text,
-//       konva_component: "Konva.Text",
-//       properties: {
-//         fontSize: 18,
-//         fontFamily: "Inter",
-//         fill: "#444",
-//         fontStyle: "normal",
-//       },
-//     })),
-//     image_url: card.images?.[0] || null,
-//     image_caption: "",
-//   }));
-// }
-
 function mapCardsToSlides(cards: any[]): Slide[] {
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
@@ -84,18 +54,20 @@ function mapCardsToSlides(cards: any[]): Slide[] {
   const titleFontSize = isMobile ? 14 : 32;
 
   return cards.map((card, index) => {
-    const bulletElements = (card.bullets || []).map((text: string) => ({
-      element_type: "bullet_point",
-      text,
-      konva_component: "Konva.Text",
-      properties: {
-        fontSize: bulletFontSize,
-        fontFamily: "Inter",
-        fill: "#444",
-        fontStyle: "normal",
-        zIndex: index + 1,
-      },
-    }));
+    const bulletElements = (card.bullets || []).map(
+      (text: string, bulletIndex: number) => ({
+        element_type: "bullet_point",
+        text,
+        konva_component: "Konva.Text",
+        properties: {
+          fontSize: bulletFontSize,
+          fontFamily: "Inter",
+          fill: "#444",
+          fontStyle: "normal",
+          zIndex: bulletIndex + 1,
+        },
+      })
+    );
 
     const imageElement = card.images?.[0]
       ? [
@@ -110,7 +82,7 @@ function mapCardsToSlides(cards: any[]): Slide[] {
                 : (SLIDE_HEIGHT - IMAGE_HEIGHT) / 2,
               width: isMobile ? 230 : IMAGE_WIDTH,
               height: isMobile ? 230 : IMAGE_HEIGHT,
-              zIndex: 4,
+              zIndex: (card.bullets?.length || 0) + 1,
             },
           },
         ]

@@ -23,7 +23,7 @@ interface SlidesContextType {
   selectedSlideIndex: number;
   setSelectedSlideIndex: (index: number) => void;
   selectedImage: any | null;
-  selectedImageId : string | null;
+  selectedImageId: string | null;
   setSelectedImage: (image: any | null) => void;
   selectedImageIndex: number | null;
   setSelectedImageIndex: (index: number | null) => void;
@@ -64,7 +64,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
-   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<any | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
     null
@@ -133,6 +133,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const bringElementForward = (el: any) => {
+    console.log("bringElementForward clicked");
     const selectedElementIndex = Number(getSelectedElement(el));
     const currentSlide = slides[selectedSlideIndex];
     if (!currentSlide) return;
@@ -171,6 +172,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const sendElementBackward = (el: any) => {
+    console.log("sendElementBackward clicked");
+
     const selectedElementIndex = Number(getSelectedElement(el));
     const currentSlide = slides[selectedSlideIndex];
     if (!currentSlide) return;

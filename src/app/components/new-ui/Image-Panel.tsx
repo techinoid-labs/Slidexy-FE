@@ -27,6 +27,8 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
     selectedImage,
     setSelectedImage,
     setSelectedImageIndex,
+    bringElementForward,
+    sendElementBackward,
   } = useSlides();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [imageSrc, setImageSrc] = useState<string>(
@@ -70,7 +72,8 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
   };
 
   const handleDuplicateImage = () => {
-    if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null) return;
+    if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null)
+      return;
 
     const currentSlide = slides[selectedSlideIndex];
     const elements = [...currentSlide.elements];
@@ -162,7 +165,9 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
           slides[selectedSlideIndex]?.elements[selectedImageIndex]
         ) {
           const updatedSlides = JSON.parse(JSON.stringify(slides));
-          updatedSlides[selectedSlideIndex].elements[selectedImageIndex].properties.imageSrc = resultUrl;
+          updatedSlides[selectedSlideIndex].elements[
+            selectedImageIndex
+          ].properties.imageSrc = resultUrl;
           setSlides(updatedSlides);
         }
 
@@ -199,7 +204,9 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
       }}
     >
       {/* Duplicate Button */}
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <IconButton
           onClick={handleDuplicateImage}
           sx={{
@@ -231,7 +238,9 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
       </Box>
 
       {/* Delete Button */}
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <IconButton
           onClick={handleDeleteImage}
           sx={{
@@ -263,7 +272,9 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
       </Box>
 
       {/* Replace Button */}
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <IconButton
           onClick={() => fileInputRef.current?.click()}
           sx={{
@@ -278,7 +289,7 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
           <img
             src="/replace.svg"
             alt="replace"
-            style={{ width: 15, height: 15,  }}
+            style={{ width: 15, height: 15 }}
           />
         </IconButton>
         <Typography
@@ -303,7 +314,9 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
       </Box>
 
       {/* Background Remover Button */}
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <IconButton
           onClick={handleRemoveBackground}
           sx={{
@@ -333,15 +346,17 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
             textTransform: "none",
             letterSpacing: "0.5px",
             marginBottom: 0.5,
-            whiteSpace : "nowrap"
+            whiteSpace: "nowrap",
           }}
         >
           BG Remover
         </Typography>
       </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <IconButton
-          //onClick={}
+          onClick={() => bringElementForward(selectedImageIndex)}
           sx={{
             color: "#C00",
             backgroundColor: "#F8F8FA",
@@ -351,7 +366,11 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
             mb: 0.2,
           }}
         >
-          <img src="/forward.svg" alt="delete" style={{ width: 15, height: 15, stroke: "#000000" }} />
+          <img
+            src="/forward.svg"
+            alt="delete"
+            style={{ width: 15, height: 15, stroke: "#000000" }}
+          />
         </IconButton>
         <Typography
           sx={{
@@ -365,9 +384,11 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
           Forward
         </Typography>
       </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <IconButton
-          //onClick={}
+          onClick={() => sendElementBackward(selectedImageIndex)}
           sx={{
             color: "#C00",
             backgroundColor: "#F8F8FA",
@@ -377,7 +398,11 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({
             mb: 0.2,
           }}
         >
-          <img src="/backward.svg" alt="delete" style={{ width: 15, height: 15, stroke: "#000000" }} />
+          <img
+            src="/backward.svg"
+            alt="delete"
+            style={{ width: 15, height: 15, stroke: "#000000" }}
+          />
         </IconButton>
         <Typography
           sx={{

@@ -41,18 +41,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     selectedShapeIndex,
     setSelectedShapeIndex,
     setSlides,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    isAtBoundary,
   } = useSlides();
 
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scale, setScale] = useState(1);
-  // console.log(slides);
+  console.log(slides);
 
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
