@@ -10,6 +10,7 @@ import {
 } from "../../../utils/slideUtils";
 
 interface SlideImageProps {
+  image_id?: string; // Add image_id prop, optional to preserve url-based background images
   url?: string;
   imageSrc?: string;
   x: number;
@@ -22,6 +23,7 @@ interface SlideImageProps {
 }
 
 const SlideImage: React.FC<SlideImageProps> = ({
+  image_id, // Add image_id
   url,
   imageSrc,
   x,
@@ -78,14 +80,9 @@ const SlideImage: React.FC<SlideImageProps> = ({
           currentSlide.image_url = null;
         }
 
-        if (imageSrc) {
+        if (imageSrc && image_id) {
           currentSlide.elements = currentSlide.elements.filter(
-            (el: any) =>
-              !(
-                el.element_type === "image" &&
-                el.konva_component === "Konva.Image" &&
-                el.properties.imageSrc === imageSrc
-              )
+            (el: any) => el.image_id !== image_id // Use image_id for filtering
           );
         }
 
@@ -101,6 +98,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
     slides,
     url,
     imageSrc,
+    image_id, // Add image_id to dependencies
     selectedSlideIndex,
     setSlides,
     setSelectedImage,
@@ -144,6 +142,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
         setSelectedImage({
           element_type: "image",
           konva_component: "Konva.Image",
+          image_id, // Include image_id
           properties: {
             x: newX,
             y: newY,
@@ -159,14 +158,14 @@ const SlideImage: React.FC<SlideImageProps> = ({
         (el: any) =>
           el.element_type === "image" &&
           el.konva_component === "Konva.Image" &&
-          el.properties.imageSrc === imageSrc
+          el.image_id === image_id // Use image_id
       );
 
       if (imageElement) {
         imageElement.properties.x = newX;
         imageElement.properties.y = newY;
         setSlides(newSlides);
-        setSelectedImage(imageElement);
+        setSelectedImage({ ...imageElement, image_id }); // Include image_id
       }
 
       node.getLayer()?.batchDraw();
@@ -176,6 +175,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
       selectedSlideIndex,
       url,
       imageSrc,
+      image_id, // Add image_id to dependencies
       setSlides,
       setSelectedImage,
       setIsAtBoundary,
@@ -229,6 +229,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
       setSelectedImage({
         element_type: "image",
         konva_component: "Konva.Image",
+        image_id, // Include image_id
         properties: {
           x: constrainedX,
           y: constrainedY,
@@ -244,7 +245,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
       (el: any) =>
         el.element_type === "image" &&
         el.konva_component === "Konva.Image" &&
-        el.properties.imageSrc === imageSrc
+        el.image_id === image_id // Use image_id
     );
 
     if (imageElement) {
@@ -253,7 +254,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
       imageElement.properties.width = constrainedWidth;
       imageElement.properties.height = constrainedHeight;
       setSlides(newSlides);
-      setSelectedImage(imageElement);
+      setSelectedImage({ ...imageElement, image_id }); // Include image_id
     }
 
     node.getLayer()?.batchDraw();
@@ -262,6 +263,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
     selectedSlideIndex,
     url,
     imageSrc,
+    image_id, // Add image_id to dependencies
     setSlides,
     setSelectedImage,
     setIsAtBoundary,
@@ -271,6 +273,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
     <>
       <KonvaImage
         ref={imageRef}
+        id={image_id || imageSrc || url} // Use image_id for Konva node ID, fallback to imageSrc or url
         image={image}
         x={x}
         y={y}

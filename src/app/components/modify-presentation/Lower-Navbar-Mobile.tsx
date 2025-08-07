@@ -24,7 +24,7 @@ const navItems = [
   { label: "Themes", icon: "/images/template-icon.svg" },
   { label: "Text", icon: "/images/text-icon.svg" },
   { label: "Images", icon: "/images/picture-icon.svg" },
-  { label: "Shapes", icon: "/images/nav-icon.svg" },
+  { label: "Shapes", icon: "/images/nav-icon.svg" }
 ];
 
 const SideNavBar = ({
@@ -60,7 +60,7 @@ const SideNavBar = ({
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            gap: 0,
+            gap: -1,
             width: "auto",
             borderRadius: 1,
             bgcolor: "#F6F6F6",

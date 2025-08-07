@@ -12,6 +12,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSlides } from "@/app/context/SlidesContext";
+import { v4 as uuidv4 } from "uuid"; // Import uuid
 
 interface MediaPanelProps {
   sidebarHeight?: string | number;
@@ -33,7 +34,6 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
   onClose,
 }) => {
   const [uploadType, setUploadType] = useState("Upload Image");
-
   const [images, setImages] = useState<string[]>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("media_library");
@@ -54,41 +54,42 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
     slides,
     setSlides,
     selectedSlideIndex,
-    setSelectedImageIndex,
+    setSelectedImageId, // Use setSelectedImageId
     setSelectedImage,
   } = useSlides();
 
   const insertImageIntoRedux = (base64: string, width = 400, height = 400) => {
-    const SLIDE_WIDTH = 920;
-    const SLIDE_HEIGHT = 430;
-    const x = (SLIDE_WIDTH - width) / 2;
-    const y = (SLIDE_HEIGHT - height) / 2;
+  const SLIDE_WIDTH = 920;
+  const SLIDE_HEIGHT = 430;
+  const x = (SLIDE_WIDTH - width) / 2;
+  const y = (SLIDE_HEIGHT - height) / 2;
 
-    const newImageElement = {
-      konva_component: "Konva.Image",
-      element_type: "image",
-      properties: {
-        x,
-        y,
-        width,
-        height,
-        imageSrc: base64,
-      },
-    };
-
-    const updatedSlides = [...slides];
-    const slide = { ...updatedSlides[selectedSlideIndex] };
-
-    slide.elements = [...(slide.elements || []), newImageElement];
-    updatedSlides[selectedSlideIndex] = slide;
-
-    setSlides(updatedSlides);
-
-    // ✅ Set selection to newly added image
-    const newIndex = slide.elements.length - 1;
-    setSelectedImage(newImageElement);
-    setSelectedImageIndex(newIndex);
+  const newImageElement = {
+    konva_component: "Konva.Image",
+    element_type: "image",
+    properties: {
+      x,
+      y,
+      width,
+      height,
+      imageSrc: base64,
+      zIndex: slides[selectedSlideIndex].elements.length + 1,
+      image_id: uuidv4(), // Move image_id inside properties
+    },
   };
+
+  const updatedSlides = [...slides];
+  const slide = { ...updatedSlides[selectedSlideIndex] };
+
+  slide.elements = [...(slide.elements || []), newImageElement];
+  updatedSlides[selectedSlideIndex] = slide;
+
+  setSlides(updatedSlides);
+
+  // Set selection to newly added image
+  setSelectedImage(newImageElement);
+  setSelectedImageId(newImageElement.properties.image_id); // Update to access image_id from properties
+};
 
   const handleFile = (file: File) => {
     if (!ACCEPTED_TYPES.includes(file.type)) {
@@ -178,26 +179,6 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
         </IconButton>
       </Box>
 
-      {/* Upload Dropdown
-      <Box sx={{ mb: 2 }}>
-        <Select
-          value={uploadType}
-          onChange={(e) => setUploadType(e.target.value as string)}
-          fullWidth
-          size="small"
-          sx={{
-            borderRadius: 8,
-            bgcolor: "#F8F8FA",
-            fontWeight: 500,
-            fontSize: 16,
-            height: 44,
-            mb: 1,
-          }}
-        >
-          <MenuItem value="Upload Image">Upload Image</MenuItem>
-        </Select>
-      </Box> */}
-
       {/* Upload Area */}
       <Box sx={{ mb: 2 }}>
         <ButtonBase
@@ -237,7 +218,9 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
               boxShadow: "0 2px 8px 0 #E0E0E0",
             }}
           >
-            <CloudUploadIcon sx={{ fontSize: 20, color: "#B0AEB8", width: "20px", height: "20px" }} />
+            <CloudUploadIcon
+              sx={{ fontSize: 20, color: "#B0AEB8", width: "20px", height: "20px" }}
+            />
           </Box>
           <Typography
             sx={{

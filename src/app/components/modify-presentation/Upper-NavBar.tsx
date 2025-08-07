@@ -27,7 +27,7 @@ const UpperNavBar: React.FC<{
   onExportPPT?: () => void;
   onClearCanvas?: () => void;
   // New prop for clearing canvas
-  onPreview?: () => void;
+  onPreview: () => void;
 }> = ({ onExportPDF, onExportPPT, onClearCanvas, onPreview }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] =
