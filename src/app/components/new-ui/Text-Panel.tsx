@@ -223,10 +223,13 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     const handleDuplicateText = () => {
         if (!textObj || slideIndex === -1 || elementIndex === null) return;
 
-        const updatedSlides = structuredClone(slides);
-        const elements = updatedSlides[slideIndex].elements;
 
+        const currentSlide = slides[slideIndex];
+        if (!currentSlide) return;
+
+        const elements = [...currentSlide.elements];
         const originalElement = elements[elementIndex];
+
         const newElement = {
             ...structuredClone(originalElement),
             id: `el-${slideIndex}-${uuidv4()}`,
@@ -238,8 +241,18 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
         };
 
         elements.splice(elementIndex + 1, 0, newElement);
+
+        const updatedSlide = {
+            ...currentSlide,
+            elements,
+        };
+
+        const updatedSlides = [...slides];
+        updatedSlides[slideIndex] = updatedSlide;
+
         setSlides(updatedSlides);
     };
+
     const handleDeleteText = () => {
         if (slideIndex === -1) return;
         const updatedSlides = structuredClone(slides);
@@ -290,13 +303,38 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                 boxSizing: "border-box",
                 position: "fixed",
                 bottom: 83,
-                paddingLeft: {xs: 19, sm: 10, md: 10, lg : 10},
-                paddingRight: 3,      
-                alignContent : "center",          
+                paddingLeft: { xs: 19, sm: 10, md: 10, lg: 10 },
+                paddingRight: 3,
+                alignContent: "center",
                 gap: 2,
             }}
         >
-
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <IconButton
+                    onClick={handleDuplicateText}
+                    sx={{
+                        color: "#222",
+                        backgroundColor: "#F8F8FA",
+                        padding: "2px",
+                        width: 32,
+                        height: 30,
+                        mb: 0.2,
+                    }}
+                >
+                    <img src="/duplicate-icon.svg" alt="duplicate" style={{ width: 15, height: 15 }} />
+                </IconButton>
+                <Typography
+                    sx={{
+                        fontSize: "9px",
+                        color: "#222",
+                        textTransform: "none",
+                        letterSpacing: "0.5px",
+                        marginBottom: 0.5,
+                    }}
+                >
+                    Duplicate
+                </Typography>
+            </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <IconButton
                     onClick={() => setFontPanelOpen(!fontPanelOpen)}
@@ -340,8 +378,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             </Box>
             {isFontSizePanelOpen && (
                 <FontSizePanel
-                    fontSize = {fontSize}
-                    onFontSizeChange={(fontSize) => updateTextProperty( "fontSize", Number(fontSize))}
+                    fontSize={fontSize}
+                    onFontSizeChange={(fontSize) => updateTextProperty("fontSize", Number(fontSize))}
                     onClose={() => setIsFontSizePanelOpen(false)}
                 />
             )}
@@ -538,7 +576,58 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                     Delete
                 </Typography>
             </Box>
-
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <IconButton
+                    //onClick={}
+                    sx={{
+                        color: "#C00",
+                        backgroundColor: "#F8F8FA",
+                        padding: "2px",
+                        width: 32,
+                        height: 30,
+                        mb: 0.2,
+                    }}
+                >
+                    <img src="/forward.svg" alt="delete" style={{ width: 15, height: 15 }} />
+                </IconButton>
+                <Typography
+                    sx={{
+                        fontSize: "9px",
+                        color: "#222",
+                        textTransform: "none",
+                        letterSpacing: "0.5px",
+                        marginBottom: 0.5,
+                    }}
+                >
+                    Forward
+                </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <IconButton
+                    //onClick={}
+                    sx={{
+                        color: "#C00",
+                        backgroundColor: "#F8F8FA",
+                        padding: "2px",
+                        width: 32,
+                        height: 30,
+                        mb: 0.2,
+                    }}
+                >
+                    <img src="/backward.svg" alt="delete" style={{ width: 15, height: 15 }} />
+                </IconButton>
+                <Typography
+                    sx={{
+                        fontSize: "9px",
+                        color: "#222",
+                        textTransform: "none",
+                        letterSpacing: "0.5px",
+                        marginBottom: 0.5,
+                    }}
+                >
+                    Backward
+                </Typography>
+            </Box>
         </Box>
 
     );

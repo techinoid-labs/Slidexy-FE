@@ -54,12 +54,13 @@ const Media: React.FC<MediaPanelProps> = ({
     setSlides,
     selectedSlideIndex,
     setSelectedImageIndex,
+    setSelectedImageId,
     setSelectedImage,
   } = useSlides();
 
   const insertImageIntoRedux = (base64: string, width = 400, height = 400) => {
-    const SLIDE_WIDTH = 960;
-    const SLIDE_HEIGHT = 540;
+    const SLIDE_WIDTH = 920;
+    const SLIDE_HEIGHT = 430;
     const x = (SLIDE_WIDTH - width) / 2;
     const y = (SLIDE_HEIGHT - height) / 2;
 
@@ -68,7 +69,6 @@ const Media: React.FC<MediaPanelProps> = ({
     const newImageElement = {
       konva_component: "Konva.Image",
       element_type: "image",
-      element_id: uuidv4(),
       properties: {
         x,
         y,
@@ -76,6 +76,7 @@ const Media: React.FC<MediaPanelProps> = ({
         height,
         imageSrc: base64,
         zIndex: elementIndex,
+        image_id: uuidv4(), // Move image_id inside properties
       },
     };
 
@@ -87,10 +88,9 @@ const Media: React.FC<MediaPanelProps> = ({
 
     setSlides(updatedSlides);
 
-    // ✅ Set selection to newly added image
-    const newIndex = slide.elements.length - 1;
+    // Set selection to newly added image
     setSelectedImage(newImageElement);
-    setSelectedImageIndex(newIndex);
+    setSelectedImageId(newImageElement.properties.image_id); // Update to access image_id from properties
   };
 
   const handleFile = (file: File) => {

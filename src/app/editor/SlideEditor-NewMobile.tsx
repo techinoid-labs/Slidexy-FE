@@ -480,6 +480,7 @@ import { getRandomSlide, getSlideDimensions } from "../../utils/slideUtils";
 import { applyElementPositioning } from "@/utils/slideTextPositioningUtils";
 import TextSettingsPanelMobile from "../components/new-ui/Text-Panel";
 import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
+import { useDispatch } from "react-redux";
 const getDynamicConstants = () => {
     const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, SLIDE_HEIGHT_MOBILE, SLIDE_WIDTH_MOBILE } = getSlideDimensions();
     const IMAGE_WIDTH = 400;
@@ -505,6 +506,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         setSelectedImage,
         selectedTextId,
         setSelectedTextId,
+        selectedImageId,
+        setSelectedImageId,
         selectedShapeIndex,
         setSelectedShapeIndex,
         setSlides,
@@ -520,7 +523,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [scale, setScale] = useState(1);
     // console.log(slides);
-
+const dispatch = useDispatch();
     const handleAddSlide = () => {
         const newSlide = getRandomSlide();
         const newSlides = [...slides, structuredClone(newSlide)];
@@ -835,14 +838,16 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                                         return (
                                             <SlideImage
                                                 key={`image-${i}`}
+                                                image_id={`el-${index}-${i} `}
                                                 imageSrc={el.properties.imageSrc}
                                                 x={el.properties.x}
                                                 y={el.properties.y}
                                                 width={el.properties.width}
                                                 height={el.properties.height}
-                                                isSelected={selectedImageIndex === i}
+                                                isSelected={selectedImageId === `el-${index}-${i}`}
                                                 onSelect={() => {
                                                     setSelectedImage({ ...el });
+                                                    setSelectedImageId(`el-${index}-${i} `);
                                                     setSelectedImageIndex(i);
                                                     setSelectedTextId(null);
                                                     setIsMobileImageSelected(true);
@@ -878,9 +883,18 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         left: 100,
                     }}
                     onClose={() => {
+                        
                         setIsMobileImageSelected(false);
                         setSelectedImageIndex(null);
                         setSelectedImage(null);
+                    }}
+                    resetAll={() => {
+                        //dispatch(setSlidesAction(initialSlides));
+                            setSelectedTextId(null);
+                            setSelectedImageIndex(null);
+                            setSelectedImage(null);
+                            //setIsMobileTextSelected(false);
+                            setIsMobileImageSelected(false);
                     }}
                 />
             )}

@@ -23,11 +23,13 @@ interface SlidesContextType {
   selectedSlideIndex: number;
   setSelectedSlideIndex: (index: number) => void;
   selectedImage: any | null;
+  selectedImageId : string | null;
   setSelectedImage: (image: any | null) => void;
   selectedImageIndex: number | null;
   setSelectedImageIndex: (index: number | null) => void;
   selectedTextId: string | null;
   setSelectedTextId: (id: string | null) => void;
+  setSelectedImageId: (id: string | null) => void;
   selectedShapeIndex: number | null;
   setSelectedShapeIndex: (index: number | null) => void;
   tooltip: { visible: boolean; x: number; y: number; node: any | null };
@@ -62,6 +64,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
+   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<any | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
     null
@@ -220,6 +223,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setSelectedImageIndex,
         selectedTextId,
         setSelectedTextId,
+        setSelectedImageId,
+        selectedImageId,
         selectedShapeIndex,
         setSelectedShapeIndex,
         tooltip,

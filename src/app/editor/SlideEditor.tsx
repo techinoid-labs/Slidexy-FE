@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import SlideImage from "./KonvaComponents/KonvaSlideImage";
 import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
@@ -12,8 +12,7 @@ import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 import { getRandomSlide, getSlideDimensions } from "../../utils/slideUtils";
 import { applyElementPositioning } from "@/utils/slideTextPositioningUtils";
-import { setSlides as setSlidesRedux } from "../slice/slidesSlice";
-import { useDispatch } from "react-redux";
+
 const getDynamicConstants = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const IMAGE_WIDTH = 400;
@@ -31,44 +30,43 @@ const getDynamicConstants = () => {
   };
 };
 const SlideEditor = ({ slides = [], stageRefs }: any) => {
-  const dispatch = useDispatch();
   const {
     selectedImageIndex,
     setSelectedImageIndex,
     setSelectedImage,
     selectedTextId,
+    selectedImageId,
+    setSelectedImageId,
     setSelectedTextId,
     selectedShapeIndex,
     setSelectedShapeIndex,
-    selectedSlideIndex,
-    setSelectedSlideIndex,
     setSlides,
     undo,
     redo,
     canUndo,
     canRedo,
+    isAtBoundary,
   } = useSlides();
 
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scale, setScale] = useState(1);
-
-  console.log(slides);
+  // console.log(slides);
 
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
     const newSlides = [...slides, structuredClone(newSlide)];
     setSlides(newSlides);
-    setSelectedSlideIndex(newSlides.length - 1);
+    setSelectedIndex(newSlides.length - 1);
   };
 
   const handleDeleteSlide = (index: number) => {
     const newSlides = [...slides];
     newSlides.splice(index, 1);
     setSlides(newSlides);
-    if (selectedSlideIndex >= newSlides.length) {
-      setSelectedSlideIndex(Math.max(0, newSlides.length - 1));
+    if (selectedIndex >= newSlides.length) {
+      setSelectedIndex(Math.max(0, newSlides.length - 1));
     }
   };
 
@@ -81,8 +79,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
 
   useEffect(() => {
     const positionedSlides = applyElementPositioning(slides, selectedTheme);
-    dispatch(setSlidesRedux(positionedSlides)); // Using direct redux for preventing excess stores for undo feature
-    // setSlides(positionedSlides);
+    setSlides(positionedSlides);
   }, [slides?.length]);
 
   useEffect(() => {
@@ -96,36 +93,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isCtrlOrCmd = e.ctrlKey || e.metaKey;
-
-      if (isCtrlOrCmd && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        if (canUndo) undo();
-      }
-
-      if (
-        isCtrlOrCmd &&
-        (e.key.toLowerCase() === "y" ||
-          (e.shiftKey && e.key.toLowerCase() === "z"))
-      ) {
-        e.preventDefault();
-        if (canRedo) redo();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo, canUndo, canRedo]);
-
-  useEffect(() => {
-    if (slides.length < selectedSlideIndex + 1) {
-      setSelectedSlideIndex(selectedSlideIndex - 1);
-      // setSelectedIndex(selectedSlideIndex - 1);
-    }
-  }, [slides.length]);
-
   return (
     <Box
       sx={{
@@ -135,17 +102,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         overflow: "auto",
       }}
     >
-      {/* <Button onClick={() => bringElementForward(selectedTextId)}>
-        Forward
-      </Button>
-      <Button onClick={() => sendElementBackward(selectedTextId)}>
-        Backward
-      </Button> */}
-
       {slides.map((slide: any, index: number) => {
         const title = slide.slide_title;
         const titleProps = title.properties;
         const titleY = 25;
+        // const bulletGap = 10;
+        // const bulletStartY = titleY + titleProps.fontSize + 20;
 
         return (
           <Box
@@ -154,8 +116,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
               border: "1px solid #ccc",
               backgroundColor: "#fff",
               position: "relative",
-              mb: 1,
-              display: index === selectedSlideIndex ? "block" : "none",
+              mb: { md: 10 },
+              display: index === selectedIndex ? "block" : "none",
               transform: `scale(${scale})`,
             }}
           >
@@ -245,7 +207,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       text={title.text}
                       x={titleProps.x || titleY}
                       y={titleProps.y || getDynamicConstants().LEFT_PADDING}
-                      zIndex={titleProps.zIndex}
                       width={(() => {
                         const textWidth =
                           getDynamicConstants().textMaxWidth + 200;
@@ -301,8 +262,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   </>
                 )}
                 {slide.elements.map((el: any, i: number) => {
-                  // console.log({ Text_zIndex: el.properties.zIndex });
-
                   if (
                     el.element_type !== "text" &&
                     el.element_type !== "bullet_point"
@@ -310,15 +269,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     return null;
 
                   // if (el.element_type !== "text") return null;
-
                   return (
                     <KonvaTextEditor
                       key={`el-${index}-${i}`}
-                      id={`el-${index}-${i}`}
+                      id={`el-${index}-${i} `}
                       text={el.text}
                       x={el.properties.x}
                       y={el.properties.y}
-                      zIndex={el.properties.zIndex}
                       width={
                         el.properties.width ||
                         getDynamicConstants().textMaxWidth -
@@ -368,7 +325,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   }}
                 />
                 {slide.elements.map((el: any, i: number) => {
-                  // console.log({ IMG_zIndex: el.properties.zIndex });
                   if (
                     el.element_type === "image" &&
                     el.konva_component === "Konva.Image"
@@ -376,15 +332,16 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     return (
                       <SlideImage
                         key={`image-${i}`}
+                        image_id={`el-${index}-${i} `}
                         imageSrc={el.properties.imageSrc}
                         x={el.properties.x}
                         y={el.properties.y}
-                        zIndex={el.properties.zIndex}
                         width={el.properties.width}
                         height={el.properties.height}
-                        isSelected={selectedImageIndex === i}
+                        isSelected={selectedImageId === `el-${index}-${i}`}
                         onSelect={() => {
                           setSelectedImage({ ...el });
+                          setSelectedImageId(`el-${index}-${i} `);
                           setSelectedImageIndex(i);
                           setSelectedShapeIndex(null);
                           setSelectedTextId(null);
@@ -401,10 +358,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       <SlidePreviews
         slides={slides}
         scale={scale}
-        selectedIndex={selectedSlideIndex}
+        selectedIndex={selectedIndex}
         slide_width={getDynamicConstants().SLIDE_WIDTH}
         slide_height={getDynamicConstants().SLIDE_HEIGHT}
-        onSelect={setSelectedSlideIndex}
+        onSelect={setSelectedIndex}
         onAddSlide={handleAddSlide}
         onDeleteSlide={handleDeleteSlide}
       />

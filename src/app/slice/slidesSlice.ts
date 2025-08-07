@@ -19,6 +19,7 @@ interface KonvaTextProperties {
   outerRadius?: number;
 }
 interface KonvaImageProperties {
+ image_id : string;
   x: number;
   y: number;
   fill?: string;
