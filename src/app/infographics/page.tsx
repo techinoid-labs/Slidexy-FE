@@ -5,34 +5,15 @@ import { Box, Button, Typography, TextField } from "@mui/material";
 export default function PosterTemplateDisplay() {
   const [imageUrl, setImageUrl] = useState("");
   const [textFields, setTextFields] = useState([
-    { id: "topLeft", label: "Top Left", x: "5%", y: "5%", value: "Top Left" },
-    {
-      id: "topRight",
-      label: "Top Right",
-      x: "75%",
-      y: "5%",
-      value: "Top Right",
-    },
-    {
-      id: "bottomLeft",
-      label: "Bottom Left",
-      x: "5%",
-      y: "85%",
-      value: "Bottom Left",
-    },
-    {
-      id: "bottomRight",
-      label: "Bottom Right",
-      x: "75%",
-      y: "85%",
-      value: "Bottom Right",
-    },
-    { id: "center", label: "Center", x: "35%", y: "45%", value: "Center" },
+    { id: "topLeft", label: "Top Left", x: "5%", y: "5%", value: "" },
+    { id: "topRight", label: "Top Right", x: "75%", y: "5%", value: "" },
+    { id: "bottomLeft", label: "Bottom Left", x: "5%", y: "85%", value: "" },
+    { id: "bottomRight", label: "Bottom Right", x: "75%", y: "85%", value: "" },
+    { id: "center", label: "Center", x: "35%", y: "45%", value: "" },
   ]);
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
 
@@ -40,7 +21,10 @@ export default function PosterTemplateDisplay() {
   const [dragStartIndex, setDragStartIndex] = useState<number | null>(null);
   const [dragStartMousePos, setDragStartMousePos] = useState({ x: 0, y: 0 });
 
-  const INPUT_FIELD_WIDTH_PX = 200;
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [textLoaded, setTextLoaded] = useState(false);
+
+  const INPUT_FIELD_WIDTH_PX = 400;
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -53,37 +37,49 @@ export default function PosterTemplateDisplay() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-      textFields.forEach((field, index) => {
-        const fontSize = canvas.height * 0.035;
+      textFields.forEach((field) => {
+        if (!field.value) return; // skip empty text
+
+        let fontSize = canvas.height * 0.035;
         ctx.font = `bold ${fontSize}px Arial`;
-        ctx.fillStyle = "black";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
 
         const x = (parseFloat(field.x) / 100) * canvas.width;
         const y = (parseFloat(field.y) / 100) * canvas.height;
 
-        ctx.fillText(field.value, x, y);
-
-        if (editingIndex !== index) {
-          const textWidth = ctx.measureText(field.value).width;
-          const textHeight = fontSize * 1.2;
-          ctx.fillStyle = "rgba(0,0,0,0)";
-          ctx.fillRect(x, y, textWidth, textHeight);
+        const maxTextWidth = canvas.width * 0.25;
+        while (
+          ctx.measureText(field.value).width > maxTextWidth &&
+          fontSize > 8
+        ) {
+          fontSize -= 1;
+          ctx.font = `bold ${fontSize}px Arial`;
         }
+
+        ctx.fillStyle = "black";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(field.value, x, y);
       });
     }
-  }, [textFields, editingIndex]);
+  }, [textFields]);
 
+  // Load backend data + image once
   useEffect(() => {
     const stored = localStorage.getItem("posterTemplateData");
 
-    console.log("Stored Data:",stored);
-
     if (stored) {
       const data = JSON.parse(stored);
-      console.log("Content:", data.content);
       const url = data.imageUrl || "";
+
+      // Set text values from backend
+      setTextFields((prevFields) =>
+        prevFields.map((field) => ({
+          ...field,
+          value: data.content?.[field.id] || "",
+        }))
+      );
+      setTextLoaded(true);
+
       setImageUrl(url);
 
       if (url) {
@@ -91,7 +87,7 @@ export default function PosterTemplateDisplay() {
         img.src = url;
         img.onload = () => {
           imageRef.current = img;
-          drawCanvas();
+          setImageLoaded(true);
         };
         img.onerror = () => {
           console.error("Failed to load image from URL:", url);
@@ -99,11 +95,21 @@ export default function PosterTemplateDisplay() {
         };
       }
     }
-  }, [drawCanvas]);
+  }, []);
 
+  // Draw only when both text & image are loaded
   useEffect(() => {
-    drawCanvas();
-  }, [textFields, drawCanvas]);
+    if (imageLoaded && textLoaded) {
+      drawCanvas();
+    }
+  }, [imageLoaded, textLoaded, drawCanvas]);
+
+  // Redraw when editing text
+  useEffect(() => {
+    if (imageLoaded) {
+      drawCanvas();
+    }
+  }, [textFields, imageLoaded, drawCanvas]);
 
   useEffect(() => {
     if (editingIndex !== null && inputRef.current) {
@@ -119,14 +125,14 @@ export default function PosterTemplateDisplay() {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    const mouseX = (event.clientX - rect.left) * scaleX;
-    const mouseY = (event.clientY - rect.top) * scaleY;
-    return { x: mouseX, y: mouseY };
+    return {
+      x: (event.clientX - rect.left) * scaleX,
+      y: (event.clientY - rect.top) * scaleY,
+    };
   };
 
   const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (editingIndex !== null) return;
-
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
@@ -299,8 +305,6 @@ export default function PosterTemplateDisplay() {
               top: textFields[editingIndex].y,
               left: textFields[editingIndex].x,
               width: `${INPUT_FIELD_WIDTH_PX}px`,
-              minWidth: `${INPUT_FIELD_WIDTH_PX}px`,
-              maxWidth: `${INPUT_FIELD_WIDTH_PX}px`,
               background: "rgba(255,255,255,0.9)",
               border: "1px solid #ccc",
               borderRadius: "4px",

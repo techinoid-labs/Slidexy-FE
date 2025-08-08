@@ -376,7 +376,7 @@ export default function PresentationMaker({
           fontWeight: 600,
           mb: 4,
           height: { xs: 57, md: 70 },
-          border: "2px solid #8E2DE2",
+          border: `2px solid ${!inputValue.trim() ? "grey" : "#8E2DE2"}`,
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
@@ -401,11 +401,15 @@ export default function PresentationMaker({
       >
         <span
           style={{
-            color: loading ? "#fff" : "#8E2DE2",
-            transition: "color 0.6s ease",
+            color: loading ? "#fff" : !inputValue.trim() ? "grey" : "#8E2DE2",
+            textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
+            transition: "color 0.6s ease, text-shadow 0.6s ease",
+            fontWeight: 600,
           }}
         >
-          {loading ? "Generating..." : "Generate Outlines"}
+          {loading
+            ? `Generating... ${Math.round(progress)}%`
+            : "Generate Outlines"}
         </span>
         <Box
           className="icon"
@@ -414,8 +418,11 @@ export default function PresentationMaker({
             height: 22,
             ml: 1,
             background: loading
-              ? "#fff"
+              ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
+              : !inputValue.trim()
+              ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
               : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",
