@@ -329,7 +329,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     return (
                       <SlideImage
                         key={`image-${i}`}
-                        image_id={`el-${index}-${i} `}
+                        image_id={`el-${index}-${i}`}
                         imageSrc={el.properties.imageSrc}
                         x={el.properties.x}
                         y={el.properties.y}
@@ -339,7 +339,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         isSelected={selectedImageId === `el-${index}-${i}`}
                         onSelect={() => {
                           setSelectedImage({ ...el });
-                          setSelectedImageId(`el-${index}-${i} `);
+                          setSelectedImageId(`el-${index}-${i}`);
                           setSelectedImageIndex(i);
                           setSelectedShapeIndex(null);
                           setSelectedTextId(null);
