@@ -42,7 +42,7 @@ export default function PresentationMaker({
   const [goal, setGoal] = useState("");
   const [tone, setTone] = useState("");
   const [audience, setAudience] = useState("");
-  const [length, setLength] = useState("");
+  const [slideCount, setSlideCount] = useState("");
 
   const getPlaceholder = () => {
     switch (inputMode) {
@@ -127,9 +127,10 @@ export default function PresentationMaker({
         ? { source: "website", inputWebsiteUrl: inputValue }
         : { source: "text", textContent: inputValue };
 
-    const promptMeta = { goal, tone, audience, length };
-    const payload = { ...base, meta: promptMeta };
-
+    const promptMeta = { goal, tone, audience };
+    const payload = { ...base, meta: promptMeta, slideCount };
+    console.log(payload);
+    // return;
     try {
       const res = await fetch(`${API_BASE_URL}/generate-slides`, {
         method: "POST",
@@ -190,11 +191,11 @@ export default function PresentationMaker({
         goal={goal}
         tone={tone}
         audience={audience}
-        length={length}
+        slideCount={slideCount}
         setGoal={setGoal}
         setTone={setTone}
         setAudience={setAudience}
-        setLength={setLength}
+        setSlideCount={setSlideCount}
       />
 
       <Box

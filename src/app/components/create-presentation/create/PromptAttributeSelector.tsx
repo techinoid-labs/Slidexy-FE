@@ -15,20 +15,20 @@ export default function PromptAttributeSelector({
   goal,
   tone,
   audience,
-  length,
+  slideCount,
   setGoal,
   setTone,
   setAudience,
-  setLength,
+  setSlideCount,
 }: {
   goal: string;
   tone: string;
   audience: string;
-  length: string;
+  slideCount: string;
   setGoal: (val: string) => void;
   setTone: (val: string) => void;
   setAudience: (val: string) => void;
-  setLength: (val: string) => void;
+  setSlideCount: (val: string) => void;
 }) {
   const theme = useTheme();
 
@@ -151,15 +151,15 @@ export default function PromptAttributeSelector({
 
       <FormControl fullWidth sx={dropdownStyles}>
         <Select
-          value={length}
+          value={slideCount}
           sx={{ fontSize: 14, pt: 0.2 }}
           displayEmpty
-          onChange={(e) => setLength(e.target.value)}
-          renderValue={(selected) => selected || "Length Slider"}
+          onChange={(e) => setSlideCount(e.target.value)}
+          renderValue={(selected) => selected || "No. of Slides"}
         >
-          {renderMenuItem("Short", "Short", length)}
-          {renderMenuItem("Medium", "Medium", length)}
-          {renderMenuItem("Long", "Long", length)}
+          {renderMenuItem("3", "3", slideCount)}
+          {renderMenuItem("6", "6", slideCount)}
+          {renderMenuItem("12", "12", slideCount)}
         </Select>
       </FormControl>
     </Box>
