@@ -111,7 +111,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
               border: "1px solid #ccc",
               backgroundColor: "#fff",
               position: "relative",
-              mb: { md: 10 },
+              mb: { md: 1 },
               display: index === selectedIndex ? "block" : "none",
               transform: `scale(${scale})`,
             }}
@@ -329,7 +329,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     return (
                       <SlideImage
                         key={`image-${i}`}
-                        image_id={`el-${index}-${i}`}
+                        image_id={`el-${index}-${i} `}
                         imageSrc={el.properties.imageSrc}
                         x={el.properties.x}
                         y={el.properties.y}

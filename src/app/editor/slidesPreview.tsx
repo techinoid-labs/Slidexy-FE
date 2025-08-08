@@ -87,7 +87,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
         my: 1,
         px: 2,
         py: 1,
-        mt: {xs: -75,  sm : -5, lg: -5}
+        mt: { xs: -75, sm: 0, lg: 0 },
       }}
     >
       <Box
@@ -100,7 +100,6 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
           overflowX: "auto",
           flexGrow: "row",
           transform: `scale(${scale})`,
-
         }}
       >
         {slides.map((slide: any, index: number) => {
@@ -111,7 +110,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
               key={slide.slide_id}
               sx={{
                 position: "relative",
-                width: isMobile ? 340 :200,
+                width: isMobile ? 340 : 200,
                 height: isMobile ? 150 : 120,
                 borderLeft: isSelected
                   ? "4px solid #6941c6"
@@ -129,11 +128,10 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                 py: 1.5,
                 cursor: "pointer",
                 boxShadow: isSelected ? "4px 0 0 0 #e9d7fe" : "none",
-                flex: "0 0 auto",               
+                flex: "0 0 auto",
                 "&:hover .delete-button": { opacity: 1 },
               }}
               onClick={() => handleSelect(index)}
-              
             >
               <Typography
                 variant="subtitle2"
@@ -157,7 +155,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                   display: "block",
                   overflow: "hidden",
                   fontSize: { xs: 20 },
-                  fontWeight : {xs : 500},
+                  fontWeight: { xs: 500 },
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
                   maxWidth: "100%",
