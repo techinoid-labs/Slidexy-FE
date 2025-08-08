@@ -187,9 +187,13 @@ export default function PresentationMaker({
 
       const data = await res.json();
 
+       console.log("Data:",data);
+
+       console.log("Input Mode :", inputMode);
+
       if (inputMode === "Poster") {
         // Changed from "Infographic" to "Poster"
-        const { imageUrl } = data; // Assuming the response contains an imageUrl
+        const { imageUrl, textLayout } = data; // Assuming the response contains an imageUrl
 
         if (!imageUrl) {
           throw new Error("No poster image URL returned from backend.");
@@ -197,6 +201,7 @@ export default function PresentationMaker({
 
         const posterPayload = {
           imageUrl: imageUrl,
+          content: textLayout,
         };
 
         // Store for retrieval on /poster-templates page
@@ -207,7 +212,9 @@ export default function PresentationMaker({
         );
 
         router.push("/infographics"); // Changed redirection route
-      } else {
+      } 
+      
+      else {
         setSlides(data.slides);
         router.push("/presentation/outline");
       }
@@ -216,11 +223,17 @@ export default function PresentationMaker({
       const minDelay = 1200;
       const remaining = Math.max(0, minDelay - elapsed);
 
-      setTimeout(() => {
-        setProgress(100);
-        setSlides(data.slides);
-        router.push(`/presentation/outline`);
-      }, remaining);
+      // if(inputMode != "Poster")
+      // {
+      //      setTimeout(() => {
+      //        setProgress(100);
+      //        setSlides(data.slides);
+      //        router.push(`/presentation/outline`);
+      //      }, remaining);
+
+      // }
+     
+
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     } finally {

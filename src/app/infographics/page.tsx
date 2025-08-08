@@ -77,8 +77,12 @@ export default function PosterTemplateDisplay() {
 
   useEffect(() => {
     const stored = localStorage.getItem("posterTemplateData");
+
+    console.log("Stored Data:",stored);
+
     if (stored) {
       const data = JSON.parse(stored);
+      console.log("Content:", data.content);
       const url = data.imageUrl || "";
       setImageUrl(url);
 

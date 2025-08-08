@@ -57,7 +57,7 @@ export default function StepIndicator({ activeStep }: StepIndicatorProps) {
         {steps.map((label, index) => {
           const isActive = index === activeStep;
           const isCompleted = index < activeStep;
-          const isNextAllowed = index === activeStep + 1 && slides.length > 0;
+          const isNextAllowed = index === activeStep + 1 && slides?.length > 0;
           const isClickable = isCompleted || isNextAllowed;
           const isLast = index === steps.length - 1;
 
