@@ -48,8 +48,8 @@ const FontPanel: React.FC<FontPanelProps> = ({
       sx={{
         position: "fixed",
         bottom: 143,
-        width: 320,
-        maxHeight: 420,
+        width: window.innerWidth * 0.9,
+        height: window.innerHeight * 0.4,
         backgroundColor: "#fff",
         borderTopLeftRadius: "10px",
         borderTopRightRadius: "10px",

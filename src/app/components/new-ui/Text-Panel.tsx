@@ -334,7 +334,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
         boxSizing: "border-box",
         position: "fixed",
         bottom: 83,
-        paddingLeft: { xs: 19, sm: 10, md: 10, lg: 10 },
+        paddingLeft: { xs: 24, sm: 10, md: 10, lg: 10 },
         paddingRight: 3,
         alignContent: "center",
         gap: 2,
