@@ -400,39 +400,50 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
           <Button sx={{ fontColor: "#1a1a1a", height: 47, width: 150, fontSize: 14, fontWeight: 500 }} variant="outlined" size="small" onClick={() => setIsCropModalOpen(true)}>Crop</Button>
         </Box>
       </Box>
-
+     </Box>
       {/* Layer Order */}
-      <Divider sx={{ my: 1 }} />
-      <Box sx={{ px: 3, mb: 2 }}>
-        <Typography sx={{ fontWeight: 500, fontSize: 14, mb: 1 }}>Layer Order</Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Button
-            sx={{ backgroundColor: "rgba(249, 249, 251, 1)", fontColor: "#1a1a1a", height: 50 , width : 300}}
+      {/* Layer Order */}
+<Divider sx={{ my: 1 }} />
+<Box sx={{ px: 3, mb: 2 }}>
+  <Typography sx={{ fontWeight: 500, fontSize: 14, mb: 1 }}>Layer Order</Typography>
+  <Box sx={{ display: "flex", gap: 2, padding: 0 }}>
+    <Button
+      //variant="outlined"
+      size="small"
+      startIcon={<ArrowUpwardIcon />}
+      sx={{
+        color: "#1a1a1a",
+        backgroundColor: "rgba(249, 249, 251, 1)",
+        height: 50,
+        width: 180,
+        fontWeight: 500,
+        textTransform: "none",
+      }}
+      onClick={() => bringElementForward(selectedImageIndex)}
+      disabled={selectedImageIndex === null}
+    >
+      Forward
+    </Button>
+    <Button
+      //variant="outlined"
+      size="small"
+      startIcon={<ArrowDownwardIcon />}
+      sx={{
+        color: "#1a1a1a",
+        backgroundColor: "rgba(249, 249, 251, 1)",
+        height: 50,
+        width: 180,
+        fontWeight: 500,
+        textTransform: "none",
+      }}
+      onClick={() => sendElementBackward(selectedImageIndex)}
+      disabled={selectedImageIndex === null}
+    >
+      Backward
+    </Button>
+  </Box>
+</Box>
 
-            size="small"
-            endIcon={
-              <img
-                src="/forward.svg"
-                alt="Forward"
-                style={{ width: 22, height: 22 }}
-              />
-            }
-            onClick={() => bringElementForward(selectedImageIndex)}
-          >
-            <Typography sx={{ color: "#1a1a1a", fontSize: 14, fontWeight: 300 }}>Forward</Typography>
-
-          </Button>
-          <Button sx={{ backgroundColor: "rgba(249, 249, 251, 1)", fontColor: "#1a1a1a", height: 50 }} size="small" endIcon={
-            <img
-              src="/backward.svg"
-              alt="Forward"
-              style={{ width: 22, height: 22 }}
-            />
-          } onClick={() => sendElementBackward(selectedImageIndex)}>
-            <Typography sx={{ color: "#1a1a1a", fontSize: 14, fontWeight: 300 , width : 200}}>Backward</Typography>
-          </Button>
-        </Box>
-      </Box>
 
       {/* Crop Modal */}
       <CropModal
@@ -444,7 +455,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
         updateImageProperty={updateImageProperty}
       />
     </Box>
-    </Box>
+    
   );
 };
 
