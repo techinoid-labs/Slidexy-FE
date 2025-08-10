@@ -12,7 +12,7 @@ import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 import { getRandomSlide, getSlideDimensions } from "../../utils/slideUtils";
 import { applyElementPositioning } from "@/utils/slideTextPositioningUtils";
-
+import { v4 as uuidv4 } from "uuid";
 const getDynamicConstants = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const IMAGE_WIDTH = 400;
@@ -32,6 +32,8 @@ const getDynamicConstants = () => {
 const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const {
     selectedImageIndex,
+    selectedShapeId,
+    setSelectedShapeId,
     setSelectedImageIndex,
     setSelectedImage,
     selectedTextId,
@@ -189,15 +191,11 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 {title.text && (
                   <>
                     <KonvaTextEditor
-                      key={`title-${index}-${
-                        titleProps.fontFamily || "Roboto"
-                      }-${titleProps.fontSize || 18}-${
-                        titleProps.fontWeight || "normal"
-                      }-${titleProps.align || "left"}-${
-                        titleProps.fontStyle || "normal"
-                      }-${titleProps.fill || "#000"}-${
-                        titleProps.opacity || 1
-                      }`}
+                      key={`title-${index}-${titleProps.fontFamily || "Roboto"
+                        }-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"
+                        }-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"
+                        }-${titleProps.fill || "#000"}-${titleProps.opacity || 1
+                        }`}
                       id={`title-${index}`}
                       text={title.text}
                       x={titleProps.x || titleY}
@@ -276,7 +274,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       width={
                         el.properties.width ||
                         getDynamicConstants().textMaxWidth -
-                          (el.element_type === "bullet_point" ? 20 : 0)
+                        (el.element_type === "bullet_point" ? 20 : 0)
                         // x={el.properties.x || getDynamicConstants().LEFT_PADDING}
                         // y={el.properties.y || 300}
                         // width={
@@ -316,6 +314,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   selectedShapeIndex={selectedShapeIndex}
                   onSelectShape={(i) => {
                     setSelectedShapeIndex(i);
+                    selectedShapeId === `el-${index}-${i}`;
+                    setSelectedShapeId(`el-${index}-${i}`);
                     setSelectedTextId(null);
                     setSelectedImageIndex(null);
                     setSelectedImage(null);
@@ -329,7 +329,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     return (
                       <SlideImage
                         key={`image-${i}`}
-                        image_id={`el-${index}-${i} `}
+                        image_id={`el-${index}-${i}`}
                         imageSrc={el.properties.imageSrc}
                         x={el.properties.x}
                         y={el.properties.y}
@@ -339,7 +339,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         isSelected={selectedImageId === `el-${index}-${i}`}
                         onSelect={() => {
                           setSelectedImage({ ...el });
-                          setSelectedImageId(`el-${index}-${i} `);
+                          setSelectedImageId(`el-${index}-${i}`);
                           setSelectedImageIndex(i);
                           setSelectedShapeIndex(null);
                           setSelectedTextId(null);
