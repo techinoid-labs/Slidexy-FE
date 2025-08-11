@@ -1,12 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface KonvaTextProperties {
+  [key: string]: any;
   fontSize?: number;
   fontFamily?: string;
   fill: string;
   fontStyle?: string;
   fontWeight?: string;
+
   // shape-specific
+  shape_id?: string;
   x?: number;
   y?: number;
   width?: number;
@@ -17,8 +20,10 @@ interface KonvaTextProperties {
   numPoints?: number;
   innerRadius?: number;
   outerRadius?: number;
+  imageSrc?: string;
 }
 interface KonvaImageProperties {
+  [key: string]: any;
   image_id : string;
   x: number;
   y: number;

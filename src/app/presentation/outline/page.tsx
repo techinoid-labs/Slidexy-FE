@@ -47,11 +47,17 @@ function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
 function mapCardsToSlides(cards: any[]): Slide[] {
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
-  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT } =
-    isMobile ? getMobileSlideDimensions() : getSlideDimensions();
+  const {
+    SLIDE_WIDTH,
+    SLIDE_HEIGHT,
+    LEFT_PADDING,
+    IMAGE_WIDTH,
+    IMAGE_HEIGHT,
+  } = getSlideDimensions();
 
-  const bulletFontSize = isMobile ? 12 : 18;
-  const titleFontSize = isMobile ? 14 : 32;
+  // Font sizes
+  const bulletFontSize = isMobile ? 30 : 20;
+  const titleFontSize = isMobile ? 36 : 38;
 
   return cards.map((card, index) => {
     const bulletElements = (card.bullets || []).map(
@@ -60,10 +66,16 @@ function mapCardsToSlides(cards: any[]): Slide[] {
         text,
         konva_component: "Konva.Text",
         properties: {
+          //shape_id: `bullet-${index}-${bulletIndex}`, // Unique shape_id
+          width: SLIDE_WIDTH - LEFT_PADDING - (card.images?.[0] ? IMAGE_WIDTH + 20 : 20), // Adjust width based on image presence
           fontSize: bulletFontSize,
           fontFamily: "Inter",
           fill: "#444",
           fontStyle: "normal",
+          x: LEFT_PADDING,
+          y: isMobile
+            ? 100 + titleFontSize + 20 + bulletIndex * (bulletFontSize + 10) // Extra padding to avoid title overlap
+            : 80 + titleFontSize + 20 + bulletIndex * (bulletFontSize + 10),
           zIndex: bulletIndex + 1,
         },
       })
@@ -75,13 +87,12 @@ function mapCardsToSlides(cards: any[]): Slide[] {
             element_type: "image",
             konva_component: "Konva.Image",
             properties: {
+              shape_id: `image-${index}`,
               imageSrc: card.images[0],
-              x: isMobile ? SLIDE_WIDTH - 250 : SLIDE_WIDTH - IMAGE_WIDTH - 20,
-              y: isMobile
-                ? SLIDE_HEIGHT - 250
-                : (SLIDE_HEIGHT - IMAGE_HEIGHT) / 2,
-              width: isMobile ? 230 : IMAGE_WIDTH,
-              height: isMobile ? 230 : IMAGE_HEIGHT,
+              x: SLIDE_WIDTH - IMAGE_WIDTH - 20, // 20px padding from right edge
+              y: (SLIDE_HEIGHT - IMAGE_HEIGHT) / 2,
+              width: IMAGE_WIDTH,
+              height: IMAGE_HEIGHT,
               zIndex: (card.bullets?.length || 0) + 1,
             },
           },
@@ -94,11 +105,17 @@ function mapCardsToSlides(cards: any[]): Slide[] {
         text: card.title,
         konva_component: "Konva.Text",
         properties: {
+          shape_id: `title-${index}`,
           fontSize: titleFontSize,
           fontFamily: "Inter",
           fill: "#333",
           fontWeight: "bold",
           fontStyle: "bold",
+          x: LEFT_PADDING,
+          y: 20,
+          width: SLIDE_WIDTH - LEFT_PADDING - (card.images?.[0] ? IMAGE_WIDTH + 20 : 20), // Constrain title width
+          wrap: "none", // Prevent wrapping to next line
+          ellipsis: true, // Add ellipsis for overflow
         },
       },
       elements: [...bulletElements, ...imageElement],
@@ -107,6 +124,7 @@ function mapCardsToSlides(cards: any[]): Slide[] {
     };
   });
 }
+
 
 export default function OutlinePage() {
   const { slides }: any = useSlides();

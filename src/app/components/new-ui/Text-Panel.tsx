@@ -240,37 +240,51 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     updateTextProperty("fontWeight", newStyle);
     setIsItalic(!isItalic);
   };
-  const handleDuplicateText = () => {
-    if (!textObj || slideIndex === -1 || elementIndex === null) return;
+ const handleDuplicateText = () => {
+  if (!textObj || slideIndex === -1) {
+    return;
+  }
 
-    const currentSlide = slides[slideIndex];
-    if (!currentSlide) return;
+  const updatedSlides = structuredClone(slides);
+  const currentSlide = updatedSlides[slideIndex];
+  if (!currentSlide) {
+    return;
+  }
 
-    const elements = [...currentSlide.elements];
-    const originalElement = elements[elementIndex];
-
+  if (selectedTextId?.startsWith("title")) {
+    const titleElement = currentSlide.slide_title;
+    
+    const newTextElement = {
+      konva_component: "Konva.Text",
+      element_type: "text",
+      text: titleElement.text,
+      properties: {
+        ...structuredClone(titleElement.properties),
+        x: (titleElement.properties?.x || 0) + 20,
+        y: (titleElement.properties?.y || 0) + 20,
+      },
+      useThemeColor: titleElement.useThemeColor || false,
+    };
+    
+    currentSlide.elements.push(newTextElement);
+    
+  } else if (elementIndex !== null) {
+    const originalElement = currentSlide.elements[elementIndex];
+    
     const newElement = {
       ...structuredClone(originalElement),
-      id: `el-${slideIndex}-${uuidv4()}`,
       properties: {
         ...structuredClone(originalElement.properties),
         x: (originalElement.properties?.x || 0) + 20,
         y: (originalElement.properties?.y || 0) + 20,
       },
     };
+    
+    currentSlide.elements.splice(elementIndex + 1, 0, newElement);
+  }
 
-    elements.splice(elementIndex + 1, 0, newElement);
-
-    const updatedSlide = {
-      ...currentSlide,
-      elements,
-    };
-
-    const updatedSlides = [...slides];
-    updatedSlides[slideIndex] = updatedSlide;
-
-    setSlides(updatedSlides);
-  };
+  setSlides(updatedSlides);
+};
 
   const handleDeleteText = () => {
     if (slideIndex === -1) return;
@@ -320,7 +334,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
         boxSizing: "border-box",
         position: "fixed",
         bottom: 83,
-        paddingLeft: { xs: 19, sm: 10, md: 10, lg: 10 },
+        paddingLeft: { xs: 24, sm: 10, md: 10, lg: 10 },
         paddingRight: 3,
         alignContent: "center",
         gap: 2,

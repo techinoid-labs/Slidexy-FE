@@ -24,6 +24,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
+import { v4 as uuidv4 } from "uuid";
 
 const fontOptions = ["Raleway", "Roboto", "Arial"];
 
@@ -54,6 +55,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     bringElementForward,
     sendElementBackward,
     setSlides,
+    addText,
   } = useSlides();
   const { setPrimaryColor } = useSlideThemeContext();
   const parsed = selectedTextId
@@ -65,8 +67,8 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   const elementIndex = parsed?.[2]
     ? parseInt(parsed[2], 10)
     : selectedShapeIndex !== null
-    ? selectedShapeIndex
-    : null;
+      ? selectedShapeIndex
+      : null;
 
   let textObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex]) {
@@ -99,8 +101,8 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     const target: any = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title.properties
       : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex].properties
-      : null;
+        ? updatedSlides[slideIndex].elements[elementIndex].properties
+        : null;
     if (target) target[prop] = value;
     setSlides(updatedSlides);
   };
@@ -121,12 +123,92 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     const el = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title
       : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex]
-      : null;
+        ? updatedSlides[slideIndex].elements[elementIndex]
+        : null;
 
     if (!el) return;
     el.properties.fill = color;
     el.useThemeColor = false;
+
+    setSlides(updatedSlides);
+  };
+
+  const handleDuplicateText = () => {
+    if (!textObj || slideIndex === -1) {
+      return;
+    }
+
+    const updatedSlides = structuredClone(slides);
+    const currentSlide = updatedSlides[slideIndex];
+    if (!currentSlide) {
+      return;
+    }
+
+    if (selectedTextId?.startsWith("title")) {
+      const titleElement = currentSlide.slide_title;
+
+      const newTextElement = {
+        konva_component: "Konva.Text",
+        element_type: "text",
+        text: titleElement.text,
+        properties: {
+          ...structuredClone(titleElement.properties),
+          x: (titleElement.properties?.x || 0) + 20,
+          y: (titleElement.properties?.y || 0) + 20,
+        },
+        useThemeColor: titleElement.useThemeColor || false,
+      };
+
+      currentSlide.elements.push(newTextElement);
+
+    } else if (elementIndex !== null) {
+      const originalElement = currentSlide.elements[elementIndex];
+
+      const newElement = {
+        ...structuredClone(originalElement),
+        properties: {
+          ...structuredClone(originalElement.properties),
+          x: (originalElement.properties?.x || 0) + 20,
+          y: (originalElement.properties?.y || 0) + 20,
+        },
+      };
+
+      currentSlide.elements.splice(elementIndex + 1, 0, newElement);
+    }
+
+    setSlides(updatedSlides);
+  };
+
+
+
+  const handleDeleteText = () => {
+    if (slideIndex === -1) return;
+    const updatedSlides = structuredClone(slides);
+
+    if (selectedTextId?.startsWith("title")) {
+      updatedSlides[slideIndex].slide_title = {
+        konva_component: "Konva.Text",
+        text: "",
+        properties: {
+          fontSize: 14,
+          fontWeight: "normal",
+          fontFamily: "Roboto",
+          fill: "#444",
+          fontStyle: "normal",
+          align: "left",
+          x: 0,
+          y: 25,
+          width: 220,
+          height: 0,
+          radius: 0,
+          numPoints: 0,
+          innerRadius: 0,
+          outerRadius: 0,
+        },
+      };
+    } else if (elementIndex !== null) {
+      updatedSlides[slideIndex].elements.splice(elementIndex, 1);
+    }
 
     setSlides(updatedSlides);
   };
@@ -159,9 +241,6 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
             Text
           </Typography>
-          {/* <IconButton size="small">
-            <SettingsIcon />
-          </IconButton> */}
         </Box>
 
         <InputBase
@@ -255,34 +334,13 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
               <IconButton
                 key={value}
                 onClick={() => updateTextProperty("align", value)}
-                className={`rounded-md w-11 h-11 ${
-                  align === value ? "bg-gray-300" : "bg-[#F8F8FA]"
-                }`}
+                className={`rounded-md w-11 h-11 ${align === value ? "bg-gray-300" : "bg-[#F8F8FA]"
+                  }`}
               >
                 <Icon />
               </IconButton>
             );
           })}
-          {/* <Box className="flex gap-1 bg-[#F8F8FA] rounded-md px-1 ml-2">
-            {[
-              VerticalAlignTopIcon,
-              VerticalAlignCenterIcon,
-              VerticalAlignBottomIcon,
-            ].map((Icon, i) => {
-              const value = ["top", "middle", "bottom"][i];
-              return (
-                <IconButton
-                  key={value}
-                  onClick={() => updateTextProperty("verticalAlign", value)}
-                  className={`w-9 h-9 rounded-md ${
-                    verticalAlign === value ? "bg-gray-300" : "bg-transparent"
-                  }`}
-                >
-                  <Icon />
-                </IconButton>
-              );
-            })}
-          </Box> */}
         </Box>
       </Box>
 
@@ -340,12 +398,16 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       </Box>
       <Divider sx={{ my: 2 }} />
 
+     
+      {/* Layer Order and Actions */}
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
-            Layer Order
+            Layer Order & Actions
           </Typography>
         </Box>
+
+        {/* Forward / Backward in one line */}
         <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
@@ -362,7 +424,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
               color: "#222",
               textTransform: "none",
               whiteSpace: "nowrap",
-              minWidth: 140,
+              flex: 1,
               "&:hover": {
                 bgcolor: "#F3EDFF",
                 borderColor: "#7B4AE2",
@@ -387,7 +449,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
               color: "#222",
               textTransform: "none",
               whiteSpace: "nowrap",
-              minWidth: 140,
+              flex: 1,
               "&:hover": {
                 bgcolor: "#F3EDFF",
                 borderColor: "#7B4AE2",
@@ -398,7 +460,72 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             Send Backward
           </Button>
         </Box>
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Duplicate / Delete in one line */}
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={handleDuplicateText}
+            endIcon={
+              <img
+                src="/duplicate-icon.svg"
+                alt="duplicate"
+                style={{ width: 15, height: 15 }}
+              />
+            }
+            sx={{
+              borderRadius: 2,
+              fontWeight: 600,
+              fontSize: 12,
+              bgcolor: "#F8F8FA",
+              borderColor: "#E0E0E0",
+              color: "#222",
+              textTransform: "none",
+              whiteSpace: "nowrap",
+              flex: 1,
+              "&:hover": {
+                bgcolor: "#F3EDFF",
+                borderColor: "#7B4AE2",
+                color: "#7B4AE2",
+              },
+            }}
+          >
+            Duplicate
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleDeleteText}
+            endIcon={
+              <img
+                src="/delete-icon.svg"
+                alt="delete"
+                style={{ width: 15, height: 15 }}
+              />
+            }
+            sx={{
+              borderRadius: 2,
+              fontWeight: 600,
+              fontSize: 12,
+              bgcolor: "#F8F8FA",
+              borderColor: "#E0E0E0",
+              color: "#222",
+              textTransform: "none",
+              whiteSpace: "nowrap",
+              flex: 1,
+              "&:hover": {
+                bgcolor: "#FFF3F3",
+                borderColor: "#C00",
+                color: "#C00",
+              },
+            }}
+          >
+            Delete
+          </Button>
+        </Box>
       </Box>
+
     </Box>
   );
 };

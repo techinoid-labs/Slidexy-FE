@@ -8,12 +8,15 @@ import {
   Typography,
   IconButton,
   InputBase,
-  Switch,
+  CircularProgress,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { useSlides } from "@/app/context/SlidesContext";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import { v4 as uuidv4 } from "uuid";
+import { removeBackground } from "@imgly/background-removal";
+import CropModal from "./../new-ui/CropModal";
+import { useSlides } from "@/app/context/SlidesContext";
 
 const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   sidebarHeight,
@@ -28,22 +31,24 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     setSlides,
     bringElementForward,
     sendElementBackward,
+    setSelectedImage,
+    setSelectedImageIndex,
   } = useSlides();
 
-  const [imageWidth, setImageWidth] = useState<number>(
-    selectedImage?.properties?.width || 0
-  );
-  const [imageHeight, setImageHeight] = useState<number>(
-    selectedImage?.properties?.height || 0
-  );
-  const [isBackground, setIsBackground] = useState<boolean>(
-    selectedImage?.properties?.isBackground || false
-  );
-  const [imageSrc, setImageSrc] = useState<string>(
-    selectedImage?.properties?.imageSrc || "/sample-content-image.jpg"
-  );
-
-  // 🔁 Sync local state with selectedImage when it changes
+   const [imageWidth, setImageWidth] = useState<number>(
+      selectedImage?.properties?.width || 0
+    );
+    const [imageHeight, setImageHeight] = useState<number>(
+      selectedImage?.properties?.height || 0
+    );
+    const [isBackground, setIsBackground] = useState<boolean>(
+      selectedImage?.properties?.isBackground || false
+    );
+    const [imageSrc, setImageSrc] = useState<string>(
+      selectedImage?.properties?.imageSrc || "/sample-content-image.jpg"
+    );
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   useEffect(() => {
     if (selectedImage) {
       setImageWidth(selectedImage?.properties?.width || 0);
@@ -54,8 +59,6 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       );
     }
   }, [selectedImage]);
-
-  // ✅ Debounced update to Redux slides
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (
@@ -82,80 +85,149 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
 
     return () => clearTimeout(timeout);
   }, [imageWidth, imageHeight]);
-
-  const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setImageWidth(val === "" ? NaN : Number(val));
-  };
-
-  const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setImageHeight(val === "" ? NaN : Number(val));
-  };
-
-  const handleSwitchChange = () => {
-    const newVal = !isBackground;
-    setIsBackground(newVal);
-
-    if (
-      selectedSlideIndex === null ||
-      selectedImageIndex === null ||
-      !slides[selectedSlideIndex]?.elements[selectedImageIndex]
-    )
+  const handleDuplicateImage = () => {
+    if (!selectedImage || selectedSlideIndex === -1 || selectedImageIndex === null)
       return;
 
-    const updatedSlides = JSON.parse(JSON.stringify(slides));
-    updatedSlides[selectedSlideIndex].elements[
-      selectedImageIndex
-    ].properties.isBackground = newVal;
+    const currentSlide = slides[selectedSlideIndex];
+    const elements = [...currentSlide.elements];
+    const originalElement = elements[selectedImageIndex];
+
+    const newElement = {
+      ...structuredClone(originalElement),
+      id: `el-${selectedSlideIndex}-${uuidv4()}`,
+      properties: {
+        ...structuredClone(originalElement.properties),
+        x: (originalElement.properties?.x || 0) + 20,
+        y: (originalElement.properties?.y || 0) + 20,
+      },
+    };
+
+    elements.splice(selectedImageIndex + 1, 0, newElement);
+    const updatedSlide = { ...currentSlide, elements };
+    const updatedSlides = [...slides];
+    updatedSlides[selectedSlideIndex] = updatedSlide;
+
+    setSlides(updatedSlides);
+    setSelectedImage(newElement);
+    setSelectedImageIndex(selectedImageIndex + 1);
+  };
+
+  const handleDeleteImage = () => {
+    if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
+    const updatedSlides = structuredClone(slides);
+    updatedSlides[selectedSlideIndex].elements.splice(selectedImageIndex, 1);
     setSlides(updatedSlides);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+ 
+
+ const handleRemoveBackground = async () => {
+  if (!selectedImage?.properties?.imageSrc) return;
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(selectedImage.properties.imageSrc);
+    const blob = await response.blob();
+
+    const result = await removeBackground(blob, {
+      output: { format: "image/png", quality: 0.8 },
+    });
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      const result = reader.result as string;
-      setImageSrc(result);
-
+      const resultUrl = reader.result as string;
       if (
-        selectedSlideIndex === null ||
-        selectedImageIndex === null ||
-        !slides[selectedSlideIndex]?.elements[selectedImageIndex]
-      )
-        return;
-
-      const updatedSlides = JSON.parse(JSON.stringify(slides));
-      updatedSlides[selectedSlideIndex].elements[
-        selectedImageIndex
-      ].properties.imageSrc = result;
-      setSlides(updatedSlides);
+        selectedSlideIndex !== null &&
+        selectedImageIndex !== null &&
+        slides[selectedSlideIndex]?.elements[selectedImageIndex]
+      ) {
+        const updatedSlides = structuredClone(slides);
+        updatedSlides[selectedSlideIndex].elements[selectedImageIndex]
+          .properties.imageSrc = resultUrl; 
+        setSlides(updatedSlides);
+      }
+      setIsLoading(false);
     };
-    reader.readAsDataURL(file);
+
+    reader.readAsDataURL(result);
+  } catch (error) {
+    console.error("Error removing background:", error);
+    setIsLoading(false);
+  }
+};
+
+
+  const updateImageProperty = (prop: string, value: any) => {
+    if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
+    const updatedSlides = structuredClone(slides);
+    const target =
+      updatedSlides[selectedSlideIndex].elements[selectedImageIndex].properties;
+    if (target) target[prop] = value;
+    setSlides(updatedSlides);
   };
 
-  return (
-    <Box className="w-[360px] min-w-[320px] md:min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
-      {/* Tabs */}
-      <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
-        <Box
-          sx={{
-            bgcolor: "#F5F5F5",
-            color: "#222",
-            fontWeight: 600,
-            borderRadius: 2,
-            px: 2.5,
-            py: 1,
-            fontSize: 15,
-            mr: 2,
-          }}
-        >
-          Settings
-        </Box>
-      </Box>
+   const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+     const val = e.target.value;
+     setImageWidth(val === "" ? NaN : Number(val));
+   };
+ 
+   const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+     const val = e.target.value;
+     setImageHeight(val === "" ? NaN : Number(val));
+   };
+ 
+   const handleSwitchChange = () => {
+     const newVal = !isBackground;
+     setIsBackground(newVal);
+ 
+     if (
+       selectedSlideIndex === null ||
+       selectedImageIndex === null ||
+       !slides[selectedSlideIndex]?.elements[selectedImageIndex]
+     )
+       return;
+ 
+     const updatedSlides = JSON.parse(JSON.stringify(slides));
+     updatedSlides[selectedSlideIndex].elements[
+       selectedImageIndex
+     ].properties.isBackground = newVal;
+     setSlides(updatedSlides);
+   };
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+     const file = e.target.files?.[0];
+     if (!file) return;
+ 
+     const reader = new FileReader();
+     reader.onloadend = () => {
+       const result = reader.result as string;
+       setImageSrc(result);
+ 
+       if (
+         selectedSlideIndex === null ||
+         selectedImageIndex === null ||
+         !slides[selectedSlideIndex]?.elements[selectedImageIndex]
+       )
+         return;
+ 
+       const updatedSlides = JSON.parse(JSON.stringify(slides));
+       updatedSlides[selectedSlideIndex].elements[
+         selectedImageIndex
+       ].properties.imageSrc = result;
+       setSlides(updatedSlides);
+     };
+     reader.readAsDataURL(file);
+   };
 
+
+  return (
+    <Box className="w-[360px] min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
+      {/* Header */}
+      <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2 }}>
+        <Typography sx={{ fontWeight: 600, fontSize: 16, color: "#000" }}>
+          Image Settings
+        </Typography>
+      </Box>
       {/* Size */}
       <Divider sx={{ my: 2 }} />
       <Box sx={{ px: 3, mb: 2 }}>
@@ -297,72 +369,93 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
             onChange={handleImageChange}
           />
         </Box>
-        <Divider sx={{ my: 2 }} />
+        
 
-        <Box sx={{ px: 3, mb: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-            <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
-              Layer Order
-            </Typography>
-          </Box>
-          <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
-            <Button
-              variant="outlined"
-              onClick={() => bringElementForward(selectedImageIndex)}
-              endIcon={<ArrowUpwardIcon />}
-              sx={{
-                borderRadius: 2,
-                fontWeight: 600,
-                fontSize: 12,
-                bgcolor: "#F8F8FA",
-                borderColor: "#E0E0E0",
-                color: "#222",
-                textTransform: "none",
-                whiteSpace: "nowrap",
-                minWidth: 140,
-                "&:hover": {
-                  bgcolor: "#F3EDFF",
-                  borderColor: "#7B4AE2",
-                  color: "#7B4AE2",
-                },
-              }}
-            >
-              Bring Forward
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => sendElementBackward(selectedImageIndex)}
-              endIcon={<ArrowDownwardIcon />}
-              sx={{
-                borderRadius: 2,
-                fontWeight: 600,
-                fontSize: 12,
-                bgcolor: "#F8F8FA",
-                borderColor: "#E0E0E0",
-                color: "#222",
-                textTransform: "none",
-                whiteSpace: "nowrap",
-                minWidth: 140,
-                "&:hover": {
-                  bgcolor: "#F3EDFF",
-                  borderColor: "#7B4AE2",
-                  color: "#7B4AE2",
-                },
-              }}
-            >
-              Send Backward
-            </Button>
-          </Box>
+      {/* Actions Section */}
+      <Divider sx={{ my: 1 }} />
+      <Box sx={{ px: 3 }}>
+        <Typography sx={{ fontWeight: 500, fontSize: 14, color: "#000", mb: 1 }}>
+          Actions
+        </Typography>
+        <Box sx={{ display: "flex", gap: 4, mb: 1 }}>
+          <Button sx={{  fontColor: "#1a1a1a", height: 47, width: 150, fontSize: 14, fontWeight: 500 }}
+            variant="outlined" size="small" onClick={handleDuplicateImage}>Duplicate</Button>
+          <Button sx={{ fontColor: "#1a1a1a", height: 47, width: 150, fontSize: 14, fontWeight: 500 }} variant="outlined" size="small" color="error" onClick={handleDeleteImage}>Delete</Button>
         </Box>
-        {/* Set as Background */}
-        {/* <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-          <Typography sx={{ fontWeight: 500, fontSize: 15, flex: 1 }}>
-            Set as Background
-          </Typography>
-          <Switch checked={isBackground} onChange={handleSwitchChange} />
-        </Box> */}
+        <Box sx={{ display: "flex", gap: 4 }}>
+          <Button
+            variant="outlined"
+            sx={{ fontColor: "#1a1a1a", height: 47, width: 150}} 
+            size="small"
+            onClick={handleRemoveBackground}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <CircularProgress size={9} sx={{ mr: 1 }} />
+                Processing...
+              </>
+            ) : <Typography sx={{whiteSpace: "nowrap", fontSize: 14, fontWeight: 500}}>BG Remover</Typography>}
+          </Button>
+          <Button sx={{ fontColor: "#1a1a1a", height: 47, width: 150, fontSize: 14, fontWeight: 500 }} variant="outlined" size="small" onClick={() => setIsCropModalOpen(true)}>Crop</Button>
+        </Box>
       </Box>
+     </Box>
+      {/* Layer Order */}
+      {/* Layer Order */}
+<Divider sx={{ my: 1 }} />
+<Box sx={{ px: 3, mb: 2 }}>
+  <Typography sx={{ fontWeight: 500, fontSize: 14, mb: 1 }}>Layer Order</Typography>
+  <Box sx={{ display: "flex", gap: 2, padding: 0 }}>
+    <Button
+      //variant="outlined"
+      size="small"
+      startIcon={<ArrowUpwardIcon />}
+      sx={{
+        color: "#1a1a1a",
+        backgroundColor: "rgba(249, 249, 251, 1)",
+        height: 50,
+        width: 180,
+        fontWeight: 500,
+        textTransform: "none",
+      }}
+      onClick={() => bringElementForward(selectedImageIndex)}
+      disabled={selectedImageIndex === null}
+    >
+      Forward
+    </Button>
+    <Button
+      //variant="outlined"
+      size="small"
+      startIcon={<ArrowDownwardIcon />}
+      sx={{
+        color: "#1a1a1a",
+        backgroundColor: "rgba(249, 249, 251, 1)",
+        height: 50,
+        width: 180,
+        fontWeight: 500,
+        textTransform: "none",
+      }}
+      onClick={() => sendElementBackward(selectedImageIndex)}
+      disabled={selectedImageIndex === null}
+    >
+      Backward
+    </Button>
+  </Box>
+</Box>
+
+
+      {/* Crop Modal */}
+      <CropModal
+        open={isCropModalOpen}
+        onClose={() => setIsCropModalOpen(false)}
+        imageSrc={imageSrc || ""}
+        selectedSlideIndex={selectedSlideIndex}
+        selectedImageIndex={selectedImageIndex}
+        updateImageProperty={updateImageProperty}
+      />
     </Box>
+    
   );
 };
 

@@ -30,6 +30,8 @@ interface SlidesContextType {
   selectedTextId: string | null;
   setSelectedTextId: (id: string | null) => void;
   setSelectedImageId: (id: string | null) => void;
+  selectedShapeId : string | null;
+  setSelectedShapeId : (id : string | null) => void ;
   selectedShapeIndex: number | null;
   setSelectedShapeIndex: (index: number | null) => void;
   tooltip: { visible: boolean; x: number; y: number; node: any | null };
@@ -51,6 +53,7 @@ interface SlidesContextType {
   canRedo: boolean;
   bringElementForward: (el: any) => void;
   sendElementBackward: (el: any) => void;
+  addText: () => void;
 }
 
 const SlidesContext = createContext<SlidesContextType>({} as SlidesContextType);
@@ -72,6 +75,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
     null
   );
+  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState({
     visible: false,
     x: 50,
@@ -211,6 +215,31 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
 
     handleSetSlides(updatedSlides);
   };
+const addText = (props: any = {}) => {
+  const updatedSlides = structuredClone(slides);
+
+  if (!updatedSlides[selectedSlideIndex]) return;
+
+  const newText = {
+    konva_component: "Konva.Text",
+    element_type: "text", // This is important!
+    text: props.text || "New Text",
+    properties: {
+      fontSize: props.fontSize || 24,
+      fontFamily: props.fontFamily || "Arial",
+      fontStyle: props.fontStyle || "normal",
+      fill: props.fill || "#000000",
+      align: props.align || "left",
+      x: props.x || 100,
+      y: props.y || 100,
+      ...props.properties,
+    },
+    useThemeColor: props.useThemeColor || false,
+  };
+
+  updatedSlides[selectedSlideIndex].elements.push(newText);
+  handleSetSlides(updatedSlides);
+};
 
   return (
     <SlidesContext.Provider
@@ -229,6 +258,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setSelectedImageId,
         selectedImageId,
         selectedShapeIndex,
+        selectedShapeId,
         setSelectedShapeIndex,
         tooltip,
         setTooltip,
@@ -244,6 +274,9 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         canRedo,
         bringElementForward,
         sendElementBackward,
+        setSelectedShapeId,
+        addText,
+        
       }}
     >
       {children}

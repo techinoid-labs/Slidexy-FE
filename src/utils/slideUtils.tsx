@@ -11,55 +11,41 @@ export const restrictShapeBounds = (
   canvasWidth: number = getSlideDimensions().SLIDE_WIDTH,
   canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
 ) => {
-  const minSize = 50;
-  let width = properties.width || minSize;
-  let height = properties.height || minSize;
-  let maxX, maxY;
-  // Special case for radius-based shapes
+  const MIN_SIZE = 50; // Default minimum size for most shapes
+  const LINE_ARROW_MIN_SIZE = 30; // Custom minimum size for lines and arrows
+  let width = properties.width || MIN_SIZE;
+  let height = properties.height || MIN_SIZE;
+
+  // Handle size for specific shape types
   if (shapeType === "Konva.Circle") {
-    const radius = Math.max(properties.radius || 25, minSize / 2);
+    const radius = Math.max(properties.radius || MIN_SIZE / 2, MIN_SIZE / 2);
     width = height = radius * 2;
   } else if (shapeType === "Konva.Star") {
-    const outerRadius = Math.max(properties.outerRadius || 25, minSize / 2);
+    const outerRadius = Math.max(properties.outerRadius || MIN_SIZE / 2, MIN_SIZE / 2);
     width = height = outerRadius * 2;
-  } else if (shapeType === "Konva.Line") {
-    const points = [20, 20, 60, 60];
-    const xs = points.filter((_, idx) => idx % 2 === 0);
-    const ys = points.filter((_, idx) => idx % 2 !== 0);
-    const minX = Math.min(...xs);
-    const minY = Math.min(...ys);
-    const maxX = Math.max(...xs);
-    const maxY = Math.max(...ys);
-    width = Math.max(minSize, maxX - minX);
-    height = Math.max(minSize, maxY - minY);
-    console.log("inserting line: " + points);
-    console.log(xs, ys, minX, minY, maxX, maxY);
-  } else if (shapeType === "Konva.Arrow") {
-    const points = [0, 0, 100, 100];
-    const xs = points.filter((_, idx) => idx % 2 === 0);
-    const ys = points.filter((_, idx) => idx % 2 !== 0);
-    const minX = Math.min(...xs);
-    const minY = Math.min(...ys);
-    const maxX = Math.max(...xs);
-    const maxY = Math.max(...ys);
-    width = Math.max(minSize, maxX - minX);
-    height = Math.max(minSize, maxY - minY);
+  } else if (shapeType === "Konva.Line" || shapeType === "Konva.Arrow") {
+    const points = properties.points || [0, 0, 100, 100];
+    const xs = points.filter((_: any, idx: number) => idx % 2 === 0);
+    const ys = points.filter((_: any, idx: number) => idx % 2 !== 0);
+    width = Math.max(LINE_ARROW_MIN_SIZE, Math.max(...xs) - Math.min(...xs));
+    height = Math.max(LINE_ARROW_MIN_SIZE, Math.max(...ys) - Math.min(...ys));
   } else {
-    width = Math.max(width, minSize);
-    height = Math.max(height, minSize);
-  }
-  const paddingBottom = window.innerHeight <= 830 ? 50 : 10;
-  // Clamp position so shape doesn't overflow canvas
-  if (["Konva.Line"].includes(shapeType)) {
-    maxX = canvasWidth - width; // extra padding for small shapes
-    maxY = canvasHeight - paddingBottom;
-  } else {
-    maxX = canvasWidth - width + 50;
-    maxY = canvasHeight - paddingBottom + 30;
+    width = Math.max(MIN_SIZE, width);
+    height = Math.max(MIN_SIZE, height);
   }
 
-  const constrainedX = Math.max(0, Math.min(x, maxX));
-  const constrainedY = Math.max(0, Math.min(y, maxY));
+  // Define canvas boundaries with padding
+  const padding = 10;
+  const maxX = canvasWidth - width - padding;
+  // Custom maxY for lines and arrows
+  const maxY =
+    shapeType === "Konva.Line" || shapeType === "Konva.Arrow"
+      ? canvasHeight - height - padding // Tighter maxY for lines/arrows
+      : canvasHeight - height - padding + 50; // Looser maxY for other shapes
+
+  // Clamp position to stay within canvas
+  const constrainedX = Math.max(padding, Math.min(x, maxX));
+  const constrainedY = Math.max(padding, Math.min(y, maxY));
 
   return {
     x: constrainedX,
@@ -175,77 +161,50 @@ export const constrainImageToCanvas = (
   y: number,
   width: number,
   height: number,
-  canvasWidth: number = getSlideDimensions().SLIDE_WIDTH,
-  canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
+  slideWidth: number,
+  slideHeight: number,
+  padding = { left: 10, right: 10, top: 10, bottom: 10 },
+  minSize = { width: 50, height: 50 }
 ) => {
-  const { LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT } = getSlideDimensions();
-  const paddingLeft = LEFT_PADDING - 200; // Adjusted for web context
-  const paddingRight = 10; // Minimum 10px
-  const paddingTop = -100; // Minimum 60px
-  const paddingBottom = window.innerHeight <= 830 ? 50 : 10; // Responsive padding
+  let newX = x;
+  let newY = y;
+  let newWidth = Math.max(width, minSize.width);
+  let newHeight = Math.max(height, minSize.height);
 
-  const minWidth = 50; // Minimum image width
-  const minHeight = 50; // Minimum image height
+  // Half-outside allowance
+  const halfW = newWidth / 2;
+  const halfH = newHeight / 2;
 
-  // Check if image is at minimum size
-  const isAtMinSize = width <= minWidth || height <= minHeight;
+  // Allowed bounds (image center can go this far)
+  const canvasMinX = padding.left - halfW;
+  const canvasMinY = padding.top - halfH;
+  const canvasMaxX = slideWidth - padding.right - halfW;
+  const canvasMaxY = slideHeight - padding.bottom - halfH;
 
-  // Expand boundaries when at minimum size
-  const minX = isAtMinSize ? LEFT_PADDING - 45 : paddingLeft;
-  const minY = isAtMinSize ? -10 : paddingTop;
-  const maxX = isAtMinSize
-    ? canvasWidth - paddingRight
-    : canvasWidth - minWidth - paddingRight;
-  const maxY = isAtMinSize
-    ? canvasHeight - paddingBottom + (minWidth - 10)
-    : canvasHeight - paddingBottom + 40;
-
-  const constrainedX = Math.max(minX, Math.min(x, maxX));
-  const constrainedY = Math.max(minY, Math.min(y, maxY));
-  const constrainedWidth = Math.max(
-    minWidth,
-    Math.min(width, canvasWidth - constrainedX - paddingRight)
-  );
-  const constrainedHeight = Math.max(
-    minHeight,
-    Math.min(height, canvasHeight - constrainedY - paddingBottom)
-  );
+  // Clamp X/Y so that the center of the image stays in the half-outside range
+  if (newX < canvasMinX) newX = canvasMinX;
+  if (newY < canvasMinY) newY = canvasMinY;
+  if (newX > canvasMaxX) newX = canvasMaxX;
+  if (newY > canvasMaxY) newY = canvasMaxY;
 
   const isAtBoundary =
-    x !== constrainedX ||
-    y !== constrainedY ||
-    width !== constrainedWidth ||
-    height !== constrainedHeight;
-
-  console.log("[constrainImageToCanvas]", {
-    x,
-    y,
-    width,
-    height,
-    canvasWidth,
-    canvasHeight,
-    minX,
-    maxX,
-    minY,
-    maxY,
-    minWidth,
-    minHeight,
-    constrainedX,
-    constrainedY,
-    constrainedWidth,
-    constrainedHeight,
-    isAtMinSize,
-    isAtBoundary,
-  });
+    newX <= canvasMinX ||
+    newY <= canvasMinY ||
+    newX >= canvasMaxX ||
+    newY >= canvasMaxY;
 
   return {
-    x: constrainedX,
-    y: constrainedY,
-    width: constrainedWidth,
-    height: constrainedHeight,
+    x: newX,
+    y: newY,
+    width: newWidth,
+    height: newHeight,
     isAtBoundary,
   };
 };
+
+
+
+
 export const getRandomSlide = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const titles: any = [
@@ -271,10 +230,13 @@ export const getRandomSlide = () => {
   const getRandomBullets = (count: number) =>
     Array.from({ length: count }, (_, index) => {
       const text = bullets[Math.floor(Math.random() * bullets.length)];
+       const fontSize = 18;
+      const lineSpacing = 8;
       return {
         element_type: "bullet_point",
         text,
         konva_component: "Konva.Text",
+
         properties: {
           fontSize: 18,
           fontWeight: "",
@@ -282,6 +244,9 @@ export const getRandomSlide = () => {
           fill: "#444",
           fontStyle: "",
           zIndex: index + 1,
+          x: LEFT_PADDING + 10,
+          y: 80 + index * (fontSize + lineSpacing),
+          
         },
       };
     });
@@ -293,7 +258,7 @@ export const getRandomSlide = () => {
       properties: {
         fontSize: 24,
         fontFamily: "",
-        fill: "#000",
+        fill: "#444",
         fontWeight: "bold",
       },
     },
