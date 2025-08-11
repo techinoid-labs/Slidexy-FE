@@ -409,6 +409,8 @@ export default function PresentationMaker({
         >
           {loading
             ? `Generating... ${Math.round(progress)}%`
+            : inputMode == "Poster"
+            ? "Generate Infographics"
             : "Generate Outlines"}
         </span>
         <Box
