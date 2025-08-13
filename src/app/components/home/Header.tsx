@@ -34,9 +34,10 @@ export default function Header() {
   const navigationItems = [
     { label: "Templates", hasDropdown: false, link: "/templates" },
     { label: "Features", hasDropdown: false, link: "/features" },
-    { label: "Reports", hasDropdown: false, link: "/reports" },
+    // { label: "Reports", hasDropdown: false, link: "/reports" },
     { label: "Product", hasDropdown: false, link: "/product" },
-    { label: "Blog", hasDropdown: false, link: "/blog" },
+    // { label: "Blog", hasDropdown: false, link: "/blog" },
+    { label: "Pricing", hasDropdown: false, link: "/pricing" },
   ];
 
   return (
@@ -72,70 +73,48 @@ export default function Header() {
           </Box>
         </Link>
         {/* Desktop Navigation */}
-        {!isMobile && (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              height: "100%",
-            }}
-          >
-            {/* {navigationItems.map((item) => (
-              <Button
-                key={item.label}
-                color="inherit"
-                endIcon={item.hasDropdown ? <KeyboardArrowDown /> : null}
-                sx={{
-                  color: "text.secondary",
-                  fontSize: "1.35rem",
-                  fontWeight: 500,
-                  letterSpacing: 1,
-                  px: 3,
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  "&:hover": {
-                    color: "text.primary",
-                    backgroundColor: "transparent",
-                  },
-                }}
-              >
-                {item.label}
-              </Button>
-            ))} */}
-            {navigationItems.map((item) => (
-              <Link key={item.label} href={item.link} passHref>
-                <Button
-                  color="inherit"
-                  endIcon={item.hasDropdown ? <KeyboardArrowDown /> : null}
-                  sx={{
-                    color: "text.secondary",
-                    fontSize: "1.35rem",
-                    fontWeight: 500,
-                    letterSpacing: 1,
-                    px: 3,
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    "&:hover": {
-                      color: "text.primary",
-                      backgroundColor: "transparent",
-                    },
-                  }}
-                >
-                  {item.label}
-                </Button>
-              </Link>
-            ))}
-          </Box>
-        )}
-
-        {/* Right Side Actions */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ display: "flex", alignSelf: "flex-end" }}>
           {!isMobile && (
-            <>
-              {/* <Typography
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "flex-end",
+                gap: 5,
+                height: "100%",
+              }}
+            >
+              {navigationItems.map((item) => (
+                <Link key={item.label} href={item.link} passHref>
+                  <Button
+                    color="inherit"
+                    endIcon={item.hasDropdown ? <KeyboardArrowDown /> : null}
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: "1.35rem",
+                      fontWeight: 500,
+                      letterSpacing: 1,
+                      px: 3,
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "flex-end",
+                      "&:hover": {
+                        color: "text.primary",
+                        backgroundColor: "transparent",
+                      },
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                </Link>
+              ))}
+            </Box>
+          )}
+
+          {/* Right Side Actions */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {!isMobile && (
+              <>
+                {/* <Typography
                 sx={{
                   mt: 0.5,
                   color: "#4A00E0",
@@ -155,78 +134,79 @@ export default function Header() {
                 Login
               </Typography> */}
 
-              {/* Try for Free button */}
-              <Link href="/presentation/create" passHref>
-                <Button
-                  variant="contained"
-                  sx={{
-                    mt: 0.5,
-                    backgroundColor: "#4A00E0",
-                    color: "#fff",
-                    borderRadius: "999px",
-                    px: 3,
-                    textTransform: "none",
-                    fontWeight: 600,
-                    whiteSpace: "nowrap",
-                    "&:hover": {
-                      backgroundColor: "#3a00b8",
+                {/* Try for Free button */}
+                <Link href="/presentation/create" passHref>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      mt: 0.5,
+                      backgroundColor: "#4A00E0",
+                      color: "#fff",
+                      borderRadius: "999px",
+                      px: 3,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                      "&:hover": {
+                        backgroundColor: "#3a00b8",
+                      },
+                    }}
+                  >
+                    Try for Free →
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            {/* Mobile Menu */}
+            {isMobile && (
+              <>
+                <IconButton
+                  color="inherit"
+                  onClick={handleMenuOpen}
+                  aria-label="menu"
+                >
+                  <MenuIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  PaperProps={{
+                    sx: {
+                      mt: 1,
+                      minWidth: 200,
                     },
                   }}
                 >
-                  Try for Free →
-                </Button>
-              </Link>
-            </>
-          )}
-
-          {/* Mobile Menu */}
-          {isMobile && (
-            <>
-              <IconButton
-                color="inherit"
-                onClick={handleMenuOpen}
-                aria-label="menu"
-              >
-                <MenuIcon />
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                PaperProps={{
-                  sx: {
-                    mt: 1,
-                    minWidth: 200,
-                  },
-                }}
-              >
-                {/* {navigationItems.map((item) => (
+                  {/* {navigationItems.map((item) => (
                   <MenuItem key={item.label} onClick={handleMenuClose}>
                     {item.label}
                   </MenuItem>
                 ))} */}
-                {navigationItems.map((item) => (
+                  {navigationItems.map((item) => (
+                    <MenuItem
+                      key={item.label}
+                      component={Link}
+                      href={item.link}
+                      onClick={handleMenuClose}
+                    >
+                      {item.label}
+                    </MenuItem>
+                  ))}
+
+                  {/* <MenuItem onClick={handleMenuClose}>Login</MenuItem> */}
                   <MenuItem
-                    key={item.label}
                     component={Link}
-                    href={item.link}
+                    href="/presentation/create"
                     onClick={handleMenuClose}
                   >
-                    {item.label}
+                    Try for Free
                   </MenuItem>
-                ))}
-
-                {/* <MenuItem onClick={handleMenuClose}>Login</MenuItem> */}
-                <MenuItem
-                  component={Link}
-                  href="/presentation/create"
-                  onClick={handleMenuClose}
-                >
-                  Try for Free
-                </MenuItem>
-              </Menu>
-            </>
-          )}
+                </Menu>
+              </>
+            )}
+          </Box>
         </Box>
       </Toolbar>
     </AppBar>

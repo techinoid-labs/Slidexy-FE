@@ -25,7 +25,7 @@ export default function PurposeSection() {
           mb: 4,
         }}
       >
-        <Box sx={{ margin: "auto" , }}>
+        <Box sx={{ margin: "auto" }}>
           <Chip
             icon={
               <img
@@ -57,7 +57,7 @@ export default function PurposeSection() {
               },
               ml: { xs: 3, md: -9 },
               display: "inline-flex",
-              alignItems: 'center',
+              alignItems: "center",
             }}
           />
 
@@ -67,15 +67,13 @@ export default function PurposeSection() {
               fontWeight: 520,
               fontSize: { xs: "1.9rem", md: "2.5rem" },
               color: "#18181B",
-              mb: {xs: 1, md: 0.5},
+              mb: { xs: 1, md: 0.5 },
               ml: { xs: 0, md: -10 },
               textAlign: { xs: "center", md: "left" },
               lineHeight: 1.2,
             }}
           >
-            Why
-            <br />
-            PromptSlide?
+            Why Slidexy?
           </Typography>
         </Box>
         <Typography
@@ -84,8 +82,8 @@ export default function PurposeSection() {
             fontSize: { xs: "0.9rem", md: "1.3rem" },
             maxWidth: 600,
             mt: { xs: 2, md: 2 },
-            ml: { xs: 5},
-            mr: { xs: 5},
+            ml: { xs: 5 },
+            mr: { xs: 5 },
             textAlign: { xs: "center", md: "right" },
           }}
         >
@@ -118,8 +116,8 @@ export default function PurposeSection() {
             borderRadius: 2,
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
             p: { xs: 1.5, md: 2 },
-            minHeight: {xs: 180, md: 180},
-            maxWidth: {xs: 820, md: 800},
+            minHeight: { xs: 180, md: 180 },
+            maxWidth: { xs: 820, md: 800 },
             ml: { xs: 0, md: 5 },
             display: "flex",
             flexDirection: "column",
@@ -158,19 +156,24 @@ export default function PurposeSection() {
               fontWeight: 500,
               fontSize: { xs: "1.5rem", md: "1.6rem" },
               color: "#18181B",
-              mb: {xs: 1, md: 1},
+              mb: { xs: 1, md: 1 },
               ml: { xs: 0, md: 3 },
             }}
           >
             Context-aware content generation
           </Typography>
           <Typography
-            sx={{ color: "#757575", fontSize: { xs: "0.9rem", md: "0.9rem" }, ml: { sx: 0, md: 3 },mb: {xs: 3, md: 1}, }}
+            sx={{
+              color: "#757575",
+              fontWeight: "400px",
+              fontSize: { xs: "16px", md: "16px" },
+              ml: { sx: 0, md: 3 },
+              mb: { xs: 3, md: 1 },
+            }}
           >
             AI turns a prompt into a styled presentation with sections,
             <br />
-            tone,
-            goals, keywords, and a smart title.
+            tone, goals, keywords, and a smart title.
           </Typography>
 
           {/* Hide on mobile */}
@@ -220,7 +223,7 @@ export default function PurposeSection() {
               alignItems: "center",
               justifyContent: "center",
               mt: { xs: 0, md: -1 },
-              mb: {xs : 2, md: 0},
+              mb: { xs: 2, md: 0 },
             }}
           >
             <img
@@ -243,21 +246,18 @@ export default function PurposeSection() {
               mb: 1,
             }}
           >
-            AI picks
-            <br />
-            visual hierarchy
+            AI Infographics
           </Typography>
           <Typography
             sx={{
+              maxWidth: "199px",
               color: "#757575",
-              fontSize: { xs: "0.9rem", md: "0.9rem" },
+              fontWeight: "400px",
+              fontSize: { xs: "16px", md: "16px" },
               mb: 2,
             }}
           >
-            AI transcribes and analyzes
-            <br />
-            spoken ideas to auto-generate slides
-            <br />
+            AI transcribes and analyzes spoken ideas to auto-generate slides
             with key points and speaker notes.
           </Typography>
 
@@ -271,9 +271,9 @@ export default function PurposeSection() {
               position: "absolute",
               bottom: -10,
               right: 0,
-              width: 200,
-              height: 200,
-              objectFit: "contain",
+              width: 300,
+              height: 240,
+              objectFit: "cover",
               zIndex: 1,
             }}
           />
@@ -354,53 +354,79 @@ export default function PurposeSection() {
             "linear-gradient(94.38deg, #ECE2FF -101.47%, #FAF8FF 100%)",
           borderRadius: 4,
           boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
-          p: { xs: 4, md: 5 },
+          p: { xs:3 , md: 3 },
           minHeight: 300,
           maxWidth: 1300,
           display: "flex",
-          flexDirection: "column",
-          alignItems: { xs: "center", md: "flex-start" },
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: "center",
+          justifyContent: "space-between",
           textAlign: { xs: "center", md: "left" },
           gap: 2,
         }}
       >
+        {/* Left Side */}
         <Box
           sx={{
-            width: { xs: 24, md: 50 },
-            height: { xs: 24, md: 50 },
+            display: "flex",
+            flexDirection: "column",
+            alignItems: { xs: "center", md: "flex-start" },
+          }}
+        >
+          <Box
+            sx={{
+              width: { xs: 24, md: 50 },
+              height: { xs: 24, md: 50 },
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mb: 2,
+            }}
+          >
+            <img
+              src="/images/blue-star.svg"
+              alt="Star Icon"
+              width={50}
+              height={50}
+              style={{
+                objectFit: "contain",
+                maxWidth: "40px",
+                maxHeight: "40px",
+              }}
+            />
+          </Box>
+          <Typography
+            sx={{
+              fontWeight: 500,
+              fontSize: { xs: "1.5rem", md: "1.6rem" },
+              color: "#18181B",
+              mb: 0.5,
+            }}
+          >
+            One-click export
+          </Typography>
+          <Typography
+            sx={{ color: "#757575", fontSize: { xs: "1rem", md: "1.05rem" } }}
+          >
+            Google Slides, PowerPoint, PDF
+          </Typography>
+        </Box>
+
+        {/* Right Side */}
+        <Box
+          sx={{
+            height: "auto",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            mb: 2,
           }}
         >
           <img
-            src="/images/blue-star.svg"
-            alt="Star Icon"
-            width={50}
-            height={50}
-            style={{
-              objectFit: "contain",
-              maxWidth: "40px",
-              maxHeight: "40px",
-            }}
+            src="/images/export-image.svg"
+            alt="Export Icon"
+            className="sm:w-[400px] w-[200px]"
           />
         </Box>
-        <Typography
-          sx={{
-            fontWeight: 500,
-           fontSize: { xs: "1.5rem", md: "1.6rem" },
-            color: "#18181B",
-            mb: 0.5,
-          }}
-        >
-          One-click export
-        </Typography>
-        <Typography
-          sx={{ color: "#757575", fontSize: { xs: "1rem", md: "1.05rem" } }}
-        >
-          Google Slides, PowerPoint, PDF
-        </Typography>
       </Box>
     </Box>
   );
