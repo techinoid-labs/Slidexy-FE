@@ -32,10 +32,11 @@ export default function Header() {
   };
 
   const navigationItems = [
+    { label: "Home", hasDropdown: false, link: "/" },
     { label: "Templates", hasDropdown: false, link: "/templates" },
-    { label: "Features", hasDropdown: false, link: "/features" },
+    // { label: "Features", hasDropdown: false, link: "/features" },
     // { label: "Reports", hasDropdown: false, link: "/reports" },
-    { label: "Product", hasDropdown: false, link: "/product" },
+    // { label: "Product", hasDropdown: false, link: "/product" },
     // { label: "Blog", hasDropdown: false, link: "/blog" },
     { label: "Pricing", hasDropdown: false, link: "/pricing" },
   ];

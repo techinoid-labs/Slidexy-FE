@@ -3,10 +3,21 @@
 import { Box, Typography, Chip, Button } from "@mui/material";
 
 export default function PresentationStyleSection() {
+  
+  const images = [
+    "/images/theme01.svg",
+    "/images/theme02.svg",
+    "/images/theme03.svg",
+    "/images/theme04.svg",
+    "/images/theme05.svg",
+    "/images/theme06.svg",
+  ];
+
+    
   return (
     <Box
       sx={{
-        width: '100%',
+        width: "100%",
         background: "#FBFAFF",
         px: { xs: 2, md: "162px" },
         py: { xs: 6, md: "80px" },
@@ -44,8 +55,8 @@ export default function PresentationStyleSection() {
           borderRadius: "999px",
           width: "fit-content",
           mx: { xs: "auto", md: 0 },
-          '& .MuiChip-icon': {
-            marginRight: '6px',
+          "& .MuiChip-icon": {
+            marginRight: "6px",
           },
         }}
       />
@@ -67,13 +78,14 @@ export default function PresentationStyleSection() {
           sx={{
             color: "#757575",
             fontSize: { xs: "0.9rem", md: "1rem" },
-            mb: {xs: 0, md: 2},
+            mb: { xs: 0, md: 2 },
             maxWidth: 700,
             mx: { xs: "auto", md: 0 },
           }}
         >
           Turn any thought into a polished, on-brand presentation
-                    <br />powered by AI, styled by designers.
+          <br />
+          powered by AI, styled by designers.
         </Typography>
       </Box>
 
@@ -114,7 +126,7 @@ export default function PresentationStyleSection() {
           borderRadius: "32px",
           boxShadow: "0 2px 24px 0 rgba(80, 80, 120, 0.07)",
           width: "100%",
-          height: { xs: "auto", md: 570 },
+          height: { xs: "auto", md: "auto" },
           px: { xs: 3, md: 6 },
           py: { xs: 4, md: 4 },
           gap: 6,
@@ -140,7 +152,8 @@ export default function PresentationStyleSection() {
               mb: 2,
             }}
           >
-            AI Popular themes
+            AI Popular Themes/
+            <br></br>Templates
           </Typography>
           <Typography
             sx={{
@@ -151,22 +164,24 @@ export default function PresentationStyleSection() {
             }}
           >
             Turn any thought into a polished, on-brand presentation
-            <br />powered by AI, styled by designers.
+            <br />
+            powered by AI, styled by designers.
           </Typography>
           <Button
             variant="contained"
             sx={{
-              background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+              background:
+                "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
               color: "#fff",
               borderRadius: "999px",
-              px: {xs: 3, md: 4},
-              py: {xs: 1, md:1.5},
+              px: { xs: 3, md: 4 },
+              py: { xs: 1, md: 1.5 },
               fontWeight: 600,
-              fontSize: {xs: "0.9rem", md: "1.1rem"},
+              fontSize: { xs: "0.9rem", md: "1.1rem" },
               textTransform: "none",
               width: "fit-content",
               boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
-              '&:hover': {
+              "&:hover": {
                 background: "#4A00E0",
               },
             }}
@@ -177,19 +192,39 @@ export default function PresentationStyleSection() {
         </Box>
 
         {/* Right Image Placeholder (hidden on mobile) */}
+        {/* Right Image Placeholder */}
         <Box
           sx={{
-            width: 400,
-            height: 322,
-            borderRadius: "30px",
-            background: "#F6F6F6",
-            ml: { xs: 0, md: 6 },
-            display: { xs: "none", md: "flex" },
-            alignItems: "center",
-            justifyContent: "center",
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            gap: 1, // 8px gap
+            px: { xs: 2, md: 2 },
           }}
         >
-          {/* Image or content goes here */}
+          {images.map((src, index) => (
+            <Box
+              key={index}
+              sx={{
+                width: "250px",
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px",
+              }}
+            >
+              <img
+                src={src}
+                alt={`Image ${index + 1}`}
+                style={{
+                  width: "100%", // now fits the grid cell
+                  height: "140px",
+                  objectFit: "cover",
+                  borderRadius: "20px",
+                }}
+              />
+            </Box>
+          ))}
         </Box>
       </Box>
     </Box>

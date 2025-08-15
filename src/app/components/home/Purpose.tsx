@@ -280,6 +280,7 @@ export default function PurposeSection() {
         </Box>
 
         {/* Card 3 */}
+
         <Box
           sx={{
             bgcolor: "transparent",
@@ -289,57 +290,92 @@ export default function PurposeSection() {
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
             p: { xs: 4, md: 5 },
             minHeight: 180,
-            maxWidth: 570,
+            maxWidth: 900, // increased to fit image
             mr: { xs: 0, md: 2 },
             display: "flex",
-            flexDirection: "column",
+            flexDirection: { xs: "column", md: "row" },
             justifyContent: "space-between",
-            textAlign: { xs: "center", md: "left" },
-            alignItems: { xs: "center", md: "flex-start" },
+            alignItems: "center",
+            gap: 3,
           }}
         >
+          {/* Left Content */}
           <Box
             sx={{
-              width: { xs: 24, md: 70 },
-              height: { xs: 24, md: 70 },
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              textAlign: { xs: "center", md: "left" },
+              alignItems: { xs: "center", md: "flex-start" },
+              flex: 1,
+            }}
+          >
+            <Box
+              sx={{
+                width: { xs: 24, md: 70 },
+                height: { xs: 24, md: 70 },
+                gap: { sm: 10 },
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mb: 2,
+              }}
+            >
+              <img
+                src="/images/natural-lang-star.svg"
+                alt="Star Icon"
+                width={70}
+                height={70}
+                style={{
+                  objectFit: "contain",
+                  maxWidth: "40px",
+                  maxHeight: "40px",
+                }}
+              />
+            </Box>
+            <Typography
+              sx={{
+                fontWeight: 500,
+                fontSize: { xs: "1.5rem", md: "1.6rem" },
+                color: "#18181B",
+                mb: 1,
+              }}
+            >
+              One Click Export
+            </Typography>
+            <Typography
+              sx={{
+                color: "#757575",
+                fontSize: { xs: "0.9rem", md: "0.9rem" },
+                maxWidth: { sm: "190px" },
+                mb: 2,
+              }}
+            >
+              Google Slides, PNG, JPEG, PowerPoint, PDF
+            </Typography>
+          </Box>
+
+          {/* Right Side Image */}
+          <Box
+            sx={{
+              flexShrink: 0,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              mb: 2,
+              maxWidth: { xs: "100%", md: "300px" },
             }}
           >
             <img
-              src="/images/natural-lang-star.svg"
-              alt="Star Icon"
-              width={70}
-              height={70}
+              src="/images/Export.svg"
+              alt="Export Preview"
               style={{
-                objectFit: "contain",
-                maxWidth: "40px",
-                maxHeight: "40px",
+                width: "100%",
+                height: "100%",
+                borderRadius: "8px",
+                objectFit: "cover",
               }}
             />
           </Box>
-          <Typography
-            sx={{
-              fontWeight: 500,
-              fontSize: { xs: "1.5rem", md: "1.6rem" },
-              color: "#18181B",
-              mb: 1,
-            }}
-          >
-            Edit with natural language
-          </Typography>
-          <Typography
-            sx={{
-              color: "#757575",
-              fontSize: { xs: "0.9rem", md: "0.9rem" },
-              mb: 2,
-            }}
-          >
-            AI transcribes and analyzes spoken ideas to auto-generate slides
-            with key points and speaker notes.
-          </Typography>
         </Box>
       </Box>
 
@@ -354,7 +390,7 @@ export default function PurposeSection() {
             "linear-gradient(94.38deg, #ECE2FF -101.47%, #FAF8FF 100%)",
           borderRadius: 4,
           boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
-          p: { xs:3 , md: 3 },
+          p: { xs: 3, md: 3 },
           minHeight: 300,
           maxWidth: 1300,
           display: "flex",
@@ -403,7 +439,7 @@ export default function PurposeSection() {
               mb: 0.5,
             }}
           >
-            One-click export
+            AI Voice Assistance
           </Typography>
           <Typography
             sx={{ color: "#757575", fontSize: { xs: "1rem", md: "1.05rem" } }}
@@ -422,7 +458,7 @@ export default function PurposeSection() {
           }}
         >
           <img
-            src="/images/export-image.svg"
+            src="/images/VoiceAssistant.svg"
             alt="Export Icon"
             className="sm:w-[400px] w-[200px]"
           />
