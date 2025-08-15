@@ -24,15 +24,20 @@ interface KonvaTextProperties {
 }
 interface KonvaImageProperties {
   [key: string]: any;
-  image_id : string;
+  image_id?: string;
   x: number;
   y: number;
   fill?: string;
-  width: number;
-  height: number;
-  imageSrc: string;
+  width?:number;
+  height?: number;
+  imageSrc?: string;
 }
 
+interface Block {
+  elements : KonvaComponent[];
+  width: number;
+  height : number;
+}
 interface KonvaComponent {
   konva_component: string;
   element_id?: string;
@@ -43,6 +48,9 @@ interface KonvaComponent {
 }
 
 export interface Slide {
+  titleBlock?: Block; 
+  textBlock?: Block; 
+  imageBlock?: Block;
   [x: string]: any;
   slide_id: string;
   slide_title: KonvaComponent;

@@ -6,18 +6,16 @@ import {
   Typography,
   Box,
   IconButton,
-  Tooltip,
-  Avatar,
   Menu,
   MenuItem,
+  Divider,
   useMediaQuery,
   useTheme,
-  ListItemIcon,
-  Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
+import PaletteIcon from "@mui/icons-material/Palette";
 import { useRouter } from "next/navigation";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
@@ -26,12 +24,11 @@ const UpperNavBar: React.FC<{
   onExportPDF: () => void;
   onExportPPT?: () => void;
   onClearCanvas?: () => void;
-  // New prop for clearing canvas
   onPreview: () => void;
-}> = ({ onExportPDF, onExportPPT, onClearCanvas, onPreview }) => {
+  onOpenThemePanel: () => void;
+}> = ({ onExportPDF, onExportPPT, onClearCanvas, onPreview, onOpenThemePanel }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [mobileMenuAnchor, setMobileMenuAnchor] =
-    React.useState<null | HTMLElement>(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = React.useState<null | HTMLElement>(null);
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -41,10 +38,6 @@ const UpperNavBar: React.FC<{
     setSelectedImageIndex,
     setSelectedShapeIndex,
     setSelectedTextId,
-    selectedImage,
-    selectedImageIndex,
-    selectedShapeIndex,
-    selectedTextId,
     undo,
     redo,
     canUndo,
@@ -105,30 +98,29 @@ const UpperNavBar: React.FC<{
         color: "#18181B",
         borderBottom: "1px solid #E0E0E0",
         width: "100%",
-        height: { xs: 74, md: 80 },
+        height: { xs: 64, md: 80 }, // Reduced height for mobile
         boxSizing: "border-box",
       }}
     >
       <Toolbar
         sx={{
-          minHeight: 80,
-          height: 80,
+          minHeight: { xs: 64, md: 80 },
+          height: { xs: 64, md: 80 },
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          position: "relative",
-          px: 3,
+          px: { xs: 1, md: 3 }, // Reduced padding for mobile
         }}
       >
         {/* Left Icons */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, ml: -1 }}>
-          <IconButton onClick={() => router.push("/home")} sx={{ p: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, md: 1.5 } }}>
+          <IconButton onClick={() => router.push("/home")} sx={{ p: { xs: 0.5, md: 1 } }}>
             <Image
               src="/images/home-icon.svg"
               alt="Home"
-              width={25}
-              height={25}
+              width={20} // Smaller icon for mobile
+              height={20}
             />
           </IconButton>
           <Box
@@ -137,7 +129,7 @@ const UpperNavBar: React.FC<{
               height: 32,
               background: "#E0E0E0",
               borderRadius: 1,
-              mx: 1,
+              mx: { xs: 0.5, md: 1 },
               display: { xs: "none", md: "block" },
             }}
           />
@@ -146,7 +138,7 @@ const UpperNavBar: React.FC<{
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
-              ml: 1,
+              ml: { xs: 0.5, md: 1 },
             }}
           >
             {editing ? (
@@ -165,19 +157,22 @@ const UpperNavBar: React.FC<{
                   background: "transparent",
                   padding: 0,
                   margin: 0,
-                  whiteSpace: "nowrap",
+                  maxWidth: 200
                 }}
               />
+
             ) : (
               <Typography
                 variant="subtitle1"
                 onClick={handleEdit}
                 sx={{
                   fontWeight: { xs: 400, md: 600 },
-                  fontSize: 16,
+                  fontSize: { xs: 14, md: 16 },
                   cursor: "pointer",
                   "&:hover": { textDecoration: "underline" },
-                  whiteSpace: "nowrap",
+                  maxWidth: { xs: 120, md: 200 },
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                 }}
               >
                 {fileName || "File Name Here"}
@@ -188,7 +183,7 @@ const UpperNavBar: React.FC<{
               sx={{
                 color: "#888",
                 mt: -0.5,
-                fontSize: 12,
+                fontSize: { xs: 10, md: 12 },
                 whiteSpace: "nowrap",
               }}
             >
@@ -198,118 +193,172 @@ const UpperNavBar: React.FC<{
         </Box>
 
         {/* Right Icons */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {isMobile && (
+        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, md: 1 } }}>
+          {isMobile ? (
             <>
-              <Box>
-                <IconButton
-                  onClick={undo}
-                  disabled={!canUndo}
+              <IconButton
+                onClick={undo}
+                disabled={!canUndo}
+                sx={{
+                  color: "#222",
+                  backgroundColor: "#F8F8FA",
+                  padding: "2px",
+                  width: 28, // Smaller buttons for mobile
+                  height: 28,
+                }}
+              >
+                <UndoIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              <IconButton
+                onClick={redo}
+                disabled={!canRedo}
+                sx={{
+                  color: "#222",
+                  backgroundColor: "#F8F8FA",
+                  padding: "2px",
+                  width: 28,
+                  height: 28,
+                }}
+              >
+                <RedoIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  setSelectedImage(null);
+                  setSelectedImageIndex(null);
+                  setSelectedShapeIndex(null);
+                  setSelectedTextId(null);
+                  setTimeout(() => {
+                    onPreview();
+                    handleMobileMenuClose();
+                  }, 300);
+                }}
+                sx={{
+                  backgroundColor: "rgba(242, 240, 255, 1)",
+                  color: "#222",
+                  padding: "2px",
+                  width: 28,
+                  height: 28,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="/preview.svg"
+                  alt="Preview"
                   sx={{
-                    color: "#222",
-                    backgroundColor: "#F8F8FA",
-                    padding: "2px",
-                    width: 32,
-                    height: 30,
-                    mb: 0.2,
-                    ml: { xs: 12, md: 100 },
-                    mr: { xs: -2 },
+                    width: 14,
+                    height: 14,
                   }}
-                >
-                  <UndoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
-                </IconButton>
-              </Box>
-              <Box>
-                <IconButton
-                  onClick={redo}
-                  disabled={!canRedo}
-                  sx={{
-                    color: "#222",
-                    backgroundColor: "#F8F8FA",
-                    padding: "2px",
-                    width: 32,
-                    height: 30,
-                    mb: 0.2,
-                    ml: { xs: 2, md: 0 },
-                  }}
-                >
-                  <RedoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
-                </IconButton>
-              </Box>
-              <Box>
-                <IconButton
-                  onClick={() => {
-                    setSelectedImage(null);
-                    setSelectedImageIndex(null);
-                    setSelectedShapeIndex(null);
-                    setSelectedTextId(null);
-                    setTimeout(() => {
-                      onPreview();
-                      handleMobileMenuClose();
-                    }, 300);
-                  }}
-                  sx={{
-                    backgroundColor: "rgba(242, 240, 255, 1)",
-                    color: "#222",
-                    padding: "2px",
-                    width: { xs: 32, lg: 39, sm: 40, md: 30 },
-                    height: { xs: 30, lg: 40, sm: 40, md: 30 },
-                    mb: 0.2,
-                    ml: { xs: 2, md: 0 },
-                    mr: { xs: -0.5, md: 0 },
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src="/preview.svg"
-                    alt="Preview"
-                    sx={{
-                      width: { xs: 15, sm: 20, md: 20, lg: 9 },
-                      height: { xs: 15, sm: 20, md: 20, lg: 9 },
-                      ml: 0.5,
-                    }}
-                  />
-                </IconButton>
-              </Box>
+                />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  setSelectedImage(null);
+                  setSelectedImageIndex(null);
+                  setSelectedShapeIndex(null);
+                  setSelectedTextId(null);
+                  setTimeout(() => {
+                    onOpenThemePanel();
+                    handleMobileMenuClose();
+                  }, 300);
+                }}
+                sx={{
+                  backgroundColor: "rgba(242, 240, 255, 1)",
+                  color: "#222",
+                  padding: "2px",
+                  width: 28,
+                  height: 28,
+                }}
+              >
+                <PaletteIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              <IconButton
+                size="large"
+                edge="end"
+                color="inherit"
+                onClick={handleMobileMenuOpen}
+              >
+                <MenuIcon sx={{ fontSize: 24 }} />
+              </IconButton>
             </>
-          )}
-          {/* Desktop Export and Clear Buttons */}
-          {!isMobile && (
+          ) : (
             <>
-              <Box>
-                <IconButton
-                  onClick={() => {
-                    setSelectedImage(null);
-                    setSelectedImageIndex(null);
-                    setSelectedShapeIndex(null);
-                    setSelectedTextId(null);
-                    setTimeout(() => {
-                      onPreview();
-                      handleMobileMenuClose();
-                    }, 300);
-                  }}
+              <IconButton
+                onClick={undo}
+                disabled={!canUndo}
+                sx={{
+                  color: "#222",
+                  backgroundColor: "#F8F8FA",
+                  padding: "2px",
+                  width: 32,
+                  height: 30,
+                }}
+              >
+                <UndoIcon sx={{ fontSize: 20 }} />
+              </IconButton>
+              <IconButton
+                onClick={redo}
+                disabled={!canRedo}
+                sx={{
+                  color: "#222",
+                  backgroundColor: "#F8F8FA",
+                  padding: "2px",
+                  width: 32,
+                  height: 30,
+                }}
+              >
+                <RedoIcon sx={{ fontSize: 20 }} />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  setSelectedImage(null);
+                  setSelectedImageIndex(null);
+                  setSelectedShapeIndex(null);
+                  setSelectedTextId(null);
+                  setTimeout(() => {
+                    onPreview();
+                    handleMobileMenuClose();
+                  }, 300);
+                }}
+                sx={{
+                  backgroundColor: "rgba(242, 240, 255, 1)",
+                  color: "#222",
+                  padding: "2px",
+                  width: 32,
+                  height: 30,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="/preview.svg"
+                  alt="Preview"
                   sx={{
-                    backgroundColor: "rgba(242, 240, 255, 1)",
-                    color: "#222",
-                    padding: "2px",
-                    width: { xs: 32, lg: 39, sm: 40 },
-                    height: { xs: 30, lg: 40, sm: 40 },
-                    mb: 0.2,
-                    ml: { xs: 2, md: 0 },
+                    width: 20,
+                    height: 20,
                   }}
-                >
-                  <Box
-                    component="img"
-                    src="/preview.svg"
-                    alt="Preview"
-                    sx={{
-                      width: { xs: 15, sm: 20, md: 20, lg: 20 },
-                      height: { xs: 15, sm: 20, md: 20, lg: 20 },
-                      ml: 0.5,
-                    }}
-                  />
-                </IconButton>
-              </Box>
+                />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  setSelectedImage(null);
+                  setSelectedImageIndex(null);
+                  setSelectedShapeIndex(null);
+                  setSelectedTextId(null);
+                  setTimeout(() => {
+                    onOpenThemePanel();
+                    handleMobileMenuClose();
+                  }, 300);
+                }}
+                sx={{
+                  backgroundColor: "rgba(242, 240, 255, 1)",
+                  color: "#222",
+                  padding: "2px",
+                  width: 32,
+                  height: 30,
+                }}
+              >
+                <PaletteIcon sx={{ fontSize: 20 }} />
+              </IconButton>
               <Box
                 onClick={() => {
                   setSelectedImage(null);
@@ -327,8 +376,8 @@ const UpperNavBar: React.FC<{
                     "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
                   color: "#fff",
                   borderRadius: "999px",
-                  px: 3,
-                  py: 1.2,
+                  px: 2,
+                  py: 1,
                   cursor: "pointer",
                   fontSize: 14,
                   fontWeight: 600,
@@ -338,7 +387,6 @@ const UpperNavBar: React.FC<{
               >
                 Export as PDF
               </Box>
-
               {onExportPPT && (
                 <Box
                   onClick={onExportPPT}
@@ -348,8 +396,8 @@ const UpperNavBar: React.FC<{
                       "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
                     color: "#fff",
                     borderRadius: "999px",
-                    px: 3,
-                    py: 1.2,
+                    px: 2,
+                    py: 1,
                     cursor: "pointer",
                     fontSize: 14,
                     fontWeight: 600,
@@ -360,7 +408,6 @@ const UpperNavBar: React.FC<{
                   Export as PPTX
                 </Box>
               )}
-
               <Box
                 onClick={() => {
                   setSelectedImage(null);
@@ -378,8 +425,8 @@ const UpperNavBar: React.FC<{
                     "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
                   color: "#fff",
                   borderRadius: "999px",
-                  px: 3,
-                  py: 1.2,
+                  px: 2,
+                  py: 1,
                   cursor: "pointer",
                   fontSize: 14,
                   fontWeight: 600,
@@ -391,18 +438,6 @@ const UpperNavBar: React.FC<{
               </Box>
             </>
           )}
-
-          {/* Hamburger for mobile */}
-          {isMobile && (
-            <IconButton
-              size="large"
-              edge="end"
-              color="inherit"
-              onClick={handleMobileMenuOpen}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
         </Box>
       </Toolbar>
 
@@ -411,8 +446,8 @@ const UpperNavBar: React.FC<{
         anchorEl={mobileMenuAnchor}
         open={Boolean(mobileMenuAnchor)}
         onClose={handleMobileMenuClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Divider />
         <MenuItem

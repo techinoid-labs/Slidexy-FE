@@ -351,6 +351,7 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                   }}
                 >
                   <Layer>
+                  <html> </html>
                     {selectedTheme?.image_url && bgImage ? (
                       <KonvaImage
                         image={bgImage}

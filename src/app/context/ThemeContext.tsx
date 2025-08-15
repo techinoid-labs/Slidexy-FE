@@ -2,29 +2,31 @@
 import React, { createContext, useContext, useState } from "react";
 // ThemeContext.tsx
 export interface Theme {
-  font: string;
-  primaryColor: string;
-  secondaryColor: string;
+  font?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
   backgroundColor: string;
-  image_url: string;
+  image_url: string | undefined;
+  titleColor?: string;
 }
 
-type LayoutType = 0 | 1 | 2 | 3 | 4 | 5;
+type LayoutType = -1| 0 | 1 | 2 | 3 | 4 | 5 ;
 
 interface ThemeContextType {
-  selectedTheme: Theme | null;
-  setSelectedTheme: (theme: Theme | null) => void;
+  selectedTheme: Theme | null ;
+  setSelectedTheme: React.Dispatch<React.SetStateAction<Theme | null>>;
   selectedLayout: LayoutType;
-  setSelectedLayout: (layout: LayoutType) => void;
-  setPrimaryColor: (color: string) => void; // ✅ NEW
+  setSelectedLayout: React.Dispatch<React.SetStateAction<LayoutType>>;
+  setPrimaryColor: (color: string) => void;
 }
+
 
 const ThemeContext = createContext<ThemeContextType>({
   selectedTheme: null,
   setSelectedTheme: () => {},
   selectedLayout: 0,
   setSelectedLayout: () => {},
-  setPrimaryColor: () => {}, // ✅ DEFAULT
+  setPrimaryColor: () => {}, 
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
