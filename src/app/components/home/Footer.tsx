@@ -44,7 +44,7 @@ export default function Footer() {
         alignItems="center"
         sx={{ mb: 3 }}
       >
-        {["Templates", "Features", "Reports", "Product", "Blog"].map((item) => (
+        {["Home", "Templates", "Pricing"].map((item) => (
           <Link
             key={item}
             href="#"

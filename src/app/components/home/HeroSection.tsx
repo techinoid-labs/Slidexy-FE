@@ -177,7 +177,7 @@ export default function HeroSection() {
                 whiteSpace: { xs: "normal", md: "nowrap" },
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-              }}
+              }} 
             >
               Your Idea,{" "}
               <Typography
@@ -251,7 +251,7 @@ export default function HeroSection() {
                     endIcon={<ArrowForward />}
                     sx={{
                       ml: 2,
-                      mt: { xs: 1, md: 10 },
+                      mt: { xs: 1, md: 1 },
                       px: 3,
                       py: 1.5,
                       width: "200px",

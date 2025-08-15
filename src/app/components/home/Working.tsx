@@ -300,7 +300,7 @@ export default function WorkingSection() {
           }}
         >
           <img
-            src="/images/working-image.svg"
+            src="/images/Stunning.svg"
             alt="Working Graphic"
             style={{
               width: "100%",

@@ -32,10 +32,11 @@ export default function Header() {
   };
 
   const navigationItems = [
+    { label: "Home", hasDropdown: false, link: "/" },
     { label: "Templates", hasDropdown: false, link: "/templates" },
-    { label: "Features", hasDropdown: false, link: "/features" },
+    // { label: "Features", hasDropdown: false, link: "/features" },
     // { label: "Reports", hasDropdown: false, link: "/reports" },
-    { label: "Product", hasDropdown: false, link: "/product" },
+    // { label: "Product", hasDropdown: false, link: "/product" },
     // { label: "Blog", hasDropdown: false, link: "/blog" },
     { label: "Pricing", hasDropdown: false, link: "/pricing" },
   ];
@@ -113,28 +114,7 @@ export default function Header() {
           {/* Right Side Actions */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {!isMobile && (
-              <>
-                {/* <Typography
-                sx={{
-                  mt: 0.5,
-                  color: "#4A00E0",
-                  fontWeight: 500,
-                  fontSize: "2 rem",
-                  cursor: "pointer",
-                  display: "inline-block",
-                  px: 2,
-                  py: 1,
-                  lineHeight: 1.1,
-                  borderRadius: "999px",
-                  transition:
-                    "background-color 0.2s ease-in-out, transform 0.2s ease-in-out",
-                  "&:hover": {},
-                }}
-              >
-                Login
-              </Typography> */}
-
-                {/* Try for Free button */}
+              <>                
                 <Link href="/presentation/create" passHref>
                   <Button
                     variant="contained"
@@ -153,6 +133,42 @@ export default function Header() {
                     }}
                   >
                     Try for Free →
+                  </Button>
+                </Link>
+
+                <Link href="/waiting-list" passHref>
+                  <Button
+                    variant="contained"
+                    endIcon={
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M7 2a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5H7zm0 2h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zm5 2a1 1 0 0 0-1 1v4.586l-2.707 2.707a1 1 0 1 0 1.414 1.414l3-3A1 1 0 0 0 13 10V7a1 1 0 0 0-1-1z"
+                        />
+                      </svg>
+                    }
+                    sx={{
+                      mt: "5px",
+                      ml: "10px",
+                      backgroundColor: "red",
+                      color: "#fff",
+                      borderRadius: "999px",
+                      px: 3,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                      "&:hover": {
+                        backgroundColor: "red",
+                      },
+                    }}
+                  >
+                    Join the Waitlist
                   </Button>
                 </Link>
               </>
