@@ -23,7 +23,7 @@ export default function WaitingList() {
         display="flex"
         flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems={{ xs: "flex-start", sm: "center" }}
+        alignItems={{ xs: "center", sm: "center" }}
         sx={{
           p: { xs: 3, sm: 6, md: "60px" },
           gap: { xs: 3, sm: 0 },
@@ -74,7 +74,8 @@ export default function WaitingList() {
             borderRadius: "30px",
             backgroundColor: "white",
             px: { xs: 3, sm: 4, md: 10 },
-            py: { xs: 4, sm: 6, md: 8 },
+            paddingTop:"120px",           
+            pb:0
           }}
         >
           <Stack
@@ -119,8 +120,8 @@ export default function WaitingList() {
                 <Button
                   variant="contained"
                   sx={{
-                    px: { xs: "20px", md: "28px" },
-                    py: { xs: "10px", md: "12px" },
+                    px: { xs: "20px", md: "auto" },
+                    py: { xs: "10px", md: "auto" },
                     textTransform: "none",
                     fontSize: { xs: "14px", md: "16px" },
                     fontWeight: 500,
@@ -183,7 +184,7 @@ export default function WaitingList() {
           sx={{
             display: "flex",
             justifyContent: "center",
-            mt: { xs: 2, md: 7 },
+            mt: { xs: 2, md: 1 },
             mb: 2,
           }}
         >
@@ -258,7 +259,7 @@ export default function WaitingList() {
             width: "100%",
             maxWidth: 560,
             mx: "auto",
-            px: { xs: 2, sm: 0 },
+            px: { xs: 2, sm: 2 },
             py: 4,
           }}
         >
@@ -268,13 +269,13 @@ export default function WaitingList() {
               display: "flex",
               alignItems: "center",
               gap: 1,
-              px: { xs: 1, sm: 1.5 },
-              py: { xs: 0.5, sm: 0.75 },
+              padding:{sm:"10px",xs:"10px"},
               borderRadius: "40px",
               border: "1px solid",
               borderColor: "#E6E6EB",
               bgcolor: "#fff",
               flexWrap: "wrap", // Wrap button on small screens
+              
             }}
           >
             <InputBase
