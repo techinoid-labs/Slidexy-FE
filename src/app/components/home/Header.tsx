@@ -37,6 +37,7 @@ export default function Header() {
     // { label: "Reports", hasDropdown: false, link: "/reports" },
     { label: "Product", hasDropdown: false, link: "/product" },
     // { label: "Blog", hasDropdown: false, link: "/blog" },
+    { label: "Pricing", hasDropdown: false, link: "/pricing" },
   ];
 
   return (
