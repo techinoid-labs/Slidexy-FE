@@ -1,6 +1,14 @@
 "use client";
 
-import { Box, Button, useTheme, TextField, Card, CardMedia, Box as MuiBox } from "@mui/material";
+import {
+  Box,
+  Button,
+  useTheme,
+  TextField,
+  Card,
+  CardMedia,
+  Box as MuiBox,
+} from "@mui/material";
 import { useState } from "react";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 
@@ -8,6 +16,7 @@ const modes = [
   { label: "Prompt-to-Deck", value: "Text" },
   { label: "Video-to-Deck", value: "Youtube" },
   { label: "Web-to-Deck", value: "Website" },
+  { label: "Prompt-to-Template", value: "Template" },
 ];
 
 export default function InputModeSelector({
@@ -47,7 +56,7 @@ export default function InputModeSelector({
               flex: { xs: "1 1 100%", sm: "1 1 0" },
               borderRadius: 1,
               fontWeight: 600,
-              fontSize: "1rem",
+              fontSize: "0.80rem",
               py: 1.5,
               px: 4,
               backgroundColor: isActive

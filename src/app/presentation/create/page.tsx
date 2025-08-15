@@ -1,8 +1,6 @@
 "use client";
 import PresentationMaker from "@/app/components/create-presentation/create/PresentationMaker";
 import { Box, Container, Typography, Button } from "@mui/material";
-import Image from "next/image";
-import { SlidesProvider } from "@/app/context/SlidesContext";
 import StepIndicator from "@/app/components/shared/StepIndicator";
 import StepsHeader from "@/app/components/shared/StepsHeader";
 
@@ -27,7 +25,6 @@ const CreatePresentationPage = () => {
   ];
 
   return (
-    // <SlidesProvider>
     <Box>
       <StepsHeader />
       <Box sx={{ mt: 4 }}>
@@ -90,7 +87,6 @@ const CreatePresentationPage = () => {
         </Container>
       </Box>
     </Box>
-    // </SlidesProvider>
   );
 };
 

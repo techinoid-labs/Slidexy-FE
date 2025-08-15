@@ -17,6 +17,7 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useSearchParams } from "next/navigation";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { Card, CardMedia, Box as MuiBox } from "@mui/material";
+import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 console.log("[SlidesX] API_BASE_URL:", API_BASE_URL);
@@ -38,12 +39,14 @@ export default function PresentationMaker({
   const { setSlides } = useSlides();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [templatePrompt, setTemplatePrompt] = useState("");
 
   const [goal, setGoal] = useState("");
   const [tone, setTone] = useState("");
   const [audience, setAudience] = useState("");
   const [slideCount, setSlideCount] = useState("");
-
+  const { setSlideTemplates, slideTemplates } = useTemplateSlides();
+  console.log({ slideTemplates });
   const getPlaceholder = () => {
     switch (inputMode) {
       case "Youtube":
@@ -104,7 +107,7 @@ export default function PresentationMaker({
     interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 95) return prev;
-        return prev + Math.random() * 2;
+        return prev + Math.random() * 1.2;
       });
     }, 200);
 
@@ -154,11 +157,11 @@ export default function PresentationMaker({
       const minDelay = 1200;
       const remaining = Math.max(0, minDelay - elapsed);
 
-      setTimeout(() => {
-        setProgress(100);
-        setSlides(data.slides);
-        router.push(`/presentation/outline`);
-      }, remaining);
+      // setTimeout(() => {
+      setProgress(100);
+      setSlides(data.slides);
+      router.push(`/presentation/outline`);
+      // }, remaining);
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     } finally {
@@ -167,6 +170,56 @@ export default function PresentationMaker({
         setLoading(false);
         setProgress(0);
       }, 1800);
+    }
+  };
+
+  const handleTemplateSubmit = async () => {
+    setLoading(true);
+    setError("");
+    setProgress(0);
+    let interval: NodeJS.Timeout | null = null;
+
+    interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 95) return prev;
+        return prev + Math.random() * 0.6;
+      });
+    }, 200);
+
+    const meta = { goal, tone, audience };
+    const payload = { topic: templatePrompt, meta, slideCount };
+    console.log("TEMPLATE CLICKED", payload);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      console.log("TEMPLATE RES", res);
+      if (!res.ok) {
+        let errorData: any = {};
+        try {
+          errorData = await res.json();
+        } catch {
+          errorData = { error: "Unknown error" };
+        }
+        throw new Error(errorData.error || "Failed to generate template");
+      }
+
+      const data = await res.json();
+
+      // Populate template context
+      setSlideTemplates(data.slides);
+      // return;
+      router.push(`/text-to-template`);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      if (interval) clearInterval(interval);
+      setLoading(false);
+      setProgress(0);
     }
   };
 
@@ -217,8 +270,12 @@ export default function PresentationMaker({
           disabled={loading ? true : false}
           variant="outlined"
           placeholder={getPlaceholder()}
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          value={inputMode == "Template" ? templatePrompt : inputValue}
+          onChange={(e) =>
+            inputMode == "Template"
+              ? setTemplatePrompt(e.target.value)
+              : setInputValue(e.target.value)
+          }
           InputProps={{
             sx: {
               height: "100%",
@@ -286,8 +343,13 @@ export default function PresentationMaker({
 
       <Button
         fullWidth
-        onClick={handleSubmit}
-        disabled={loading || !inputValue.trim()}
+        onClick={inputMode === "Template" ? handleTemplateSubmit : handleSubmit}
+        disabled={
+          loading ||
+          (inputMode === "Template"
+            ? !templatePrompt.trim()
+            : !inputValue.trim())
+        }
         sx={{
           position: "relative",
           overflow: "hidden",
@@ -299,11 +361,26 @@ export default function PresentationMaker({
           fontWeight: 600,
           mb: 4,
           height: { xs: 57, md: 70 },
-          border: `2px solid ${!inputValue.trim() ? "grey" : "#8E2DE2"}`,
+          border: `2px solid ${
+            inputMode === "Template"
+              ? !templatePrompt.trim()
+                ? "grey"
+                : "#8E2DE2"
+              : !inputValue.trim()
+              ? "grey"
+              : "#8E2DE2"
+          }`,
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
-          opacity: !inputValue.trim() ? 0.7 : 1,
+          opacity:
+            inputMode === "Template"
+              ? !templatePrompt.trim()
+                ? 0.7
+                : 1
+              : !inputValue.trim()
+              ? 0.7
+              : 1,
           "&:hover": { backgroundColor: "#f3eaff" },
           "&::before": {
             content: '""',
@@ -324,7 +401,15 @@ export default function PresentationMaker({
       >
         <span
           style={{
-            color: loading ? "#fff" : !inputValue.trim() ? "grey" : "#8E2DE2",
+            color: loading
+              ? "#fff"
+              : inputMode === "Template"
+              ? !templatePrompt.trim()
+                ? "grey"
+                : "#8E2DE2"
+              : !inputValue.trim()
+              ? "grey"
+              : "#8E2DE2",
             textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
             transition: "color 0.6s ease, text-shadow 0.6s ease",
             fontWeight: 600,
@@ -332,8 +417,11 @@ export default function PresentationMaker({
         >
           {loading
             ? `Generating... ${Math.round(progress)}%`
+            : inputMode === "Template"
+            ? "Generate Template"
             : "Generate Outlines"}
         </span>
+
         <Box
           className="icon"
           sx={{
@@ -342,10 +430,13 @@ export default function PresentationMaker({
             ml: 1,
             background: loading
               ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
+              : inputMode === "Template"
+              ? !templatePrompt.trim()
+                ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+                : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
               : !inputValue.trim()
               ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
               : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
-
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",
