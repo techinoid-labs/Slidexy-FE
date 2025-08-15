@@ -353,9 +353,8 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
   };
 
   const handleBackgroundModeChange = (
-    event: React.ChangeEvent<{ value: unknown }>
+    newMode: "color" | "image"
   ) => {
-    const newMode = event.target.value as "color" | "image";
     const currentValue = backgroundStateRef.current.value;
     backgroundStateRef.current = {
       mode: newMode,
@@ -491,35 +490,35 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
       const textElements = [titleEl, ...bulletEls, ...textEls];
 
       textElements.forEach((el, idx) => {
-          const { x, y } = rule(el, idx, el.element_type);
-          el.properties = {
-            ...el.properties,
-            x,
-            y,
-            ...(el.element_type === "title" && {
-              fontSize: style.title.fontSize,
-              fontWeight: style.title.fontWeight,
-              color: selectedTheme?.titleColor || "black",
-            }),
-            ...(el.element_type === "text" && {
-              fontSize: style.text.fontSize,
-              color: selectedTheme?.primaryColor || "black",
-            }),
-            ...(el.element_type === "bullet_point" && {
-              fontSize: style.bullet.fontSize,
-              color: selectedTheme?.primaryColor || "black",
-            }),
+        const { x, y } = rule(el, idx, el.element_type);
+        el.properties = {
+          ...el.properties,
+          x,
+          y,
+          ...(el.element_type === "title" && {
+            fontSize: style.title.fontSize,
+            fontWeight: style.title.fontWeight,
+            color: selectedTheme?.titleColor || "black",
+          }),
+          ...(el.element_type === "text" && {
+            fontSize: style.text.fontSize,
+            color: selectedTheme?.primaryColor || "black",
+          }),
+          ...(el.element_type === "bullet_point" && {
+            fontSize: style.bullet.fontSize,
+            color: selectedTheme?.primaryColor || "black",
+          }),
         }
       });
 
       imageEls.forEach((el, idx) => {
-          const { x, y } = rule(el, idx, "image");
-          el.properties = {
-            ...el.properties,
-            x,
-            y,
-            width: style.image.width,
-            height: style.image.height,
+        const { x, y } = rule(el, idx, "image");
+        el.properties = {
+          ...el.properties,
+          x,
+          y,
+          width: style.image.width,
+          height: style.image.height,
 
         }
       });
@@ -661,7 +660,7 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
         </Typography>
         <Select
           value={backgroundMode}
-          onChange={(e) => handleBackgroundModeChange(e.target.value as any)}
+          onChange={(e) => handleBackgroundModeChange(e.target.value as "color" | "image")}
           sx={{ ml: 10, height: 30, width: 200, fontSize: 15, color: "rgba(109, 109, 109, 1)" }}
         >
           <MenuItem value="color" sx={{ textTransform: "none", fontSize: 15 }}>

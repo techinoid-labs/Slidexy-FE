@@ -361,9 +361,8 @@ const ThemePanelMobile = ({ parsedSlides = [], resetAll, onClose }: ThemePanelMo
   };
 
   const handleBackgroundModeChange = (
-    event: React.ChangeEvent<{ value: unknown }>
+     newMode: "color" | "image"
   ) => {
-    const newMode = event.target.value as "color" | "image";
     const currentValue = backgroundStateRef.current.value;
     backgroundStateRef.current = {
       mode: newMode,
@@ -700,7 +699,7 @@ const ThemePanelMobile = ({ parsedSlides = [], resetAll, onClose }: ThemePanelMo
         </Typography>
         <Select
           value={backgroundMode}
-          onChange={(e) => handleBackgroundModeChange(e.target.value as any)}
+          onChange={(e) => handleBackgroundModeChange(e.target.value as "color" | "image")}
           sx={{ ml: 8, height: 28, width: 180, fontSize: 14, color: "rgba(109, 109, 109, 1)" }}
         >
           <MenuItem value="color" sx={{ textTransform: "none", fontSize: 14 }}>
