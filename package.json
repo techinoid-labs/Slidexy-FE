@@ -33,6 +33,7 @@
     "react-hook-form": "^7.60.0",
     "react-konva": "^19.0.7",
     "react-konva-utils": "^1.1.0",
+    "react-photo-editor": "^3.0.0",
     "react-redux": "^9.2.0",
     "react-toastify": "^11.0.5",
     "redux-persist": "^6.0.0",

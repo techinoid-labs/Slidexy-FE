@@ -18,15 +18,17 @@ import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
 import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";
 import { useTheme, useMediaQuery } from "@mui/material";
 import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mobile";
-//import MobileSlideEditor from "./SlideEditorMobile";
 import SlideEditorMobile from "./SlideEditor-NewMobile";
 import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
 import TextSettingsPanelMobile from "@/app/components/new-ui/Text-Panel";
+import ThemePanelMobile from "../components/modify-presentation/ThemePalleteMobile"; // Import ThemePanelMobile
 import { Button } from "@mui/material";
 import SlideShowPlayer from "@/app/components/modify-presentation/Slide-Preview";
 import { useSlideThemeContext } from "../context/ThemeContext";
+
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
+  const [isThemePanelOpen, setIsThemePanelOpen] = useState(false); // State for ThemePanelMobile
   const {
     slides,
     selectedSlideIndex,
@@ -38,19 +40,20 @@ const Page = () => {
     selectedShapeIndex,
     setSelectedImageIndex,
     setSelectedImage,
-    isMobileImageSelected, // Use from context
-    setIsMobileImageSelected, // Use from context
+    isMobileImageSelected,
+    setIsMobileImageSelected,
   } = useSlides();
-  const { selectedTheme, setSelectedTheme} = useSlideThemeContext();
+  const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const dispatch = useDispatch();
   const router = useRouter();
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const [initialSlides] = useState(() => slides);
-  const [isMobileTextSelected, setIsMobileTextSelected] = useState(false); // Keep for text panel
+  const [isMobileTextSelected, setIsMobileTextSelected] = useState(false);
   const [showRightPanel, setShowRightPanel] = useState(false);
   const theme = useTheme();
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
   const [previewOpen, setPreviewOpen] = useState(false);
+
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
     setSelectedTextId(null);
@@ -58,6 +61,7 @@ const Page = () => {
     setSelectedImage(null);
     setIsMobileTextSelected(false);
     setIsMobileImageSelected(false);
+    setIsThemePanelOpen(false); // Close theme panel on reset
   };
 
   const handleClearCanvas = () => {
@@ -184,14 +188,14 @@ const Page = () => {
         slide_id: slide.slide_id,
         slide_title: slideTitle
           ? {
-            text: slideTitle,
-            properties: {
-              fontSize: slideTitleProps.fontSize,
-              fill: slideTitleProps.fill?.replace("#", ""),
-              fontStyle: slideTitleProps.fontStyle,
-              fontFamily: slideTitleProps.fontFamily,
-            },
-          }
+              text: slideTitle,
+              properties: {
+                fontSize: slideTitleProps.fontSize,
+                fill: slideTitleProps.fill?.replace("#", ""),
+                fontStyle: slideTitleProps.fontStyle,
+                fontFamily: slideTitleProps.fontFamily,
+              },
+            }
           : undefined,
         elements,
         image_url: slide.image_url,
@@ -207,10 +211,20 @@ const Page = () => {
 
   const handleExportPDF = () => exportSlidesAsPDF(stageRefs.current);
 
+  const handleOpenThemePanel = () => {
+    setIsThemePanelOpen(true);
+    setIsMobileTextSelected(false);
+    setIsMobileImageSelected(false);
+    setSelectedTextId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+  };
+
+  const handleCloseThemePanel = () => {
+    setIsThemePanelOpen(false);
+  };
+
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const isThemePanelOpen =
-    !isTextSelected && !isShapeSelected && !isImageSelected;
-  console.log("isimage" + isImageSelected);
 
   return (
     <div
@@ -236,6 +250,7 @@ const Page = () => {
             onExportPPT={handleExportPPTX}
             onClearCanvas={handleClearCanvas}
             onPreview={() => setPreviewOpen(true)}
+            onOpenThemePanel={handleOpenThemePanel} // Pass the function
           />
         </div>
       ) : (
@@ -244,7 +259,7 @@ const Page = () => {
           onExportPPT={handleExportPPTX}
           onClearCanvas={handleClearCanvas}
           onPreview={() => setPreviewOpen(true)}
-
+          onOpenThemePanel={handleOpenThemePanel} // Pass the function
         />
       )}
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
@@ -254,15 +269,10 @@ const Page = () => {
               showTemplatePanel={showTemplatePanel}
               setShowTemplatePanel={setShowTemplatePanel}
             />
-            {/* <MobileSlideEditor
-              slides={slides}
-              stageRefs={stageRefs}
-              onClearCanvas={handleClearCanvas}
-            /> */}
             <SlideEditorMobile slides={slides} stageRefs={stageRefs} />
             <SlideShowPlayer
               slides={slides}
-              theme = {selectedTheme}
+              theme={selectedTheme}
               open={previewOpen}
               onClose={() => setPreviewOpen(false)}
             />
@@ -284,6 +294,13 @@ const Page = () => {
                 style={{ top: 100, left: 100 }}
               />
             )}
+            {isThemePanelOpen && (
+              <ThemePanelMobile
+                parsedSlides={slides}
+                resetAll={resetAll}
+                onClose={handleCloseThemePanel}
+              />
+            )}
           </>
         ) : (
           <div className="relative flex flex-1 min-h-0 overflow-hidden">
@@ -296,20 +313,24 @@ const Page = () => {
             <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
               <SlideEditor slides={slides} stageRefs={stageRefs} />
               <SlideShowPlayer
-              slides={slides}
-              theme = {selectedTheme}
-              open={previewOpen}
-              onClose={() => setPreviewOpen(false)}
-            />
+                slides={slides}
+                theme={selectedTheme}
+                open={previewOpen}
+                onClose={() => setPreviewOpen(false)}
+              />
             </div>
             <div
               className={`
-    ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
-    bg-white shadow-md transition-all duration-300 ease-in-out flex
-     ${
-       !isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[375px]" : "w-0"
-     }
-  `}
+                ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
+                bg-white shadow-md transition-all duration-300 ease-in-out flex
+                ${
+                  !isLGScreen && showRightPanel
+                    ? "w-96"
+                    : isLGScreen
+                    ? "w-[375px]"
+                    : "w-0"
+                }
+              `}
             >
               {!isLGScreen && (
                 <div
@@ -328,17 +349,18 @@ const Page = () => {
                 </div>
               )}
               <div
-                className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${!showRightPanel && !isLGScreen
+                className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
+                  !showRightPanel && !isLGScreen
                     ? "opacity-0 pointer-events-none"
                     : "opacity-100"
-                  }`}
+                }`}
               >
                 {(isTextSelected || isShapeSelected) && (
                   <TextSettingsPanel resetAll={resetAll} />
                 )}
                 {isImageSelected && <ImageSettingsPanel />}
                 {!isTextSelected && !isShapeSelected && !isImageSelected && (
-                  <ThemePanel resetAll={resetAll} />
+                  <ThemePanel parsedslides={slides} resetAll={resetAll} />
                 )}
               </div>
             </div>

@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { Dialog, IconButton, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import SlideRenderer from "../../editor/KonvaComponents/KonvaSlideRenderer";
-import { getRandomSlide, getSlideDimensions } from "../../../utils/slideUtils";
+import { getSlideDimensions } from "../../../utils/slideUtils";
 
 const getDynamicConstants = () => {
     const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, SLIDE_HEIGHT_MOBILE, SLIDE_WIDTH_MOBILE } = getSlideDimensions();
@@ -23,12 +25,14 @@ const getDynamicConstants = () => {
         textMaxHeight,
     };
 };
+
 const SlideShowPlayer = ({ slides, open, onClose, theme }: any) => {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [scale, setScale] = useState(1);
+
     useEffect(() => {
         const updateScale = () => {
             const slideWidth = getDynamicConstants().SLIDE_WIDTH;
-            const slideHeight = getDynamicConstants().SLIDE_HEIGHT;
             const margin = 32;
             const availableWidth = window.innerWidth - margin;
             const newScale = availableWidth / slideWidth;
@@ -39,15 +43,19 @@ const SlideShowPlayer = ({ slides, open, onClose, theme }: any) => {
         window.addEventListener("resize", updateScale);
         return () => window.removeEventListener("resize", updateScale);
     }, []);
-    const [scale, setScale] = useState(1);
+
     useEffect(() => {
         if (!open) return;
         setCurrentSlide(0); // reset to first slide on open
-        const interval = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % slides.length);
-        }, 3000);
-        return () => clearInterval(interval);
-    }, [open, slides.length]);
+    }, [open]);
+
+    const handleNext = () => {
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
+    };
+
+    const handlePrevious = () => {
+        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    };
 
     if (!slides.length) return null;
 
@@ -59,9 +67,10 @@ const SlideShowPlayer = ({ slides, open, onClose, theme }: any) => {
                     width: "100vw",
                     height: "100vh",
                     display: "flex",
+                    flexDirection: "column",
                     justifyContent: "center",
-                    background : "#000000",
                     alignItems: "center",
+                    background: "#000000",
                 }}
             >
                 <IconButton
@@ -71,18 +80,52 @@ const SlideShowPlayer = ({ slides, open, onClose, theme }: any) => {
                     <CloseIcon />
                 </IconButton>
 
+                {/* Slide Box */}
                 <Box
                     sx={{
-                        // width: 960,
-                        // height: 540,
-                        
                         width: `${getDynamicConstants().SLIDE_WIDTH}px`,
-                        height: `${getDynamicConstants().SLIDE_HEIGHT + 100}px`,
+                        height: `${getDynamicConstants().SLIDE_HEIGHT}px`,
                         transform: `scale(${scale})`,
-    
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "black",
                     }}
                 >
-                    <SlideRenderer slide={slides[currentSlide]} theme = {theme} />
+                    <SlideRenderer slide={slides[currentSlide]} theme={theme} />
+                </Box>
+
+                {/* Navigation Buttons Below */}
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 4,
+                        marginTop: 3, // space between slide and buttons
+                    }}
+                >
+                    <IconButton
+                        onClick={handlePrevious}
+                        sx={{
+                            color: "#fff",
+                            "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" },
+                        }}
+                        disabled={slides.length <= 1}
+                    >
+                        <ArrowBackIcon />
+                    </IconButton>
+
+                    <IconButton
+                        onClick={handleNext}
+                        sx={{
+                            color: "#fff",
+                            "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" },
+                        }}
+                        disabled={slides.length <= 1}
+                    >
+                        <ArrowForwardIcon />
+                    </IconButton>
                 </Box>
             </Box>
         </Dialog>
