@@ -179,8 +179,6 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     setSlides(updatedSlides);
   };
 
-
-
   const handleDeleteText = () => {
     if (slideIndex === -1) return;
     const updatedSlides = structuredClone(slides);
@@ -212,6 +210,17 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
     setSlides(updatedSlides);
   };
+
+  // Helper function to get the current element identifier
+  const getCurrentElementId = () => {
+    if (selectedTextId) {
+      return selectedTextId;
+    }
+    return selectedShapeIndex;
+  };
+
+  // Check if we have a valid element to work with
+  const hasValidElement = selectedTextId || selectedShapeIndex !== null;
 
   return (
     <Box className="w-[360px] min-w-[320px] md:min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
@@ -411,9 +420,13 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
-            onClick={() =>
-              bringElementForward(selectedTextId || selectedShapeIndex)
-            }
+            disabled={!hasValidElement}
+            onClick={() => {
+              const elementId = getCurrentElementId();
+              if (elementId !== null) {
+                bringElementForward(elementId);
+              }
+            }}
             endIcon={<ArrowUpwardIcon />}
             sx={{
               borderRadius: 2,
@@ -430,15 +443,24 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
                 borderColor: "#7B4AE2",
                 color: "#7B4AE2",
               },
+              "&:disabled": {
+                bgcolor: "#F8F8FA",
+                borderColor: "#E0E0E0",
+                color: "#999",
+              },
             }}
           >
             Bring Forward
           </Button>
           <Button
             variant="outlined"
-            onClick={() =>
-              sendElementBackward(selectedTextId || selectedShapeIndex)
-            }
+            disabled={!hasValidElement}
+            onClick={() => {
+              const elementId = getCurrentElementId();
+              if (elementId !== null) {
+                sendElementBackward(elementId);
+              }
+            }}
             endIcon={<ArrowDownwardIcon />}
             sx={{
               borderRadius: 2,
@@ -454,6 +476,11 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
                 bgcolor: "#F3EDFF",
                 borderColor: "#7B4AE2",
                 color: "#7B4AE2",
+              },
+              "&:disabled": {
+                bgcolor: "#F8F8FA",
+                borderColor: "#E0E0E0",
+                color: "#999",
               },
             }}
           >

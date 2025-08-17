@@ -16,19 +16,21 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
 import TextSettingsPanel from "@/app/components/modify-presentation/TextPanel";
+import ShapeSettingsPanel from "@/app/components/modify-presentation/ShapePanel";
 import { useTheme, useMediaQuery } from "@mui/material";
 import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mobile";
 import SlideEditorMobile from "./SlideEditor-NewMobile";
 import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
 import TextSettingsPanelMobile from "@/app/components/new-ui/Text-Panel";
-import ThemePanelMobile from "../components/modify-presentation/ThemePalleteMobile"; // Import ThemePanelMobile
+import ShapeSettingsPanelMobile from "@/app/components/modify-presentation/ShapePanelMobile"; // Adjust if file is ShapeSettingsPanelMobile.tsx
+import ThemePanelMobile from "../components/modify-presentation/ThemePalleteMobile";
 import { Button } from "@mui/material";
 import SlideShowPlayer from "@/app/components/modify-presentation/Slide-Preview";
 import { useSlideThemeContext } from "../context/ThemeContext";
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
-  const [isThemePanelOpen, setIsThemePanelOpen] = useState(false); // State for ThemePanelMobile
+  const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
   const {
     slides,
     selectedSlideIndex,
@@ -42,6 +44,7 @@ const Page = () => {
     setSelectedImage,
     isMobileImageSelected,
     setIsMobileImageSelected,
+    setSelectedShapeIndex, // Ensure this is included from SlidesContext
   } = useSlides();
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const dispatch = useDispatch();
@@ -61,7 +64,8 @@ const Page = () => {
     setSelectedImage(null);
     setIsMobileTextSelected(false);
     setIsMobileImageSelected(false);
-    setIsThemePanelOpen(false); // Close theme panel on reset
+    setIsThemePanelOpen(false);
+    setSelectedShapeIndex(null); 
   };
 
   const handleClearCanvas = () => {
@@ -169,12 +173,13 @@ const Page = () => {
           });
         } else if (element_type === "shape") {
           elements.push({
-            element_type: "text",
+            element_type: "shape",
             text: konva_component,
             properties: {
               x: xIn,
               y: yIn,
-              fontSize: 12,
+              w: wIn,
+              h: hIn,
               fill: fill.replace("#", "") || "cccccc",
             },
           });
@@ -218,6 +223,7 @@ const Page = () => {
     setSelectedTextId(null);
     setSelectedImageIndex(null);
     setSelectedImage(null);
+    setSelectedShapeIndex(null); 
   };
 
   const handleCloseThemePanel = () => {
@@ -250,7 +256,7 @@ const Page = () => {
             onExportPPT={handleExportPPTX}
             onClearCanvas={handleClearCanvas}
             onPreview={() => setPreviewOpen(true)}
-            onOpenThemePanel={handleOpenThemePanel} // Pass the function
+            onOpenThemePanel={handleOpenThemePanel}
           />
         </div>
       ) : (
@@ -259,7 +265,7 @@ const Page = () => {
           onExportPPT={handleExportPPTX}
           onClearCanvas={handleClearCanvas}
           onPreview={() => setPreviewOpen(true)}
-          onOpenThemePanel={handleOpenThemePanel} // Pass the function
+          onOpenThemePanel={handleOpenThemePanel}
         />
       )}
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
@@ -276,7 +282,7 @@ const Page = () => {
               open={previewOpen}
               onClose={() => setPreviewOpen(false)}
             />
-            {isMobileTextSelected && (
+            {isMobileTextSelected && !isShapeSelected && (
               <TextSettingsPanelMobile
                 resetAll={resetAll}
                 onClose={() => setIsMobileTextSelected(false)}
@@ -294,7 +300,21 @@ const Page = () => {
                 style={{ top: 100, left: 100 }}
               />
             )}
-            {isThemePanelOpen && (
+            {isShapeSelected && (
+              <ShapeSettingsPanelMobile
+                resetAll={resetAll}
+                onClose={() => {
+                  setIsMobileTextSelected(false);
+                  setIsMobileImageSelected(false);
+                  setSelectedTextId(null);
+                  setSelectedImageIndex(null);
+                  setSelectedImage(null);
+                  setSelectedShapeIndex(null); 
+                }}
+                style={{ top: 100, left: 100 }}
+              />
+            )}
+            {isThemePanelOpen && !isShapeSelected && (
               <ThemePanelMobile
                 parsedSlides={slides}
                 resetAll={resetAll}
@@ -355,12 +375,13 @@ const Page = () => {
                     : "opacity-100"
                 }`}
               >
-                {(isTextSelected || isShapeSelected) && (
+                {isTextSelected && !isShapeSelected && (
                   <TextSettingsPanel resetAll={resetAll} />
                 )}
                 {isImageSelected && <ImageSettingsPanel />}
-                {!isTextSelected && !isShapeSelected && !isImageSelected && (
-                  <ThemePanel parsedslides={slides} resetAll={resetAll} />
+                {isShapeSelected && <ShapeSettingsPanel resetAll={resetAll} />}
+                {!isTextSelected && !isImageSelected && !isShapeSelected && (
+                  <ThemePanel parsedSlides={slides} resetAll={resetAll} />
                 )}
               </div>
             </div>

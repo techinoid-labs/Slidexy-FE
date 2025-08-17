@@ -4,11 +4,6 @@ import { get, set, del } from "idb-keyval";
 
 const PERSIST_KEY = "slidesX_slides";
 
-// Define the type of the store explicitly
-type StoreType = ReturnType<typeof configureStore>;
-
-// This will hold the actual store instance
-let storeInstance: StoreType;
 // Load persisted state from IndexedDB (async)
 const loadState = async () => {
   try {
@@ -34,31 +29,46 @@ const saveState = async (state: any) => {
 const initStore = async () => {
   const preloadedState = await loadState();
 
-  storeInstance = configureStore({
+  const store = configureStore({
     reducer: {
       slidesData: slidesReducer,
     },
     preloadedState,
   });
 
-  storeInstance.subscribe(() => {
-    saveState(storeInstance.getState());
+  store.subscribe(() => {
+    saveState(store.getState());
   });
-
-  return storeInstance;
+  setStoreInstance(store);
+  return store;
 };
+
+// Create a temporary store to get the types
+const tempStore = configureStore({
+  reducer: {
+    slidesData: slidesReducer,
+  },
+});
+
+// Export types based on the temporary store
+export type AppStore = typeof tempStore;
+export type RootState = ReturnType<typeof tempStore.getState>;
+export type AppDispatch = typeof tempStore.dispatch;
+
+// This will hold the actual store instance
+let storeInstance: AppStore;
 
 // Getter for store (only call after initStore resolves)
 export const getStore = () => storeInstance;
+
+// Set the store instance after initialization
+export const setStoreInstance = (store: AppStore) => {
+  storeInstance = store;
+};
 
 // Clear persisted slides
 export const clearPersistedSlides = async () => {
   await del(PERSIST_KEY);
 };
-
-// Types (must be used after store is initialized)
-export type AppStore = typeof storeInstance;
-export type RootState = ReturnType<typeof storeInstance.getState>;
-export type AppDispatch = typeof storeInstance.dispatch;
 
 export default initStore;

@@ -103,6 +103,14 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
   }, []);
+  const deselectAll = () => {
+    setSelectedTextId(null);
+    setSelectedImageIndex(null);
+    setSelectedShapeIndex(null);
+    setSelectedImage(null);
+    setSelectedImageId(null);
+    setSelectedShapeId(null);
+  };
 
   return (
     <Box
@@ -223,15 +231,11 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 {title.text && (
                   <>
                     <KonvaTextEditor
-                      key={`title-${index}-${
-                        titleProps.fontFamily || "Roboto"
-                      }-${titleProps.fontSize || 18}-${
-                        titleProps.fontWeight || "normal"
-                      }-${titleProps.align || "left"}-${
-                        titleProps.fontStyle || "normal"
-                      }-${titleProps.fill || "#000"}-${
-                        titleProps.opacity || 1
-                      }`}
+                      key={`title-${index}-${titleProps.fontFamily || "Roboto"
+                        }-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"
+                        }-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"
+                        }-${titleProps.fill || "#000"}-${titleProps.opacity || 1
+                        }`}
                       id={`title-${index}`}
                       text={title.text}
                       x={titleProps.x || titleY}
@@ -318,7 +322,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       width={
                         el.properties.width ||
                         getDynamicConstants().textMaxWidth -
-                          (el.element_type === "bullet_point" ? 20 : 0)
+                        (el.element_type === "bullet_point" ? 20 : 0)
                         // x={el.properties.x || getDynamicConstants().LEFT_PADDING}
                         // y={el.properties.y || 300}
                         // width={
@@ -372,41 +376,35 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     setSelectedImage(null);
                   }}
                 />
-                {slide.elements.map((el: any, i: number) => {
-                  if (
-                    el.element_type === "image" &&
-                    el.konva_component === "Konva.Image"
-                  ) {
+               {slide.elements.map((el: any, i: number) => {
+                  if (el.element_type === "image" && el.konva_component === "Konva.Image") {
                     return (
                       <SlideImage
-                        key={`image-${i}`}
+                        key={i}
                         image_id={`el-${index}-${i}`}
                         imageSrc={el.properties.imageSrc}
                         x={el.properties.x}
                         y={el.properties.y}
-                        width={el.properties.width}
                         zIndex={el.properties.zIndex}
+                        width={el.properties.width}
                         height={el.properties.height}
+                        opacity={el.properties.opacity}
+                        shadow={el.properties.shadow}
+                        borderRadius={el.properties.borderRadius}
                         isSelected={selectedImageId === `el-${index}-${i}`}
                         onSelect={() => {
+                          deselectAll();
                           setSelectedImage({ ...el });
                           setSelectedImageId(`el-${index}-${i}`);
                           setSelectedImageIndex(i);
-                          setSelectedTextId(null);
                           setIsMobileImageSelected(true);
-                          setSelectedShapeIndex(null);
-                          setSelectedTextId(null);
-                          setTooltip({
-                            visible: false,
-                            x: 0,
-                            y: 0,
-                            node: null,
-                          });
                         }}
                       />
                     );
                   }
+                  return null;
                 })}
+                
               </Layer>
             </Stage>
           </Box>

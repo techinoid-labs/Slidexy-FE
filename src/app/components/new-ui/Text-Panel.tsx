@@ -70,8 +70,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
   const elementIndex = parsed?.[2]
     ? parseInt(parsed[2], 10)
     : selectedShapeIndex !== null
-    ? selectedShapeIndex
-    : null;
+      ? selectedShapeIndex
+      : null;
 
   let textObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex]) {
@@ -106,8 +106,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     const target: any = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title.properties
       : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex].properties
-      : null;
+        ? updatedSlides[slideIndex].elements[elementIndex].properties
+        : null;
 
     if (target) {
       target[prop] = value;
@@ -125,8 +125,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     const el = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title
       : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex]
-      : null;
+        ? updatedSlides[slideIndex].elements[elementIndex]
+        : null;
 
     if (!el) return;
     el.properties.fill = color;
@@ -142,8 +142,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     let target = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title
       : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex]
-      : null;
+        ? updatedSlides[slideIndex].elements[elementIndex]
+        : null;
 
     if (!target) return;
 
@@ -175,8 +175,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     let target = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title
       : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex]
-      : null;
+        ? updatedSlides[slideIndex].elements[elementIndex]
+        : null;
 
     if (!target) return;
 
@@ -240,51 +240,51 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     updateTextProperty("fontWeight", newStyle);
     setIsItalic(!isItalic);
   };
- const handleDuplicateText = () => {
-  if (!textObj || slideIndex === -1) {
-    return;
-  }
+  const handleDuplicateText = () => {
+    if (!textObj || slideIndex === -1) {
+      return;
+    }
 
-  const updatedSlides = structuredClone(slides);
-  const currentSlide = updatedSlides[slideIndex];
-  if (!currentSlide) {
-    return;
-  }
+    const updatedSlides = structuredClone(slides);
+    const currentSlide = updatedSlides[slideIndex];
+    if (!currentSlide) {
+      return;
+    }
 
-  if (selectedTextId?.startsWith("title")) {
-    const titleElement = currentSlide.slide_title;
-    
-    const newTextElement = {
-      konva_component: "Konva.Text",
-      element_type: "text",
-      text: titleElement.text,
-      properties: {
-        ...structuredClone(titleElement.properties),
-        x: (titleElement.properties?.x || 0) + 20,
-        y: (titleElement.properties?.y || 0) + 20,
-      },
-      useThemeColor: titleElement.useThemeColor || false,
-    };
-    
-    currentSlide.elements.push(newTextElement);
-    
-  } else if (elementIndex !== null) {
-    const originalElement = currentSlide.elements[elementIndex];
-    
-    const newElement = {
-      ...structuredClone(originalElement),
-      properties: {
-        ...structuredClone(originalElement.properties),
-        x: (originalElement.properties?.x || 0) + 20,
-        y: (originalElement.properties?.y || 0) + 20,
-      },
-    };
-    
-    currentSlide.elements.splice(elementIndex + 1, 0, newElement);
-  }
+    if (selectedTextId?.startsWith("title")) {
+      const titleElement = currentSlide.slide_title;
 
-  setSlides(updatedSlides);
-};
+      const newTextElement = {
+        konva_component: "Konva.Text",
+        element_type: "text",
+        text: titleElement.text,
+        properties: {
+          ...structuredClone(titleElement.properties),
+          x: (titleElement.properties?.x || 0) + 20,
+          y: (titleElement.properties?.y || 0) + 20,
+        },
+        useThemeColor: titleElement.useThemeColor || false,
+      };
+
+      currentSlide.elements.push(newTextElement);
+
+    } else if (elementIndex !== null) {
+      const originalElement = currentSlide.elements[elementIndex];
+
+      const newElement = {
+        ...structuredClone(originalElement),
+        properties: {
+          ...structuredClone(originalElement.properties),
+          x: (originalElement.properties?.x || 0) + 20,
+          y: (originalElement.properties?.y || 0) + 20,
+        },
+      };
+
+      currentSlide.elements.splice(elementIndex + 1, 0, newElement);
+    }
+
+    setSlides(updatedSlides);
+  };
 
   const handleDeleteText = () => {
     if (slideIndex === -1) return;
@@ -529,9 +529,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             height: 30,
             mb: 0.2,
           }}
-          title={`Align ${
-            currentAlign.charAt(0).toUpperCase() + currentAlign.slice(1)
-          }`}
+          title={`Align ${currentAlign.charAt(0).toUpperCase() + currentAlign.slice(1)
+            }`}
         >
           {currentAlign === "left" && (
             <FormatAlignLeftIcon sx={{ fontSize: 18 }} />
@@ -743,9 +742,12 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
         sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
       >
         <IconButton
-          onClick={() =>
-            bringElementForward(selectedTextId || selectedShapeIndex)
-          }
+          onClick={() => {
+            const elementId = selectedTextId || selectedShapeIndex;
+            if (elementId !== null) {
+              bringElementForward(elementId);
+            }
+          }}
           sx={{
             color: "#C00",
             backgroundColor: "#F8F8FA",
@@ -757,7 +759,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
         >
           <img
             src="/forward.svg"
-            alt="delete"
+            alt="forward"
             style={{ width: 15, height: 15 }}
           />
         </IconButton>
@@ -773,13 +775,18 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
           Forward
         </Typography>
       </Box>
+
+// For the "Backward" button (around line 775-790):
       <Box
         sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
       >
         <IconButton
-          onClick={() =>
-            sendElementBackward(selectedTextId || selectedShapeIndex)
-          }
+          onClick={() => {
+            const elementId = selectedTextId || selectedShapeIndex;
+            if (elementId !== null) {
+              sendElementBackward(elementId);
+            }
+          }}
           sx={{
             color: "#C00",
             backgroundColor: "#F8F8FA",
@@ -791,7 +798,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
         >
           <img
             src="/backward.svg"
-            alt="delete"
+            alt="backward"
             style={{ width: 15, height: 15 }}
           />
         </IconButton>
