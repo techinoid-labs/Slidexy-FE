@@ -108,7 +108,7 @@ export default function WorkingSection() {
       </Box>
 
       {/* Try for Free Button - Mobile View (below heading) */}
-      <Box
+      < Box
         sx={{
           textAlign: "center",
           mb: 2,

@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Typography, Chip, Button, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function PricingSection() {
@@ -9,27 +10,27 @@ export default function PricingSection() {
   return (
     <Box
       sx={{
-        width: '100%',
+        width: "100%",
         maxWidth: 1440,
-        background: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        pt: { xs: 6, md: '80px' },
-        px: { xs: 2, md: '162px' },
-        pb: { xs: 6, md: '80px' },
-        gap: '48px',
-        boxSizing: 'border-box',
-        mx: 'auto',
+        background: "#fff",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        pt: { xs: 6, md: "80px" },
+        px: { xs: 2, md: "162px" },
+        pb: { xs: 6, md: "80px" },
+        gap: "48px",
+        boxSizing: "border-box",
+        mx: "auto",
       }}
     >
       <Box
         sx={{
-          width: '100%',
+          width: "100%",
           flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
         {/* Badge */}
@@ -44,7 +45,9 @@ export default function PricingSection() {
             />
           }
           label={
-            <span style={{ fontWeight: 500, fontSize: "1rem", color: "#4A00E0" }}>
+            <span
+              style={{ fontWeight: 500, fontSize: "1rem", color: "#4A00E0" }}
+            >
               Pricing Plans
             </span>
           }
@@ -58,8 +61,8 @@ export default function PricingSection() {
             borderRadius: "999px",
             mb: 4,
             width: "fit-content",
-            '& .MuiChip-icon': {
-              marginRight: '6px',
+            "& .MuiChip-icon": {
+              marginRight: "6px",
             },
           }}
         />
@@ -68,10 +71,10 @@ export default function PricingSection() {
         <Typography
           sx={{
             fontWeight: 500,
-            fontSize: { xs: '1.75rem', md: '1.8rem' },
-            color: '#222',
+            fontSize: { xs: "1.75rem", md: "1.8rem" },
+            color: "#222",
             mb: 2,
-            textAlign: 'center'
+            textAlign: "center",
           }}
         >
           Enjoy all our feature by subscribing regularly!
@@ -80,13 +83,13 @@ export default function PricingSection() {
         {/* Toggle */}
         <Box
           sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            mb: 2
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            mb: 2,
           }}
         >
-          <ToggleButtonGroup
+          {/* <ToggleButtonGroup
             value={plan}
             exclusive
             onChange={(_, v) => v && setPlan(v)}
@@ -117,16 +120,16 @@ export default function PricingSection() {
                 {value.charAt(0).toUpperCase() + value.slice(1)}
               </ToggleButton>
             ))}
-          </ToggleButtonGroup>
+          </ToggleButtonGroup> */}
         </Box>
 
         {/* Secure Note */}
         <Typography
           sx={{
-            color: '#757575',
-            fontSize: '1rem',
+            color: "#757575",
+            fontSize: "1rem",
             mb: 4,
-            textAlign: 'center'
+            textAlign: "center",
           }}
         >
           100% Secure payment plan with money back guarantee.
@@ -135,97 +138,152 @@ export default function PricingSection() {
         {/* Pricing Cards */}
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: { xs: 4, md: '48px' },
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: '100%',
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: { xs: 4, md: "48px" },
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%",
           }}
         >
-          {[{
-            name: "Basic",
-            price: "$9",
-            color: "#F3F0FF",
-            textColor: "#6C2BD7",
-            borderColor: "#E9E9FF",
-            btnHover: "#E9E9FF"
-          }, {
-            name: "Exclusive",
-            price: "$14",
-            color: "#6C2BD7",
-            textColor: "#fff",
-            borderColor: "#6C2BD7",
-            btnHover: "#4A00E0"
-          }, {
-            name: "Platinum",
-            price: "$20",
-            color: "#F3F0FF",
-            textColor: "#6C2BD7",
-            borderColor: "#E9E9FF",
-            btnHover: "#E9E9FF"
-          }].map(({ name, price, color, textColor, borderColor, btnHover }, index) => (
-            <Box
-              key={index}
-              sx={{
-                width: 355,
-                background: '#fff',
-                borderRadius: '20px',
-                border: `1px solid ${borderColor}`,
-                boxShadow: '0 2px 16px 0 rgba(80, 80, 120, 0.07)',
-                p: 4,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-              }}
-            >
-              <Typography sx={{ fontWeight: 600, fontSize: '1.25rem', color: '#222', mb: 1 }}>
-                {name}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 1 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '2.8rem', color: '#18181B' }}>{price}</Typography>
-                <Typography sx={{ color: '#757575', fontSize: '1.1rem', mb: 0.5 }}>/month</Typography>
-              </Box>
-              <Typography sx={{ color: '#757575', fontSize: '1rem', mb: 3, textAlign: 'center' }}>
-                Choose the plan that fits your business needs
-              </Typography>
-              <Button
-                variant="contained"
+          {[
+            {
+              name: "Basic",
+              price: "$9",
+              color: "#F3F0FF",
+              textColor: "#6C2BD7",
+              borderColor: "#E9E9FF",
+              btnHover: "#E9E9FF",
+            },
+            {
+              name: "Exclusive",
+              price: "$14",
+              color: "#6C2BD7",
+              textColor: "#fff",
+              borderColor: "#6C2BD7",
+              btnHover: "#4A00E0",
+            },
+            {
+              name: "Platinum",
+              price: "$20",
+              color: "#F3F0FF",
+              textColor: "#6C2BD7",
+              borderColor: "#E9E9FF",
+              btnHover: "#E9E9FF",
+            },
+          ].map(
+            (
+              { name, price, color, textColor, borderColor, btnHover },
+              index
+            ) => (
+              <Box
+                key={index}
                 sx={{
-                  background: color,
-                  color: textColor,
-                  borderRadius: '999px',
-                  px: 4,
-                  py: 1.5,
-                  fontWeight: 600,
-                  fontSize: '1.1rem',
-                  textTransform: 'none',
-                  width: '100%',
-                  mb: 3,
-                  boxShadow: 'none',
-                  '&:hover': { background: btnHover },
+                  width: 355,
+                  background: "#fff",
+                  borderRadius: "20px",
+                  border: `1px solid ${borderColor}`,
+                  boxShadow: "0 2px 16px 0 rgba(80, 80, 120, 0.07)",
+                  p: 4,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
                 }}
-                endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
               >
-                Get Started
-              </Button>
-              <Box sx={{ width: '100%', borderTop: '1px solid #E9E9FF', my: 2 }} />
-              <Box sx={{ width: '100%' }}>
-                {[
-                  'Unlimited decks',
-                  'Style library access',
-                  'Branding customization',
-                  'Team collaboration',
-                  'Priority export formats'
-                ].map((feature, i) => (
-                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                    <span style={{ color: '#6C2BD7', fontSize: 20, marginRight: 10 }}>✔</span>
-                    <Typography sx={{ color: '#222', fontSize: '1rem' }}>{feature}</Typography>
-                  </Box>
-                ))}
+                <Typography
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: "1.25rem",
+                    color: "#222",
+                    mb: 1,
+                  }}
+                >
+                  {name}
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "flex-end", mb: 1 }}>
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: "2.8rem",
+                      color: "#18181B",
+                    }}
+                  >
+                    {price}
+                  </Typography>
+                  <Typography
+                    sx={{ color: "#757575", fontSize: "1.1rem", mb: 0.5 }}
+                  >
+                    /month
+                  </Typography>
+                </Box>
+                <Typography
+                  sx={{
+                    color: "#757575",
+                    fontSize: "1rem",
+                    mb: 3,
+                    textAlign: "center",
+                  }}
+                >
+                  Choose the plan that fits your business needs
+                </Typography>
+
+                <Link href="/pricing" passHref>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      background: color,
+                      color: textColor,
+                      borderRadius: "999px",
+                      px: 4,
+                      py: 1.5,
+                      fontWeight: 600,
+                      fontSize: "1.1rem",
+                      textTransform: "none",
+                      width: "100%",
+                      mb: 3,
+                      boxShadow: "none",
+                      "&:hover": { background: btnHover },
+                    }}
+                    endIcon={
+                      <span style={{ fontSize: 22, marginLeft: 4 }}>→</span>
+                    }
+                  >
+                    Get Started
+                  </Button>
+                </Link>
+                <Box
+                  sx={{ width: "100%", borderTop: "1px solid #E9E9FF", my: 2 }}
+                />
+                <Box sx={{ width: "100%" }}>
+                  {[
+                    "Unlimited decks",
+                    "Style library access",
+                    "Branding customization",
+                    "Team collaboration",
+                    "Priority export formats",
+                  ].map((feature, i) => (
+                    <Box
+                      key={i}
+                      sx={{ display: "flex", alignItems: "center", mb: 1.5 }}
+                    >
+                      <span
+                        style={{
+                          color: "#6C2BD7",
+                          fontSize: 20,
+                          marginRight: 10,
+                        }}
+                      >
+                        ✔
+                      </span>
+                      <Typography sx={{ color: "#222", fontSize: "1rem" }}>
+                        {feature}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
               </Box>
-            </Box>
-          ))}
+            )
+          )}
         </Box>
       </Box>
     </Box>

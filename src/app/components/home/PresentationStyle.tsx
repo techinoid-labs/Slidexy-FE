@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Typography, Chip, Button } from "@mui/material";
+import Link from "next/link";
 
 export default function PresentationStyleSection() {
   
@@ -167,28 +168,30 @@ export default function PresentationStyleSection() {
             <br />
             powered by AI, styled by designers.
           </Typography>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-              color: "#fff",
-              borderRadius: "999px",
-              px: { xs: 3, md: 4 },
-              py: { xs: 1, md: 1.5 },
-              fontWeight: 600,
-              fontSize: { xs: "0.9rem", md: "1.1rem" },
-              textTransform: "none",
-              width: "fit-content",
-              boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
-              "&:hover": {
-                background: "#4A00E0",
-              },
-            }}
-            endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
-          >
-            Learn More
-          </Button>
+          <Link href="/templates">
+            <Button
+              variant="contained"
+              sx={{
+                background:
+                  "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                color: "#fff",
+                borderRadius: "999px",
+                px: { xs: 3, md: 4 },
+                py: { xs: 1, md: 1.5 },
+                fontWeight: 600,
+                fontSize: { xs: "0.9rem", md: "1.1rem" },
+                textTransform: "none",
+                width: "fit-content",
+                boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
+                "&:hover": {
+                  background: "#4A00E0",
+                },
+              }}
+              endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
+            >
+              Learn More
+            </Button>
+          </Link>
         </Box>
 
         {/* Right Image Placeholder (hidden on mobile) */}

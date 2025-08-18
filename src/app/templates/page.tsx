@@ -11,7 +11,7 @@ export default function Template() {
       <Header />
       <Hero/>
       <TemplatesSection/>
-      <CommunitySection/>
+      {/* <CommunitySection/> */}
       <Footer/>
     </>
   );
