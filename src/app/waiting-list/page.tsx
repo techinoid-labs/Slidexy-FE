@@ -11,6 +11,8 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function WaitingList() {
   const [email, setEmail] = React.useState("");
 
@@ -125,14 +127,11 @@ export default function WaitingList() {
                       return;
                     }
                     try {
-                      const res = await fetch(
-                        "http://localhost:5000/join-waitlist",
-                        {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ email }),
-                        }
-                      );
+                      const res = await fetch(`${API_BASE_URL}/join-waitlist`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email }),
+                      });
 
                       const data = await res.json();
                       if (res.ok) {
@@ -147,7 +146,7 @@ export default function WaitingList() {
                     }
                   }}
                 >
-                  Join the Wishlist
+                  Join the Waitlist
                   <Box
                     component="img"
                     src="/images/whiteArrow.svg"
@@ -319,14 +318,11 @@ export default function WaitingList() {
                   return;
                 }
                 try {
-                  const res = await fetch(
-                    "http://localhost:5000/join-waitlist",
-                    {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ email }),
-                    }
-                  );
+                  const res = await fetch(`${API_BASE_URL}/join-waitlist`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email }),
+                  });
 
                   const data = await res.json();
                   if (res.ok) {
@@ -341,7 +337,7 @@ export default function WaitingList() {
                 }
               }}
             >
-              Join the Wishlist
+              Join the Waitlist
               <Box
                 component="img"
                 src="/images/whiteArrow.svg"
