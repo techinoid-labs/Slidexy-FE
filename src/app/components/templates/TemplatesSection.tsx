@@ -247,7 +247,7 @@ export default function TemplatesSection() {
                 />
 
                 {/* Hover Buttons */}
-                <Box
+                {/* <Box
                   className="hover-buttons"
                   sx={{
                     position: "absolute",
@@ -289,7 +289,7 @@ export default function TemplatesSection() {
                   >
                     Customize
                   </Button>
-                </Box>
+                </Box> */}
               </Box>
 
               {/* Title */}
