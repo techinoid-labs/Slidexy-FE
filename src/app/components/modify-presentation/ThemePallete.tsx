@@ -628,8 +628,7 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
                 fontWeight: 500,
                 textAlign: "center",
                 pt: 3,
-                mb: 5,
-                mb: 5
+                mb: 5,                
               }}
             >
               Disable Layout
