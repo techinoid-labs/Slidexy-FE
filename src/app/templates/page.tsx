@@ -9,10 +9,10 @@ export default function Template() {
   return (
     <>
       <Header />
-      <Hero/>
-      <TemplatesSection/>
+      <Hero />
+      <TemplatesSection />
       {/* <CommunitySection/> */}
-      <Footer/>
+      <Footer />
     </>
   );
 }
