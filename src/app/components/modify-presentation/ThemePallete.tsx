@@ -628,6 +628,8 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
                 fontWeight: 500,
                 textAlign: "center",
                 pt: 3,
+                mb: 5,
+                mb: 5
               }}
             >
               Disable Layout
@@ -642,11 +644,13 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
                   ? "shadow-[0_0_0_2px_#7B4AE2]"
                   : "shadow-[0_0_0_1px_#ECECEC]"
                 }`}
+                
             >
               <img
-                src={`/layout-${i}.svg`}
+                src={`/new-layout-${i}.svg`}
                 alt={`Layout ${i + 1}`}
                 className="block w-[100px] h-[50px] mx-auto"
+                style={{ marginLeft : 5}}
               />
             </button>
           ))}

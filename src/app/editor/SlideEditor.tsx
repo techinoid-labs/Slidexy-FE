@@ -293,7 +293,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   if (el.element_type === "image" && el.konva_component === "Konva.Image") {
                     return (
                       <SlideImage
-                        key={i}
+                        key={`image-${i}`}
                         image_id={`el-${index}-${i}`}
                         imageSrc={el.properties.imageSrc}
                         x={el.properties.x}
@@ -306,10 +306,11 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         borderRadius={el.properties.borderRadius}
                         isSelected={selectedImageId === `el-${index}-${i}`}
                         onSelect={() => {
-                          deselectAll();
                           setSelectedImage({ ...el });
                           setSelectedImageId(`el-${index}-${i}`);
                           setSelectedImageIndex(i);
+                          setSelectedShapeIndex(null);
+                          setSelectedTextId(null);
                         }}
                       />
                     );

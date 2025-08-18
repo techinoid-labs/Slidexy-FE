@@ -663,6 +663,8 @@ const ThemePanelMobile = ({ parsedSlides = [], resetAll, onClose }: ThemePanelMo
                   fontWeight: 500,
                   textAlign: "center",
                   pt: 2,
+                  mb: 5,
+                  mt: 5,
                 }}
               >
                 Disable Layout
@@ -682,9 +684,10 @@ const ThemePanelMobile = ({ parsedSlides = [], resetAll, onClose }: ThemePanelMo
                   }`}
               >
                 <img
-                  src={`/layout-${i}.svg`}
+                  src={`/new-layout-${i}.svg`}
                   alt={`Layout ${i + 1}`}
                   className="block w-[70px] h-[35px] mx-auto"
+                  style={{ marginLeft : 5}}
                 />
               </button>
             </Box>

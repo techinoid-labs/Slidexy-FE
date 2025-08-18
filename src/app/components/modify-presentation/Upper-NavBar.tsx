@@ -239,6 +239,7 @@ const UpperNavBar: React.FC<{
                   padding: "2px",
                   width: 28,
                   height: 28,
+                  alignContent: "center"
                 }}
               >
                 <Box
@@ -246,8 +247,9 @@ const UpperNavBar: React.FC<{
                   src="/preview.svg"
                   alt="Preview"
                   sx={{
-                    width: 14,
-                    height: 14,
+                    width: 12,
+                    height: 12,
+                    ml : 0.5
                   }}
                 />
               </IconButton>

@@ -168,35 +168,40 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
     updateImageProperty({ [prop]: value });
   };
 
-  const handleDuplicateImage = () => {
-    if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null) return;
-
-    const currentSlide = slides[selectedSlideIndex];
-    const elements = [...currentSlide.elements];
-    const originalElement = elements[selectedImageIndex];
-
-    const newElement: KonvaComponent = {
-      ...structuredClone(originalElement),
-      id: `el-${selectedSlideIndex}-${uuidv4()}`,
-      konva_component: originalElement.konva_component || "Konva.Image",
-      element_type: originalElement.element_type || "image",
-      properties: {
-        ...structuredClone(originalElement.properties),
-        x: (originalElement.properties?.x || 0) + 20,
-        y: (originalElement.properties?.y || 0) + 20,
-      },
-    };
-
-    elements.splice(selectedImageIndex + 1, 0, newElement);
-    const updatedSlide = { ...currentSlide, elements };
-    const updatedSlides = [...slides];
-    updatedSlides[selectedSlideIndex] = updatedSlide;
-
-    setSlides(updatedSlides);
-    setSelectedImage(newElement);
-    setSelectedImageIndex(selectedImageIndex + 1);
-  };
-
+   const handleDuplicateImage = () => {
+     if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null)
+       return;
+ 
+     const currentSlide = slides[selectedSlideIndex];
+     const elements = [...currentSlide.elements];
+ 
+     const originalElement = elements[selectedImageIndex];
+ 
+     const newElement = {
+       ...structuredClone(originalElement),
+       id: `el-${selectedSlideIndex}-${uuidv4()}`,
+       properties: {
+         ...structuredClone(originalElement.properties),
+         x: (originalElement.properties?.x || 0) + 20,
+         y: (originalElement.properties?.y || 0) + 20,
+       },
+     };
+ 
+     elements.splice(selectedImageIndex + 1, 0, newElement);
+ 
+     const updatedSlide = {
+       ...currentSlide,
+       elements,
+     };
+ 
+     const updatedSlides = [...slides];
+     updatedSlides[selectedSlideIndex] = updatedSlide;
+ 
+     setSlides(updatedSlides);
+     setSelectedImage(newElement);
+     setSelectedImageIndex(selectedImageIndex + 1);
+   };
+   
   const handleDeleteImage = () => {
     if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
     const updatedSlides = structuredClone(slides);

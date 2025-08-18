@@ -100,20 +100,18 @@ const SlideImage: React.FC<SlideImageProps> = ({
         if (!currentSlide) return;
 
         if (url && !imageSrc) {
+          // background image
           currentSlide.image_url = null;
           console.log("[SlideImage] Cleared slide.image_url");
         }
 
-        if (imageSrc) {
-          currentSlide.elements = currentSlide.elements.filter(
-            (el: any) => !(el.element_type === "image" && el.konva_component === "Konva.Image" && el.properties.imageSrc === imageSrc)
-          );
-          console.log("[SlideImage] Removed image element from slide.elements");
-        }
-
         if (image_id) {
+          // Always delete by unique ID
           currentSlide.elements = currentSlide.elements.filter(
-            (el: any) => !(el.element_type === "image" && el.konva_component === "Konva.Image" && el.properties.image_id === image_id)
+            (el: any) =>
+              !(el.element_type === "image" &&
+                el.konva_component === "Konva.Image" &&
+                el.properties.image_id === image_id)
           );
           console.log("[SlideImage] Removed image element by image_id");
         }
@@ -121,6 +119,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
         setSlides(newSlides);
         setSelectedImage(null);
       }
+
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -128,23 +127,40 @@ const SlideImage: React.FC<SlideImageProps> = ({
   }, [isSelected, slides, url, imageSrc, image_id, selectedSlideIndex, setSlides, setSelectedImage]);
 
   const updateSlideImage = useCallback(
-    (newProps: { x: number; y: number; width: number; height: number; opacity?: number; shadow?: any; borderRadius?: number }) => {
+    (newProps: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      opacity?: number;
+      shadow?: any;
+      borderRadius?: number;
+    }) => {
       if (!slides?.length || selectedSlideIndex < 0) return;
 
       const newSlides = structuredClone(slides);
       const currentSlide = newSlides[selectedSlideIndex];
       if (!currentSlide) return;
 
-      const updatedOpacity = newProps.opacity !== undefined ? newProps.opacity : imageOpacity;
-      const updatedShadow = newProps.shadow !== undefined ? newProps.shadow : imageShadow;
-      const updatedBorderRadius = newProps.borderRadius !== undefined ? newProps.borderRadius : imageBorderRadius;
+      const updatedOpacity =
+        newProps.opacity !== undefined ? newProps.opacity : imageOpacity;
+      const updatedShadow =
+        newProps.shadow !== undefined ? newProps.shadow : imageShadow;
+      const updatedBorderRadius =
+        newProps.borderRadius !== undefined
+          ? newProps.borderRadius
+          : imageBorderRadius;
 
       if (imageSrc) {
         const imageElementIndex = currentSlide.elements.findIndex(
-          (el: any) => el.element_type === "image" && el.konva_component === "Konva.Image" && el.properties.imageSrc === imageSrc
+          (el: any) =>
+            el.element_type === "image" &&
+            el.konva_component === "Konva.Image" &&
+            el.properties.image_id === image_id
         );
 
         if (imageElementIndex !== -1) {
+
           currentSlide.elements[imageElementIndex].properties = {
             ...currentSlide.elements[imageElementIndex].properties,
             x: newProps.x,
@@ -156,25 +172,15 @@ const SlideImage: React.FC<SlideImageProps> = ({
             borderRadius: updatedBorderRadius,
           };
         } else {
-          const imageProperties = {
-            imageSrc,
-            x: newProps.x,
-            y: newProps.y,
-            width: newProps.width,
-            height: newProps.height,
-            opacity: updatedOpacity,
-            shadow: updatedShadow,
-            borderRadius: updatedBorderRadius,
-            ...(image_id && { image_id }),
-          };
 
-          currentSlide.elements.push({
-            element_type: "image",
-            konva_component: "Konva.Image",
-            properties: imageProperties,
-          });
+          console.warn(
+            "[SlideImage] Tried to update but image not found (image_id:",
+            image_id,
+            ")"
+          );
         }
       } else if (url) {
+        // background-style image
         currentSlide.image_url = url;
         currentSlide.x = newProps.x;
         currentSlide.y = newProps.y;
@@ -187,43 +193,80 @@ const SlideImage: React.FC<SlideImageProps> = ({
 
       setSlides(newSlides);
     },
-    [slides, selectedSlideIndex, url, imageSrc, image_id, imageOpacity, imageShadow, imageBorderRadius, setSlides]
+    [
+      slides,
+      selectedSlideIndex,
+      url,
+      imageSrc,
+      image_id,
+      imageOpacity,
+      imageShadow,
+      imageBorderRadius,
+      setSlides,
+    ]
   );
 
   const handleDragEnd = useCallback(() => {
     const node = imageRef.current;
     if (!node) return;
 
-    const { x, y, isAtBoundary } = constrainImageToCanvas(node.x(), node.y(), node.width(), node.height(), SLIDE_WIDTH, SLIDE_HEIGHT, padding, minSize);
+    const { x, y, isAtBoundary } = constrainImageToCanvas(
+      node,
+      SLIDE_WIDTH,
+      SLIDE_HEIGHT,
+      padding
+    );
+
+    node.position({ x, y });
+
+
     node.position({ x, y });
     setLastValidPos({ x, y });
     setIsAtBoundary(isAtBoundary);
 
-    updateSlideImage({ x, y, width: node.width(), height: node.height(), opacity: imageOpacity, shadow: imageShadow, borderRadius: imageBorderRadius });
-  }, [updateSlideImage, imageOpacity, imageShadow, imageBorderRadius, SLIDE_WIDTH, SLIDE_HEIGHT]);
-
+    // Save updated position to slides context
+    updateSlideImage({ x, y, width: node.width(), height: node.height() });
+  }, [updateSlideImage]);
   const handleTransformEnd = useCallback(() => {
     const node = imageRef.current;
     if (!node) return;
 
+    // Reset scale
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
     node.scaleX(1);
     node.scaleY(1);
 
-    const newWidth = node.width() * scaleX;
-    const newHeight = node.height() * scaleY;
+    // Apply new width/height
+    node.width(node.width() * scaleX);
+    node.height(node.height() * scaleY);
 
-    const { x, y, width, height, isAtBoundary } = constrainImageToCanvas(node.x(), node.y(), newWidth, newHeight, SLIDE_WIDTH, SLIDE_HEIGHT, padding, minSize);
+    // Constrain with rotation-aware bounding box
+    const rect = node.getClientRect();
+    let newX = node.x();
+    let newY = node.y();
 
-    node.position({ x, y });
-    node.width(width);
-    node.height(height);
-    setLastValidPos({ x, y });
-    setIsAtBoundary(isAtBoundary);
+    if (rect.x < padding.left) {
+      newX += padding.left - rect.x;
+    }
+    if (rect.y < padding.top) {
+      newY += padding.top - rect.y;
+    }
+    if (rect.x + rect.width > SLIDE_WIDTH - padding.right) {
+      newX -= rect.x + rect.width - (SLIDE_WIDTH - padding.right);
+    }
+    if (rect.y + rect.height > SLIDE_HEIGHT - padding.bottom) {
+      newY -= rect.y + rect.height - (SLIDE_HEIGHT - padding.bottom);
+    }
 
-    updateSlideImage({ x, y, width, height, opacity: imageOpacity, shadow: imageShadow, borderRadius: imageBorderRadius });
-  }, [updateSlideImage, imageOpacity, imageShadow, imageBorderRadius, SLIDE_WIDTH, SLIDE_HEIGHT]);
+    node.position({ x: newX, y: newY });
+    updateSlideImage({
+      x: newX,
+      y: newY,
+      width: node.width(),
+      height: node.height(),
+    });
+  }, [updateSlideImage, SLIDE_WIDTH, SLIDE_HEIGHT, padding]);
 
   return (
     <>
@@ -254,12 +297,24 @@ const SlideImage: React.FC<SlideImageProps> = ({
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
-            const { x, y, width, height } = constrainImageToCanvas(newBox.x, newBox.y, newBox.width, newBox.height, SLIDE_WIDTH, SLIDE_HEIGHT, padding, minSize);
-            return { ...newBox, x, y, width, height };
+            // Only restrict scaling here (not rotation)
+            const minSize = 50;
+            if (newBox.width < minSize || newBox.height < minSize) {
+              return oldBox;
+            }
+            return newBox;
           }}
           rotateEnabled
-          enabledAnchors={["middle-left", "middle-right", "top-left", "top-right", "bottom-left", "bottom-right"]}
+          enabledAnchors={[
+            "middle-left",
+            "middle-right",
+            "top-left",
+            "top-right",
+            "bottom-left",
+            "bottom-right"
+          ]}
         />
+
       )}
     </>
   );
