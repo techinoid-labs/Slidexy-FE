@@ -35,7 +35,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     setSelectedImage,
     setSelectedImageIndex,
   } = useSlides();
-
+  
   const [imageWidth, setImageWidth] = useState<number>(
     selectedImage?.properties?.width || 0
   );
@@ -65,7 +65,12 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   const [borderRadius, setBorderRadius] = useState<number>(
     selectedImage?.properties?.borderRadius ?? 0
   );
+let imageObj: KonvaComponent | null = null;
+  if (selectedSlideIndex !== -1 && slides[selectedSlideIndex] && selectedImageIndex !== null) {
+    imageObj = slides[selectedSlideIndex].elements[selectedImageIndex];
+  }
 
+  
   useEffect(() => {
     if (selectedImage) {
       setImageWidth(selectedImage?.properties?.width || 0);
@@ -142,18 +147,17 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   };
 
   const handleDuplicateImage = () => {
-    if (!selectedImage || selectedSlideIndex === -1 || selectedImageIndex === null)
+    if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null)
       return;
 
     const currentSlide = slides[selectedSlideIndex];
     const elements = [...currentSlide.elements];
+
     const originalElement = elements[selectedImageIndex];
 
-    const newElement: KonvaComponent = {
+    const newElement = {
       ...structuredClone(originalElement),
       id: `el-${selectedSlideIndex}-${uuidv4()}`,
-      konva_component: originalElement.konva_component || "Konva.Image",
-      element_type: originalElement.element_type || "image",
       properties: {
         ...structuredClone(originalElement.properties),
         x: (originalElement.properties?.x || 0) + 20,
@@ -162,7 +166,12 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     };
 
     elements.splice(selectedImageIndex + 1, 0, newElement);
-    const updatedSlide = { ...currentSlide, elements };
+
+    const updatedSlide = {
+      ...currentSlide,
+      elements,
+    };
+
     const updatedSlides = [...slides];
     updatedSlides[selectedSlideIndex] = updatedSlide;
 
@@ -277,6 +286,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     setBorderRadius(newRadius);
     updateImageProperty({ borderRadius: newRadius });
   };
+if (!imageObj || imageObj.element_type !== "image") return null;
 
   return (
     <Box

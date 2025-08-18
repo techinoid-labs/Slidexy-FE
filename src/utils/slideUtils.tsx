@@ -109,105 +109,85 @@ export const getSlideDimensions = () => {
 // };
 
 export const constrainToCanvas = (
-  x: number,
-  y: number,
-  width: number,
-  height: number,
+  node: any,
   canvasWidth: number = getSlideDimensions().SLIDE_WIDTH,
-  canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT
+  canvasHeight: number = getSlideDimensions().SLIDE_HEIGHT,
+  padding: number = 20 // loosen boundary a bit
 ) => {
-  const { LEFT_PADDING } = getSlideDimensions();
-  const paddingLeft = LEFT_PADDING - 200; // 17
-  const paddingRight = 10;
-  const paddingTop = 60;
-  const paddingBottom = window.innerHeight <= 830 ? 50 : 10;
+  const rect = node.getClientRect({ relativeTo: node.getStage() }); // accounts for rotation
+  let newX = node.x();
+  let newY = node.y();
 
-  const minX = paddingLeft;
+  // Allow some tolerance (so it doesn’t feel too strict)
+  const allowedLeft = padding - rect.width / 4;
+  const allowedTop = padding - rect.height / 4;
+  const allowedRight = canvasWidth - padding - rect.width * 0.75;
+  const allowedBottom = canvasHeight - padding - rect.height * 0.75;
 
-  // const minY = paddingTop - 80;
-  // const safeHeight = height || 30;
-  // // Use a less restrictive maxX to allow dragging across the canvas
-  // const maxX = canvasWidth - paddingRight; // e.g., 300 - 10 = 290
-  // const maxY = canvasHeight - paddingBottom + 50;
-
-  const minY = paddingTop - 70;
-  const safeHeight = height || 30;
-  // Use a less restrictive maxX to allow dragging across the canvas
-  const maxX = canvasWidth - paddingRight; // e.g., 300 - 10 = 290
-  const maxY = canvasHeight - paddingBottom + 10;
-
-  const constrainedX = Math.max(minX, Math.min(x, maxX));
-  const constrainedY = Math.max(minY, Math.min(y, maxY));
+  if (rect.x < allowedLeft) {
+    newX += allowedLeft - rect.x;
+  }
+  if (rect.y < allowedTop) {
+    newY += allowedTop - rect.y;
+  }
+  if (rect.x + rect.width > allowedRight + rect.width) {
+    newX -= rect.x + rect.width - (allowedRight + rect.width);
+  }
+  if (rect.y + rect.height > allowedBottom + rect.height) {
+    newY -= rect.y + rect.height - (allowedBottom + rect.height);
+  }
 
   const isAtBoundary =
-    (x < minX && constrainedX === minX) ||
-    (x > maxX && constrainedX === maxX) ||
-    (y < minY && constrainedY === minY) ||
-    (y > maxY && constrainedY === maxY);
+    rect.x <= allowedLeft ||
+    rect.y <= allowedTop ||
+    rect.x + rect.width >= allowedRight + rect.width ||
+    rect.y + rect.height >= allowedBottom + rect.height;
 
-  console.log({
-    x,
-    y,
-    width,
-    height: safeHeight,
-    canvasWidth,
-    canvasHeight,
-    minX,
-    maxX,
-    minY,
-    maxY,
-    constrainedX,
-    constrainedY,
-    isAtBoundary,
-  });
-
-  return { x: constrainedX, y: constrainedY, isAtBoundary };
+  return { x: newX, y: newY, isAtBoundary };
 };
+
+
+
 export const constrainImageToCanvas = (
-  x: number,
-  y: number,
-  width: number,
-  height: number,
+  node: any,
   slideWidth: number,
   slideHeight: number,
-  padding = { left: 10, right: 10, top: 10, bottom: 10 },
-  minSize = { width: 50, height: 50 }
+  padding = { left: 10, right: 10, top: 10, bottom: 10 }
 ) => {
-  let newX = x;
-  let newY = y;
-  let newWidth = Math.max(width, minSize.width);
-  let newHeight = Math.max(height, minSize.height);
+  const rect = node.getClientRect(); // includes rotation
+  let newX = node.x();
+  let newY = node.y();
 
-  // Half-outside allowance
-  const halfW = newWidth / 2;
-  const halfH = newHeight / 2;
+  // Allow half of the shape to go outside
+  const allowedLeft = padding.left - rect.width / 2;
+  const allowedTop = padding.top - rect.height / 2;
+  const allowedRight = slideWidth - padding.right - rect.width / 2;
+  const allowedBottom = slideHeight - padding.bottom - rect.height / 2;
 
-  // Allowed bounds (image center can go this far)
-  const canvasMinX = padding.left - halfW;
-  const canvasMinY = padding.top - halfH;
-  const canvasMaxX = slideWidth - padding.right - halfW;
-  const canvasMaxY = slideHeight - padding.bottom - halfH;
-
-  // Clamp X/Y so that the center of the image stays in the half-outside range
-  if (newX < canvasMinX) newX = canvasMinX;
-  if (newY < canvasMinY) newY = canvasMinY;
-  if (newX > canvasMaxX) newX = canvasMaxX;
-  if (newY > canvasMaxY) newY = canvasMaxY;
+  // Clamp so at least half of shape stays inside
+  if (rect.x < allowedLeft) {
+    newX += allowedLeft - rect.x;
+  }
+  if (rect.y < allowedTop) {
+    newY += allowedTop - rect.y;
+  }
+  if (rect.x + rect.width > allowedRight + rect.width) {
+    newX -= rect.x + rect.width - (allowedRight + rect.width);
+  }
+  if (rect.y + rect.height > allowedBottom + rect.height) {
+    newY -= rect.y + rect.height - (allowedBottom + rect.height);
+  }
 
   const isAtBoundary =
-    newX <= canvasMinX ||
-    newY <= canvasMinY ||
-    newX >= canvasMaxX ||
-    newY >= canvasMaxY;
+    rect.x <= allowedLeft ||
+    rect.y <= allowedTop ||
+    rect.x + rect.width >= allowedRight + rect.width ||
+    rect.y + rect.height >= allowedBottom + rect.height;
 
-  return {
-    x: newX,
-    y: newY,
-    width: newWidth,
-    height: newHeight,
-    isAtBoundary,
-  };
+  return { x: newX, y: newY, isAtBoundary };
 };
+
+
 
 
 

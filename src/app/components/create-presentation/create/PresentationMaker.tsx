@@ -34,7 +34,7 @@ export default function PresentationMaker({
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0); // ✅ progress state
+  const [progress, setProgress] = useState(0); 
   const { setSlides } = useSlides();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -404,6 +404,7 @@ export default function PresentationMaker({
 
         <Box
           sx={{
+            paddingRight : {md: 25},
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
             gap: 2,
@@ -420,13 +421,14 @@ export default function PresentationMaker({
                   transform: "scale(1.05)",
                   transition: "0.3s ease",
                 },
+              
                 cursor: "pointer",
                 backgroundColor: "#F7F5FD",
                 borderRadius: "16px",
                 padding: 2,
                 position: "relative",
                 minHeight: { xs: 100, sm: 180 },
-                width: index === 0 || index === 1 || index === 2 ? 270 : 100,
+                width: index === 0 || index === 1 || index === 2 ? 250 : 100,
               }}
               onClick={() => handlePromptClick(card.description)}
             >

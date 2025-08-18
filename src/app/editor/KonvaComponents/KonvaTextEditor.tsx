@@ -146,109 +146,76 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   );
 
   const handleDragEnd = useCallback(
-    (e: any) => {
-      const node = textRef.current;
-      if (!node) return;
+  (e: any) => {
+    const node = textRef.current;
+    if (!node) return;
 
-      const boundingBox = node.getClientRect();
-      const {
-        x: newX,
-        y: newY,
-        isAtBoundary,
-      } = constrainToCanvas(
-        node.x(),
-        node.y(),
-        node.width(),
-        boundingBox.height,
-        getSlideDimensions().SLIDE_WIDTH,
-        getSlideDimensions().SLIDE_HEIGHT
-      );
+    const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
+      node,
+      getSlideDimensions().SLIDE_WIDTH,
+      getSlideDimensions().SLIDE_HEIGHT
+    );
 
-      if (isAtBoundary) {
-        node.position({ x: lastValidPos.x, y: lastValidPos.y });
-      } else {
-        node.position({ x: newX, y: newY });
-        setLastValidPos({ x: newX, y: newY });
-      }
+    if (isAtBoundary) {
+      node.position({ x: lastValidPos.x, y: lastValidPos.y });
+    } else {
+      node.position({ x: newX, y: newY });
+      setLastValidPos({ x: newX, y: newY });
+    }
 
-      updateSlides(text, {
-        x: node.x(),
-        y: node.y(),
-        width,
-        fontSize,
-        fontFamily,
-        fontWeight,
-        fontStyle,
-        align,
-      });
-
-      setIsAtBoundary(isAtBoundary);
-    },
-    [
-      text,
+    updateSlides(text, {
+      x: node.x(),
+      y: node.y(),
       width,
       fontSize,
       fontFamily,
       fontWeight,
       fontStyle,
       align,
-      updateSlides,
-      setIsAtBoundary,
-      lastValidPos,
-    ]
-  );
-
-  const handleTransformEnd = useCallback(() => {
-    const node = textRef.current;
-    if (!node) return;
-
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
-    node.scaleX(1);
-    node.scaleY(1);
-
-    const newWidth = Math.max(30, node.width() * scaleX);
-    const newHeight = Math.max(20, node.height() * scaleY);
-    const {
-      x: newX,
-      y: newY,
-      isAtBoundary,
-    } = constrainToCanvas(
-      node.x(),
-      node.y(),
-      newWidth,
-      newHeight,
-      getSlideDimensions().SLIDE_WIDTH,
-      getSlideDimensions().SLIDE_HEIGHT
-    );
-
-    node.position({ x: newX, y: newY });
-    node.width(newWidth);
-    node.height(newHeight);
+    });
 
     setIsAtBoundary(isAtBoundary);
+  },
+  [text, width, fontSize, fontFamily, fontWeight, fontStyle, align, updateSlides, setIsAtBoundary, lastValidPos]
+);
 
-    updateSlides(text, {
-      x: newX,
-      y: newY,
-      width: newWidth,
-      height: newHeight,
-      fontSize,
-      fontFamily,
-      fontWeight,
-      fontStyle,
-      align,
-    });
-  }, [
-    text,
+
+ const handleTransformEnd = useCallback(() => {
+  const node = textRef.current;
+  if (!node) return;
+
+  const scaleX = node.scaleX();
+  const scaleY = node.scaleY();
+  node.scaleX(1);
+  node.scaleY(1);
+
+  const newWidth = Math.max(30, node.width() * scaleX);
+  const newHeight = Math.max(20, node.height() * scaleY);
+  node.width(newWidth);
+  node.height(newHeight);
+
+  const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
+    node,
+    getSlideDimensions().SLIDE_WIDTH,
+    getSlideDimensions().SLIDE_HEIGHT
+  );
+
+  node.position({ x: newX, y: newY });
+  setIsAtBoundary(isAtBoundary);
+
+  updateSlides(text, {
+    x: newX,
+    y: newY,
+    width: newWidth,
+    height: newHeight,
     fontSize,
     fontFamily,
     fontWeight,
     fontStyle,
     align,
-    updateSlides,
-    setIsAtBoundary,
-  ]);
+  });
+}, [text, fontSize, fontFamily, fontWeight, fontStyle, align, updateSlides, setIsAtBoundary]);
+
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -304,24 +271,35 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
           ref={trRef}
           keepRatio={true}
           boundBoxFunc={(oldBox, newBox) => {
-            const { x, y, isAtBoundary } = constrainToCanvas(
-              newBox.x,
-              newBox.y,
-              newBox.width,
-              newBox.height,
-              getSlideDimensions().SLIDE_WIDTH,
-              getSlideDimensions().SLIDE_HEIGHT
-            );
+            if (!textRef.current) return oldBox;
+
+            const node = textRef.current;
+
+            // Temporarily apply new box dimensions for boundary check
+            node.width(newBox.width);
+            node.height(newBox.height);
+            node.x(newBox.x);
+            node.y(newBox.y);
+
+            // Check with rotation-aware boundaries
+            const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(node);
+
+            // Re-apply corrected position
+            node.position({ x: newX, y: newY });
+
             setIsAtBoundary(isAtBoundary);
-            return { ...newBox, x, y, width: Math.max(30, newBox.width) };
+
+            return {
+              ...newBox,
+              x: newX,
+              y: newY,
+              width: Math.max(30, newBox.width),
+              height: Math.max(20, newBox.height),
+            };
           }}
-          enabledAnchors={[
-            "top-left",
-            "top-right",
-            "bottom-left",
-            "bottom-right",
-          ]}
+          enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
         />
+
       )}
       {isEditing && textRef.current && (
         <Html>
