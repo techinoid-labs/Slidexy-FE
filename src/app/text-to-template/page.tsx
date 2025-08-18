@@ -1,23 +1,23 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React from "react";
 import TemplateEditor from "./TemplateEditor";
-import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
-import { exportSlidesAsPDF } from "@/utils/exportSlides";
-import { useTheme, useMediaQuery } from "@mui/material";
+import { exportPresentationToPptx } from "./pptxExportTemplate";
+import { useTheme, useMediaQuery, Alert } from "@mui/material";
 import TemplateNavBar from "./TemplateNavbar";
+import { useTemplateSlides } from "../context/TemplateSlidesContext";
+import { dummyData } from "./dummyData";
 
 const Page = () => {
-  const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const theme = useTheme();
+  const { slideTemplates } = useTemplateSlides();
 
   const handleExportPPTX = () => {
     console.log("called");
-    // exportSlidesAsPPT(structuredSlides);
+    exportPresentationToPptx({ slides: slideTemplates });
+    // exportPresentationToPptx(dummyData);
   };
-
-  const handleExportPDF = () => exportSlidesAsPDF(stageRefs.current);
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -45,21 +45,40 @@ const Page = () => {
       ) : (
         <TemplateNavBar onExportPPT={handleExportPPTX} />
       )}
-      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
-        {/* {isMobile ? (
-          <>
-         
-            <TemplateEditor />
 
-          </>
-        ) : ( */}
+      {/* Disclaimer Banner */}
+      <Alert
+        severity="info"
+        className="flex items-center w-full justify-center"
+        sx={{
+          borderRadius: 0,
+          textAlign: "center",
+          fontSize: { xs: "12px", md: "14px" },
+          py: { xs: 0.5, md: 1 },
+          backgroundColor: "#F0F4FF",
+          color: "#333",
+          mt: isMobile ? 8 : 0,
+        }}
+      >
+        This feature is still under development. We’re actively improving it to
+        provide more accurate and reliable output.
+      </Alert>
+
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
         <div className="relative flex flex-1 min-h-0 overflow-hidden">
-          <div className="shrink-0 z-10"></div>
-          <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
+          <div
+            className="flex-1 overflow-auto z-0 w-full"
+            style={{ marginTop: 12 }}
+          >
             <TemplateEditor />
           </div>
         </div>
-        {/* )} */}
       </div>
     </div>
   );

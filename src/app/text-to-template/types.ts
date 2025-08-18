@@ -4,30 +4,13 @@ export interface Presentation {
 
 export interface Slide {
   slide_id: string;
-  slide_title: SlideTitle;
+  slide_title: string;
   elements: Element[];
   image_url: string; // base64 or URL
 }
 
-export interface SlideTitle {
-  text: string;
-  properties: TitleProperties;
-}
-
 export interface PropertiesBase {
   zIndex: number; // Draw order
-}
-
-export interface TitleProperties extends PropertiesBase {
-  fontSize: number;
-  width: number;
-  height: number;
-  fontFamily: string;
-  fill: string; // "#RRGGBB"
-  fontWeight: string;
-  x: number;
-  y: number;
-  align?: "left" | "center" | "right";
 }
 
 export type Element = TextElement | ShapeElement | ImageElement;
@@ -44,7 +27,11 @@ export interface BaseElement<
 }
 
 export interface TextElement
-  extends BaseElement<TextProperties, "text" | "bullet_point", "Konva.Text"> {
+  extends BaseElement<
+    TextProperties,
+    "text" | "bullet_point" | "title",
+    "Konva.Text"
+  > {
   text: string;
 }
 
@@ -106,4 +93,5 @@ export interface ImageProperties extends PropertiesBase {
   y: number;
   width: number;
   height: number;
+  rounded?: number;
 }

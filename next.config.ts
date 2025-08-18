@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   images: {
-    domains: ["source.unsplash.com"],
+    domains: ["source.unsplash.com", "placehold.co"],
   },
 };
 

@@ -11,26 +11,20 @@ import {
   Divider,
   useMediaQuery,
   useTheme,
+  Button,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import UndoIcon from "@mui/icons-material/Undo";
-import RedoIcon from "@mui/icons-material/Redo";
-import PaletteIcon from "@mui/icons-material/Palette";
 import { useRouter } from "next/navigation";
-import { useSlideThemeContext } from "@/app/context/ThemeContext";
-import { useSlides } from "@/app/context/SlidesContext";
-
+import { useTemplateSlides } from "../context/TemplateSlidesContext";
 const TemplateNavBar: React.FC<{
   onExportPPT?: () => void;
 }> = ({ onExportPPT }) => {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] =
     React.useState<null | HTMLElement>(null);
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
-  // Handlers for mobile menu
+  const { slideTemplates } = useTemplateSlides();
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMenuAnchor(event.currentTarget);
   };
@@ -39,32 +33,32 @@ const TemplateNavBar: React.FC<{
     setMobileMenuAnchor(null);
   };
 
-  const [fileName, setFileName] = React.useState("Untitled");
+  // === File name editing state ===
+  const [templateFileName, setTemplateFileName] = React.useState("Untitled");
   const [editing, setEditing] = React.useState(false);
+  const [error, setError] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  // On mount, clear any old stored title
   React.useEffect(() => {
-    const saved = localStorage.getItem("fileName");
-    if (saved) setFileName(saved);
+    localStorage.removeItem("templateFileName");
+    setTemplateFileName("Untitled");
   }, []);
 
   const handleEdit = () => setEditing(true);
 
-  const [error, setError] = React.useState(false);
-
   const handleBlur = () => {
-    const trimmed = fileName.trim();
+    const trimmed = templateFileName.trim();
 
     if (trimmed.length < 3) {
       setError(true);
-      const saved = localStorage.getItem("fileName");
-      setFileName(saved || "Untitled");
+      setTemplateFileName("Untitled");
+      localStorage.removeItem("templateFileName");
     } else {
       setError(false);
-      localStorage.setItem("fileName", trimmed);
-      setFileName(trimmed);
+      localStorage.setItem("templateFileName", trimmed);
+      setTemplateFileName(trimmed);
     }
-
     setEditing(false);
   };
 
@@ -96,10 +90,10 @@ const TemplateNavBar: React.FC<{
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          px: { xs: 1, md: 3 }, // Reduced padding for mobile
+          px: { xs: 1, md: 3 },
         }}
       >
-        {/* Left Icons */}
+        {/* Left section */}
         <Box
           sx={{
             display: "flex",
@@ -114,10 +108,11 @@ const TemplateNavBar: React.FC<{
             <Image
               src="/images/home-icon.svg"
               alt="Home"
-              width={20} // Smaller icon for mobile
+              width={20}
               height={20}
             />
           </IconButton>
+
           <Box
             sx={{
               width: "1px",
@@ -128,6 +123,7 @@ const TemplateNavBar: React.FC<{
               display: { xs: "none", md: "block" },
             }}
           />
+
           <Box
             sx={{
               display: "flex",
@@ -139,8 +135,8 @@ const TemplateNavBar: React.FC<{
             {editing ? (
               <input
                 ref={inputRef}
-                value={fileName}
-                onChange={(e) => setFileName(e.target.value)}
+                value={templateFileName}
+                onChange={(e) => setTemplateFileName(e.target.value)}
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
                 autoFocus
@@ -169,7 +165,7 @@ const TemplateNavBar: React.FC<{
                   textOverflow: "ellipsis",
                 }}
               >
-                {fileName || "File Name Here"}
+                {templateFileName || "Untitled"}
               </Typography>
             )}
             <Typography
@@ -186,7 +182,7 @@ const TemplateNavBar: React.FC<{
           </Box>
         </Box>
 
-        {/* Right Icons */}
+        {/* Right section */}
         <Box
           sx={{
             display: "flex",
@@ -195,25 +191,26 @@ const TemplateNavBar: React.FC<{
           }}
         >
           {isMobile ? (
-            <>
-              <IconButton
-                size="large"
-                edge="end"
-                color="inherit"
-                onClick={handleMobileMenuOpen}
-              >
-                <MenuIcon sx={{ fontSize: 24 }} />
-              </IconButton>
-            </>
+            <IconButton
+              size="large"
+              edge="end"
+              color="inherit"
+              onClick={handleMobileMenuOpen}
+            >
+              <MenuIcon sx={{ fontSize: 24 }} />
+            </IconButton>
           ) : (
             <>
               {onExportPPT && (
-                <Box
+                <Button
                   onClick={onExportPPT}
+                  disabled={slideTemplates.length <= 0}
                   sx={{
-                    bgcolor: "#18181B",
+                    bgcolor: slideTemplates.length <= 0 ? " white" : "#18181B",
                     background:
-                      "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                      slideTemplates.length > 0
+                        ? "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)"
+                        : "",
                     color: "#fff",
                     borderRadius: "999px",
                     px: 2,
@@ -226,7 +223,7 @@ const TemplateNavBar: React.FC<{
                   }}
                 >
                   Export as PPTX
-                </Box>
+                </Button>
               )}
             </>
           )}

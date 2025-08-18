@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState } from "react";
 import type { Slide, Presentation } from "@/app/text-to-template/types";
 
 interface TemplateSlidesContextType {
-  slideTemplates: Slide[];
+  slideTemplates: Slide[] | [];
   setSlideTemplates: (templates: Slide[]) => void;
   removeTemplates: () => void;
 }
