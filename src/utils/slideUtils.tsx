@@ -23,6 +23,14 @@ export const restrictShapeBounds = (
   } else if (shapeType === "Konva.Star") {
     const outerRadius = Math.max(properties.outerRadius || MIN_SIZE / 2, MIN_SIZE / 2);
     width = height = outerRadius * 2;
+  } else if (shapeType === "Konva.RegularPolygon") {
+    const radius = Math.max(properties.radius || MIN_SIZE / 2, MIN_SIZE / 2);
+    width = height = radius * 2;
+  } else if (shapeType === "Konva.Ellipse") {
+    const radiusX = Math.max(properties.radiusX || MIN_SIZE / 2, MIN_SIZE / 2);
+    const radiusY = Math.max(properties.radiusY || MIN_SIZE / 2, MIN_SIZE / 2);
+    width = radiusX * 2;
+    height = radiusY * 2;
   } else if (shapeType === "Konva.Line" || shapeType === "Konva.Arrow") {
     const points = properties.points || [0, 0, 100, 100];
     const xs = points.filter((_: any, idx: number) => idx % 2 === 0);
@@ -30,18 +38,17 @@ export const restrictShapeBounds = (
     width = Math.max(LINE_ARROW_MIN_SIZE, Math.max(...xs) - Math.min(...xs));
     height = Math.max(LINE_ARROW_MIN_SIZE, Math.max(...ys) - Math.min(...ys));
   } else {
-    width = Math.max(MIN_SIZE, width);
-    height = Math.max(MIN_SIZE, height);
+    width = Math.max(MIN_SIZE, properties.width || MIN_SIZE);
+    height = Math.max(MIN_SIZE, properties.height || MIN_SIZE);
   }
 
   // Define canvas boundaries with padding
   const padding = 10;
   const maxX = canvasWidth - width - padding;
-  // Custom maxY for lines and arrows
   const maxY =
     shapeType === "Konva.Line" || shapeType === "Konva.Arrow"
-      ? canvasHeight - height - padding // Tighter maxY for lines/arrows
-      : canvasHeight - height - padding + 50; // Looser maxY for other shapes
+      ? canvasHeight - height - padding
+      : canvasHeight - height - padding + 50;
 
   // Clamp position to stay within canvas
   const constrainedX = Math.max(padding, Math.min(x, maxX));
@@ -230,7 +237,7 @@ export const getRandomSlide = () => {
   const getRandomBullets = (count: number) =>
     Array.from({ length: count }, (_, index) => {
       const text = bullets[Math.floor(Math.random() * bullets.length)];
-       const fontSize = 18;
+      const fontSize = 18;
       const lineSpacing = 8;
       return {
         element_type: "bullet_point",
@@ -246,7 +253,7 @@ export const getRandomSlide = () => {
           zIndex: index + 1,
           x: LEFT_PADDING + 10,
           y: 80 + index * (fontSize + lineSpacing),
-          
+
         },
       };
     });

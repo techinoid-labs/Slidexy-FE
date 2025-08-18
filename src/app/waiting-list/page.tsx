@@ -74,8 +74,8 @@ export default function WaitingList() {
             borderRadius: "30px",
             backgroundColor: "white",
             px: { xs: 3, sm: 4, md: 10 },
-            paddingTop:"120px",           
-            pb:0
+            paddingTop: "120px",
+            pb: 0,
           }}
         >
           <Stack
@@ -119,22 +119,38 @@ export default function WaitingList() {
               >
                 <Button
                   variant="contained"
-                  sx={{
-                    px: { xs: "20px", md: "auto" },
-                    py: { xs: "10px", md: "auto" },
-                    textTransform: "none",
-                    fontSize: { xs: "14px", md: "16px" },
-                    fontWeight: 500,
-                    borderRadius: "30px",
-                    background: "white",
-                    boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
-                    color: "#4A00E0",
+                  onClick={async () => {
+                    if (!email) {
+                      alert("Please enter an email");
+                      return;
+                    }
+                    try {
+                      const res = await fetch(
+                        "http://localhost:5000/join-waitlist",
+                        {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ email }),
+                        }
+                      );
+
+                      const data = await res.json();
+                      if (res.ok) {
+                        alert("You have joined the waitlist!");
+                        setEmail("");
+                      } else {
+                        alert(data.error || "Something went wrong");
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      alert("Server error");
+                    }
                   }}
                 >
-                  Join Waitlist
+                  Join the Wishlist
                   <Box
                     component="img"
-                    src="/images/forwardArrow.svg"
+                    src="/images/whiteArrow.svg"
                     alt="Arrow Right"
                     sx={{ width: 16, height: 16, ml: 1 }}
                   />
@@ -269,13 +285,12 @@ export default function WaitingList() {
               display: "flex",
               alignItems: "center",
               gap: 1,
-              padding:{sm:"10px",xs:"10px"},
+              padding: { sm: "10px", xs: "10px" },
               borderRadius: "40px",
               border: "1px solid",
               borderColor: "#E6E6EB",
               bgcolor: "#fff",
               flexWrap: "wrap", // Wrap button on small screens
-              
             }}
           >
             <InputBase
@@ -296,7 +311,34 @@ export default function WaitingList() {
                 borderRadius: "30px",
                 background: "#8E2DE2",
                 color: "white",
-                width: { xs: "100%", sm: "fit-content" }, // Full width on mobile
+                width: { xs: "100%", sm: "fit-content" },
+              }}
+              onClick={async () => {
+                if (!email) {
+                  alert("Please enter an email");
+                  return;
+                }
+                try {
+                  const res = await fetch(
+                    "http://localhost:5000/join-waitlist",
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email }),
+                    }
+                  );
+
+                  const data = await res.json();
+                  if (res.ok) {
+                    alert("You have joined the waitlist!");
+                    setEmail("");
+                  } else {
+                    alert(data.error || "Something went wrong");
+                  }
+                } catch (err) {
+                  console.error(err);
+                  alert("Server error");
+                }
               }}
             >
               Join the Wishlist
