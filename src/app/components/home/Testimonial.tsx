@@ -57,6 +57,8 @@ export default function TestimonialSection() {
         </Button>
 
         {/* Testimonial Content */}
+        
+        { /*   */}
         <Box
           sx={{
             flex: 1,
@@ -107,7 +109,7 @@ export default function TestimonialSection() {
               style={{ display: 'block' }}
             />
           </Box>
-        </Box>
+        </Box>  
 
         {/* Right Arrow */}
         <Button

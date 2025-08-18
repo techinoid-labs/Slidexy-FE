@@ -39,7 +39,7 @@ export default function Pricing() {
       <PricingSection />
       <PurposeSection/>
       <FAQSection/>
-      <CommunitySection />
+      {/* <CommunitySection /> */}
       <Footer />
     </Box>
   );

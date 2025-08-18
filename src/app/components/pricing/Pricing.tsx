@@ -100,7 +100,7 @@ export default function PricingSection() {
         </Typography>
 
         {/* Toggle */}
-        <Box
+        {/* <Box
           sx={{
             display: "flex",
             justifyContent: "center",
@@ -140,7 +140,7 @@ export default function PricingSection() {
               </ToggleButton>
             ))}
           </ToggleButtonGroup>
-        </Box>
+        </Box> */}
 
         {/* Secure Note */}
         <Typography

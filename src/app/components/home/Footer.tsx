@@ -61,7 +61,7 @@ export default function Footer() {
       </Stack>
 
       {/* Social Icons */}
-      <Stack
+      {/* <Stack
         direction="row"
         spacing={3}
         justifyContent="center"
@@ -83,7 +83,7 @@ export default function Footer() {
             />
           </Link>
         ))}
-      </Stack>
+      </Stack> */}
 
       {/* Copyright */}
       <Typography
