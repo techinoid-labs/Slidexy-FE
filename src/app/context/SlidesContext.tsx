@@ -3,12 +3,11 @@
 import React, { createContext, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSlides } from "../slice/slidesSlice";
-import type { Slide, KonvaComponent } from "../slice/slidesSlice"; // Import types from slice
+import type { Slide, KonvaComponent } from "../slice/slidesSlice";
 import type { RootState } from "../store/store";
 
 export type SlidesType = Slide[];
 
-// Re-export KonvaComponent from slice to maintain consistency
 export type { KonvaComponent } from "../slice/slidesSlice";
 
 interface Theme {
@@ -63,7 +62,6 @@ const SlidesContext = createContext<SlidesContextType>({} as SlidesContextType);
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch();
-  // Fixed: Properly typed useSelector hook
   const slides = useSelector((state: RootState) => state.slidesData?.slides || []);
 
   const [pastSlides, setPastSlides] = useState<SlidesType[]>([]);
@@ -90,35 +88,81 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const handleSetSlides = (newSlides: SlidesType) => {
+    console.log("[SlidesContext] handleSetSlides called with newSlides:", newSlides);
     if (!deepEqual(slides, newSlides)) {
-      setPastSlides((prev) => [...prev, structuredClone(slides)]);
+      console.log("[SlidesContext] State changed, updating pastSlides and dispatching new slides");
+      setPastSlides((prev) => {
+        const newPast = [...prev, structuredClone(slides)];
+        console.log("[SlidesContext] Updated pastSlides:", newPast);
+        return newPast;
+      });
       setFutureSlides([]);
       dispatch(setSlides(newSlides));
+    } else {
+      console.log("[SlidesContext] No state change detected");
     }
   };
 
   const handleDeleteSlides = () => {
-    setPastSlides((prev) => [...prev, structuredClone(slides)]);
+    console.log("[SlidesContext] handleDeleteSlides called");
+    setPastSlides((prev) => {
+      const newPast = [...prev, structuredClone(slides)];
+      console.log("[SlidesContext] Updated pastSlides for delete:", newPast);
+      return newPast;
+    });
     setFutureSlides([]);
     dispatch(setSlides([]));
   };
 
   const undo = () => {
-    if (pastSlides.length === 0) return;
+    if (pastSlides.length === 0) {
+      console.log("[SlidesContext] Cannot undo, pastSlides is empty");
+      return;
+    }
     const previous = pastSlides[pastSlides.length - 1];
     const newPast = pastSlides.slice(0, -1);
     setPastSlides(newPast);
     setFutureSlides((prev) => [structuredClone(slides), ...prev]);
     dispatch(setSlides(previous));
+    
+    // Clear all selections on undo
+    setSelectedImageId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+    setSelectedShapeId(null);
+    setSelectedShapeIndex(null);
+    setSelectedTextId(null);
+    
+    console.log("[SlidesContext] Undo performed, restored state:", previous);
+    console.log("[SlidesContext] New pastSlides:", newPast);
+    console.log("[SlidesContext] New futureSlides:", [structuredClone(slides), ...futureSlides]);
   };
 
   const redo = () => {
-    if (futureSlides.length === 0) return;
+    if (futureSlides.length === 0) {
+      console.log("[SlidesContext] Cannot redo, futureSlides is empty");
+      return;
+    }
     const next = futureSlides[0];
     const newFuture = futureSlides.slice(1);
     setFutureSlides(newFuture);
-    setPastSlides((prev) => [...prev, structuredClone(slides)]);
+    setPastSlides((prev) => {
+      const newPast = [...prev, structuredClone(slides)];
+      console.log("[SlidesContext] Updated pastSlides for redo:", newPast);
+      return newPast;
+    });
     dispatch(setSlides(next));
+    
+    // Clear all selections on redo
+    setSelectedImageId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+    setSelectedShapeId(null);
+    setSelectedShapeIndex(null);
+    setSelectedTextId(null);
+    
+    console.log("[SlidesContext] Redo performed, restored state:", next);
+    console.log("[SlidesContext] New futureSlides:", newFuture);
   };
 
   const canUndo = pastSlides.length > 0;
@@ -134,7 +178,6 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     return Number(selectedElementIndex);
   };
 
-  // Helper functions to identify element types
   const isImageElement = (element: KonvaComponent): boolean => {
     return (
       element.element_type === "image" ||
@@ -168,7 +211,6 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
-  // Z-Index Constants for better maintainability
   const Z_INDEX_RANGES = {
     IMAGES: { START: 1, END: 99 },
     SHAPES: { START: 100, END: 199 },
@@ -185,10 +227,23 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  // Helper function to find element by shape_id or image_id
+  const findElementById = (elements: KonvaComponent[], id: string): { element: KonvaComponent | null, index: number } => {
+    for (let i = 0; i < elements.length; i++) {
+      const el = elements[i];
+      if (
+        (el.shape_id && el.shape_id === id) ||
+        (el.properties?.image_id && el.properties.image_id === id)
+      ) {
+        return { element: el, index: i };
+      }
+    }
+    return { element: null, index: -1 };
+  };
+
   const bringElementForward = (el: number | string | KonvaComponent) => {
     console.log("bringElementForward clicked", el);
 
-    let selectedElementIndex: number;
     let selectedElement: KonvaComponent | null = null;
 
     const currentSlide = slides[selectedSlideIndex];
@@ -200,18 +255,19 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     }));
 
     if (typeof el === "number") {
-      selectedElementIndex = el;
-      selectedElement = elements[selectedElementIndex];
+      selectedElement = elements[el];
     } else if (typeof el === "string") {
-      selectedElementIndex = Number(getSelectedElement(el));
-      selectedElement = elements[selectedElementIndex];
+      // Check if it's a shape_id or image_id
+      const found = findElementById(elements, el);
+      selectedElement = found.element;
     } else {
-      if (selectedImageIndex !== null) {
-        selectedElementIndex = selectedImageIndex;
-        selectedElement = elements[selectedImageIndex];
-      } else if (selectedShapeIndex !== null) {
-        selectedElementIndex = selectedShapeIndex;
-        selectedElement = elements[selectedShapeIndex];
+      // Use current selections
+      if (selectedImageId) {
+        const found = findElementById(elements, selectedImageId);
+        selectedElement = found.element;
+      } else if (selectedShapeId) {
+        const found = findElementById(elements, selectedShapeId);
+        selectedElement = found.element;
       } else {
         console.warn("No element selected for forward operation");
         return;
@@ -243,7 +299,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
       assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
       assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
     } else {
-      const currentZIndex = selectedElement.properties?.zIndex || selectedElementIndex + 1;
+      const currentZIndex = selectedElement.properties?.zIndex || 1;
       const maxZIndex = Math.max(...elements.map((el: KonvaComponent) => el.properties?.zIndex || 1));
 
       if (currentZIndex < maxZIndex) {
@@ -265,7 +321,6 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const sendElementBackward = (el: number | string | KonvaComponent) => {
     console.log("sendElementBackward clicked", el);
 
-    let selectedElementIndex: number;
     let selectedElement: KonvaComponent | null = null;
 
     const currentSlide = slides[selectedSlideIndex];
@@ -277,18 +332,19 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     }));
 
     if (typeof el === "number") {
-      selectedElementIndex = el;
-      selectedElement = elements[selectedElementIndex];
+      selectedElement = elements[el];
     } else if (typeof el === "string") {
-      selectedElementIndex = Number(getSelectedElement(el));
-      selectedElement = elements[selectedElementIndex];
+      // Check if it's a shape_id or image_id
+      const found = findElementById(elements, el);
+      selectedElement = found.element;
     } else {
-      if (selectedImageIndex !== null) {
-        selectedElementIndex = selectedImageIndex;
-        selectedElement = elements[selectedImageIndex];
-      } else if (selectedShapeIndex !== null) {
-        selectedElementIndex = selectedShapeIndex;
-        selectedElement = elements[selectedShapeIndex];
+      // Use current selections
+      if (selectedImageId) {
+        const found = findElementById(elements, selectedImageId);
+        selectedElement = found.element;
+      } else if (selectedShapeId) {
+        const found = findElementById(elements, selectedShapeId);
+        selectedElement = found.element;
       } else {
         console.warn("No element selected for backward operation");
         return;
@@ -320,7 +376,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
       assignZIndexToElements(imageElements, Z_INDEX_RANGES.SHAPES.START);
       assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
     } else {
-      const currentZIndex = selectedElement.properties?.zIndex || selectedElementIndex + 1;
+      const currentZIndex = selectedElement.properties?.zIndex || 1;
       if (currentZIndex > 1) {
         selectedElement.properties.zIndex = Math.max(1, currentZIndex - 1);
       }

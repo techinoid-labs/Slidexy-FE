@@ -1,13 +1,11 @@
-"use client";
-
 import React, { useEffect, useRef, useCallback, useState } from "react";
 import { Image as KonvaImage, Transformer } from "react-konva";
 import useImage from "use-image";
 import { useSlides } from "@/app/context/SlidesContext";
 import { constrainImageToCanvas, getSlideDimensions } from "../../../utils/slideUtils";
-
+import { v4 as uuidv4 } from "uuid";
 interface SlideImageProps {
-  image_id?: string;
+  image_id: string;
   url?: string;
   imageSrc?: string;
   x: number;
@@ -28,8 +26,8 @@ const SlideImage: React.FC<SlideImageProps> = ({
   imageSrc,
   x,
   y,
-  width,
-  height,
+  width: initialWidth,
+  height: initialHeight,
   opacity,
   shadow,
   borderRadius,
@@ -37,21 +35,26 @@ const SlideImage: React.FC<SlideImageProps> = ({
   zIndex,
   onSelect,
 }) => {
-  const imageOpacity = (opacity !== undefined && opacity !== null) ? opacity : 1;
+  const imageOpacity = opacity ?? 1;
   const imageShadow = shadow ?? { offsetX: 0, offsetY: 0, blur: 0, color: "#000000" };
   const imageBorderRadius = borderRadius ?? 0;
-
-  console.log(`[SlideImage] Received props: opacity=${imageOpacity}, shadow=${JSON.stringify(imageShadow)}, borderRadius=${imageBorderRadius} for image_id: ${image_id}`);
 
   const [image] = useImage(imageSrc || url || "");
   const imageRef = useRef<any>(null);
   const trRef = useRef<any>(null);
-  const { slides, setSlides, selectedSlideIndex, setSelectedImage, setIsAtBoundary } = useSlides();
+  const { slides, setSlides, selectedSlideIndex, setSelectedImage, setIsAtBoundary, setSelectedImageIndex } = useSlides();
   const [lastValidPos, setLastValidPos] = useState({ x, y });
+  const [dimensions, setDimensions] = useState({ width: initialWidth, height: initialHeight });
   const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
   const minSize = { width: 50, height: 50 };
   const padding = { left: 10, right: 10, top: 10, bottom: 10 };
 
+  // Sync dimensions with props when they change
+  useEffect(() => {
+    setDimensions({ width: initialWidth, height: initialHeight });
+  }, [initialWidth, initialHeight]);
+
+  // Attach Transformer to selected image
   useEffect(() => {
     if (isSelected && trRef.current && imageRef.current) {
       trRef.current.nodes([imageRef.current]);
@@ -62,18 +65,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
     }
   }, [isSelected]);
 
-  useEffect(() => {
-    if (imageRef.current) {
-      imageRef.current.opacity(imageOpacity);
-      imageRef.current.shadowOffsetX(imageShadow.offsetX);
-      imageRef.current.shadowOffsetY(imageShadow.offsetY);
-      imageRef.current.shadowBlur(imageShadow.blur);
-      imageRef.current.shadowColor(imageShadow.color);
-      imageRef.current.cornerRadius(imageBorderRadius);
-      imageRef.current.getLayer()?.batchDraw();
-    }
-  }, [imageOpacity, imageShadow, imageBorderRadius, image]);
-
+  // Update image properties (opacity, shadow, borderRadius)
   useEffect(() => {
     if (imageRef.current && image) {
       imageRef.current.opacity(imageOpacity);
@@ -82,14 +74,20 @@ const SlideImage: React.FC<SlideImageProps> = ({
       imageRef.current.shadowBlur(imageShadow.blur);
       imageRef.current.shadowColor(imageShadow.color);
       imageRef.current.cornerRadius(imageBorderRadius);
+      imageRef.current.width(dimensions.width);
+      imageRef.current.height(dimensions.height);
       imageRef.current.getLayer()?.batchDraw();
     }
-  }, [image, imageOpacity, imageShadow, imageBorderRadius]);
+  }, [image, imageOpacity, imageShadow, imageBorderRadius, dimensions]);
 
+  // Handle delete key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      const isTyping = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+      const isTyping =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable;
       if (isTyping) return;
 
       if ((e.key === "Delete" || e.key === "Backspace") && isSelected) {
@@ -100,31 +98,25 @@ const SlideImage: React.FC<SlideImageProps> = ({
         if (!currentSlide) return;
 
         if (url && !imageSrc) {
-          // background image
           currentSlide.image_url = null;
-          console.log("[SlideImage] Cleared slide.image_url");
         }
 
-        if (image_id) {
-          // Always delete by unique ID
+        if (imageSrc && image_id) {
           currentSlide.elements = currentSlide.elements.filter(
-            (el: any) =>
-              !(el.element_type === "image" &&
-                el.konva_component === "Konva.Image" &&
-                el.properties.image_id === image_id)
+            (el: any) => el.properties.image_id !== image_id
           );
-          console.log("[SlideImage] Removed image element by image_id");
         }
 
         setSlides(newSlides);
+        console.log("this is new slides", newSlides);
         setSelectedImage(null);
+        setSelectedImageIndex(null);
       }
-
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSelected, slides, url, imageSrc, image_id, selectedSlideIndex, setSlides, setSelectedImage]);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isSelected, slides, url, imageSrc, image_id, selectedSlideIndex, setSlides, setSelectedImage, setSelectedImageIndex]);
 
   const updateSlideImage = useCallback(
     (newProps: {
@@ -135,6 +127,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
       opacity?: number;
       shadow?: any;
       borderRadius?: number;
+      image_id?: string;
     }) => {
       if (!slides?.length || selectedSlideIndex < 0) return;
 
@@ -142,27 +135,21 @@ const SlideImage: React.FC<SlideImageProps> = ({
       const currentSlide = newSlides[selectedSlideIndex];
       if (!currentSlide) return;
 
-      const updatedOpacity =
-        newProps.opacity !== undefined ? newProps.opacity : imageOpacity;
-      const updatedShadow =
-        newProps.shadow !== undefined ? newProps.shadow : imageShadow;
-      const updatedBorderRadius =
-        newProps.borderRadius !== undefined
-          ? newProps.borderRadius
-          : imageBorderRadius;
+      const updatedOpacity = newProps.opacity !== undefined ? newProps.opacity : imageOpacity;
+      const updatedShadow = newProps.shadow !== undefined ? newProps.shadow : imageShadow;
+      const updatedBorderRadius = newProps.borderRadius !== undefined ? newProps.borderRadius : imageBorderRadius;
+      const effectiveImageId = image_id || uuidv4(); // Generate if missing
 
-      if (imageSrc) {
+      if (imageSrc && effectiveImageId) {
         const imageElementIndex = currentSlide.elements.findIndex(
-          (el: any) =>
-            el.element_type === "image" &&
-            el.konva_component === "Konva.Image" &&
-            el.properties.image_id === image_id
+          (el: any) => el.properties.image_id === effectiveImageId
         );
 
         if (imageElementIndex !== -1) {
-
-          currentSlide.elements[imageElementIndex].properties = {
-            ...currentSlide.elements[imageElementIndex].properties,
+          const element = currentSlide.elements[imageElementIndex];
+          element.properties = {
+            ...element.properties,
+            image_id: effectiveImageId,
             x: newProps.x,
             y: newProps.y,
             width: newProps.width,
@@ -171,16 +158,38 @@ const SlideImage: React.FC<SlideImageProps> = ({
             shadow: updatedShadow,
             borderRadius: updatedBorderRadius,
           };
+          setSelectedImage({
+            ...element,
+            konva_component: element.konva_component || "Konva.Image",
+            element_type: element.element_type || "image",
+            properties: { ...element.properties },
+          });
         } else {
+          const imageProperties = {
+            image_id: effectiveImageId,
+            imageSrc,
+            x: newProps.x,
+            y: newProps.y,
+            width: newProps.width,
+            height: newProps.height,
+            opacity: updatedOpacity,
+            shadow: updatedShadow,
+            borderRadius: updatedBorderRadius,
+          };
 
-          console.warn(
-            "[SlideImage] Tried to update but image not found (image_id:",
-            image_id,
-            ")"
-          );
+          currentSlide.elements.push({
+            element_type: "image",
+            konva_component: "Konva.Image",
+            properties: imageProperties,
+          });
+          setSelectedImage({
+            element_type: "image",
+            konva_component: "Konva.Image",
+            properties: imageProperties,
+          });
         }
       } else if (url) {
-        // background-style image
+        currentSlide.image_id = effectiveImageId;
         currentSlide.image_url = url;
         currentSlide.x = newProps.x;
         currentSlide.y = newProps.y;
@@ -192,81 +201,45 @@ const SlideImage: React.FC<SlideImageProps> = ({
       }
 
       setSlides(newSlides);
+      setDimensions({ width: newProps.width, height: newProps.height });
+      console.log("[KonvaSlideImage] Updated slide with new image properties:", newProps, "effective image_id:", effectiveImageId);
     },
-    [
-      slides,
-      selectedSlideIndex,
-      url,
-      imageSrc,
-      image_id,
-      imageOpacity,
-      imageShadow,
-      imageBorderRadius,
-      setSlides,
-    ]
+    [slides, selectedSlideIndex, url, imageSrc, image_id, imageOpacity, imageShadow, imageBorderRadius, setSlides, setSelectedImage]
   );
 
   const handleDragEnd = useCallback(() => {
     const node = imageRef.current;
     if (!node) return;
 
-    const { x, y, isAtBoundary } = constrainImageToCanvas(
-      node,
-      SLIDE_WIDTH,
-      SLIDE_HEIGHT,
-      padding
-    );
-
-    node.position({ x, y });
-
-
+    const { x, y, isAtBoundary } = constrainImageToCanvas(node, SLIDE_WIDTH, SLIDE_HEIGHT, padding);
     node.position({ x, y });
     setLastValidPos({ x, y });
     setIsAtBoundary(isAtBoundary);
 
-    // Save updated position to slides context
     updateSlideImage({ x, y, width: node.width(), height: node.height() });
-  }, [updateSlideImage]);
+  }, [updateSlideImage, SLIDE_WIDTH, SLIDE_HEIGHT, padding]);
+
   const handleTransformEnd = useCallback(() => {
     const node = imageRef.current;
     if (!node) return;
 
-    // Reset scale
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
     node.scaleX(1);
     node.scaleY(1);
 
-    // Apply new width/height
-    node.width(node.width() * scaleX);
-    node.height(node.height() * scaleY);
+    const newWidth = Math.max(minSize.width, node.width() * scaleX);
+    const newHeight = Math.max(minSize.height, node.height() * scaleY);
+    node.width(newWidth);
+    node.height(newHeight);
 
-    // Constrain with rotation-aware bounding box
-    const rect = node.getClientRect();
-    let newX = node.x();
-    let newY = node.y();
+    const { x, y, isAtBoundary } = constrainImageToCanvas(node, SLIDE_WIDTH, SLIDE_HEIGHT, padding);
+    node.position({ x, y });
+    setLastValidPos({ x, y });
+    setIsAtBoundary(isAtBoundary);
 
-    if (rect.x < padding.left) {
-      newX += padding.left - rect.x;
-    }
-    if (rect.y < padding.top) {
-      newY += padding.top - rect.y;
-    }
-    if (rect.x + rect.width > SLIDE_WIDTH - padding.right) {
-      newX -= rect.x + rect.width - (SLIDE_WIDTH - padding.right);
-    }
-    if (rect.y + rect.height > SLIDE_HEIGHT - padding.bottom) {
-      newY -= rect.y + rect.height - (SLIDE_HEIGHT - padding.bottom);
-    }
-
-    node.position({ x: newX, y: newY });
-    updateSlideImage({
-      x: newX,
-      y: newY,
-      width: node.width(),
-      height: node.height(),
-    });
-  }, [updateSlideImage, SLIDE_WIDTH, SLIDE_HEIGHT, padding]);
+    updateSlideImage({ x, y, width: newWidth, height: newHeight });
+  }, [updateSlideImage, SLIDE_WIDTH, SLIDE_HEIGHT, padding, minSize]);
 
   return (
     <>
@@ -277,8 +250,8 @@ const SlideImage: React.FC<SlideImageProps> = ({
         x={x}
         y={y}
         zIndex={zIndex}
-        width={width}
-        height={height}
+        width={dimensions.width}
+        height={dimensions.height}
         draggable
         onClick={onSelect}
         onTap={onSelect}
@@ -297,9 +270,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
-            // Only restrict scaling here (not rotation)
-            const minSize = 50;
-            if (newBox.width < minSize || newBox.height < minSize) {
+            if (newBox.width < minSize.width || newBox.height < minSize.height) {
               return oldBox;
             }
             return newBox;
@@ -311,10 +282,9 @@ const SlideImage: React.FC<SlideImageProps> = ({
             "top-left",
             "top-right",
             "bottom-left",
-            "bottom-right"
+            "bottom-right",
           ]}
         />
-
       )}
     </>
   );

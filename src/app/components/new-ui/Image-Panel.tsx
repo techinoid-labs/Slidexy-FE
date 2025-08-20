@@ -121,7 +121,7 @@ const RadiusPanel: React.FC<PanelProps & { initialValues: { borderRadius: number
 };
 
 const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onClose, style }) => {
-  const { slides, selectedImageIndex, selectedSlideIndex, setSlides, selectedImage, setSelectedImage, setSelectedImageIndex, bringElementForward, sendElementBackward } = useSlides();
+  const { slides, selectedImageIndex, selectedSlideIndex, setSlides, selectedImage, setSelectedImage, setSelectedImageIndex, setSelectedImageId, bringElementForward, sendElementBackward } = useSlides();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isOpacityPanelOpen, setIsOpacityPanelOpen] = useState(false);
   const [isShadowPanelOpen, setIsShadowPanelOpen] = useState(false);
@@ -168,40 +168,43 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
     updateImageProperty({ [prop]: value });
   };
 
-   const handleDuplicateImage = () => {
-     if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null)
-       return;
- 
-     const currentSlide = slides[selectedSlideIndex];
-     const elements = [...currentSlide.elements];
- 
-     const originalElement = elements[selectedImageIndex];
- 
-     const newElement = {
-       ...structuredClone(originalElement),
-       id: `el-${selectedSlideIndex}-${uuidv4()}`,
-       properties: {
-         ...structuredClone(originalElement.properties),
-         x: (originalElement.properties?.x || 0) + 20,
-         y: (originalElement.properties?.y || 0) + 20,
-       },
-     };
- 
-     elements.splice(selectedImageIndex + 1, 0, newElement);
- 
-     const updatedSlide = {
-       ...currentSlide,
-       elements,
-     };
- 
-     const updatedSlides = [...slides];
-     updatedSlides[selectedSlideIndex] = updatedSlide;
- 
-     setSlides(updatedSlides);
-     setSelectedImage(newElement);
-     setSelectedImageIndex(selectedImageIndex + 1);
-   };
-   
+  const handleDuplicateImage = () => {
+    if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null)
+      return;
+
+    const currentSlide = slides[selectedSlideIndex];
+    const elements = [...currentSlide.elements];
+
+    const originalElement = elements[selectedImageIndex];
+
+    const newImageId = uuidv4();
+    const newElement = {
+      ...structuredClone(originalElement),
+      id: `el-${selectedSlideIndex}-${uuidv4()}`,
+      properties: {
+        ...structuredClone(originalElement.properties),
+        image_id: newImageId,
+        x: (originalElement.properties?.x || 0) + 20,
+        y: (originalElement.properties?.y || 0) + 20,
+      },
+    };
+
+    elements.splice(selectedImageIndex + 1, 0, newElement);
+
+    const updatedSlide = {
+      ...currentSlide,
+      elements,
+    };
+
+    const updatedSlides = [...slides];
+    updatedSlides[selectedSlideIndex] = updatedSlide;
+
+    setSlides(updatedSlides);
+    setSelectedImage(newElement);
+    setSelectedImageIndex(selectedImageIndex + 1);
+    setSelectedImageId(newImageId);
+  };
+
   const handleDeleteImage = () => {
     if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
     const updatedSlides = structuredClone(slides);
@@ -268,7 +271,7 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
 
   return (
     <>
-      <Box sx={{ width: "100%", height: 60, bgcolor: "#fff", borderTop: "1px solid #E0E0E0", display: "flex", flexDirection: "row", justifyContent: "center", py: 1.2, overflow: "auto", zIndex: 3, boxSizing: "border-box", position: "fixed", bottom: 83, paddingLeft: 10, paddingRight: 3, left: 0, gap: 1.5 }}>
+      <Box sx={{ width: "100%", height: 60, bgcolor: "#fff", borderTop: "1px solid #E0E0E0", display: "flex", flexDirection: "row", justifyContent: "center", py: 1.2, overflow: "auto", zIndex: 3, boxSizing: "border-box", position: "fixed", bottom: 83, paddingLeft: 20, paddingRight: 3, left: 10, gap: 1.5 }}>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <IconButton onClick={handleDuplicateImage} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }}><img src="/duplicate-icon.svg" alt="duplicate" style={{ width: 15, height: 15 }} /></IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5 }}>Duplicate</Typography>

@@ -102,7 +102,7 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                 bottom: 0,
                 left: "8%",
                 width: window.innerWidth * 0.84,
-                height: window.innerHeight * 0.6,
+                height: window.innerHeight * 0.46,
                 bgcolor: "#fff",
                 border: "1px solid #E0E0E0",
                 zIndex: 10,

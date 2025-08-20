@@ -18,12 +18,14 @@ import { v4 as uuidv4 } from "uuid";
 
 interface KonvaShapeRendererProps {
   elements: any[];
+  selectedShapeId: string | null;
   selectedShapeIndex: number | null;
-  onSelectShape: (index: number | null) => void;
+  onSelectShape: (index: number | null, shapeId: string | null) => void;
 }
 
 const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
   elements,
+  selectedShapeId,
   selectedShapeIndex,
   onSelectShape,
 }) => {
@@ -49,33 +51,29 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
 
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
-        selectedShapeIndex !== null
+        selectedShapeId
       ) {
         e.preventDefault();
 
         const updatedSlides = structuredClone(slides);
-        const selectedShape = elements[selectedShapeIndex];
-        if (!selectedShape || !selectedShape.shape_id) return;
-
         updatedSlides[slideIdx].elements = updatedSlides[slideIdx].elements.filter(
-          (el: any) => el.shape_id !== selectedShape.shape_id
+          (el: any) => el.shape_id !== selectedShapeId
         );
         setSlides(updatedSlides);
         setSelectedShapeId(null);
-        onSelectShape(null);
+        onSelectShape(null, null);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
-    selectedShapeIndex,
+    selectedShapeId,
     slides,
     setSlides,
     slideIdx,
     onSelectShape,
     setSelectedShapeId,
-    elements,
   ]);
 
   // Attach transformer when shape is selected
@@ -95,14 +93,21 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
       {elements.map((el: any, i: number) => {
         if (el.element_type !== "shape") return null;
 
-        // Ensure shape_id exists
-        const safeShapeId = el.shape_id || el.element_id || uuidv4();
+        // Ensure shape_id exists - use existing or generate new one
+        const safeShapeId = el.shape_id || uuidv4();
 
+        // Log warning if shape_id was missing
         if (!el.shape_id) {
           console.warn(
-            `Shape at index ${i} was missing shape_id. Using generated ID: ${safeShapeId}`
+            `Shape at index ${i} was missing shape_id. Generated ID: ${safeShapeId}`
           );
+          // Update the element with the new shape_id immediately
+          const updatedSlides = structuredClone(slides);
+          updatedSlides[slideIdx].elements[i].shape_id = safeShapeId;
+          setSlides(updatedSlides);
         }
+
+        const isSelected = selectedShapeId === safeShapeId;
 
         const commonProps = {
           ref: (node: any) => (shapeRefs.current[i] = node),
@@ -111,174 +116,162 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
           ...el.properties,
           draggable: true,
           onClick: () => {
-            onSelectShape(i);
+            onSelectShape(i, safeShapeId);
             setSelectedShapeId(safeShapeId);
           },
           onTap: () => {
-            onSelectShape(i);
+            onSelectShape(i, safeShapeId);
             setSelectedShapeId(safeShapeId);
           },
           onMouseDown: () => {
-            onSelectShape(i);
+            onSelectShape(i, safeShapeId);
             setSelectedShapeId(safeShapeId);
           },
           onTouchStart: () => {
-            onSelectShape(i);
+            onSelectShape(i, safeShapeId);
             setSelectedShapeId(safeShapeId);
           },
-onTransformEnd: () => {
-  const node = shapeRefs.current[i];
-  if (!node) return;
+          onTransformEnd: () => {
+            const node = shapeRefs.current[i];
+            if (!node) return;
 
-  const shapeType = el.konva_component;
-  const updated = { ...el.properties };
+            const shapeType = el.konva_component;
+            const updated = { ...el.properties };
 
-  const scaleX = node.scaleX();
-  const scaleY = node.scaleY();
+            const scaleX = node.scaleX();
+            const scaleY = node.scaleY();
 
-  // Always update position first
-  updated.x = node.x();
-  updated.y = node.y();
+            // Position
+            updated.x = node.x();
+            updated.y = node.y();
 
-  // --- Handle each shape separately ---
-  if (shapeType === "Konva.Rect") {
-    updated.width = Math.max(50, node.width() * scaleX);
-    updated.height = Math.max(50, node.height() * scaleY);
-  }
+            // --- Handle each shape separately ---
+            if (shapeType === "Konva.Rect") {
+              updated.width = Math.max(50, node.width() * scaleX);
+              updated.height = Math.max(50, node.height() * scaleY);
+            }
 
-  if (shapeType === "Konva.Ellipse") {
-    updated.radiusX = Math.max(25, node.radiusX() * scaleX);
-    updated.radiusY = Math.max(25, node.radiusY() * scaleY);
-    updated.width = updated.radiusX * 2;
-    updated.height = updated.radiusY * 2;
-  }
+            if (shapeType === "Konva.Ellipse") {
+              updated.radiusX = Math.max(25, node.radiusX() * scaleX);
+              updated.radiusY = Math.max(25, node.radiusY() * scaleY);
+              updated.width = updated.radiusX * 2;
+              updated.height = updated.radiusY * 2;
+            }
 
-  if (shapeType === "Konva.RegularPolygon") {
-    updated.radius = Math.max(25, node.radius() * Math.max(scaleX, scaleY));
-    updated.width = updated.radius * 2;
-    updated.height = updated.radius * 2;
-  }
+            if (shapeType === "Konva.RegularPolygon") {
+              updated.radius = Math.max(25, node.radius() * Math.max(scaleX, scaleY));
+              updated.width = updated.radius * 2;
+              updated.height = updated.radius * 2;
+            }
 
-  if (shapeType === "Konva.Circle") {
-    updated.radius = Math.max(25, node.radius() * Math.max(scaleX, scaleY));
-    updated.width = updated.radius * 2;
-    updated.height = updated.radius * 2;
-  }
+            if (shapeType === "Konva.Circle") {
+              updated.radius = Math.max(25, node.radius() * Math.max(scaleX, scaleY));
+              updated.width = updated.radius * 2;
+              updated.height = updated.radius * 2;
+            }
 
-  if (shapeType === "Konva.Star") {
-    updated.outerRadius = Math.max(25, node.outerRadius() * Math.max(scaleX, scaleY));
-    updated.innerRadius = updated.outerRadius / 2;
-    updated.width = updated.outerRadius * 2;
-    updated.height = updated.outerRadius * 2;
-  }
+            if (shapeType === "Konva.Star") {
+              updated.outerRadius = Math.max(
+                25,
+                node.outerRadius() * Math.max(scaleX, scaleY)
+              );
+              updated.innerRadius = updated.outerRadius / 2;
+              updated.width = updated.outerRadius * 2;
+              updated.height = updated.outerRadius * 2;
+            }
 
-  if (shapeType === "Konva.Line" || shapeType === "Konva.Arrow") {
-    updated.points = node.points().map((point: number, idx: number) =>
-      idx % 2 === 0 ? point * scaleX : point * scaleY
-    );
-    const xs = updated.points.filter((_: any, idx: number) => idx % 2 === 0);
-    const ys = updated.points.filter((_: any, idx: number) => idx % 2 !== 0);
-    updated.width = Math.max(30, Math.max(...xs) - Math.min(...xs));
-    updated.height = Math.max(30, Math.max(...ys) - Math.min(...ys));
-  }
+            if (shapeType === "Konva.Line" || shapeType === "Konva.Arrow") {
+              updated.points = node.points().map((point: number, idx: number) =>
+                idx % 2 === 0 ? point * scaleX : point * scaleY
+              );
+              const xs = updated.points.filter((_: any, idx: number) => idx % 2 === 0);
+              const ys = updated.points.filter((_: any, idx: number) => idx % 2 !== 0);
+              updated.width = Math.max(30, Math.max(...xs) - Math.min(...xs));
+              updated.height = Math.max(30, Math.max(...ys) - Math.min(...ys));
+            }
 
-  if (shapeType === "Konva.Arc" || shapeType === "Konva.Wedge") {
-    updated.width = Math.max(50, node.width() * scaleX);
-    updated.height = Math.max(50, node.height() * scaleY);
-  }
+            if (shapeType === "Konva.Arc" || shapeType === "Konva.Wedge") {
+              updated.width = Math.max(50, node.width() * scaleX);
+              updated.height = Math.max(50, node.height() * scaleY);
+            }
 
-  // Reset Konva's internal scale
-  node.scaleX(1);
-  node.scaleY(1);
+            // Reset Konva's internal scale
+            node.scaleX(1);
+            node.scaleY(1);
 
-  // Restrict bounds using NEW dimensions
-  const bounds = restrictShapeBounds(updated.x, updated.y, shapeType, updated);
+            // Restrict bounds
+            const bounds = restrictShapeBounds(updated.x, updated.y, shapeType, updated);
+            updated.x = bounds.x;
+            updated.y = bounds.y;
 
-  // Apply position and dimensions
-  updated.x = bounds.x;
-  updated.y = bounds.y;
-  node.x(updated.x);
-  node.y(updated.y);
+            // Save back immutably using shape_id for identification
+            const updatedSlides = slides.map((s, idx) =>
+              idx === slideIdx
+                ? {
+                    ...s,
+                    elements: s.elements.map((e: any) =>
+                      e.shape_id === safeShapeId ? { ...e, properties: updated } : e
+                    ),
+                  }
+                : s
+            );
 
-  if (shapeType === "Konva.Circle") {
-    node.radius(updated.radius);
-  }
-  if (shapeType === "Konva.Rect") {
-    node.width(updated.width);
-    node.height(updated.height);
-  }
-  if (shapeType === "Konva.RegularPolygon") {
-    node.radius(updated.radius);
-  }
-  if (shapeType === "Konva.Ellipse") {
-    node.radiusX(updated.radiusX);
-    node.radiusY(updated.radiusY);
-  }
-  if (shapeType === "Konva.Star") {
-    node.outerRadius(updated.outerRadius);
-    node.innerRadius(updated.innerRadius);
-  }
-  if (shapeType === "Konva.Line" || shapeType === "Konva.Arrow") {
-    node.points(updated.points);
-  }
+            setSlides(updatedSlides);
+            setSelectedShapeId(safeShapeId);
+            node.getLayer()?.batchDraw();
+          },
+          onDragEnd: () => {
+            const node = shapeRefs.current[i];
+            if (!node) return;
 
-  // Save back to slides
-  const updatedSlides = structuredClone(slides);
-  const shapeElement = updatedSlides[slideIdx].elements.find(
-    (e: any) => e.shape_id === safeShapeId
-  );
+            const shapeType = el.konva_component;
+            const shapeProps = { ...el.properties };
 
-  if (shapeElement) {
-    shapeElement.properties = updated;
-    setSlides(updatedSlides);
-    setSelectedShapeId(safeShapeId);
-  }
+            // Ensure width/height for some shapes
+            if (shapeType === "Konva.Ellipse") {
+              shapeProps.width = (shapeProps.radiusX || 25) * 2;
+              shapeProps.height = (shapeProps.radiusY || 25) * 2;
+            } else if (shapeType === "Konva.RegularPolygon") {
+              shapeProps.width = (shapeProps.radius || 25) * 2;
+              shapeProps.height = (shapeProps.radius || 25) * 2;
+            }
 
-  node.getLayer()?.batchDraw();
-}
-          ,
-onDragEnd: () => {
-  const node = shapeRefs.current[i];
-  if (!node) return;
+            const bounds = restrictShapeBounds(node.x(), node.y(), shapeType, shapeProps);
 
-  const shapeType = el.konva_component;
-  const shapeProps = { ...el.properties };
+            node.x(bounds.x);
+            node.y(bounds.y);
 
-  // Ensure width and height are set for ellipses and polygons
-  if (shapeType === "Konva.Ellipse") {
-    shapeProps.width = (shapeProps.radiusX || 50 / 2) * 2;
-    shapeProps.height = (shapeProps.radiusY || 50 / 2) * 2;
-  } else if (shapeType === "Konva.RegularPolygon") {
-    shapeProps.width = (shapeProps.radius || 50 / 2) * 2;
-    shapeProps.height = (shapeProps.radius || 50 / 2) * 2;
-  }
+            // Save immutably using shape_id for identification
+            const updatedSlides = slides.map((s, idx) =>
+              idx === slideIdx
+                ? {
+                    ...s,
+                    elements: s.elements.map((e: any) =>
+                      e.shape_id === safeShapeId
+                        ? {
+                            ...e,
+                            properties: {
+                              ...e.properties,
+                              x: bounds.x,
+                              y: bounds.y,
+                            },
+                          }
+                        : e
+                    ),
+                  }
+                : s
+            );
 
-  const bounds = restrictShapeBounds(node.x(), node.y(), shapeType, shapeProps);
-
-  node.x(bounds.x);
-  node.y(bounds.y);
-
-  const updatedSlides = structuredClone(slides);
-  const shapeElement = updatedSlides[slideIdx].elements.find(
-    (e: any) => e.shape_id === safeShapeId
-  );
-
-  if (shapeElement) {
-    shapeElement.properties.x = bounds.x;
-    shapeElement.properties.y = bounds.y;
-    setSlides(updatedSlides);
-    setSelectedShapeId(safeShapeId);
-  }
-
-  node.getLayer()?.batchDraw();
-},
+            setSlides(updatedSlides);
+            setSelectedShapeId(safeShapeId);
+            node.getLayer()?.batchDraw();
+          },
         };
 
         switch (el.konva_component) {
           case "Konva.Circle":
             return <Circle key={`shape-${safeShapeId}`} {...commonProps} />;
           case "Konva.Rect":
-
             return <Rect key={`shape-${safeShapeId}`} {...commonProps} />;
           case "Konva.RegularPolygon":
             return <RegularPolygon key={`shape-${safeShapeId}`} {...commonProps} />;
@@ -314,44 +307,44 @@ onDragEnd: () => {
       })}
 
       {selectedShapeIndex !== null && (
-<Transformer
-  ref={trRef}
-  rotateEnabled={true}
-  enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
-  boundBoxFunc={(oldBox, newBox) => {
-    const MIN_SIZE = 50;
-    const MAX_SIZE = 300;
+        <Transformer
+          ref={trRef}
+          rotateEnabled={true}
+          enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
+          boundBoxFunc={(oldBox, newBox) => {
+            const MIN_SIZE = 50;
+            const MAX_SIZE = 300;
 
-    // Get shape properties
-    const shape = elements[selectedShapeIndex];
-    const shapeType = shape?.konva_component;
-    let width = newBox.width;
-    let height = newBox.height;
+            // Get shape properties
+            const shape = elements[selectedShapeIndex];
+            const shapeType = shape?.konva_component;
+            let width = newBox.width;
+            let height = newBox.height;
 
-    // Adjust width and height for specific shapes
-    if (shapeType === "Konva.Ellipse") {
-      width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newBox.width));
-      height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newBox.height));
-    } else if (shapeType === "Konva.RegularPolygon") {
-      const radius = Math.max(MIN_SIZE / 2, Math.min(MAX_SIZE / 2, Math.max(newBox.width, newBox.height) / 2));
-      width = height = radius * 2;
-    } else {
-      width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newBox.width));
-      height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newBox.height));
-    }
+            // Adjust width and height for specific shapes
+            if (shapeType === "Konva.Ellipse") {
+              width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newBox.width));
+              height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newBox.height));
+            } else if (shapeType === "Konva.RegularPolygon") {
+              const radius = Math.max(MIN_SIZE / 2, Math.min(MAX_SIZE / 2, Math.max(newBox.width, newBox.height) / 2));
+              width = height = radius * 2;
+            } else {
+              width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newBox.width));
+              height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newBox.height));
+            }
 
-    // Apply position constraints
-    const bounds = restrictShapeBounds(newBox.x, newBox.y, shapeType, { width, height });
+            // Apply position constraints
+            const bounds = restrictShapeBounds(newBox.x, newBox.y, shapeType, { width, height });
 
-    return {
-      ...newBox,
-      x: bounds.x,
-      y: bounds.y,
-      width,
-      height,
-    };
-  }}
-/>
+            return {
+              ...newBox,
+              x: bounds.x,
+              y: bounds.y,
+              width,
+              height,
+            };
+          }}
+        />
       )}
     </>
   );

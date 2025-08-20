@@ -15,6 +15,8 @@ import { applyElementPositioning } from "@/utils/slideTextPositioningUtils";
 import TextSettingsPanelMobile from "../components/new-ui/Text-Panel";
 import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
 import { useDispatch } from "react-redux";
+import { v4 as uuidv4 } from "uuid";
+
 const getDynamicConstants = () => {
   const {
     SLIDE_WIDTH,
@@ -39,6 +41,7 @@ const getDynamicConstants = () => {
     textMaxHeight,
   };
 };
+
 const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const {
     selectedImageIndex,
@@ -64,8 +67,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scale, setScale] = useState(1);
-  // console.log(slides);
   const dispatch = useDispatch();
+
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
     const newSlides = [...slides, structuredClone(newSlide)];
@@ -90,6 +93,11 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   }, []);
 
   useEffect(() => {
+    const positionedSlides = applyElementPositioning(slides, selectedTheme);
+    setSlides(positionedSlides);
+  }, [slides?.length]);
+
+  useEffect(() => {
     const updateScale = () => {
       const slideWidth = getDynamicConstants().SLIDE_WIDTH;
       const slideHeight = getDynamicConstants().SLIDE_HEIGHT;
@@ -103,6 +111,25 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
   }, []);
+
+  // Assign image_id to images that don't have it
+  useEffect(() => {
+    const updatedSlides = structuredClone(slides);
+    let changed = false;
+    updatedSlides.forEach((slide : any ) => {
+      slide.elements.forEach((el : any) => {
+        if (el.element_type === "image" && !el.properties.image_id) {
+          el.properties.image_id = uuidv4();
+          changed = true;
+        }
+      });
+    });
+    if (changed) {
+      setSlides(updatedSlides);
+      console.log("[SlideEditor] Assigned missing image_ids to images");
+    }
+  }, [slides, setSlides]);
+
   const deselectAll = () => {
     setSelectedTextId(null);
     setSelectedImageIndex(null);
@@ -122,11 +149,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       }}
     >
       {slides.map((slide: any, index: number) => {
+        console.log("[SlideEditor] Processing slide", index, slide);
         const title = slide.slide_title;
         const titleProps = title.properties;
         const titleY = 25;
-        // const bulletGap = 10;
-        // const bulletStartY = titleY + titleProps.fontSize + 20;
 
         return (
           <Box
@@ -153,10 +179,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   e.target === e.target.getStage() ||
                   e.target.name() === "background";
                 if (clickedOnEmpty) {
-                  setSelectedTextId(null);
-                  setSelectedImageIndex(null);
-                  setSelectedShapeIndex(null);
-                  setSelectedImage(null);
+                  deselectAll();
                   setTooltip({ visible: false, x: 0, y: 0, node: null });
                   setIsMobileImageSelected(false);
                 }
@@ -167,10 +190,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   e.target.name() === "background";
 
                 if (clickedOnEmpty) {
-                  setSelectedTextId(null);
-                  setSelectedImageIndex(null);
-                  setSelectedShapeIndex(null);
-                  setSelectedImage(null);
+                  deselectAll();
                   setTooltip({ visible: false, x: 0, y: 0, node: null });
                   setIsMobileImageSelected(false);
                 }
@@ -184,19 +204,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     y={0}
                     width={getDynamicConstants().SLIDE_WIDTH}
                     height={getDynamicConstants().SLIDE_HEIGHT}
-                    onClick={() => {
-                      setSelectedTextId(null);
-                      setSelectedImageIndex(null);
-                      setSelectedShapeIndex(null);
-                      setIsMobileImageSelected(false);
-                      setSelectedImage(null);
-                      setTooltip({
-                        visible: false,
-                        x: 0,
-                        y: 0,
-                        node: null,
-                      });
-                    }}
+                    onClick={deselectAll}
                   />
                 ) : (
                   <Rect
@@ -205,18 +213,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     y={0}
                     width={getDynamicConstants().SLIDE_WIDTH}
                     height={getDynamicConstants().SLIDE_HEIGHT}
-                    onClick={() => {
-                      setSelectedTextId(null);
-                      setSelectedImageIndex(null);
-                      setSelectedShapeIndex(null);
-                      setSelectedImage(null);
-                      setTooltip({
-                        visible: false,
-                        x: 0,
-                        y: 0,
-                        node: null,
-                      });
-                    }}
+                    onClick={deselectAll}
                     fill={selectedTheme?.backgroundColor || "#fff"}
                   />
                 )}
@@ -229,79 +226,73 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 />
 
                 {title.text && (
-                  <>
-                    <KonvaTextEditor
-                      key={`title-${index}-${titleProps.fontFamily || "Roboto"
-                        }-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"
-                        }-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"
-                        }-${titleProps.fill || "#000"}-${titleProps.opacity || 1
-                        }`}
-                      id={`title-${index}`}
-                      text={title.text}
-                      x={titleProps.x || titleY}
-                      y={titleProps.y || getDynamicConstants().LEFT_PADDING}
-                      zIndex={titleProps.zIndex}
-                      width={(() => {
-                        const textWidth =
-                          getDynamicConstants().textMaxWidth + 200;
-                        const canvas = document.createElement("canvas");
-                        const context = canvas.getContext("2d");
-                        const fontSize = titleProps.fontSize || 14;
-                        const fontFamily = titleProps.fontFamily || "Roboto";
-                        context!.font = `${fontSize}px ${fontFamily}`;
-                        const words = title.text.split(" ");
-                        let lines = [];
-                        let line = "";
+                  <KonvaTextEditor
+                    key={`title-${index}-${titleProps.fontFamily || "Roboto"
+                      }-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"
+                      }-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"
+                      }-${titleProps.fill || "#000"}-${titleProps.opacity || 1
+                      }`}
+                    id={`title-${index}`}
+                    text={title.text}
+                    x={titleProps.x || titleY}
+                    y={titleProps.y || getDynamicConstants().LEFT_PADDING}
+                    zIndex={titleProps.zIndex}
+                    width={(() => {
+                      const textWidth =
+                        getDynamicConstants().textMaxWidth + 200;
+                      const canvas = document.createElement("canvas");
+                      const context = canvas.getContext("2d");
+                      const fontSize = titleProps.fontSize || 14;
+                      const fontFamily = titleProps.fontFamily || "Roboto";
+                      context!.font = `${fontSize}px ${fontFamily}`;
+                      const words = title.text.split(" ");
+                      let lines = [];
+                      let line = "";
 
-                        for (let word of words) {
-                          const testLine = line + word + " ";
-                          const metrics = context!.measureText(testLine);
-                          if (metrics.width > textWidth && line !== "") {
-                            lines.push(line.trim());
-                            line = word + " ";
-                          } else {
-                            line = testLine;
-                          }
+                      for (let word of words) {
+                        const testLine = line + word + " ";
+                        const metrics = context!.measureText(testLine);
+                        if (metrics.width > textWidth && line !== "") {
+                          lines.push(line.trim());
+                          line = word + " ";
+                        } else {
+                          line = testLine;
                         }
-                        if (line) lines.push(line.trim());
-
-                        // Return the calculated width with more padding and less right constraint
-                        return Math.min(
-                          textWidth + 200,
-                          window.innerWidth - 80
-                        ); // Reduced right padding constraint
-                      })()}
-                      // width={getDynamicConstants().textMaxWidth}
-                      wrap="word"
-                      fontSize={titleProps.fontSize}
-                      fontWeight={titleProps.fontWeight}
-                      fontFamily={titleProps.fontFamily}
-                      opacity={titleProps.opacity}
-                      align={titleProps.align}
-                      verticalAlign={titleProps.verticalAlign}
-                      fill={
-                        !title.useThemeColor
-                          ? titleProps.fill
-                          : selectedTheme?.primaryColor ?? "#000"
                       }
-                      fontStyle={titleProps.fontStyle}
-                      isSelected={selectedTextId === `title-${index}`}
-                      onSelect={() => {
-                        setSelectedTextId(`title-${index}`);
-                        setSelectedImageIndex(null);
-                        setSelectedShapeIndex(null);
-                        setSelectedImage(null);
-                        setTooltip({
-                          visible: true,
-                          x:
-                            titleProps.x ||
-                            getDynamicConstants().LEFT_PADDING + 100,
-                          y: (titleProps.y || titleY) - 40,
-                          node: null,
-                        });
-                      }}
-                    />
-                  </>
+                      if (line) lines.push(line.trim());
+
+                      return Math.min(
+                        textWidth + 200,
+                        window.innerWidth - 80
+                      );
+                    })()}
+                    wrap="word"
+                    fontSize={titleProps.fontSize}
+                    fontWeight={titleProps.fontWeight}
+                    fontFamily={titleProps.fontFamily}
+                    opacity={titleProps.opacity}
+                    align={titleProps.align}
+                    verticalAlign={titleProps.verticalAlign}
+                    fill={
+                      !title.useThemeColor
+                        ? titleProps.fill
+                        : selectedTheme?.primaryColor ?? "#000"
+                    }
+                    fontStyle={titleProps.fontStyle}
+                    isSelected={selectedTextId === `title-${index}`}
+                    onSelect={() => {
+                      deselectAll();
+                      setSelectedTextId(`title-${index}`);
+                      setTooltip({
+                        visible: true,
+                        x:
+                          titleProps.x ||
+                          getDynamicConstants().LEFT_PADDING + 100,
+                        y: (titleProps.y || titleY) - 40,
+                        node: null,
+                      });
+                    }}
+                  />
                 )}
                 {slide.elements.map((el: any, i: number) => {
                   if (
@@ -310,7 +301,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   )
                     return null;
 
-                  // if (el.element_type !== "text") return null;
                   return (
                     <KonvaTextEditor
                       key={`el-${index}-${i}`}
@@ -323,11 +313,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         el.properties.width ||
                         getDynamicConstants().textMaxWidth -
                         (el.element_type === "bullet_point" ? 20 : 0)
-                        // x={el.properties.x || getDynamicConstants().LEFT_PADDING}
-                        // y={el.properties.y || 300}
-                        // width={
-                        //   el.properties.width ||
-                        //   getDynamicConstants().textMaxWidth
                       }
                       opacity={el.properties.opacity}
                       align={el.properties.align}
@@ -346,14 +331,10 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       }
                       fontStyle={el.properties.fontStyle}
                       fontWeight={el.properties.fontWeight}
-                      // fontFamily={el.properties.fontFamily}
                       isSelected={selectedTextId === `el-${index}-${i}`}
                       onSelect={() => {
+                        deselectAll();
                         setSelectedTextId(`el-${index}-${i}`);
-                        setSelectedImageIndex(null);
-                        setSelectedShapeIndex(null);
-                        setSelectedImage(null);
-                        setIsMobileImageSelected(false);
                         setTooltip({
                           visible: true,
                           x: 10,
@@ -364,24 +345,22 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     />
                   );
                 })}
-                <KonvaShapeRenderer
+                 <KonvaShapeRenderer
                   elements={slide.elements}
+                  selectedShapeId={selectedShapeId}
                   selectedShapeIndex={selectedShapeIndex}
-                  onSelectShape={(i) => {
-                    setSelectedShapeIndex(i);
-                    selectedShapeId === `el-${index}-${i}`;
-                    setSelectedShapeId(`el-${index}-${i}`);
-                    setSelectedTextId(null);
-                    setSelectedImageIndex(null);
-                    setSelectedImage(null);
+                  onSelectShape={(shapeIndex, shapeId) => {
+                    deselectAll();
+                    setSelectedShapeIndex(shapeIndex);
+                    setSelectedShapeId(shapeId);
                   }}
                 />
-               {slide.elements.map((el: any, i: number) => {
+                {slide.elements.map((el: any, i: number) => {
                   if (el.element_type === "image" && el.konva_component === "Konva.Image") {
                     return (
                       <SlideImage
-                        key={i}
-                        image_id={`el-${index}-${i}`}
+                        key={`image-${index}-${i}-${el.properties.image_id}`}
+                        image_id={el.properties.image_id}
                         imageSrc={el.properties.imageSrc}
                         x={el.properties.x}
                         y={el.properties.y}
@@ -391,11 +370,11 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         opacity={el.properties.opacity}
                         shadow={el.properties.shadow}
                         borderRadius={el.properties.borderRadius}
-                        isSelected={selectedImageId === `el-${index}-${i}`}
+                        isSelected={selectedImageId === el.properties.image_id}
                         onSelect={() => {
                           deselectAll();
                           setSelectedImage({ ...el });
-                          setSelectedImageId(`el-${index}-${i}`);
+                          setSelectedImageId(el.properties.image_id);
                           setSelectedImageIndex(i);
                           setIsMobileImageSelected(true);
                         }}
@@ -404,7 +383,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   }
                   return null;
                 })}
-                
               </Layer>
             </Stage>
           </Box>
@@ -429,42 +407,20 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
             setIsMobileImageSelected(false);
             setSelectedImageIndex(null);
             setSelectedImage(null);
+            setSelectedImageId(null);
           }}
           resetAll={() => {
-            //dispatch(setSlidesAction(initialSlides));
             setSelectedTextId(null);
             setSelectedImageIndex(null);
             setSelectedImage(null);
-            //setIsMobileTextSelected(false);
+            setSelectedImageId(null);
             setIsMobileImageSelected(false);
           }}
         />
       )}
-      {/* <SlidePreviews
-                    slides={slides}
-                    //scale={scale}
-                    selectedIndex={selectedIndex}
-                    slide_width={getDynamicConstants().SLIDE_WIDTH}
-                    slide_height={getDynamicConstants().SLIDE_HEIGHT_MOBILE + 10}
-                    onSelect={setSelectedIndex}
-                    onAddSlide={handleAddSlide}
-                    onDeleteSlide={handleDeleteSlide}
-                /> */}
-      {/* <Box
-                sx={{
-                    transform: `scale(${scale})`,
-                    width: `${(getDynamicConstants().SLIDE_WIDTH)}px`,
-                    height: `${getDynamicConstants().SLIDE_HEIGHT}px`,
-                    marginTop: -100,
-                    position: "fixed",
-                    //left: 20,
-                    zIndex: 2,
-                }}
-            > */}
       <Box sx={{ transform: `scale(${scale})` }}>
         <SlidePreviews
           slides={slides}
-          //scale={scale}
           selectedIndex={selectedIndex}
           slide_width={getDynamicConstants().SLIDE_WIDTH}
           slide_height={getDynamicConstants().SLIDE_HEIGHT_MOBILE + 10}
@@ -473,7 +429,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           onDeleteSlide={handleDeleteSlide}
         />
       </Box>
-      {/* </Box>  */}
     </Box>
   );
 };

@@ -89,13 +89,49 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  // Function to deselect all elements
+  // Assign image_id to images that don't have it
+  useEffect(() => {
+    const updatedSlides = structuredClone(slides);
+    let changed = false;
+    updatedSlides.forEach((slide : any) => {
+      slide.elements.forEach((el : any) => {
+        if (el.element_type === "image" && !el.properties.image_id) {
+          el.properties.image_id = uuidv4();
+          changed = true;
+        }
+      });
+    });
+    if (changed) {
+      setSlides(updatedSlides);
+      console.log("[SlideEditor] Assigned missing image_ids to images");
+    }
+  }, [slides, setSlides]);
+
+  // Assign shape_id to shapes that don't have it
+  useEffect(() => {
+    const updatedSlides = structuredClone(slides);
+    let changed = false;
+    updatedSlides.forEach((slide : any) => {
+      slide.elements.forEach((el: any) => {
+        if (el.element_type === "shape" && !el.shape_id) {
+          el.shape_id = uuidv4();
+          changed = true;
+          console.log(`[SlideEditor] Assigned shape_id ${el.shape_id} to shape element`, el);
+        }
+      });
+    });
+    if (changed) {
+      setSlides(updatedSlides);
+      console.log("[SlideEditor] Assigned missing shape_ids to shapes");
+    }
+  }, [slides, setSlides]);
+
   const deselectAll = () => {
     setSelectedTextId(null);
     setSelectedImageIndex(null);
     setSelectedShapeIndex(null);
     setSelectedImage(null);
-    setSelectedImageId(null); 
+    setSelectedImageId(null);
     setSelectedShapeId(null);
   };
 
@@ -138,7 +174,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   e.target === e.target.getStage() ||
                   e.target.name() === "background";
                 if (clickedOnEmpty) {
-                  deselectAll(); // Deselect all elements, including image
+                  deselectAll();
                 }
               }}
               onTouchStart={(e) => {
@@ -146,7 +182,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   e.target === e.target.getStage() ||
                   e.target.name() === "background";
                 if (clickedOnEmpty) {
-                  deselectAll(); // Deselect all elements, including image
+                  deselectAll();
                 }
               }}
             >
@@ -230,7 +266,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     fontStyle={titleProps.fontStyle}
                     isSelected={selectedTextId === `title-${index}`}
                     onSelect={() => {
-                      deselectAll(); // Deselect all before selecting text
+                      deselectAll();
                       setSelectedTextId(`title-${index}`);
                     }}
                   />
@@ -274,7 +310,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       fontWeight={el.properties.fontWeight}
                       isSelected={selectedTextId === `el-${index}-${i}`}
                       onSelect={() => {
-                        deselectAll(); // Deselect all before selecting text
+                        deselectAll();
                         setSelectedTextId(`el-${index}-${i}`);
                       }}
                     />
@@ -282,19 +318,20 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                 })}
                 <KonvaShapeRenderer
                   elements={slide.elements}
+                  selectedShapeId={selectedShapeId}
                   selectedShapeIndex={selectedShapeIndex}
-                  onSelectShape={(i) => {
-                    deselectAll(); // Deselect all before selecting shape
-                    setSelectedShapeIndex(i);
-                    setSelectedShapeId(`el-${index}-${i}`);
+                  onSelectShape={(shapeIndex, shapeId) => {
+                    deselectAll();
+                    setSelectedShapeIndex(shapeIndex);
+                    setSelectedShapeId(shapeId);
                   }}
                 />
-                               {slide.elements.map((el: any, i: number) => {
+                {slide.elements.map((el: any, i: number) => {
                   if (el.element_type === "image" && el.konva_component === "Konva.Image") {
                     return (
                       <SlideImage
-                        key={`image-${i}`}
-                        image_id={`el-${index}-${i}`}
+                        key={`image-${index}-${i}-${el.properties.image_id}`}
+                        image_id={el.properties.image_id}
                         imageSrc={el.properties.imageSrc}
                         x={el.properties.x}
                         y={el.properties.y}
@@ -304,20 +341,18 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         opacity={el.properties.opacity}
                         shadow={el.properties.shadow}
                         borderRadius={el.properties.borderRadius}
-                        isSelected={selectedImageId === `el-${index}-${i}`}
+                        isSelected={selectedImageId === el.properties.image_id}
                         onSelect={() => {
+                          deselectAll();
                           setSelectedImage({ ...el });
-                          setSelectedImageId(`el-${index}-${i}`);
+                          setSelectedImageId(el.properties.image_id);
                           setSelectedImageIndex(i);
-                          setSelectedShapeIndex(null);
-                          setSelectedTextId(null);
                         }}
                       />
                     );
                   }
                   return null;
                 })}
-
               </Layer>
             </Stage>
           </Box>

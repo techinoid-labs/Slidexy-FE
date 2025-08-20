@@ -12,12 +12,10 @@ import {
   Slider,
   Collapse,
 } from "@mui/material";
-
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { v4 as uuidv4 } from "uuid";
 import { removeBackground } from "@imgly/background-removal";
 import CropModal from "./../new-ui/CropModal";
-
 import { useSlides, KonvaComponent } from "@/app/context/SlidesContext";
 
 const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
@@ -34,8 +32,9 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     sendElementBackward,
     setSelectedImage,
     setSelectedImageIndex,
+    setSelectedImageId,
   } = useSlides();
-  
+
   const [imageWidth, setImageWidth] = useState<number>(
     selectedImage?.properties?.width || 0
   );
@@ -52,7 +51,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [isOpacityOpen, setIsOpacityOpen] = useState(false);
   const [isShadowOpen, setIsShadowOpen] = useState(false);
-  const [isRadiusOpen, setIsRadiusOpen] = useState(false);
+  const [isRadiusOpen, setIsRadiusOpen ] = useState(false);
   const [opacity, setOpacity] = useState<number>(
     selectedImage?.properties?.opacity ?? 1
   );
@@ -61,16 +60,27 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     offsetY: number;
     blur: number;
     color: string;
-  }>(selectedImage?.properties?.shadow ?? { offsetX: 0, offsetY: 0, blur: 0, color: "#000000" });
+  }>(
+    selectedImage?.properties?.shadow ?? {
+      offsetX: 0,
+      offsetY: 0,
+      blur: 0,
+      color: "#000000",
+    }
+  );
   const [borderRadius, setBorderRadius] = useState<number>(
     selectedImage?.properties?.borderRadius ?? 0
   );
-let imageObj: KonvaComponent | null = null;
-  if (selectedSlideIndex !== -1 && slides[selectedSlideIndex] && selectedImageIndex !== null) {
+
+  let imageObj: KonvaComponent | null = null;
+  if (
+    selectedSlideIndex !== -1 &&
+    slides[selectedSlideIndex] &&
+    selectedImageIndex !== null
+  ) {
     imageObj = slides[selectedSlideIndex].elements[selectedImageIndex];
   }
 
-  
   useEffect(() => {
     if (selectedImage) {
       setImageWidth(selectedImage?.properties?.width || 0);
@@ -95,14 +105,16 @@ let imageObj: KonvaComponent | null = null;
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (
-        selectedSlideIndex === null ||
+        selectedSlideIndex === -1 ||
         selectedImageIndex === null ||
         !slides[selectedSlideIndex]?.elements[selectedImageIndex]
       )
         return;
 
       const updatedSlides = structuredClone(slides);
-      const element = updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
+      const element = updatedSlides[selectedSlideIndex].elements[
+        selectedImageIndex
+      ];
 
       if (!isNaN(imageWidth)) {
         element.properties.width = imageWidth;
@@ -116,13 +128,23 @@ let imageObj: KonvaComponent | null = null;
     }, 400);
 
     return () => clearTimeout(timeout);
-  }, [imageWidth, imageHeight, slides, selectedSlideIndex, selectedImageIndex, setSlides]);
+  }, [
+    imageWidth,
+    imageHeight,
+    slides,
+    selectedSlideIndex,
+    selectedImageIndex,
+    setSlides,
+  ]);
 
   const updateImageProperty = (props: { [key: string]: any }) => {
     if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
     const updatedSlides = structuredClone(slides);
-    const target = updatedSlides[selectedSlideIndex].elements[selectedImageIndex].properties;
-    const element = updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
+    const target =
+      updatedSlides[selectedSlideIndex].elements[selectedImageIndex].properties;
+    const element = updatedSlides[selectedSlideIndex].elements[
+      selectedImageIndex
+    ];
     if (target) {
       Object.entries(props).forEach(([key, value]) => {
         target[key] = value;
@@ -152,14 +174,14 @@ let imageObj: KonvaComponent | null = null;
 
     const currentSlide = slides[selectedSlideIndex];
     const elements = [...currentSlide.elements];
-
     const originalElement = elements[selectedImageIndex];
 
+    const newImageId = uuidv4();
     const newElement = {
       ...structuredClone(originalElement),
-      id: `el-${selectedSlideIndex}-${uuidv4()}`,
       properties: {
         ...structuredClone(originalElement.properties),
+        image_id: newImageId,
         x: (originalElement.properties?.x || 0) + 20,
         y: (originalElement.properties?.y || 0) + 20,
       },
@@ -178,13 +200,19 @@ let imageObj: KonvaComponent | null = null;
     setSlides(updatedSlides);
     setSelectedImage(newElement);
     setSelectedImageIndex(selectedImageIndex + 1);
+    setSelectedImageId(newImageId);
   };
 
   const handleDeleteImage = () => {
     if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
+
     const updatedSlides = structuredClone(slides);
     updatedSlides[selectedSlideIndex].elements.splice(selectedImageIndex, 1);
+
     setSlides(updatedSlides);
+    setSelectedImage(null);
+    setSelectedImageIndex(null);
+    setSelectedImageId(null);
   };
 
   const handleRemoveBackground = async () => {
@@ -208,7 +236,8 @@ let imageObj: KonvaComponent | null = null;
           slides[selectedSlideIndex]?.elements[selectedImageIndex]
         ) {
           const updatedSlides = structuredClone(slides);
-          const element = updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
+          const element =
+            updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
           element.properties.imageSrc = resultUrl;
           setSlides(updatedSlides);
           setImageSrc(resultUrl);
@@ -246,7 +275,8 @@ let imageObj: KonvaComponent | null = null;
         return;
 
       const updatedSlides = structuredClone(slides);
-      const element = updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
+      const element =
+        updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
       element.properties.imageSrc = result;
       setSlides(updatedSlides);
       setSelectedImage({
@@ -286,7 +316,8 @@ let imageObj: KonvaComponent | null = null;
     setBorderRadius(newRadius);
     updateImageProperty({ borderRadius: newRadius });
   };
-if (!imageObj || imageObj.element_type !== "image") return null;
+
+  if (!imageObj || imageObj.element_type !== "image") return null;
 
   return (
     <Box

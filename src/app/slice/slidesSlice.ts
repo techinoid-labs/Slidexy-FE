@@ -19,17 +19,17 @@ interface KonvaTextProperties {
   innerRadius?: number;
   outerRadius?: number;
   imageSrc?: string;
-  zIndex?: number; // Added zIndex
-  opacity?: number; // Added opacity
-  shadow?: { offsetX: number; offsetY: number; blur: number; color: string }; // Added shadow
-  borderRadius?: number; // Added borderRadius
+  zIndex?: number;
+  opacity?: number;
+  shadow?: { offsetX: number; offsetY: number; blur: number; color: string };
+  borderRadius?: number;
 }
 
 interface KonvaImageProperties {
   [key: string]: any;
   image_id?: string;
-  x?: number; // Made optional to match context
-  y?: number; // Made optional to match context
+  x?: number;
+  y?: number;
   fill?: string;
   width?: number;
   height?: number;
@@ -37,11 +37,10 @@ interface KonvaImageProperties {
   opacity?: number;
   shadow?: { offsetX: number; offsetY: number; blur: number; color: string };
   borderRadius?: number;
-  zIndex?: number; // Added zIndex
-  isBackground?: boolean; // Added isBackground property
+  zIndex?: number;
+  isBackground?: boolean;
 }
 
-// Add a shape properties interface
 interface KonvaShapeProperties {
   [key: string]: any;
   x?: number;
@@ -52,6 +51,8 @@ interface KonvaShapeProperties {
   stroke?: string;
   strokeWidth?: number;
   radius?: number;
+  radiusX?: number;
+  radiusY?: number;
   sides?: number;
   numPoints?: number;
   innerRadius?: number;
@@ -60,6 +61,7 @@ interface KonvaShapeProperties {
   shadow?: { offsetX: number; offsetY: number; blur: number; color: string };
   borderRadius?: number;
   zIndex?: number;
+  points?: number[];
 }
 
 interface Block {
@@ -68,13 +70,14 @@ interface Block {
   height: number;
 }
 
-// Updated KonvaComponent interface
+// Updated KonvaComponent interface with shape_id at the top level
 export interface KonvaComponent {
-  id?: string; // Added id property
+  id?: string;
   konva_component: string;
   element_id?: string;
   element_type?: string;
-  type?: string; // Added type property
+  type?: string;
+  shape_id?: string; // Added shape_id at the component level
   properties: KonvaTextProperties | KonvaImageProperties | KonvaShapeProperties;
   text?: string;
   useThemeColor?: boolean;
@@ -102,7 +105,7 @@ const initialState: SlidesState = {
 };
 
 const slidesSlice = createSlice({
-  name: "slidesData", // Changed from "slides" to "slidesData" to match your selector
+  name: "slidesData",
   initialState,
   reducers: {
     setSlides: (state, action: PayloadAction<Slide[]>) => {
@@ -113,7 +116,6 @@ const slidesSlice = createSlice({
     },
     updateSlideImages: (state, action: PayloadAction<{ slideIndex: number; updatedImages: string[] }>) => {
       if (state.slides[action.payload.slideIndex]) {
-        // Fixed: Added type safety check
         (state.slides[action.payload.slideIndex] as any).images = action.payload.updatedImages;
       }
     },
@@ -122,10 +124,44 @@ const slidesSlice = createSlice({
       if (!state.slides[slideIndex]) return;
       state.slides[slideIndex].elements.push(newElement);
     },
+    updateShapeElement: (state, action: PayloadAction<{ 
+      slideIndex: number; 
+      shapeId: string; 
+      updatedProperties: Partial<KonvaShapeProperties> 
+    }>) => {
+      const { slideIndex, shapeId, updatedProperties } = action.payload;
+      if (!state.slides[slideIndex]) return;
+      
+      const elementIndex = state.slides[slideIndex].elements.findIndex(
+        (el) => el.shape_id === shapeId
+      );
+      
+      if (elementIndex !== -1) {
+        state.slides[slideIndex].elements[elementIndex].properties = {
+          ...state.slides[slideIndex].elements[elementIndex].properties,
+          ...updatedProperties,
+        };
+      }
+    },
+    removeShapeElement: (state, action: PayloadAction<{ slideIndex: number; shapeId: string }>) => {
+      const { slideIndex, shapeId } = action.payload;
+      if (!state.slides[slideIndex]) return;
+      
+      state.slides[slideIndex].elements = state.slides[slideIndex].elements.filter(
+        (el) => el.shape_id !== shapeId
+      );
+    },
   },
 });
 
-export const { setSlides, updateSlideImages, addTextElementToSlide, removeSlides } = slidesSlice.actions;
+export const { 
+  setSlides, 
+  updateSlideImages, 
+  addTextElementToSlide, 
+  removeSlides,
+  updateShapeElement,
+  removeShapeElement
+} = slidesSlice.actions;
 
 // Export the types for use in other files
 export type { KonvaTextProperties, KonvaImageProperties, KonvaShapeProperties };

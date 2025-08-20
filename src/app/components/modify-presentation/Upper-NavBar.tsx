@@ -89,6 +89,16 @@ const UpperNavBar: React.FC<{
     }
   };
 
+  const handleUndo = () => {
+    console.log("[UpperNavBar] Undo triggered");
+    undo();
+  };
+
+  const handleRedo = () => {
+    console.log("[UpperNavBar] Redo triggered");
+    redo();
+  };
+
   return (
     <AppBar
       position="fixed"
@@ -197,7 +207,7 @@ const UpperNavBar: React.FC<{
           {isMobile ? (
             <>
               <IconButton
-                onClick={undo}
+                onClick={handleUndo}
                 disabled={!canUndo}
                 sx={{
                   color: "#222",
@@ -210,7 +220,7 @@ const UpperNavBar: React.FC<{
                 <UndoIcon sx={{ fontSize: 18 }} />
               </IconButton>
               <IconButton
-                onClick={redo}
+                onClick={handleRedo}
                 disabled={!canRedo}
                 sx={{
                   color: "#222",
@@ -286,7 +296,7 @@ const UpperNavBar: React.FC<{
           ) : (
             <>
               <IconButton
-                onClick={undo}
+                onClick={handleUndo}
                 disabled={!canUndo}
                 sx={{
                   color: "#222",
@@ -299,7 +309,7 @@ const UpperNavBar: React.FC<{
                 <UndoIcon sx={{ fontSize: 20 }} />
               </IconButton>
               <IconButton
-                onClick={redo}
+                onClick={handleRedo}
                 disabled={!canRedo}
                 sx={{
                   color: "#222",
