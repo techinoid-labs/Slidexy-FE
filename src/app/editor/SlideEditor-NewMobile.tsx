@@ -116,8 +116,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   useEffect(() => {
     const updatedSlides = structuredClone(slides);
     let changed = false;
-    updatedSlides.forEach((slide : any ) => {
-      slide.elements.forEach((el : any) => {
+    updatedSlides.forEach((slide: any) => {
+      slide.elements.forEach((el: any) => {
         if (el.element_type === "image" && !el.properties.image_id) {
           el.properties.image_id = uuidv4();
           changed = true;
@@ -227,46 +227,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
 
                 {title.text && (
                   <KonvaTextEditor
-                    key={`title-${index}-${titleProps.fontFamily || "Roboto"
-                      }-${titleProps.fontSize || 18}-${titleProps.fontWeight || "normal"
-                      }-${titleProps.align || "left"}-${titleProps.fontStyle || "normal"
-                      }-${titleProps.fill || "#000"}-${titleProps.opacity || 1
-                      }`}
+                    key={`title-${index}`}
                     id={`title-${index}`}
                     text={title.text}
                     x={titleProps.x || titleY}
                     y={titleProps.y || getDynamicConstants().LEFT_PADDING}
                     zIndex={titleProps.zIndex}
-                    width={(() => {
-                      const textWidth =
-                        getDynamicConstants().textMaxWidth + 200;
-                      const canvas = document.createElement("canvas");
-                      const context = canvas.getContext("2d");
-                      const fontSize = titleProps.fontSize || 14;
-                      const fontFamily = titleProps.fontFamily || "Roboto";
-                      context!.font = `${fontSize}px ${fontFamily}`;
-                      const words = title.text.split(" ");
-                      let lines = [];
-                      let line = "";
-
-                      for (let word of words) {
-                        const testLine = line + word + " ";
-                        const metrics = context!.measureText(testLine);
-                        if (metrics.width > textWidth && line !== "") {
-                          lines.push(line.trim());
-                          line = word + " ";
-                        } else {
-                          line = testLine;
-                        }
-                      }
-                      if (line) lines.push(line.trim());
-
-                      return Math.min(
-                        textWidth + 200,
-                        window.innerWidth - 80
-                      );
-                    })()}
-                    wrap="word"
+                    width={getDynamicConstants().textMaxWidth+200}
                     fontSize={titleProps.fontSize}
                     fontWeight={titleProps.fontWeight}
                     fontFamily={titleProps.fontFamily}
@@ -285,15 +252,14 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       setSelectedTextId(`title-${index}`);
                       setTooltip({
                         visible: true,
-                        x:
-                          titleProps.x ||
-                          getDynamicConstants().LEFT_PADDING + 100,
+                        x: titleProps.x || getDynamicConstants().LEFT_PADDING + 100,
                         y: (titleProps.y || titleY) - 40,
                         node: null,
                       });
                     }}
                   />
                 )}
+
                 {slide.elements.map((el: any, i: number) => {
                   if (
                     el.element_type !== "text" &&
@@ -345,7 +311,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     />
                   );
                 })}
-                 <KonvaShapeRenderer
+                <KonvaShapeRenderer
                   elements={slide.elements}
                   selectedShapeId={selectedShapeId}
                   selectedShapeIndex={selectedShapeIndex}

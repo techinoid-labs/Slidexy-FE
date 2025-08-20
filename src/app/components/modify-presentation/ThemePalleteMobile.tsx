@@ -34,6 +34,12 @@ const useLayoutControl = (
     userTriggeredLayoutChange.current = true;
     setSelectedLayout(layoutIndex);
     setLayoutRefreshKey(prev => prev + 1);
+
+    try {
+      localStorage.setItem("selectedLayout", String(layoutIndex));
+    } catch (e) {
+      console.error("Failed to save layout to localStorage", e);
+    }
   };
 
   return { applyLayout, userTriggeredLayoutChange };
@@ -102,7 +108,7 @@ const layoutRules: Record<
     if (type === "title") return { x: 50, y: 90 };
     if (type === "text") return { x: 50, y: 95 + idx * 30 };
     else {
-      return { x: 50, y: 95 + idx * 30 };
+      return { x: 50, y: 150 + idx * 30 };
     }
   },
   1: (el, idx, type) => {
@@ -110,7 +116,7 @@ const layoutRules: Record<
     if (type === "title") return { x: 450, y: 90 };
     if (type === "text") return { x: 450, y: 95 + idx * 30 };
     else {
-      return { x: 450, y: 95 + idx * 30 };
+      return { x: 450, y: 150 + idx * 30 };
     }
   },
   2: (el, idx, type) => {
@@ -126,21 +132,21 @@ const layoutRules: Record<
     if (type === "title") return { x: 50, y: 50 };
     if (type === "text") return { x: 350, y: -30 + idx * 30 };
     else {
-      return { x: 50, y: 70 + idx * 30 };
+      return { x: 50, y: 100 + idx * 30 };
     }
   },
   4: (el, idx, type) => {
     if (type === "image") return { x: 50, y: 120 };
     if (type === "title") return { x: 50, y: 50 };
     if (type === "text") return { x: 400, y: 100 + idx * 30 };
-    return { x: 400, y: 100 + idx * 30 };
+    return { x: 400, y: 150 + idx * 30 };
   },
   5: (el, idx, type) => {
     if (type === "image") return { x: 250, y: 50 };
-    if (type === "title") return { x: 50, y: 250 };
+    if (type === "title") return { x: 50, y: 260 };
     if (type === "text") return { x: 500, y: 100 + idx * 30 };
     else {
-      return { x: 50, y: 255 + idx * 30 };
+      return { x: 50, y: 270 + idx * 30 };
     }
   },
 };
@@ -211,7 +217,7 @@ interface ThemePanelMobileProps {
 const ThemePanelMobile = ({ parsedSlides = [], resetAll, onClose }: ThemePanelMobileProps) => {
   const { selectedTheme, setSelectedTheme, selectedLayout, setSelectedLayout } =
     useSlideThemeContext();
-  const { slides, setSlides } = useSlides();
+  const { slides, setSlides, selectedSlideIndex } = useSlides();
   const [layoutRefreshKey, setLayoutRefreshKey] = useState(0);
   const { applyLayout, userTriggeredLayoutChange } = useLayoutControl(
     selectedLayout,
@@ -361,7 +367,7 @@ const ThemePanelMobile = ({ parsedSlides = [], resetAll, onClose }: ThemePanelMo
   };
 
   const handleBackgroundModeChange = (
-     newMode: "color" | "image"
+    newMode: "color" | "image"
   ) => {
     const currentValue = backgroundStateRef.current.value;
     backgroundStateRef.current = {
@@ -443,109 +449,127 @@ const ThemePanelMobile = ({ parsedSlides = [], resetAll, onClose }: ThemePanelMo
     setSlides(updatedSlides);
   };
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("slidesTheme");
-    const savedBackgroundMode = localStorage.getItem("backgroundMode");
-    const savedBackgroundValue = localStorage.getItem("backgroundValue");
+ useEffect(() => {
+  const savedTheme = localStorage.getItem("slidesTheme");
+  const savedBackgroundMode = localStorage.getItem("backgroundMode");
+  const savedBackgroundValue = localStorage.getItem("backgroundValue");
+  const savedLayout = localStorage.getItem("selectedLayout");
 
-    if (savedTheme && savedBackgroundMode && savedBackgroundValue) {
-      try {
-        const parsed = JSON.parse(savedTheme);
-        backgroundStateRef.current = {
-          mode: savedBackgroundMode as "color" | "image",
-          value: savedBackgroundValue,
-        };
-        setSelectedTheme({
-          ...parsed,
-          backgroundColor: savedBackgroundMode === "color" ? savedBackgroundValue : "",
-          image_url: savedBackgroundMode === "image" ? savedBackgroundValue : parsed.image_url || "",
-          titleColor: parsed.titleColor || "black",
-        });
-        setBackgroundMode(savedBackgroundMode as "color" | "image");
-        if (savedBackgroundMode === "image") {
-          setImageUrl(savedBackgroundValue);
-        }
-      } catch (e) {
-        console.error("Failed to parse saved theme", e);
-        backgroundStateRef.current = { mode: "color", value: "#fff" };
-        setSelectedTheme(DEFAULT_THEME);
-        setBackgroundMode("color");
-        setImageUrl("");
+  // restore theme
+  if (savedTheme && savedBackgroundMode && savedBackgroundValue) {
+    try {
+      const parsed = JSON.parse(savedTheme);
+      backgroundStateRef.current = {
+        mode: savedBackgroundMode as "color" | "image",
+        value: savedBackgroundValue,
+      };
+      setSelectedTheme({
+        ...parsed,
+        backgroundColor: savedBackgroundMode === "color" ? savedBackgroundValue : "",
+        image_url: savedBackgroundMode === "image" ? savedBackgroundValue : parsed.image_url || "",
+        titleColor: parsed.titleColor || "black",
+      });
+      setBackgroundMode(savedBackgroundMode as "color" | "image");
+      if (savedBackgroundMode === "image") {
+        setImageUrl(savedBackgroundValue);
       }
-    } else {
+    } catch (e) {
+      console.error("Failed to parse saved theme", e);
       backgroundStateRef.current = { mode: "color", value: "#fff" };
       setSelectedTheme(DEFAULT_THEME);
       setBackgroundMode("color");
       setImageUrl("");
     }
-  }, []);
+  } else {
+    backgroundStateRef.current = { mode: "color", value: "#fff" };
+    setSelectedTheme(DEFAULT_THEME);
+    setBackgroundMode("color");
+    setImageUrl("");
+  }
 
-  useEffect(() => {
-    if (!userTriggeredLayoutChange.current) return;
-    if (selectedLayout == null || selectedLayout === -1) return;
+if (savedLayout !== null) {
+  const parsedLayout = Number(savedLayout);
 
-    const rule = layoutRules[selectedLayout];
-    const style = layoutStyles[selectedLayout];
-    if (!rule || !style) return;
+  if (layouts.includes(parsedLayout as LayoutType)) {
+    setSelectedLayout(parsedLayout as LayoutType);
+    setLastAppliedLayout(parsedLayout);
+  } else {
+    setSelectedLayout(DEFAULT_LAYOUT);
+    setLastAppliedLayout(DEFAULT_LAYOUT);
+  }
+} else {
+  setSelectedLayout(DEFAULT_LAYOUT);
+  setLastAppliedLayout(DEFAULT_LAYOUT);
+}
 
-    const updatedSlides = slides.map((slide) => {
-      const newSlide = structuredClone(slide);
-      const titleEl = { ...newSlide.slide_title, element_type: "title" };
-      const bulletEls = newSlide.elements.filter((el) => el.element_type === "bullet_point");
-      const textEls = newSlide.elements.filter((el) => el.element_type === "text");
-      const imageEls = newSlide.elements.filter((el) => el.element_type === "image");
+}, []);
 
-      const textElements = [titleEl, ...bulletEls, ...textEls];
+useEffect(() => {
+  if (!userTriggeredLayoutChange.current) return;
+  if (selectedLayout == null || selectedLayout === -1) return;
 
-      textElements.forEach((el, idx) => {
-        const { x, y } = rule(el, idx, el.element_type);
-        el.properties = {
-          ...el.properties,
-          x,
-          y,
-          ...(el.element_type === "title" && {
-            fontSize: style.title.fontSize,
-            fontWeight: style.title.fontWeight,
-            color: selectedTheme?.titleColor || "black",
-          }),
-          ...(el.element_type === "text" && {
-            fontSize: style.text.fontSize,
-            color: selectedTheme?.primaryColor || "black",
-          }),
-          ...(el.element_type === "bullet_point" && {
-            fontSize: style.bullet.fontSize,
-            color: selectedTheme?.primaryColor || "black",
-          }),
-        };
+  const rule = layoutRules[selectedLayout];
+  const style = layoutStyles[selectedLayout];
+  if (!rule || !style) return;
 
-      });
+  const updatedSlides = structuredClone(slides);
+  const currentSlide = updatedSlides[selectedSlideIndex];
 
-      imageEls.forEach((el, idx) => {
-        const { x, y } = rule(el, idx, "image");
-        el.properties = {
-          ...el.properties,
-          x,
-          y,
-          width: style.image.width,
-          height: style.image.height,
+  if (!currentSlide) return;
 
-        }
-      });
+  const newSlide = structuredClone(currentSlide);
+  const titleEl = { ...newSlide.slide_title, element_type: "title" };
+  const bulletEls = newSlide.elements.filter((el) => el.element_type === "bullet_point");
+  const textEls = newSlide.elements.filter((el) => el.element_type === "text");
+  const imageEls = newSlide.elements.filter((el) => el.element_type === "image");
 
-      newSlide.slide_title = titleEl;
-      newSlide.elements = [
-        ...textElements.filter((el) => el.element_type !== "title"),
-        ...imageEls,
-      ];
+  const textElements = [titleEl, ...bulletEls, ...textEls];
 
-      return newSlide;
-    });
+  textElements.forEach((el, idx) => {
+    const { x, y } = rule(el, idx, el.element_type);
+    el.properties = {
+      ...el.properties,
+      x,
+      y,
+      ...(el.element_type === "title" && {
+        fontSize: style.title.fontSize,
+        fontWeight: style.title.fontWeight,
+        color: selectedTheme?.titleColor || "black",
+      }),
+      ...(el.element_type === "text" && {
+        fontSize: style.text.fontSize,
+        color: selectedTheme?.primaryColor || "black",
+      }),
+      ...(el.element_type === "bullet_point" && {
+        fontSize: style.bullet.fontSize,
+        color: selectedTheme?.primaryColor || "black",
+      }),
+    };
+  });
 
-    setSlides(updatedSlides);
-    setLastAppliedLayout(selectedLayout);
-    userTriggeredLayoutChange.current = false;
-  }, [selectedLayout, layoutRefreshKey, slides, setSlides, selectedTheme]);
+  imageEls.forEach((el, idx) => {
+    const { x, y } = rule(el, idx, "image");
+    el.properties = {
+      ...el.properties,
+      x,
+      y,
+      width: style.image.width,
+      height: style.image.height,
+    };
+  });
 
+  newSlide.slide_title = titleEl;
+  newSlide.elements = [
+    ...textElements.filter((el) => el.element_type !== "title"),
+    ...imageEls,
+  ];
+
+  updatedSlides[selectedSlideIndex] = newSlide;
+
+  setSlides(updatedSlides);
+  setLastAppliedLayout(selectedLayout);
+  userTriggeredLayoutChange.current = false;
+}, [selectedLayout, layoutRefreshKey, slides, setSlides, selectedTheme, selectedSlideIndex]);
   const allPalettes = palettes;
   const selectedPaletteIdx = allPalettes.findIndex(
     (p) =>
@@ -648,7 +672,7 @@ const ThemePanelMobile = ({ parsedSlides = [], resetAll, onClose }: ThemePanelMo
         </Typography>
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
           {/* Disable Layout Button - spans full width */}
-          <Box sx={{ width: "100%", mb: 1 }}>
+          {/* <Box sx={{ width: "100%", mb: 1 }}>
             <button
               onClick={() => applyLayout(-1 as LayoutType)}
               className={`w-full h-[60px] p-0 overflow-hidden rounded-sm
@@ -670,7 +694,7 @@ const ThemePanelMobile = ({ parsedSlides = [], resetAll, onClose }: ThemePanelMo
                 Disable Layout
               </Typography>
             </button>
-          </Box>
+          </Box> */}
 
           {/* Layout buttons - 2 per row */}
           {[...Array(6)].map((_, i) => (
@@ -687,11 +711,34 @@ const ThemePanelMobile = ({ parsedSlides = [], resetAll, onClose }: ThemePanelMo
                   src={`/new-layout-${i}.svg`}
                   alt={`Layout ${i + 1}`}
                   className="block w-[70px] h-[35px] mx-auto"
-                  style={{ marginLeft : 5}}
+                  style={{ marginLeft: 5 }}
                 />
               </button>
             </Box>
           ))}
+        </Box>
+        <Box sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button
+            fullWidth
+            sx={{
+              bgcolor: "linear-gradient(90deg, #7B4AE2 0%, #5F2EEA 100%)",
+              color: "#fff",
+              fontWeight: 600,
+              marginTop: "20px",
+              fontSize: 14,
+              borderRadius: 8,
+              py: 1,
+              textTransform: "none",
+              boxShadow: "0 2px 8px 0 rgba(123,74,226,0.15)",
+              background: "linear-gradient(90deg, #7B4AE2 0%, #5F2EEA 100%)",
+              "&:hover": {
+                background: "linear-gradient(90deg, #5F2EEA 0%, #7B4AE2 100%)",
+              },
+            }}
+            onClick={() => applyLayout(-1 as LayoutType)}
+          >
+            Disable Layout
+          </Button>
         </Box>
       </Box>
       <Divider />
