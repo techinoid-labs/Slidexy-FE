@@ -91,7 +91,7 @@ export default function PresentationStyleSection() {
       </Box>
 
       {/* Carousel Dots */}
-      <Box
+      {/* <Box
         sx={{
           display: "flex",
           justifyContent: { xs: "center", md: "flex-end" },
@@ -115,7 +115,7 @@ export default function PresentationStyleSection() {
             }}
           />
         ))}
-      </Box>
+      </Box> */}
 
       {/* Main Card */}
       <Box
@@ -153,8 +153,7 @@ export default function PresentationStyleSection() {
               mb: 2,
             }}
           >
-            AI Popular Themes/
-            <br></br>Templates
+            AI Popular Templates            
           </Typography>
           <Typography
             sx={{

@@ -177,7 +177,7 @@ export default function HeroSection() {
                 whiteSpace: { xs: "normal", md: "nowrap" },
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-              }} 
+              }}
             >
               Your Idea,{" "}
               <Typography
@@ -310,34 +310,35 @@ export default function HeroSection() {
             </Box>
           </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              mt: { sx: -20, md: 0 },
-              mb: { sx: 10, md: 0 },
-            }}
-          >
-            <Button
-              color="primary"
-              endIcon={<KeyboardArrowDown />}
+            <Box
               sx={{
-                fontSize: { xs: "1.1rem", sm: "1.2rem", md: "1.2rem" },
-                color: "#4A00E0",
-                whiteSpace: "nowrap",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "transparent",
-                  color: "primary.dark",
-                },
-                fontWeight: 450,
-                px: 2,
-                py: 1,
+                display: "flex",
+                justifyContent: "center",
+                mt: { sx: -20, md: 0 },
+                mb: { sx: 10, md: 0 },
               }}
             >
-              Learn More
-            </Button>
-          </Box>
+              <Button
+               onClick={()=>window.scroll(0,800)}
+                color="primary"
+                endIcon={<KeyboardArrowDown />}
+                sx={{
+                  fontSize: { xs: "1.1rem", sm: "1.2rem", md: "1.2rem" },
+                  color: "#4A00E0",
+                  whiteSpace: "nowrap",
+                  textTransform: "none",
+                  "&:hover": {
+                    backgroundColor: "transparent",
+                    color: "primary.dark",
+                  },
+                  fontWeight: 450,
+                  px: 2,
+                  py: 1,
+                }}
+              >
+                Learn More
+              </Button>
+            </Box>
         </Container>
       </Box>
     </>
