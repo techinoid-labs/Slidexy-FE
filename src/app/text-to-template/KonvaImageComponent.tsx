@@ -24,7 +24,7 @@ const KonvaImageComponent: React.FC<KonvaImageProps> = ({
   rounded,
 }) => {
   const [image] = useImage(imageSrc);
-
+  const notBackground = width < 960 && height < 540;
   return (
     <Image
       image={image}
@@ -34,7 +34,7 @@ const KonvaImageComponent: React.FC<KonvaImageProps> = ({
       height={height}
       zIndex={zIndex}
       draggable={draggable}
-      cornerRadius={rounded}
+      cornerRadius={notBackground ? 20 : rounded}
     />
   );
 };
