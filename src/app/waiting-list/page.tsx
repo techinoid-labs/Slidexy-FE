@@ -16,32 +16,38 @@ import Link from "next/link";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const videos = [
-  "/images/gif1.mp4",
-  "/images/gif2.mp4",
-  "/images/gif3.mp4",
-  "/images/gif4.mp4",
-  "/images/gif5.mp4",
-  "/images/gif6.mp4",
+const videoData = [
+  {
+    src: "/images/gif1.mp4",
+    title: "Generate Your Deck Instantly with Slidexy AI",
+  },
+  {
+    src: "/images/gif2.mp4",
+    title: "Generate Slides Instantly with Slidexy AI",
+  },
+  { src: "/images/gif3.mp4", title: "Content Re-Generation" },
+  { src: "/images/gif4.mp4", title: "Re-generate Images Instantly" },
+  {
+    src: "/images/gif5.mp4",
+    title: "Generate Infographics Instantly with Slidexy AI",
+  },
+  { src: "/images/gif6.mp4", title: "Slidexy AI Assistant" },
 ];
 
 export default function WaitingList() {
   const [email, setEmail] = React.useState("");
 
-const [currentVideo, setCurrentVideo] = useState(0);
+  const [currentVideo, setCurrentVideo] = useState(0);
 
-const handleEnded = () => {
-  setCurrentVideo((prev) => (prev + 1) % videos.length);
-};
+  const handleEnded = () => {
+    setCurrentVideo((prev) => (prev + 1) % videoData.length);
+  };
 
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [severity, setSeverity] = useState<"success" | "error">("success");
 
-
- const [open, setOpen] = useState(false);
- const [message, setMessage] = useState("");
- const [severity, setSeverity] = useState<"success" | "error">("success");
-
-
- const handleClose = () => setOpen(false);
+  const handleClose = () => setOpen(false);
 
   const handleJoin = async () => {
     if (!email) {
@@ -50,7 +56,7 @@ const handleEnded = () => {
       setOpen(true);
       return;
     }
-  }
+  };
 
   return (
     <Box sx={{ backgroundColor: "#FFFFFF", overflowX: "hidden" }}>
@@ -77,7 +83,7 @@ const handleEnded = () => {
             <Image
               src="/images/Logo.svg"
               alt="Slides Logo"
-              width={118}
+              width={200}
               height={36}
               style={{ maxWidth: "100%", height: "auto" }}
             />
@@ -110,7 +116,7 @@ const handleEnded = () => {
       </Box>
 
       {/* Content Section */}
-      <Box sx={{ backgroundColor: "#FFFFFF", py: { xs: 6, md: 10 } }}>
+      <Box sx={{ backgroundColor: "#FFFFFF", py: { xs: 6, md: 5 } }}>
         <Box
           sx={{
             maxWidth: "1400px",
@@ -141,7 +147,7 @@ const handleEnded = () => {
                   mx: { xs: "auto", md: 0 },
                 }}
               >
-                Generate Slides <br /> Instantly with Slidexy AI
+                {videoData[currentVideo].title}
               </Typography>
               <Typography
                 variant="body1"
@@ -164,10 +170,11 @@ const handleEnded = () => {
               >
                 <Button
                   sx={{
-                    border: "2px solid blue",
-                    px: { xs: 2, sm: 3 },
-                    py: { xs: 1, sm: 1.5 },
-                    fontSize: { xs: "14px", sm: "16px" },
+                    border: "1px solid #4A00E0",
+                    px: { xs: "24px", sm: "24px" },
+                    py: { xs: "12px", sm: "12px" },
+                    fontSize: { xs: "16px", sm: "16px" },
+                    fontWeight: "700",
                   }}
                   onClick={async () => {
                     if (!email) {
@@ -213,14 +220,15 @@ const handleEnded = () => {
                     justifyContent: { xs: "center", md: "left" },
                   }}
                 >
-                  {videos.map((_, index) => (
+                  {videoData.map((_, index) => (
                     <Box
                       key={index}
                       onClick={() => setCurrentVideo(index)}
                       sx={{
-                        width: { xs: 10, sm: 12 },
-                        height: { xs: 10, sm: 12 },
-                        borderRadius: "50%",
+                        width: { xs: "16px", sm: "16px" },
+                        height: { xs: "6px", sm: "6px" },
+                        p: { sm: "4px" },
+                        borderRadius: "10px",
                         cursor: "pointer",
                         backgroundColor:
                           index === currentVideo ? "blue" : "rgba(0,0,0,0.3)",
@@ -253,7 +261,7 @@ const handleEnded = () => {
                 <AnimatePresence mode="wait">
                   <motion.video
                     key={currentVideo}
-                    src={videos[currentVideo]}
+                    src={videoData[currentVideo].src}
                     autoPlay
                     muted
                     playsInline
@@ -306,7 +314,8 @@ const handleEnded = () => {
               py: 0.7,
               fontSize: { xs: "0.75rem", sm: "0.85rem", md: "0.95rem" },
               borderRadius: "600px",
-              color: "#4A00E0",
+              color: "black",
+              background: "white",
             }}
           >
             <Image
@@ -360,15 +369,13 @@ const handleEnded = () => {
           }}
         >
           The tool artists, designers, and dreamers have been waiting for
-          powered by AI, styled by designers.
         </Typography>
 
         {/* Email Input */}
         <Box
           component="form"
-          sx={{
-            width: "100%",
-            maxWidth: 560,
+          sx={{            
+            maxWidth: {xs:"100%",sm:"730px"},
             mx: "auto",
             px: { xs: 2, sm: 2 },
             py: { xs: 3, sm: 4 },
@@ -383,9 +390,10 @@ const handleEnded = () => {
               p: { xs: "8px", sm: "10px" },
               borderRadius: "40px",
               border: "1px solid",
-              borderColor: "#E6E6EB",
+              borderColor: "#4A00E0",
               bgcolor: "#fff",
               flexWrap: "wrap", // keeps button below on xs
+              pl:{sm:"32px",xs:"20px"}              
             }}
           >
             <InputBase
@@ -410,13 +418,13 @@ const handleEnded = () => {
                 borderRadius: "30px",
                 background: "#8E2DE2",
                 color: "white",
-                width: { xs: "100%", sm: "fit-content" },
+                width: { xs: "auto", sm: "fit-content" },
               }}
               onClick={async () => {
                 if (!email) {
-                 setMessage("Please enter an email");
-                 setSeverity("error");
-                 setOpen(true);
+                  setMessage("Please enter an email");
+                  setSeverity("error");
+                  setOpen(true);
                   return;
                 }
                 try {
@@ -439,7 +447,7 @@ const handleEnded = () => {
                   setMessage("Server error");
                   setSeverity("error");
                 }
-                 setOpen(true);
+                setOpen(true);
               }}
             >
               Join the Waitlist

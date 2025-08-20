@@ -390,8 +390,8 @@ export default function PurposeSection() {
             "linear-gradient(94.38deg, #ECE2FF -101.47%, #FAF8FF 100%)",
           borderRadius: 4,
           boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
-          p: { xs: 3, md: 3 },
-          minHeight: 300,
+          px: { xs: 3, md: "36px" },
+          py: { xs: 3, md: "40px" },
           maxWidth: 1300,
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
@@ -460,7 +460,7 @@ export default function PurposeSection() {
           <img
             src="/images/VoiceAssistant.svg"
             alt="Export Icon"
-            className="sm:w-[400px] w-[200px]"
+            className="sm:w-[300px] w-[200px]"
           />
         </Box>
       </Box>
