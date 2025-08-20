@@ -45,7 +45,7 @@ export default function Home() {
       <WorkingSection />
       {/* <TestimonialSection /> */}
       <PricingSection />
-      {/* <CommunitySection /> */}
+      <CommunitySection />
       <Footer />
     </Box>
   );

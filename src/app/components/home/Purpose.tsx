@@ -18,14 +18,14 @@ export default function PurposeSection() {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "flex-start",
+          alignItems: {xs:"center",sm:"flex-start"},
           flexDirection: { xs: "column", md: "row" },
           maxWidth: 1200,
           mx: "auto",
           mb: 4,
         }}
       >
-        <Box sx={{ margin: "auto" }}>
+        <Box>
           <Chip
             icon={
               <img
@@ -55,7 +55,7 @@ export default function PurposeSection() {
               "& .MuiChip-icon": {
                 marginRight: "6px",
               },
-              ml: { xs: 3, md: -9 },
+
               display: "inline-flex",
               alignItems: "center",
             }}
@@ -68,12 +68,12 @@ export default function PurposeSection() {
               fontSize: { xs: "1.9rem", md: "2.5rem" },
               color: "#18181B",
               mb: { xs: 1, md: 0.5 },
-              ml: { xs: 0, md: -10 },
+
               textAlign: { xs: "center", md: "left" },
               lineHeight: 1.2,
             }}
           >
-            Why Slidexy?
+            Why <br/> Slidexy?
           </Typography>
         </Box>
         <Typography

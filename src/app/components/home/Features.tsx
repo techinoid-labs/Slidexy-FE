@@ -32,282 +32,282 @@ export default function FeaturesSection() {
             height={68}
           />
         </Box>
-        <Container
-          maxWidth="lg"
-          sx={{ position: "relative", zIndex: 1 }}
-          className="flex flex-col items-center w-full"
-        >
-          {/* Badge */}
-          <Box
-            sx={{ display: "flex", justifyContent: "center", mb: 3 }}
-            className="w-full flex justify-center"
+          <Container
+            maxWidth="lg"
+            sx={{ position: "relative", zIndex: 1 }}
+            className="flex flex-col items-center w-full"
           >
-            <Chip
-              icon={
-                <Image
-                  src="/images/side-star-purple.svg"
-                  alt="Icon"
-                  width={20}
-                  height={20}
-                  style={{ marginRight: 6 }}
-                />
-              }
-              label="Our Features"
-              sx={{
-                px: 2.5,
-                py: 1.2,
-                fontSize: "1rem",
-                height: "auto",
-                borderRadius: "600px",
-                backgroundColor: "#E8E4FF",
-                color: "#4A00E0",
-                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.06)",
-                border: "none",
-                "& .MuiChip-icon": {
+            {/* Badge */}
+            <Box
+              sx={{ display: "flex", justifyContent: "center", mb: 3 }}
+              className="w-full flex justify-center"
+            >
+              <Chip
+                icon={
+                  <Image
+                    src="/images/side-star-purple.svg"
+                    alt="Icon"
+                    width={20}
+                    height={20}
+                    style={{ marginRight: 6 }}
+                  />
+                }
+                label="Our Features"
+                sx={{
+                  px: 2.5,
+                  py: 1.2,
+                  fontSize: "1rem",
+                  height: "auto",
+                  borderRadius: "600px",
+                  backgroundColor: "#E8E4FF",
                   color: "#4A00E0",
-                  marginRight: "8px",
-                },
-              }}
-            />
-          </Box>
-          {/* Heading */}
-          <Typography
-            variant="h3"
-            align="center"
-            sx={{
-              fontWeight: 500,
-              fontSize: { xs: "1.67rem", md: "2.2rem" },
-              mb: 2,
-              color: "#18181B",
-            }}
-          >
-            Discover the Tools that Drive Success
-          </Typography>
-          {/* Subtitle */}
-          <Typography
-            align="center"
-            sx={{
-              color: "#757575",
-              fontSize: { xs: "0.9rem", md: "1.25rem" },
-              mb: { xs: 0, md: 7 },
-              maxWidth: 600,
-              mx: "auto",
-            }}
-          >
-            Turn any thought into a polished, on-brand presentation
-            <br />
-            powered by AI
-          </Typography>
-          {/* Features Flex Layout */}
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              justifyContent: "center",
-              alignItems: "center",
-              gap: { xs: 3, md: 4 },
-              mb: 2,
-              position: "relative",
-              minHeight: { xs: 350, md: 400 },
-              maxWidth: { xs: "100%", md: 1100 },
-              mx: "auto",
-              py: { xs: 3, md: 5 },
-            }}
-            className="flex flex-col md:flex-row items-center justify-center w-full"
-          >
-            {/* Checkered Background */}
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: "50%",
-                transform: "translateX(-50%)",
-                mt: -30,
-                opacity: 0.6,
-                pointerEvents: "none",
-                zIndex: -1,
-              }}
-            >
-              <Image
-                src="/images/checkered-lines.svg"
-                alt="Checkered Background"
-                width={300}
-                height={300}
-                style={{
-                  objectFit: "contain",
+                  boxShadow: "0 2px 6px rgba(0, 0, 0, 0.06)",
+                  border: "none",
+                  "& .MuiChip-icon": {
+                    color: "#4A00E0",
+                    marginRight: "8px",
+                  },
                 }}
               />
             </Box>
-            {/* Feature 1 */}
+            {/* Heading */}
+            <Typography
+              variant="h3"
+              align="center"
+              sx={{
+                fontWeight: 500,
+                fontSize: { xs: "1.67rem", md: "2.2rem" },
+                mb: 2,
+                color: "#18181B",
+              }}
+            >
+              Discover the Tools that Drive Success
+            </Typography>
+            {/* Subtitle */}
+            <Typography
+              align="center"
+              sx={{
+                color: "#757575",
+                fontSize: { xs: "0.9rem", md: "1.25rem" },
+                mb: { xs: 0, md: 7 },
+                maxWidth: 600,
+                mx: "auto",
+              }}
+            >
+              Turn any thought into a polished, on-brand presentation
+              <br />
+              powered by AI
+            </Typography>
+            {/* Features Flex Layout */}
             <Box
               sx={{
-                flex: 1,
-                minWidth: 200,
-                maxWidth: 320,
-                textAlign: "center",
-                px: 2,
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                justifyContent: "center",
+                alignItems: "center",
+                gap: { xs: 3, md: 4 },
+                mb: 2,
+                position: "relative",
+                minHeight: { xs: 350, md: 400 },
+                maxWidth: { xs: "100%", md: 1100 },
+                mx: "auto",
+                py: { xs: 3, md: 5 },
+              }}
+              className="flex flex-col md:flex-row items-center justify-center w-full"
+            >
+              {/* Checkered Background */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  mt: -30,
+                  opacity: 0.6,
+                  pointerEvents: "none",
+                  zIndex: -1,
+                }}
+              >
+                <Image
+                  src="/images/checkered-lines.svg"
+                  alt="Checkered Background"
+                  width={300}
+                  height={300}
+                  style={{
+                    objectFit: "contain",
+                  }}
+                />
+              </Box>
+              {/* Feature 1 */}
+              <Box
+                sx={{
+                  flex: 1,
+                  minWidth: 200,
+                  maxWidth: 320,
+                  textAlign: "center",
+                  px: 2,
 
-                position: "relative",
-                zIndex: 1, // Ensure content is above background
-              }}
-              className="flex flex-col items-center justify-center text-center"
-            >
-              <Image
-                src="/images/voice-to-deck.svg"
-                alt="Voice-to-Deck"
-                width={45}
-                height={45}
-                style={{ width: "40px", height: "40px" }}
-                className="md:w-[60px] md:h-[60px]"
-              />
-              <Typography
-                sx={{
-                  mt: 1,
-                  mb: { xs: 3, md: 7 },
-                  fontWeight: 400,
-                  color: "#18181B",
-                  fontSize: { xs: "1.1rem", md: "1.8rem" },
+                  position: "relative",
+                  zIndex: 1, // Ensure content is above background
                 }}
+                className="flex flex-col items-center justify-center text-center"
               >
-                Voice-to-Deck
-              </Typography>
-              <Typography
-                sx={{
-                  color: "#757575",
-                  fontSize: { xs: "0.8rem", md: "1.05rem" },
-                  lineHeight: 1.6,
-                }}
-              >
-                AI transcribes and analyzes spoken ideas to auto-generate slides
-                with key points and speaker notes.
-              </Typography>
-            </Box>
-            {/* Divider 1 */}
-            <Box
-              sx={{
-                display: { xs: "none", md: "flex" },
-                alignItems: "center",
-                mx: 0,
-                height: 300,
-                alignSelf: "center",
-              }}
-            >
+                <Image
+                  src="/images/voice-to-deck.svg"
+                  alt="Voice-to-Deck"
+                  width={45}
+                  height={45}
+                  style={{ width: "40px", height: "40px" }}
+                  className="md:w-[60px] md:h-[60px]"
+                />
+                <Typography
+                  sx={{
+                    mt: 1,
+                    mb: { xs: 3, md: 7 },
+                    fontWeight: 400,
+                    color: "#18181B",
+                    fontSize: { xs: "1.1rem", md: "1.8rem" },
+                  }}
+                >
+                  Voice-to-Deck
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "#757575",
+                    fontSize: { xs: "0.8rem", md: "1.05rem" },
+                    lineHeight: 1.6,
+                  }}
+                >
+                  AI transcribes and analyzes spoken ideas to auto-generate
+                  slides with key points and speaker notes.
+                </Typography>
+              </Box>
+              {/* Divider 1 */}
               <Box
                 sx={{
-                  width: "2px",
-                  height: 200,
-                  background: "#E9E9FF",
-                  borderRadius: 1,
-                }}
-              />
-            </Box>
-            {/* Feature 2 */}
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 200,
-                maxWidth: 320,
-                textAlign: "center",
-                px: 2,
-                position: "relative",
-                zIndex: 1,
-              }}
-              className="flex flex-col items-center justify-center text-center"
-            >
-              <Image
-                src="/images/smart-icon.svg"
-                alt="Smart Prompt Generator"
-                width={40}
-                height={40}
-                style={{ width: "40px", height: "40px" }}
-                className="md:w-[60px] md:h-[60px]"
-              />
-              <Typography
-                sx={{
-                  mt: 1,
-                  mb: 2,
-                  fontWeight: 400,
-                  color: "#18181B",
-                  fontSize: { xs: "1.1rem", md: "1.8rem" },
+                  display: { xs: "none", md: "flex" },
+                  alignItems: "center",
+                  mx: 0,
+                  height: 300,
+                  alignSelf: "center",
                 }}
               >
-                Smart Prompt Generator
-              </Typography>
-              <Typography
-                sx={{
-                  color: "#757575",
-                  fontSize: { xs: "0.9rem", md: "1rem" },
-                  lineHeight: 1.6,
-                }}
-              >
-                AI turns a prompt into a styled presentation with sections,
-                tone, goals, keywords, and a smart title.
-              </Typography>
-            </Box>
-            {/* Divider 2 */}
-            <Box
-              sx={{
-                display: { xs: "none", md: "flex" },
-                alignItems: "center",
-                mx: 0,
-                height: 300,
-                alignSelf: "center",
-              }}
-            >
+                <Box
+                  sx={{
+                    width: "2px",
+                    height: 200,
+                    background: "#E9E9FF",
+                    borderRadius: 1,
+                  }}
+                />
+              </Box>
+              {/* Feature 2 */}
               <Box
                 sx={{
-                  width: "2px",
-                  height: 200,
-                  background: "#E9E9FF",
-                  borderRadius: 1,
+                  flex: 1,
+                  minWidth: 200,
+                  maxWidth: 320,
+                  textAlign: "center",
+                  px: 2,
+                  position: "relative",
+                  zIndex: 1,
                 }}
-              />
-            </Box>
-            {/* Feature 3 */}
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 200,
-                maxWidth: 320,
-                textAlign: "center",
-                px: 2,
-                position: "relative",
-                zIndex: 1,
-              }}
-              className="flex flex-col items-center justify-center text-center"
-            >
-              <Image
-                src="/images/video-to-deck.svg"
-                alt="Video-to-Deck Summarizer"
-                width={40}
-                height={40}
-                style={{ width: "40px", height: "40px" }}
-                className="md:w-[60px] md:h-[60px]"
-              />
-              <Typography
+                className="flex flex-col items-center justify-center text-center"
+              >
+                <Image
+                  src="/images/smart-icon.svg"
+                  alt="Smart Prompt Generator"
+                  width={40}
+                  height={40}
+                  style={{ width: "40px", height: "40px" }}
+                  className="md:w-[60px] md:h-[60px]"
+                />
+                <Typography
+                  sx={{
+                    mt: 1,
+                    mb: 2,
+                    fontWeight: 400,
+                    color: "#18181B",
+                    fontSize: { xs: "1.1rem", md: "1.8rem" },
+                  }}
+                >
+                  Smart Prompt Generator
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "#757575",
+                    fontSize: { xs: "0.9rem", md: "1rem" },
+                    lineHeight: 1.6,
+                  }}
+                >
+                  AI turns a prompt into a styled presentation with sections,
+                  tone, goals, keywords, and a smart title.
+                </Typography>
+              </Box>
+              {/* Divider 2 */}
+              <Box
                 sx={{
-                  mt: 1,
-                  mb: 2,
-                  fontWeight: 400,
-                  color: "#18181B",
-                  fontSize: { xs: "1.1rem", md: "1.8rem" },
+                  display: { xs: "none", md: "flex" },
+                  alignItems: "center",
+                  mx: 0,
+                  height: 300,
+                  alignSelf: "center",
                 }}
               >
-                Video-to-Deck Summarizer
-              </Typography>
-              <Typography
+                <Box
+                  sx={{
+                    width: "2px",
+                    height: 200,
+                    background: "#E9E9FF",
+                    borderRadius: 1,
+                  }}
+                />
+              </Box>
+              {/* Feature 3 */}
+              <Box
                 sx={{
-                  color: "#757575",
-                  fontSize: { xs: "0.8rem", md: "1.05rem" },
-                  lineHeight: 1.6,
+                  flex: 1,
+                  minWidth: 200,
+                  maxWidth: 320,
+                  textAlign: "center",
+                  px: 2,
+                  position: "relative",
+                  zIndex: 1,
                 }}
+                className="flex flex-col items-center justify-center text-center"
               >
-                Upload a video, and AI generates narrative slides by extracting
-                speech, visuals, and key highlights.
-              </Typography>
+                <Image
+                  src="/images/video-to-deck.svg"
+                  alt="Video-to-Deck Summarizer"
+                  width={40}
+                  height={40}
+                  style={{ width: "40px", height: "40px" }}
+                  className="md:w-[60px] md:h-[60px]"
+                />
+                <Typography
+                  sx={{
+                    mt: 1,
+                    mb: 2,
+                    fontWeight: 400,
+                    color: "#18181B",
+                    fontSize: { xs: "1.1rem", md: "1.8rem" },
+                  }}
+                >
+                  Video-to-Deck Summarizer
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "#757575",
+                    fontSize: { xs: "0.8rem", md: "1.05rem" },
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Upload a video, and AI generates narrative slides by
+                  extracting speech, visuals, and key highlights.
+                </Typography>
+              </Box>
             </Box>
-          </Box>
-        </Container>
+          </Container>
       </Box>
     </ResponsivePageWrapper>
   );

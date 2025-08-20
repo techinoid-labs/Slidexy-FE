@@ -2,8 +2,17 @@
 
 import { Box, Typography, Link, Stack } from "@mui/material";
 import Image from "next/image";
+import { usePathname } from "next/navigation"; // ✅ for active route
 
 export default function Footer() {
+  const pathname = usePathname(); // ✅ current route
+
+  const navLinks = [
+    { title: "Home", link: "/" },
+    { title: "Templates", link: "/templates" },
+    { title: "Pricing", link: "/pricing" },
+  ];
+
   return (
     <Box
       component="footer"
@@ -44,46 +53,24 @@ export default function Footer() {
         alignItems="center"
         sx={{ mb: 3 }}
       >
-        {["Home", "Templates", "Pricing"].map((item) => (
-          <Link
-            key={item}
-            href="#"
-            underline="none"
-            sx={{
-              color: "#555",
-              fontSize: { xs: "0.95rem", md: "1rem" },
-              fontWeight: 400,
-            }}
-          >
-            {item}
-          </Link>
-        ))}
+        {navLinks.map((item) => {
+          const isActive = pathname === item.link;
+          return (
+            <Link
+              key={item.title}
+              href={item.link}
+              underline="none"
+              sx={{
+                color: isActive ? "#000" : "#555", // ✅ highlight active
+                fontSize: { xs: "0.95rem", md: "1rem" },
+                fontWeight: isActive ? 600 : 400, // ✅ bold active
+              }}
+            >
+              {item.title}
+            </Link>
+          );
+        })}
       </Stack>
-
-      {/* Social Icons */}
-      {/* <Stack
-        direction="row"
-        spacing={3}
-        justifyContent="center"
-        alignItems="center"
-        sx={{ mb: 3 }}
-      >
-        {[
-          { src: "/images/facebook-icon.svg", alt: "Facebook" },
-          { src: "/images/x-icon.svg", alt: "Twitter" },
-          { src: "/images/instagram.svg", alt: "Instagram" },
-        ].map((icon, idx) => (
-          <Link key={idx} href="#" underline="none">
-            <img
-              src={icon.src}
-              alt={icon.alt}
-              width={24}
-              height={24}
-              style={{ display: "block" }}
-            />
-          </Link>
-        ))}
-      </Stack> */}
 
       {/* Copyright */}
       <Typography

@@ -15,13 +15,14 @@ import {
 import { KeyboardArrowDown, Menu as MenuIcon } from "@mui/icons-material";
 import Image from "next/image";
 import Link from "next/link";
-import { ThemeToggle } from "@/lib/theme-toggle";
+import { usePathname } from "next/navigation"; // ✅ active route
 import { Typography } from "@mui/material";
 
 export default function Header() {
   const theme = useMuiTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const pathname = usePathname(); // ✅ get current path
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -34,10 +35,6 @@ export default function Header() {
   const navigationItems = [
     { label: "Home", hasDropdown: false, link: "/" },
     { label: "Templates", hasDropdown: false, link: "/templates" },
-    // { label: "Features", hasDropdown: false, link: "/features" },
-    // { label: "Reports", hasDropdown: false, link: "/reports" },
-    // { label: "Product", hasDropdown: false, link: "/product" },
-    // { label: "Blog", hasDropdown: false, link: "/blog" },
     { label: "Pricing", hasDropdown: false, link: "/pricing" },
   ];
 
@@ -73,6 +70,7 @@ export default function Header() {
             />
           </Box>
         </Link>
+
         {/* Desktop Navigation */}
         <Box sx={{ display: "flex", alignSelf: "flex-end" }}>
           {!isMobile && (
@@ -80,41 +78,44 @@ export default function Header() {
               sx={{
                 display: "flex",
                 alignItems: "flex-end",
-                gap: 5,
+                gap: 2.5,
                 height: "100%",
               }}
             >
-              {navigationItems.map((item) => (
-                <Link key={item.label} href={item.link} passHref>
-                  <Button
-                    color="inherit"
-                    endIcon={item.hasDropdown ? <KeyboardArrowDown /> : null}
-                    sx={{
-                      color: "text.secondary",
-                      fontSize: "1.35rem",
-                      fontWeight: 500,
-                      letterSpacing: 1,
-                      px: 3,
-                      height: "100%",
-                      display: "flex",
-                      alignItems: "flex-end",
-                      "&:hover": {
-                        color: "text.primary",
-                        backgroundColor: "transparent",
-                      },
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                </Link>
-              ))}
+              {navigationItems.map((item) => {
+                const isActive = pathname === item.link;
+                return (
+                  <Link key={item.label} href={item.link} passHref>
+                    <Button
+                      color="inherit"
+                      endIcon={item.hasDropdown ? <KeyboardArrowDown /> : null}
+                      sx={{
+                        color: isActive ? "text.primary" : "text.secondary", // ✅ active color
+                        fontSize: "1.35rem",
+                        fontWeight: isActive ? 700 : 500, // ✅ bold active
+                        letterSpacing: 1,
+                        px: 3,
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "flex-end",
+                        "&:hover": {
+                          color: "text.primary",
+                          backgroundColor: "transparent",
+                        },
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  </Link>
+                );
+              })}
             </Box>
           )}
 
           {/* Right Side Actions */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {!isMobile && (
-              <>                
+              <>
                 <Link href="/presentation/create" passHref>
                   <Button
                     variant="contained"
@@ -195,23 +196,26 @@ export default function Header() {
                     },
                   }}
                 >
-                  {/* {navigationItems.map((item) => (
-                  <MenuItem key={item.label} onClick={handleMenuClose}>
-                    {item.label}
-                  </MenuItem>
-                ))} */}
-                  {navigationItems.map((item) => (
-                    <MenuItem
-                      key={item.label}
-                      component={Link}
-                      href={item.link}
-                      onClick={handleMenuClose}
-                    >
-                      {item.label}
-                    </MenuItem>
-                  ))}
+                  {navigationItems.map((item) => {
+                    const isActive = pathname === item.link;
+                    return (
+                      <MenuItem
+                        key={item.label}
+                        component={Link}
+                        href={item.link}
+                        onClick={handleMenuClose}
+                        sx={{
+                          fontWeight: isActive ? 600 : 400,
+                          color: isActive
+                            ? theme.palette.primary.main
+                            : "inherit",
+                        }}
+                      >
+                        {item.label}
+                      </MenuItem>
+                    );
+                  })}
 
-                  {/* <MenuItem onClick={handleMenuClose}>Login</MenuItem> */}
                   <MenuItem
                     component={Link}
                     href="/presentation/create"
