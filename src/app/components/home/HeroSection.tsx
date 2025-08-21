@@ -314,8 +314,8 @@ export default function HeroSection() {
               sx={{
                 display: "flex",
                 justifyContent: "center",
-                mt: { sx: -20, md: 0 },
-                mb: { sx: 10, md: 0 },
+                mt: { sx: 0, md: 0 },
+                pb: { sx: 10, md: 0 },
               }}
             >
               <Button
