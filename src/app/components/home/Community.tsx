@@ -9,7 +9,7 @@ export default function CommunitySection() {
       sx={{
         width: "100%",
         maxWidth: "100vw",
-        background: "#FAF8FF",
+        background: "#723AFF",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -23,9 +23,7 @@ export default function CommunitySection() {
       }}
     >
       {/* Icon */}
-      <Box
-        sx={{ display: "flex", justifyContent: "center" }}
-      >
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
         <Box
           sx={{
             width: 150,
@@ -92,7 +90,6 @@ export default function CommunitySection() {
             </svg>
           }
           sx={{
-            backgroundColor: "red",
             color: "#fff",
             borderRadius: "999px",
             px: 3,

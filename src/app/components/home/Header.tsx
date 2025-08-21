@@ -33,7 +33,7 @@ export default function Header() {
   };
 
   const navigationItems = [
-    { label: "Home", hasDropdown: false, link: "/" },
+    { label: "Home", hasDropdown: false, link: "/home" },
     { label: "Templates", hasDropdown: false, link: "/templates" },
     { label: "Pricing", hasDropdown: false, link: "/pricing" },
   ];
@@ -78,7 +78,7 @@ export default function Header() {
               sx={{
                 display: "flex",
                 alignItems: "flex-end",
-                gap: 2.5,
+                gap:0.5,
                 height: "100%",
               }}
             >
@@ -91,10 +91,11 @@ export default function Header() {
                       endIcon={item.hasDropdown ? <KeyboardArrowDown /> : null}
                       sx={{
                         color: isActive ? "text.primary" : "text.secondary", // ✅ active color
-                        fontSize: "1.35rem",
-                        fontWeight: isActive ? 700 : 500, // ✅ bold active
+                        fontSize: "16px",
+                        fontWeight: isActive ? 500 : 400, // ✅ bold active
                         letterSpacing: 1,
                         px: 3,
+                        mt:0.5,                        
                         height: "100%",
                         display: "flex",
                         alignItems: "flex-end",
@@ -124,7 +125,9 @@ export default function Header() {
                       backgroundColor: "#4A00E0",
                       color: "#fff",
                       borderRadius: "999px",
-                      px: 3,
+                      px: "20px",
+                      py: "12px",
+                      maxHeight: "48px",
                       textTransform: "none",
                       fontWeight: 600,
                       whiteSpace: "nowrap",
@@ -139,7 +142,7 @@ export default function Header() {
 
                 <Link href="/waiting-list" passHref>
                   <Button
-                    variant="contained"
+                    variant="outlined"
                     endIcon={
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -157,16 +160,13 @@ export default function Header() {
                     sx={{
                       mt: "5px",
                       ml: "10px",
-                      backgroundColor: "red",
-                      color: "#fff",
-                      borderRadius: "999px",
-                      px: 3,
+                      px: "20px",
+                      py: "12px",
+                      color: "#4A00E0",
+                      borderRadius: "999px",                      
                       textTransform: "none",
                       fontWeight: 600,
                       whiteSpace: "nowrap",
-                      "&:hover": {
-                        backgroundColor: "red",
-                      },
                     }}
                   >
                     Join the Waitlist
