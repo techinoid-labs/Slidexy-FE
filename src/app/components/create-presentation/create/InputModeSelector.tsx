@@ -9,8 +9,9 @@ import {
   CardMedia,
   Box as MuiBox,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import { useSearchParams } from "next/navigation";
 
 const modes = [
   { label: "Prompt-to-Deck", value: "Text" },
@@ -24,8 +25,18 @@ export default function InputModeSelector({
 }: {
   onModeChange: (mode: string) => void;
 }) {
-  const [activeMode, setActiveMode] = useState("Text");
+  const [activeMode, setActiveMode] = useState<string | null>("Text");
   const theme = useTheme();
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const active = searchParams.get("name")
+      ? searchParams.get("name")
+      : activeMode;
+
+    setActiveMode(active);
+  }, []);
 
   const handleModeChange = (mode: string) => {
     setActiveMode(mode);

@@ -4,8 +4,15 @@ import { ArrowForward } from "@mui/icons-material";
 import { Box, Button, Typography } from "@mui/material";
 import Image from "next/image";
 import TemplateHero from "../../../../public/images/templatesHero.svg";
+import { useRouter } from "next/navigation";
 
 export default function Hero() {
+  
+  const router = useRouter();
+   const queryParams = new URLSearchParams();
+   queryParams.set("name", "Template");
+  
+  
   return (
     <Box
       component="section"
@@ -65,6 +72,7 @@ export default function Hero() {
           }}
         >
           <Button
+            onClick={()=>router.push(`/presentation/create?${queryParams.toString()}`)}
             variant="contained"
             endIcon={<ArrowForward />}
             sx={{

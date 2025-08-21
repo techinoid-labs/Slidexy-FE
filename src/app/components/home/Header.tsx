@@ -35,7 +35,7 @@ export default function Header() {
   const navigationItems = [
     { label: "Home", hasDropdown: false, link: "/home" },
     { label: "Templates", hasDropdown: false, link: "/templates" },
-    { label: "Pricing", hasDropdown: false, link: "/pricing" },
+    // { label: "Pricing", hasDropdown: false, link: "/pricing" },
   ];
 
   return (
@@ -78,7 +78,7 @@ export default function Header() {
               sx={{
                 display: "flex",
                 alignItems: "flex-end",
-                gap:0.5,
+                gap: 0.5,
                 height: "100%",
               }}
             >
@@ -95,7 +95,7 @@ export default function Header() {
                         fontWeight: isActive ? 500 : 400, // ✅ bold active
                         letterSpacing: 1,
                         px: 3,
-                        mt:0.5,                        
+                        mt: 0.5,
                         height: "100%",
                         display: "flex",
                         alignItems: "flex-end",
@@ -117,9 +117,31 @@ export default function Header() {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {!isMobile && (
               <>
+                <Link href="/waiting-list" passHref>
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      mt: "5px",
+                      ml: "10px",
+                      px: "20px",
+                      py: "12px",
+                      color: "#4A00E0",
+                      height: "48px",
+                      background: "#F2F0FF",
+                      borderRadius: "999px",
+                      textTransform: "none",
+                      fontWeight: 500,
+                      fontSize:"16px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Join the Waitlist
+                  </Button>
+                </Link>
+
                 <Link href="/presentation/create" passHref>
                   <Button
-                    variant="contained"
+                    variant="contained"                    
                     sx={{
                       mt: 0.5,
                       backgroundColor: "#4A00E0",
@@ -137,39 +159,6 @@ export default function Header() {
                     }}
                   >
                     Try for Free →
-                  </Button>
-                </Link>
-
-                <Link href="/waiting-list" passHref>
-                  <Button
-                    variant="outlined"
-                    endIcon={
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          fill="currentColor"
-                          d="M7 2a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5H7zm0 2h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zm5 2a1 1 0 0 0-1 1v4.586l-2.707 2.707a1 1 0 1 0 1.414 1.414l3-3A1 1 0 0 0 13 10V7a1 1 0 0 0-1-1z"
-                        />
-                      </svg>
-                    }
-                    sx={{
-                      mt: "5px",
-                      ml: "10px",
-                      px: "20px",
-                      py: "12px",
-                      color: "#4A00E0",
-                      borderRadius: "999px",                      
-                      textTransform: "none",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Join the Waitlist
                   </Button>
                 </Link>
               </>
