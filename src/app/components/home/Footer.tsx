@@ -72,6 +72,44 @@ export default function Footer() {
         })}
       </Stack>
 
+      {/* Social Icons */}
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="center"
+        alignItems="center"
+        sx={{ mb: 3 }}
+      >
+        {[
+          {
+            src: "/images/Facebook.svg",
+            alt: "Facebook",
+            link: "https://web.facebook.com/Slidexy",
+          },
+          // {
+          //   src: "/images/x-icon.svg",
+          //   alt: "Twitter",
+          //   link: "https://web.facebook.com/Slidexy",
+          // },
+          {
+            src: "/images/Instagram.svg",
+            alt: "Instagram",
+            link: "https://www.instagram.com/slidexy_ai/",
+          },
+        ].map((icon, idx) => (
+          <Link key={idx} href={icon.link} target="_blank" underline="none">
+            <img
+              src={icon.src}
+              alt={icon.alt}
+              width={36}
+              height={36}
+              className="object-cover"
+              style={{ display: "block", cursor: "pointer" }}
+            />
+          </Link>
+        ))}
+      </Stack>
+
       {/* Copyright */}
       <Typography
         sx={{

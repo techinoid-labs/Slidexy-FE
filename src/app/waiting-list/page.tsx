@@ -8,6 +8,7 @@ import {
   Paper,
   Snackbar,
   Alert,
+  Link as NavLink,
 } from "@mui/material";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -64,7 +65,7 @@ export default function WaitingList() {
       <Box
         display="flex"
         flexDirection={{ xs: "column", sm: "row" }}
-        justifyContent="center"
+        justifyContent="space-between"
         alignItems="center"
         sx={{
           p: { xs: 3, sm: 6, md: "60px" },
@@ -83,36 +84,54 @@ export default function WaitingList() {
             <Image
               src="/images/Logo.svg"
               alt="Slides Logo"
-              width={200}
+              width={118}
               height={36}
               style={{ maxWidth: "100%", height: "auto" }}
             />
           </Box>
         </Link>
 
-        {/* Social Icons */}
-        {/* <Stack
+        <Stack
           direction="row"
-          spacing={3}
+          spacing={2}
           justifyContent="center"
           alignItems="center"
-          sx={{ flexWrap: "wrap", mb: { xs: 0, sm: 3 } }}
+          sx={{ mb: 3 }}
         >
           {[
-            { src: "/images/facebook-icon.svg", alt: "Facebook" },
-            { src: "/images/x-icon.svg", alt: "Twitter" },
-            { src: "/images/instagram.svg", alt: "Instagram" },
+            {
+              src: "/images/Facebook.svg",
+              alt: "Facebook",
+              link: "https://web.facebook.com/Slidexy",
+            },
+            // {
+            //   src: "/images/x-icon.svg",
+            //   alt: "Twitter",
+            //   link: "https://web.facebook.com/Slidexy",
+            // },
+            {
+              src: "/images/Instagram.svg",
+              alt: "Instagram",
+              link: "https://www.instagram.com/slidexy_ai/",
+            },
           ].map((icon, idx) => (
-            <Link key={idx} href="#">
-              <Box
-                component="img"
+            <NavLink
+              key={idx}
+              href={icon.link}
+              target="_blank"
+              underline="none"
+            >
+              <img
                 src={icon.src}
                 alt={icon.alt}
-                sx={{ width: 20, height: 20 }}
+                width={36}
+                height={36}
+                className="object-cover"
+                style={{ display: "block", cursor: "pointer" }}
               />
-            </Link>
+            </NavLink>
           ))}
-        </Stack> */}
+        </Stack>
       </Box>
 
       {/* Content Section */}
@@ -374,8 +393,8 @@ export default function WaitingList() {
         {/* Email Input */}
         <Box
           component="form"
-          sx={{            
-            maxWidth: {xs:"100%",sm:"730px"},
+          sx={{
+            maxWidth: { xs: "100%", sm: "730px" },
             mx: "auto",
             px: { xs: 2, sm: 2 },
             py: { xs: 3, sm: 4 },
@@ -393,7 +412,7 @@ export default function WaitingList() {
               borderColor: "#4A00E0",
               bgcolor: "#fff",
               flexWrap: "wrap", // keeps button below on xs
-              pl:{sm:"32px",xs:"20px"}              
+              pl: { sm: "32px", xs: "20px" },
             }}
           >
             <InputBase
