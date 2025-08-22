@@ -90,7 +90,7 @@ export default function CommunitySection() {
             mt: { xs: 0, md: -10 },
           }}
         >
-          Join the Waitlist
+          Join Waitlist
         </Button>
       </Link>
     </Box>

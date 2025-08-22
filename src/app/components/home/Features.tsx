@@ -45,7 +45,7 @@ export default function FeaturesSection() {
               <Chip
                 icon={
                   <Image
-                    src="/images/side-star-purple.svg"
+                    src="/images/Stars.svg"
                     alt="Icon"
                     width={20}
                     height={20}

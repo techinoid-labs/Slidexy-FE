@@ -24,7 +24,7 @@ export default function WorkingSection() {
         <Chip
           icon={
             <img
-              src="/images/side-star-purple.svg"
+              src="/images/Stars.svg"
               alt="Icon"
               width={18}
               height={18}
@@ -33,7 +33,7 @@ export default function WorkingSection() {
           }
           label={
             <span
-              style={{ fontWeight: 500, fontSize: "1.2rem", color: "#4A00E0" }}
+              style={{ fontWeight: 500, fontSize: "14px", color: "#4A00E0" }}
             >
               How it Works?
             </span>
@@ -177,7 +177,7 @@ export default function WorkingSection() {
               <Typography
                 sx={{
                   fontWeight: 600,
-                  fontSize: "1.18rem",
+                  fontSize: "16px",
                   color: "#6C2BD7",
                   mb: 1,
                 }}

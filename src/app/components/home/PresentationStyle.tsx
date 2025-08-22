@@ -33,7 +33,7 @@ export default function PresentationStyleSection() {
       <Chip
         icon={
           <img
-            src="/images/side-star-purple.svg"
+            src="/images/Stars.svg"
             alt="Icon"
             width={20}
             height={20}
@@ -41,7 +41,7 @@ export default function PresentationStyleSection() {
           />
         }
         label={
-          <span style={{ fontWeight: 500, fontSize: "1rem", color: "#4A00E0" }}>
+          <span style={{ fontWeight: 500, fontSize: "14px", color: "#4A00E0" }}>
             AI Presentation Styles
           </span>
         }
@@ -153,7 +153,7 @@ export default function PresentationStyleSection() {
               mb: 2,
             }}
           >
-            AI Popular Templates            
+            AI Popular Templates
           </Typography>
           <Typography
             sx={{
