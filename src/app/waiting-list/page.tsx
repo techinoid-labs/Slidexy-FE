@@ -110,7 +110,7 @@ export default function WaitingList() {
             //   link: "https://web.facebook.com/Slidexy",
             // },
             {
-              src: "/images/Instagram.svg",
+              src: "/images/instagram.svg",
               alt: "Instagram",
               link: "https://www.instagram.com/slidexy_ai/",
             },
