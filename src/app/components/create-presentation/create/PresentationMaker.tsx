@@ -44,11 +44,13 @@ export default function PresentationMaker({
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0); 
-  const { setSlides } = useSlides();
+  const [progress, setProgress] = useState(0);
+  const { setSlides, slides } = useSlides();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [templatePrompt, setTemplatePrompt] = useState("");
+
+  // console.log(slides);
 
   const [goal, setGoal] = useState("");
   const [tone, setTone] = useState("");
@@ -72,15 +74,55 @@ export default function PresentationMaker({
     setInputValue(description);
   };
 
-  const extractVideoId = (inputUrl: string) => {
+  // const extractVideoId = (inputUrl: string) => {
+  //   try {
+  //     const urlObj = new URL(inputUrl);
+  //     if (urlObj.hostname.includes("youtube.com")) {
+  //       return urlObj.searchParams.get("v");
+  //     } else if (urlObj.hostname === "youtu.be") {
+  //       return urlObj.pathname.slice(1);
+  //     }
+  //   } catch (error) {
+  //     return null;
+  //   }
+  // };
+
+  const extractVideoId = (inputUrl: string): string | null => {
     try {
       const urlObj = new URL(inputUrl);
-      if (urlObj.hostname.includes("youtube.com")) {
-        return urlObj.searchParams.get("v");
-      } else if (urlObj.hostname === "youtu.be") {
+      const host = urlObj.hostname.replace("www.", "");
+
+      // youtu.be short link
+      if (host === "youtu.be") {
         return urlObj.pathname.slice(1);
       }
-    } catch (error) {
+
+      // Standard YouTube domains (desktop, mobile, music, no-cookie embeds)
+      if (
+        host.endsWith("youtube.com") ||
+        host.endsWith("youtube-nocookie.com")
+      ) {
+        // Shorts
+        if (urlObj.pathname.startsWith("/shorts/")) {
+          return urlObj.pathname.split("/")[2];
+        }
+
+        // Embed
+        if (urlObj.pathname.startsWith("/embed/")) {
+          return urlObj.pathname.split("/")[2];
+        }
+
+        // Live
+        if (urlObj.pathname.startsWith("/live/")) {
+          return urlObj.pathname.split("/")[2];
+        }
+
+        // Standard watch
+        return urlObj.searchParams.get("v");
+      }
+
+      return null;
+    } catch {
       return null;
     }
   };
@@ -358,14 +400,20 @@ export default function PresentationMaker({
         </Typography>
       )}
 
-      <Button
+      {/* <Button
         fullWidth
         onClick={inputMode === "Template" ? handleTemplateSubmit : handleSubmit}
+        // disabled={
+        //   loading ||
+        //   (inputMode === "Template"
+        //     ? !templatePrompt.trim()
+        //     : !inputValue.trim())
+        // }
         disabled={
           loading ||
           (inputMode === "Template"
             ? !templatePrompt.trim()
-            : !inputValue.trim())
+            : !inputValue.trim() || Boolean(showYoutubeError))
         }
         sx={{
           position: "relative",
@@ -416,28 +464,6 @@ export default function PresentationMaker({
           },
         }}
       >
-        {/* <span
-          style={{
-            color: loading
-              ? "#fff"
-              : inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "grey"
-                : "#8E2DE2"
-              : !inputValue.trim()
-              ? "grey"
-              : "#8E2DE2",
-            textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
-            transition: "color 0.6s ease, text-shadow 0.6s ease",
-            fontWeight: 600,
-          }}
-        >
-          {loading
-            ? `Generating... ${Math.round(progress)}%`
-            : inputMode === "Template"
-            ? "Generate Template"
-            : "Generate Outlines"}
-        </span> */}
         <span
           style={{
             color: loading
@@ -474,6 +500,115 @@ export default function PresentationMaker({
                 ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
                 : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
               : !inputValue.trim()
+              ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+            maskImage: 'url("/images/generate.svg")',
+            WebkitMaskImage: 'url("/images/generate.svg")',
+            maskSize: "cover",
+            WebkitMaskSize: "cover",
+            maskRepeat: "no-repeat",
+            WebkitMaskRepeat: "no-repeat",
+            maskPosition: "center",
+            WebkitMaskPosition: "center",
+            transition: "background 0.4s ease, box-shadow 0.4s ease",
+            boxShadow: loading ? "0 0 10px #8E2DE2, 0 0 5px #4A00E0" : "none",
+          }}
+        />
+      </Button> */}
+      <Button
+        fullWidth
+        onClick={inputMode === "Template" ? handleTemplateSubmit : handleSubmit}
+        disabled={
+          loading ||
+          (inputMode === "Template"
+            ? !templatePrompt.trim()
+            : !inputValue.trim() || Boolean(showYoutubeError))
+        }
+        sx={{
+          position: "relative",
+          overflow: "hidden",
+          textTransform: "none",
+          borderRadius: "999px",
+          px: 6,
+          py: 1.75,
+          fontSize: "1.125rem",
+          fontWeight: 600,
+          mb: 4,
+          height: { xs: 57, md: 70 },
+          border: `2px solid ${
+            inputMode === "Template"
+              ? !templatePrompt.trim()
+                ? "grey"
+                : "#8E2DE2"
+              : !inputValue.trim() || Boolean(showYoutubeError)
+              ? "grey"
+              : "#8E2DE2"
+          }`,
+          backgroundColor: "#fff",
+          color: loading ? "#fff" : "#8E2DE2",
+          transition: "color 0.6s ease",
+          opacity:
+            inputMode === "Template"
+              ? !templatePrompt.trim()
+                ? 0.7
+                : 1
+              : !inputValue.trim() || Boolean(showYoutubeError)
+              ? 0.7
+              : 1,
+          "&:hover": { backgroundColor: "#f3eaff" },
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            height: "100%",
+            width: `${progress}%`,
+            background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+            transition: "width 0.2s ease-out",
+            zIndex: 0,
+          },
+          "& span, & .icon": {
+            position: "relative",
+            zIndex: 1,
+          },
+        }}
+      >
+        <span
+          style={{
+            color: loading
+              ? "#fff"
+              : inputMode === "Template"
+              ? !templatePrompt.trim()
+                ? "grey"
+                : "#8E2DE2"
+              : !inputValue.trim() || Boolean(showYoutubeError)
+              ? "grey"
+              : "#8E2DE2",
+            textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
+            transition: "color 0.6s ease, text-shadow 0.6s ease",
+            fontWeight: 600,
+          }}
+        >
+          {loading
+            ? `${getProgressMessage(progress)} ${Math.round(progress)}%`
+            : inputMode === "Template"
+            ? "Generate Template"
+            : "Generate Outlines"}
+        </span>
+
+        <Box
+          className="icon"
+          sx={{
+            width: 22,
+            height: 22,
+            ml: 1,
+            background: loading
+              ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
+              : inputMode === "Template"
+              ? !templatePrompt.trim()
+                ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+                : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
+              : !inputValue.trim() || Boolean(showYoutubeError)
               ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
               : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
             maskImage: 'url("/images/generate.svg")',
@@ -534,7 +669,7 @@ export default function PresentationMaker({
 
         <Box
           sx={{
-            paddingRight : {md: 25},
+            paddingRight: { md: 25 },
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
             gap: 2,
@@ -551,7 +686,7 @@ export default function PresentationMaker({
                   transform: "scale(1.05)",
                   transition: "0.3s ease",
                 },
-              
+
                 cursor: "pointer",
                 backgroundColor: "#F7F5FD",
                 borderRadius: "16px",
