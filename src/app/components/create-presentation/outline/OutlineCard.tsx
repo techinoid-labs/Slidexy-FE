@@ -264,11 +264,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
 
     setLoadingImageIndex(imageIndex);
     const currentSlide = slidesState[slideIndex];
-    const imagePrompt = `Generate a high-quality, professional image for slide titled "${
-      currentSlide.slide_title.text
-    }" with points: ${currentSlide.elements
-      .map((el) => el.text)
-      .join(", ")}. No text or labels inside the image.`;
+    const imagePrompt = `Generate a high-quality, professional image based on the slide titled "${currentSlide.slide_title.text}".under no circumstances there should be any text or labels inside the generated image.`;
 
     try {
       const res = await fetch(`${API_BASE_URL}/generate-image-suggestions`, {
@@ -277,7 +273,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
         body: JSON.stringify({
           prompt: imagePrompt,
           count: 3,
-          isInfographicMode,
         }),
       });
 
