@@ -126,7 +126,7 @@ export default function WaitingList() {
                 alt={icon.alt}
                 width={36}
                 height={36}
-                className="object-cover"
+                className="object-cover hover:p-[20px] hover:bg-[#E8E4FF] rounded-full"
                 style={{ display: "block", cursor: "pointer" }}
               />
             </NavLink>
@@ -188,36 +188,19 @@ export default function WaitingList() {
                 }}
               >
                 <Button
+                  onClick={() => {
+                    const section =
+                      document.getElementById("waitingListSection");
+                    if (section) {
+                      section.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
                   sx={{
                     border: "1px solid #4A00E0",
                     px: { xs: "24px", sm: "24px" },
                     py: { xs: "12px", sm: "12px" },
                     fontSize: { xs: "16px", sm: "16px" },
                     fontWeight: "700",
-                  }}
-                  onClick={async () => {
-                    if (!email) {
-                      alert("Please enter an email");
-                      return;
-                    }
-                    try {
-                      const res = await fetch(`${API_BASE_URL}/join-waitlist`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email }),
-                      });
-
-                      const data = await res.json();
-                      if (res.ok) {
-                        alert("You have joined the waitlist!");
-                        setEmail("");
-                      } else {
-                        alert(data.error || "Something went wrong");
-                      }
-                    } catch (err) {
-                      console.error(err);
-                      alert("Server error");
-                    }
                   }}
                 >
                   Join Waitlist
@@ -307,346 +290,347 @@ export default function WaitingList() {
       </Box>
 
       {/* Footer Section */}
-      <Box
-        sx={{
-          pb: { xs: "40px", md: "60px" },
-          textAlign: { xs: "center", md: "center" },
-          background: "#F9F9FB",
-          marginTop: { xs: "40px", sm: "80px" },
-          paddingTop: { xs: "60px", sm: "80px" },
-        }}
-      >
-        {/* Coming Soon Tag */}
+      <div id="waitingListSection">
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            mt: { xs: 2, md: 1 },
-            mb: 2,
+            pb: { xs: "40px", md: "60px" },
+            textAlign: { xs: "center", md: "center" },
+            background: "#F9F9FB",
+            marginTop: { xs: "40px", sm: "80px" },
+            paddingTop: { xs: "60px", sm: "80px" },
           }}
         >
+          {/* Coming Soon Tag */}
           <Box
-            display="inline-flex"
-            alignItems="center"
-            sx={{
-              px: 1.5,
-              py: 0.7,
-              fontSize: { xs: "0.75rem", sm: "0.85rem", md: "0.95rem" },
-              borderRadius: "600px",
-              color: "black",
-              background: "white",
-            }}
-          >
-            <Image
-              src="/images/side-star-purple.svg"
-              alt="Icon"
-              width={18}
-              height={18}
-              style={{ marginRight: "6px" }}
-            />
-            <Typography
-              component="span"
-              sx={{ fontSize: "inherit", fontWeight: 500 }}
-            >
-              COMING SOON
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Main Heading */}
-        <Typography
-          variant="h1"
-          sx={{
-            fontSize: { xs: 28, sm: 34, md: 50 },
-            fontWeight: 550,
-            mb: 3,
-            lineHeight: 1.3,
-            color: "#000000",
-            px: { xs: 2, sm: 0 },
-          }}
-        >
-          Unleash Your Imagination. <br />
-          <Typography
-            variant="inherit"
-            component="span"
-            sx={{ fontWeight: 300 }}
-          >
-            Create Without Limits.
-          </Typography>
-        </Typography>
-
-        {/* Subheading */}
-        <Typography
-          variant="h6"
-          sx={{
-            color: "text.secondary",
-            mx: "auto",
-            lineHeight: 1.4,
-            fontSize: { xs: "14px", sm: "15px", md: "16px" },
-            maxWidth: 600,
-            px: 2,
-          }}
-        >
-          The tool artists, designers, and dreamers have been waiting for
-        </Typography>
-
-        {/* Email Input */}
-        <Box
-          component="form"
-          sx={{
-            maxWidth: { xs: "100%", sm: "730px" },
-            mx: "auto",
-            px: { xs: 2, sm: 2 },
-            py: { xs: 3, sm: 4 },
-          }}
-        >
-          <Paper
-            elevation={0}
             sx={{
               display: "flex",
-              alignItems: "center",
-              gap: 1,
-              p: { xs: "8px", sm: "10px" },
-              borderRadius: "40px",
-              border: "1px solid",
-              borderColor: "#4A00E0",
-              bgcolor: "#fff",
-              flexWrap: "wrap", // keeps button below on xs
-              pl: { sm: "32px", xs: "20px" },
+              justifyContent: "center",
+              mt: { xs: 2, md: 1 },
+              mb: 2,
             }}
           >
-            <InputBase
-              type="email"
-              placeholder="Type email address here"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+            <Box
+              display="inline-flex"
+              alignItems="center"
               sx={{
-                flex: 1,
-                fontSize: { xs: 14, sm: 16 },
-                minWidth: { xs: "100px", sm: "180px" },
+                px: 1.5,
+                py: 0.7,
+                fontSize: { xs: "0.75rem", sm: "0.85rem", md: "0.95rem" },
+                borderRadius: "600px",
+                color: "black",
+                background: "white",
               }}
-            />
-            <Button
-              variant="contained"
-              sx={{
-                px: { xs: "16px", md: "20px" },
-                py: { xs: "12px", md: "14px" },
-                textTransform: "none",
-                fontSize: { xs: "14px", md: "16px" },
-                fontWeight: 500,
-                borderRadius: "30px",
-                background: "#8E2DE2",
-                color: "white",
-                width: { xs: "auto", sm: "fit-content" },
-              }}
-              onClick={async () => {
-                if (!email) {
-                  setMessage("Please enter an email");
-                  setSeverity("error");
-                  setOpen(true);
-                  return;
-                }
-                try {
-                  const res = await fetch(`${API_BASE_URL}/join-waitlist`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email }),
-                  });
+            >
+              <Image
+                src="/images/side-star-purple.svg"
+                alt="Icon"
+                width={18}
+                height={18}
+                style={{ marginRight: "6px" }}
+              />
+              <Typography
+                component="span"
+                sx={{ fontSize: "inherit", fontWeight: 500 }}
+              >
+                COMING SOON
+              </Typography>
+            </Box>
+          </Box>
 
-                  const data = await res.json();
-                  if (res.ok) {
-                    setMessage("You have joined the waitlist!");
-                    setSeverity("success");
-                    setEmail("");
-                  } else {
-                    setMessage(data.error || "Something went wrong");
+          {/* Main Heading */}
+          <Typography
+            variant="h1"
+            sx={{
+              fontSize: { xs: 28, sm: 34, md: 50 },
+              fontWeight: 550,
+              mb: 3,
+              lineHeight: 1.3,
+              color: "#000000",
+              px: { xs: 2, sm: 0 },
+            }}
+          >
+            Unleash Your Imagination. <br />
+            <Typography
+              variant="inherit"
+              component="span"
+              sx={{ fontWeight: 300 }}
+            >
+              Create Without Limits.
+            </Typography>
+          </Typography>
+
+          {/* Subheading */}
+          <Typography
+            variant="h6"
+            sx={{
+              color: "text.secondary",
+              mx: "auto",
+              lineHeight: 1.4,
+              fontSize: { xs: "14px", sm: "15px", md: "16px" },
+              maxWidth: 600,
+              px: 2,
+            }}
+          >
+            The tool artists, designers, and dreamers have been waiting for
+          </Typography>
+
+          {/* Email Input */}
+          <Box
+            component="form"
+            sx={{
+              maxWidth: { xs: "100%", sm: "730px" },
+              mx: "auto",
+              px: { xs: 2, sm: 2 },
+              py: { xs: 3, sm: 4 },
+            }}
+          >
+            <Paper
+              elevation={0}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                p: { xs: "8px", sm: "10px" },
+                borderRadius: "40px",
+                border: "1px solid",
+                borderColor: "#4A00E0",
+                bgcolor: "#fff",
+                flexWrap: "wrap", // keeps button below on xs
+                pl: { sm: "32px", xs: "20px" },
+              }}
+            >
+              <InputBase
+                type="email"
+                placeholder="Type email address here"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                sx={{
+                  flex: 1,
+                  fontSize: { xs: 14, sm: 16 },
+                  minWidth: { xs: "100px", sm: "180px" },
+                }}
+              />
+              <Button
+                variant="contained"
+                sx={{
+                  px: { xs: "16px", md: "20px" },
+                  py: { xs: "12px", md: "14px" },
+                  textTransform: "none",
+                  fontSize: { xs: "14px", md: "16px" },
+                  fontWeight: 500,
+                  borderRadius: "30px",
+                  background: "#8E2DE2",
+                  color: "white",
+                  width: { xs: "auto", sm: "fit-content" },
+                }}
+                onClick={async () => {
+                  if (!email) {
+                    setMessage("Please enter an email");
+                    setSeverity("error");
+                    setOpen(true);
+                    return;
+                  }
+                  try {
+                    const res = await fetch(`${API_BASE_URL}/join-waitlist`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email }),
+                    });
+
+                    const data = await res.json();
+                    if (res.ok) {
+                      setMessage("You have joined the waitlist!");
+                      setSeverity("success");
+                      setEmail("");
+                    } else {
+                      setMessage(data.error || "Something went wrong");
+                      setSeverity("error");
+                    }
+                  } catch (err) {
+                    setMessage("Server error");
                     setSeverity("error");
                   }
-                } catch (err) {
-                  setMessage("Server error");
-                  setSeverity("error");
-                }
-                setOpen(true);
-              }}
-            >
-              Join the Waitlist
-              <Box
-                component="img"
-                src="/images/whiteArrow.svg"
-                alt="Arrow Right"
-                sx={{ width: 16, height: 16, ml: 1 }}
-              />
-            </Button>
-          </Paper>
-        </Box>
+                  setOpen(true);
+                }}
+              >
+                Join the Waitlist
+                <Box
+                  component="img"
+                  src="/images/whiteArrow.svg"
+                  alt="Arrow Right"
+                  sx={{ width: 16, height: 16, ml: 1 }}
+                />
+              </Button>
+            </Paper>
+          </Box>
 
-        <Snackbar
-          open={open}
-          autoHideDuration={4000}
-          onClose={handleClose}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-          <Alert
+          <Snackbar
+            open={open}
+            autoHideDuration={4000}
             onClose={handleClose}
-            severity={severity}
-            sx={{ width: "100%" }}
-            variant="filled"
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
           >
-            {message}
-          </Alert>
-        </Snackbar>
+            <Alert
+              onClose={handleClose}
+              severity={severity}
+              sx={{ width: "100%" }}
+              variant="filled"
+            >
+              {message}
+            </Alert>
+          </Snackbar>
 
-        {/* Ratings Section */}
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            flexWrap: "wrap",
-            justifyContent: "center",
-            mx: "auto",
-            maxWidth: { xs: "100%", sm: "752px" },
-            background: "white",
-            p: { xs: "12px", sm: "15px" },
-            borderRadius: "70px",
-          }}
-        >
+          {/* Ratings Section */}
           <Box
             sx={{
-              background: "#EFF8FF",
-              py: "8px",
-              px: "8px",
               display: "flex",
-              gap: "5px",
-              borderRadius: "100px",
+              gap: 2,
+              flexWrap: "wrap",
+              justifyContent: "center",
+              mx: "auto",
+              maxWidth: { xs: "100%", sm: "752px" },
+              background: "white",
+              p: { xs: "12px", sm: "15px" },
+              borderRadius: "70px",
             }}
           >
-            <Image
-              src="/images/Capterra.svg"
-              alt="Slides Logo"
-              width={12}
-              height={12}
-            />
-            <Typography
-              variant="h4"
-              fontWeight={500}
+            <Box
               sx={{
-                fontSize: { xs: "12px", sm: "12px", md: "12px" },
-                lineHeight: 1.2,
-                textAlign: { xs: "center", md: "left" },
-                color: "#175CD3",
+                background: "#EFF8FF",
+                py: "8px",
+                px: "8px",
+                display: "flex",
+                gap: "5px",
+                borderRadius: "100px",
               }}
             >
-              Capterra
-            </Typography>
-          </Box>
+              <Image
+                src="/images/Capterra.svg"
+                alt="Slides Logo"
+                width={12}
+                height={12}
+              />
+              <Typography
+                variant="h4"
+                fontWeight={500}
+                sx={{
+                  fontSize: { xs: "12px", sm: "12px", md: "12px" },
+                  lineHeight: 1.2,
+                  textAlign: { xs: "center", md: "left" },
+                  color: "#175CD3",
+                }}
+              >
+                Capterra
+              </Typography>
+            </Box>
 
-          <Box
-            sx={{
-              background: "#EFF8FF",
-              py: "8px",
-              px: "8px",
-              display: "flex",
-              gap: "5px",
-              borderRadius: "100px",
-            }}
-          >
-            <Image
-              src="/images/GetApp.svg"
-              alt="GetApp"
-              width={12}
-              height={12}
-            />
-            <Typography
-              variant="h4"
-              fontWeight={500}
+            <Box
               sx={{
-                fontSize: { xs: "12px", sm: "12px", md: "12px" },
-                lineHeight: 1.2,
-                textAlign: { xs: "center", md: "left" },
-                color: "#175CD3",
+                background: "#EFF8FF",
+                py: "8px",
+                px: "8px",
+                display: "flex",
+                gap: "5px",
+                borderRadius: "100px",
               }}
             >
-              GetApp
-            </Typography>
-          </Box>
+              <Image
+                src="/images/GetApp.svg"
+                alt="GetApp"
+                width={12}
+                height={12}
+              />
+              <Typography
+                variant="h4"
+                fontWeight={500}
+                sx={{
+                  fontSize: { xs: "12px", sm: "12px", md: "12px" },
+                  lineHeight: 1.2,
+                  textAlign: { xs: "center", md: "left" },
+                  color: "#175CD3",
+                }}
+              >
+                GetApp
+              </Typography>
+            </Box>
 
-          <Box
-            sx={{
-              background: "#FFF6ED",
-              py: "8px",
-              px: "8px",
-              display: "flex",
-              gap: "5px",
-              borderRadius: "100px",
-            }}
-          >
-            <Image
-              src="/images/G2.svg"
-              alt="Slides Logo"
-              width={12}
-              height={12}
-            />
-            <Typography
-              variant="h4"
-              fontWeight={500}
+            <Box
               sx={{
-                fontSize: { xs: "12px", sm: "12px", md: "12px" },
-                lineHeight: 1.2,
-                textAlign: { xs: "center", md: "left" },
-                color: "#175CD3",
+                background: "#FFF6ED",
+                py: "8px",
+                px: "8px",
+                display: "flex",
+                gap: "5px",
+                borderRadius: "100px",
               }}
             >
-              G2.com
-            </Typography>
-          </Box>
+              <Image
+                src="/images/G2.svg"
+                alt="Slides Logo"
+                width={12}
+                height={12}
+              />
+              <Typography
+                variant="h4"
+                fontWeight={500}
+                sx={{
+                  fontSize: { xs: "12px", sm: "12px", md: "12px" },
+                  lineHeight: 1.2,
+                  textAlign: { xs: "center", md: "left" },
+                  color: "#175CD3",
+                }}
+              >
+                G2.com
+              </Typography>
+            </Box>
 
-          <Box
-            sx={{
-              background: "#4A00E0",
-              maxWidth: "48px",
-              borderRadius: "75px",
-              width: { sm: "48px" },
-            }}
-          >
-            <Typography
-              variant="h4"
-              fontWeight={700}
+            <Box
               sx={{
-                fontSize: { xs: "20px", sm: "20px", md: "20px" },
-                textAlign: "center",
-                color: "white",
+                background: "#4A00E0",
+                maxWidth: "48px",
+                borderRadius: "75px",
+                width: { sm: "48px" },
               }}
             >
-              4.7
-            </Typography>
+              <Typography
+                variant="h4"
+                fontWeight={700}
+                sx={{
+                  fontSize: { xs: "20px", sm: "20px", md: "20px" },
+                  textAlign: "center",
+                  color: "white",
+                }}
+              >
+                4.7
+              </Typography>
+            </Box>
+
+            <Box sx={{ marginTop: "2px" }}>
+              <Image
+                src="/images/Rating.svg"
+                alt="Slides Logo"
+                width={148}
+                height={12}
+              />
+            </Box>
+
+            <Box sx={{ marginTop: "5px" }}>
+              <Typography
+                variant="h4"
+                fontWeight={500}
+                sx={{
+                  fontSize: { xs: "12px", sm: "12px", md: "12px" },
+                  textAlign: "center",
+                  color: "black",
+                }}
+              >
+                (Based on 1,000+ reviews on)
+              </Typography>
+            </Box>
           </Box>
 
-          <Box sx={{ marginTop: "2px" }}>
-            <Image
-              src="/images/Rating.svg"
-              alt="Slides Logo"
-              width={148}
-              height={12}
-            />
-          </Box>
-
-          <Box sx={{ marginTop: "5px" }}>
-            <Typography
-              variant="h4"
-              fontWeight={500}
-              sx={{
-                fontSize: { xs: "12px", sm: "12px", md: "12px" },
-                textAlign: "center",
-                color: "black",
-              }}
-            >
-              (Based on 1,000+ reviews on)
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Social Icons */}
-        {/* <Stack
+          {/* Social Icons */}
+          {/* <Stack
           direction="row"
           spacing={3}
           justifyContent="center"
@@ -669,7 +653,8 @@ export default function WaitingList() {
             </Link>
           ))}
         </Stack> */}
-      </Box>
+        </Box>
+      </div>
     </Box>
   );
 }

@@ -18,7 +18,7 @@ export default function PurposeSection() {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: {xs:"center",sm:"flex-start"},
+          alignItems: { xs: "center", sm: "flex-start" },
           flexDirection: { xs: "column", md: "row" },
           maxWidth: 1200,
           mx: "auto",
@@ -29,7 +29,7 @@ export default function PurposeSection() {
           <Chip
             icon={
               <img
-                src="/images/side-star-purple.svg"
+                src="/images/Stars.svg"
                 alt="Icon"
                 width={20}
                 height={20}
@@ -73,22 +73,23 @@ export default function PurposeSection() {
               lineHeight: 1.2,
             }}
           >
-            Why <br/> Slidexy?
+            Why <br /> Slidexy?
           </Typography>
         </Box>
         <Typography
           sx={{
             color: "#757575",
-            fontSize: { xs: "0.9rem", md: "1.3rem" },
-            maxWidth: 600,
+            fontSize: { xs: "18px", md: "18px" },
+            maxWidth: 546,
             mt: { xs: 2, md: 2 },
             ml: { xs: 5 },
             mr: { xs: 5 },
-            textAlign: { xs: "center", md: "right" },
+            textAlign: { xs: "center", md: "left" },
+            fontWeight:400
           }}
         >
           Turn any thought into a polished, on-brand presentation
-          <br />
+          
           powered by AI, styled by designers.
         </Typography>
       </Box>
@@ -190,6 +191,7 @@ export default function PurposeSection() {
               height: 580,
               objectFit: "contain",
               pointerEvents: "none",
+              marginBottom:"40px"
             }}
           />
         </Box>
@@ -288,7 +290,7 @@ export default function PurposeSection() {
               "linear-gradient(112.44deg, #DFE9FE -9.69%, #FCFDFF 100%)",
             borderRadius: 2,
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
-            p: { xs: 4, md: 5 },
+            p: { xs: 4, md: 2.5 },
             minHeight: 180,
             maxWidth: 900, // increased to fit image
             mr: { xs: 0, md: 2 },
@@ -369,7 +371,7 @@ export default function PurposeSection() {
               src="/images/Export.svg"
               alt="Export Preview"
               style={{
-                width: "100%",
+                width: "500px",
                 height: "100%",
                 borderRadius: "8px",
                 objectFit: "cover",
@@ -460,7 +462,7 @@ export default function PurposeSection() {
           <img
             src="/images/VoiceAssistant.svg"
             alt="Export Icon"
-            className="sm:w-[300px] w-[200px]"
+            className="sm:w-[400px] w-[200px]"
           />
         </Box>
       </Box>

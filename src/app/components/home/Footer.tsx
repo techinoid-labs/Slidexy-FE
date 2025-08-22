@@ -38,8 +38,9 @@ export default function Footer() {
             <Image
               src="/images/Logo.svg"
               alt="Slides Logo"
-              width={118}
+              width={236}
               height={36}
+              className="object-cover sm:w-[236px] w-auto"
             />
           </Box>
         </Link>
@@ -103,7 +104,7 @@ export default function Footer() {
               alt={icon.alt}
               width={36}
               height={36}
-              className="object-cover"
+              className="object-cover hover:p-[20px] hover:bg-[#E8E4FF] rounded-full"
               style={{ display: "block", cursor: "pointer" }}
             />
           </Link>

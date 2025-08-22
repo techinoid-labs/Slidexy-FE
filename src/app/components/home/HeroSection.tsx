@@ -138,7 +138,7 @@ export default function HeroSection() {
             <Chip
               icon={
                 <Image
-                  src="/images/side-star-purple.svg"
+                  src="/images/Stars.svg"
                   alt="Icon"
                   width={18}
                   height={18}
