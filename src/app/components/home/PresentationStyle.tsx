@@ -182,9 +182,7 @@ export default function PresentationStyleSection() {
                 textTransform: "none",
                 width: "fit-content",
                 boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
-                "&:hover": {
-                  background: "#4A00E0",
-                },
+                
               }}
               endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
             >

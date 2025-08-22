@@ -40,7 +40,7 @@ export default function Footer() {
               alt="Slides Logo"
               width={236}
               height={36}
-              className="object-cover"
+              className="object-cover sm:w-[236px] w-auto"
             />
           </Box>
         </Link>
@@ -106,7 +106,6 @@ export default function Footer() {
               height={36}
               className="object-cover hover:p-[20px] hover:bg-[#E8E4FF] rounded-full"
               style={{ display: "block", cursor: "pointer" }}
-
             />
           </Link>
         ))}
