@@ -2,9 +2,10 @@
 
 import { Box, Typography, Chip, Button } from "@mui/material";
 import Link from "next/link";
+import TemplateHero from "../../../../public/images/templatesHero.svg";
+import Image from "next/image";
 
 export default function PresentationStyleSection() {
-  
   const images = [
     "/images/theme01.svg",
     "/images/theme02.svg",
@@ -14,7 +15,6 @@ export default function PresentationStyleSection() {
     "/images/theme06.svg",
   ];
 
-    
   return (
     <Box
       sx={{
@@ -24,7 +24,8 @@ export default function PresentationStyleSection() {
         py: { xs: 6, md: "80px" },
         display: "flex",
         flexDirection: "column",
-        gap: { xs: 6, md: "48px" },
+        alignItems: "center",
+        gap: { xs: 6, md: "16px" },
         boxSizing: "border-box",
         mx: "auto",
       }}
@@ -63,7 +64,7 @@ export default function PresentationStyleSection() {
       />
 
       {/* Heading and Subtitle */}
-      <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
+      <Box sx={{ textAlign: { xs: "center", md: "center" } }}>
         <Typography
           variant="h1"
           sx={{
@@ -90,33 +91,6 @@ export default function PresentationStyleSection() {
         </Typography>
       </Box>
 
-      {/* Carousel Dots */}
-      {/* <Box
-        sx={{
-          display: "flex",
-          justifyContent: { xs: "center", md: "flex-end" },
-          alignItems: "center",
-          gap: 1,
-          mt: { xs: -3, md: -6 },
-          mb: 2,
-        }}
-      >
-        {[0, 1, 2, 3].map((dot) => (
-          <Box
-            key={dot}
-            sx={{
-              width: dot === 1 ? 24 : 10,
-              height: 10,
-              borderRadius: 5,
-              background: dot === 1 ? "#4A00E0" : "#E5E5F0",
-              mx: 0.5,
-              transition: "background 0.2s",
-              display: "inline-block",
-            }}
-          />
-        ))}
-      </Box> */}
-
       {/* Main Card */}
       <Box
         sx={{
@@ -128,8 +102,6 @@ export default function PresentationStyleSection() {
           boxShadow: "0 2px 24px 0 rgba(80, 80, 120, 0.07)",
           width: "100%",
           height: { xs: "auto", md: "auto" },
-          px: { xs: 3, md: 6 },
-          py: { xs: 4, md: 4 },
           gap: 6,
         }}
       >
@@ -143,6 +115,8 @@ export default function PresentationStyleSection() {
             alignItems: { xs: "center", md: "flex-start" },
             height: "100%",
             textAlign: { xs: "center", md: "left" },
+            px: { xs: 3, md: 6 },
+            py: { xs: 4, md: 4 },            
           }}
         >
           <Typography
@@ -153,14 +127,14 @@ export default function PresentationStyleSection() {
               mb: 2,
             }}
           >
-            AI Popular Templates
+           AI Popular Templates
           </Typography>
           <Typography
             sx={{
               color: "#757575",
               fontSize: { xs: "0.9rem", md: "1.18rem" },
               mb: 4,
-              maxWidth: 500,
+              maxWidth: 800,
             }}
           >
             Turn any thought into a polished, on-brand presentation
@@ -177,12 +151,12 @@ export default function PresentationStyleSection() {
                 borderRadius: "999px",
                 px: { xs: 3, md: 4 },
                 py: { xs: 1, md: 1.5 },
-                fontWeight: 600,
-                fontSize: { xs: "0.9rem", md: "1.1rem" },
+                fontWeight: 500,
+                fontSize: { xs: "16px", md: "16px" },
                 textTransform: "none",
-                width: "fit-content",
+                width: "100%",
+                height: "46px",
                 boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
-                
               }}
               endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
             >
@@ -191,40 +165,19 @@ export default function PresentationStyleSection() {
           </Link>
         </Box>
 
-        {/* Right Image Placeholder (hidden on mobile) */}
         {/* Right Image Placeholder */}
+
         <Box
           sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-            gap: 1, // 8px gap
-            px: { xs: 2, md: 2 },
+            width: { xs: "100%", sm: "100%", md: "100%" },
           }}
         >
-          {images.map((src, index) => (
-            <Box
-              key={index}
-              sx={{
-                width: "250px",
-                overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "8px",
-              }}
-            >
-              <img
-                src={src}
-                alt={`Image ${index + 1}`}
-                style={{
-                  width: "100%", // now fits the grid cell
-                  height: "140px",
-                  objectFit: "cover",
-                  borderRadius: "20px",
-                }}
-              />
-            </Box>
-          ))}
+          <Image
+            src={TemplateHero}
+            alt="TemplateHero"
+            className="sm:w-full object-cover"
+            priority
+          />
         </Box>
       </Box>
     </Box>
