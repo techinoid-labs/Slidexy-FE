@@ -2,6 +2,8 @@
 
 import { Box, Typography, Chip } from "@mui/material";
 import Image from "next/image";
+import Lottie from "lottie-react";
+import exportAnimationData from "@/json/Final7.json";
 
 export default function PurposeSection() {
   return (
@@ -85,12 +87,11 @@ export default function PurposeSection() {
             ml: { xs: 5 },
             mr: { xs: 5 },
             textAlign: { xs: "center", md: "left" },
-            fontWeight:400
+            fontWeight: 400,
           }}
         >
-          Turn any thought into a polished, on-brand presentation
-          
-          powered by AI, styled by designers.
+          Turn any thought into a polished, on-brand presentation powered by AI,
+          styled by designers.
         </Typography>
       </Box>
 
@@ -191,7 +192,7 @@ export default function PurposeSection() {
               height: 580,
               objectFit: "contain",
               pointerEvents: "none",
-              marginBottom:"40px"
+              marginBottom: "40px",
             }}
           />
         </Box>
@@ -358,7 +359,7 @@ export default function PurposeSection() {
           </Box>
 
           {/* Right Side Image */}
-          <Box
+          {/* <Box
             sx={{
               flexShrink: 0,
               display: "flex",
@@ -370,6 +371,28 @@ export default function PurposeSection() {
             <img
               src="/images/Export.svg"
               alt="Export Preview"
+              style={{
+                width: "500px",
+                height: "100%",
+                borderRadius: "8px",
+                objectFit: "cover",
+              }}
+            />
+          </Box> */}
+          {/* Right Side Animation */}
+          <Box
+            sx={{
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              maxWidth: { xs: "100%", md: "300px" },
+            }}
+          >
+            <Lottie
+              animationData={exportAnimationData}
+              loop
+              autoplay
               style={{
                 width: "500px",
                 height: "100%",
