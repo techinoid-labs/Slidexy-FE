@@ -83,7 +83,7 @@ export default function Footer() {
       >
         {[
           {
-            src: "/images/Facebook.svg",
+            src: "/images/social-ico/facebook-ico.svg",
             alt: "Facebook",
             link: "https://web.facebook.com/Slidexy",
           },
@@ -93,9 +93,19 @@ export default function Footer() {
           //   link: "https://web.facebook.com/Slidexy",
           // },
           {
-            src: "/images/instagram.svg",
+            src: "/images/social-ico/instagram-ico.svg",
             alt: "Instagram",
             link: "https://www.instagram.com/slidexy_ai/",
+          },
+          {
+            src: "/images/social-ico/linkedin-ico.svg",
+            alt: "linkedin",
+            link: "https://www.linkedin.com/company/slidexy/",
+          },
+          {
+            src: "/images/social-ico/tiktok-ico.svg",
+            alt: "tiktok",
+            link: "https://www.tiktok.com/@slidexy_ai",
           },
         ].map((icon, idx) => (
           <Link key={idx} href={icon.link} target="_blank" underline="none">
