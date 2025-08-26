@@ -158,8 +158,8 @@ export default function PromptAttributeSelector({
           renderValue={(selected) => selected || "No. of Slides"}
         >
           {renderMenuItem("3", "3", slideCount)}
-          {renderMenuItem("6", "6", slideCount)}
-          {renderMenuItem("12", "12", slideCount)}
+          {renderMenuItem("5", "5", slideCount)}
+          {/* {renderMenuItem("12", "12", slideCount)} */}
         </Select>
       </FormControl>
     </Box>
