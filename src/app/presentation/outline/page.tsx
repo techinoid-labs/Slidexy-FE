@@ -127,11 +127,204 @@ function mapCardsToSlides(cards: any[]): Slide[] {
 }
 
 export default function OutlinePage() {
+  // const { slides }: any = useSlides();
+  // const slidesState = slides;
+  // const isInfographicMode = false;
+  // const dispatch = useDispatch();
+  // const router = useRouter();
+  // const [imageSuggestionsBox, setImageSuggestionsBox] = React.useState<{
+  //   slideIndex: number;
+  //   imageIndex: number;
+  //   x: number;
+  //   y: number;
+  //   suggestions: string[];
+  // } | null>(null);
+
+  // const [cards, setCards] = useState(() =>
+  //   slides && slides.length > 0 ? mapApiSlidesToCards(slides) : []
+  // );
+  // const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  // const [editingTitle, setEditingTitle] = useState<string>("");
+  // const [editingBulletsIdx, setEditingBulletsIdx] = useState<number | null>(
+  //   null
+  // );
+  // const [editingBulletsValue, setEditingBulletsValue] = useState<string>("");
+  // const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  // const [editMenuAnchor, setEditMenuAnchor] = useState<null | HTMLElement>(
+  //   null
+  // );
+  // const [editMenuCardIdx, setEditMenuCardIdx] = useState<number | null>(null);
+  // const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // const handleBulletsEditStart = (idx: number, bullets?: string[]) => {
+  //   setEditingBulletsIdx(idx);
+  //   setEditingBulletsValue((bullets || []).join("\n"));
+  // };
+  // const handleBulletsEditChange = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+  //   setEditingBulletsValue(e.target.value);
+  // const handleBulletsEditSave = (idx: number) => {
+  //   if (!editingBulletsValue.trim()) {
+  //     setEditingBulletsIdx(null);
+  //     setEditingBulletsValue("");
+  //     return;
+  //   }
+  //   setCards((prev) => {
+  //     const newCards = prev.map((c, i) =>
+  //       i !== idx
+  //         ? c
+  //         : {
+  //             ...c,
+  //             bullets: editingBulletsValue
+  //               .split(/\r?\n/)
+  //               .filter((l) => l.trim() !== ""),
+  //             images: "images" in c ? c.images ?? [] : [],
+  //           }
+  //     );
+  //     // Dispatch updated slides to Redux store
+  //     const mappedSlides = mapCardsToSlides(newCards);
+  //     setTimeout(() => {
+  //       dispatch(setSlides(mappedSlides));
+  //     }, 100);
+
+  //     return newCards;
+  //   });
+  //   setEditingBulletsIdx(null);
+  //   setEditingBulletsValue("");
+  // };
+  // const handleBulletsEditCancel = () => {
+  //   setEditingBulletsIdx(null);
+  //   setEditingBulletsValue("");
+  // };
+
+  // const onDragEnd = (result: any) => {
+  //   if (!result.destination) return;
+  //   const arr = Array.from(cards);
+  //   const [removed] = arr.splice(result.source.index, 1);
+  //   arr.splice(result.destination.index, 0, removed);
+  //   setCards(arr);
+  //   setExpandedIdx(null);
+  //   // Dispatch updated slides to Redux store
+  //   const mappedSlides = mapCardsToSlides(arr);
+  //   dispatch(setSlides(mappedSlides));
+  // };
+
+  // const handleDelete = (idx: number) => {
+  //   setCards((prev) => {
+  //     const newCards = prev.filter((_, i) => i !== idx);
+  //     // Dispatch updated slides to Redux store
+  //     const mappedSlides = mapCardsToSlides(newCards);
+  //     dispatch(setSlides(mappedSlides));
+  //     return newCards;
+  //   });
+  //   if (expandedIdx === idx) setExpandedIdx(null);
+  // };
+
+  // const handleRegenerate = () => {
+  //   setCards([]);
+  //   setExpandedIdx(null);
+  //   // Dispatch empty slides to Redux store
+  //   dispatch(setSlides([]));
+  // };
+
+  // const handleCardClick = (idx: number) => {
+  //   if (editingIdx !== null) return;
+  //   setExpandedIdx(expandedIdx === idx ? null : idx);
+  // };
+
+  // const handleTitleEditStart = (idx: number, currentTitle: string) => {
+  //   setEditingIdx(idx);
+  //   setEditingTitle(currentTitle);
+  // };
+  // const handleTitleEditChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+  //   setEditingTitle(e.target.value);
+  // const handleTitleEditSave = (idx: number) => {
+  //   setCards((prev) => {
+  //     const newCards = prev.map((c, i) =>
+  //       i === idx ? { ...c, title: editingTitle } : c
+  //     );
+  //     // Dispatch updated slides to Redux store
+  //     const mappedSlides = mapCardsToSlides(newCards);
+  //     setTimeout(() => {
+  //       dispatch(setSlides(mappedSlides));
+  //     }, 100);
+
+  //     return newCards;
+  //   });
+  //   setEditingIdx(null);
+  //   setEditingTitle("");
+  // };
+  // const handleTitleEditCancel = () => {
+  //   setEditingIdx(null);
+  //   setEditingTitle("");
+  // };
+
+  // const handleEditClick = (e: React.MouseEvent<HTMLElement>, idx: number) => {
+  //   e.stopPropagation();
+  //   setEditMenuAnchor(e.currentTarget);
+  //   setEditMenuCardIdx(idx);
+  // };
+  // const handleEditMenuClose = () => {
+  //   setEditMenuAnchor(null);
+  //   setEditMenuCardIdx(null);
+  // };
+  // const handleEditMenuAction = (key: string) => {
+  //   handleEditMenuClose();
+  // };
+
+  // const handleContinue = () => {
+  //   const mapped = mapCardsToSlides(cards);
+  //   dispatch(setSlides(mapped));
+  //   console.log("[OutlinePage] Slides sent to Redux:", mapped);
+  //   router.push("/editor");
+  // };
+
+  // const handleUpdateSlide = (
+  //   slideIndex: number,
+  //   updated: Partial<{
+  //     title: string;
+  //     bullets: string[];
+  //     bulletFormat?: "bullets" | "paragraphs" | "list" | null;
+  //     image_url?: string;
+  //   }>
+  // ) => {
+  //   setCards((prev) => {
+  //     const newCards = prev.map((card, i) =>
+  //       i === slideIndex ? { ...card, ...updated } : card
+  //     );
+  //     // Dispatch updated slides to Redux store
+  //     const mappedSlides = mapCardsToSlides(newCards);
+  //     setTimeout(() => {
+  //       dispatch(setSlides(mappedSlides));
+  //     }, 100);
+
+  //     return newCards;
+  //   });
+  //   if (updated.image_url) {
+  //     setPreviewImage(updated.image_url);
+  //   }
+  // };
+
+  // const handleUpdateSlideImages = (slideIndex: number, newImages: string[]) => {
+  //   setCards((prev) => {
+  //     const newCards = prev.map((card, i) =>
+  //       i === slideIndex ? { ...card, images: [...newImages] } : card
+  //     );
+  //     // Dispatch updated slides to Redux store
+  //     const mappedSlides = mapCardsToSlides(newCards);
+  //     setTimeout(() => {
+  //       dispatch(setSlides(mappedSlides));
+  //     }, 100);
+
+  //     return newCards;
+  //   });
+  // };
+
   const { slides }: any = useSlides();
   const slidesState = slides;
   const isInfographicMode = false;
   const dispatch = useDispatch();
   const router = useRouter();
+
   const [imageSuggestionsBox, setImageSuggestionsBox] = React.useState<{
     slideIndex: number;
     imageIndex: number;
@@ -143,6 +336,7 @@ export default function OutlinePage() {
   const [cards, setCards] = useState(() =>
     slides && slides.length > 0 ? mapApiSlidesToCards(slides) : []
   );
+
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>("");
   const [editingBulletsIdx, setEditingBulletsIdx] = useState<number | null>(
@@ -156,6 +350,13 @@ export default function OutlinePage() {
   const [editMenuCardIdx, setEditMenuCardIdx] = useState<number | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // ✅ Keep Redux in sync AFTER cards change
+  React.useEffect(() => {
+    const mappedSlides = mapCardsToSlides(cards);
+    dispatch(setSlides(mappedSlides));
+  }, [cards, dispatch]);
+
+  // -------------------- Bullets editing --------------------
   const handleBulletsEditStart = (idx: number, bullets?: string[]) => {
     setEditingBulletsIdx(idx);
     setEditingBulletsValue((bullets || []).join("\n"));
@@ -168,8 +369,8 @@ export default function OutlinePage() {
       setEditingBulletsValue("");
       return;
     }
-    setCards((prev) => {
-      const newCards = prev.map((c, i) =>
+    setCards((prev) =>
+      prev.map((c, i) =>
         i !== idx
           ? c
           : {
@@ -179,15 +380,8 @@ export default function OutlinePage() {
                 .filter((l) => l.trim() !== ""),
               images: "images" in c ? c.images ?? [] : [],
             }
-      );
-      // Dispatch updated slides to Redux store
-      const mappedSlides = mapCardsToSlides(newCards);
-      setTimeout(() => {
-        dispatch(setSlides(mappedSlides));
-      }, 100);
-
-      return newCards;
-    });
+      )
+    );
     setEditingBulletsIdx(null);
     setEditingBulletsValue("");
   };
@@ -196,6 +390,7 @@ export default function OutlinePage() {
     setEditingBulletsValue("");
   };
 
+  // -------------------- Drag + delete --------------------
   const onDragEnd = (result: any) => {
     if (!result.destination) return;
     const arr = Array.from(cards);
@@ -203,27 +398,17 @@ export default function OutlinePage() {
     arr.splice(result.destination.index, 0, removed);
     setCards(arr);
     setExpandedIdx(null);
-    // Dispatch updated slides to Redux store
-    const mappedSlides = mapCardsToSlides(arr);
-    dispatch(setSlides(mappedSlides));
   };
 
   const handleDelete = (idx: number) => {
-    setCards((prev) => {
-      const newCards = prev.filter((_, i) => i !== idx);
-      // Dispatch updated slides to Redux store
-      const mappedSlides = mapCardsToSlides(newCards);
-      dispatch(setSlides(mappedSlides));
-      return newCards;
-    });
+    setCards((prev) => prev.filter((_, i) => i !== idx));
     if (expandedIdx === idx) setExpandedIdx(null);
   };
 
+  // -------------------- Other actions --------------------
   const handleRegenerate = () => {
     setCards([]);
     setExpandedIdx(null);
-    // Dispatch empty slides to Redux store
-    dispatch(setSlides([]));
   };
 
   const handleCardClick = (idx: number) => {
@@ -231,6 +416,7 @@ export default function OutlinePage() {
     setExpandedIdx(expandedIdx === idx ? null : idx);
   };
 
+  // -------------------- Title editing --------------------
   const handleTitleEditStart = (idx: number, currentTitle: string) => {
     setEditingIdx(idx);
     setEditingTitle(currentTitle);
@@ -238,18 +424,9 @@ export default function OutlinePage() {
   const handleTitleEditChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setEditingTitle(e.target.value);
   const handleTitleEditSave = (idx: number) => {
-    setCards((prev) => {
-      const newCards = prev.map((c, i) =>
-        i === idx ? { ...c, title: editingTitle } : c
-      );
-      // Dispatch updated slides to Redux store
-      const mappedSlides = mapCardsToSlides(newCards);
-      setTimeout(() => {
-        dispatch(setSlides(mappedSlides));
-      }, 100);
-
-      return newCards;
-    });
+    setCards((prev) =>
+      prev.map((c, i) => (i === idx ? { ...c, title: editingTitle } : c))
+    );
     setEditingIdx(null);
     setEditingTitle("");
   };
@@ -258,6 +435,7 @@ export default function OutlinePage() {
     setEditingTitle("");
   };
 
+  // -------------------- Edit menu --------------------
   const handleEditClick = (e: React.MouseEvent<HTMLElement>, idx: number) => {
     e.stopPropagation();
     setEditMenuAnchor(e.currentTarget);
@@ -271,6 +449,7 @@ export default function OutlinePage() {
     handleEditMenuClose();
   };
 
+  // -------------------- Continue --------------------
   const handleContinue = () => {
     const mapped = mapCardsToSlides(cards);
     dispatch(setSlides(mapped));
@@ -278,6 +457,7 @@ export default function OutlinePage() {
     router.push("/editor");
   };
 
+  // -------------------- Slide updates --------------------
   const handleUpdateSlide = (
     slideIndex: number,
     updated: Partial<{
@@ -287,36 +467,20 @@ export default function OutlinePage() {
       image_url?: string;
     }>
   ) => {
-    setCards((prev) => {
-      const newCards = prev.map((card, i) =>
-        i === slideIndex ? { ...card, ...updated } : card
-      );
-      // Dispatch updated slides to Redux store
-      const mappedSlides = mapCardsToSlides(newCards);
-      setTimeout(() => {
-        dispatch(setSlides(mappedSlides));
-      }, 100);
-
-      return newCards;
-    });
+    setCards((prev) =>
+      prev.map((card, i) => (i === slideIndex ? { ...card, ...updated } : card))
+    );
     if (updated.image_url) {
       setPreviewImage(updated.image_url);
     }
   };
 
   const handleUpdateSlideImages = (slideIndex: number, newImages: string[]) => {
-    setCards((prev) => {
-      const newCards = prev.map((card, i) =>
+    setCards((prev) =>
+      prev.map((card, i) =>
         i === slideIndex ? { ...card, images: [...newImages] } : card
-      );
-      // Dispatch updated slides to Redux store
-      const mappedSlides = mapCardsToSlides(newCards);
-      setTimeout(() => {
-        dispatch(setSlides(mappedSlides));
-      }, 100);
-
-      return newCards;
-    });
+      )
+    );
   };
 
   return (

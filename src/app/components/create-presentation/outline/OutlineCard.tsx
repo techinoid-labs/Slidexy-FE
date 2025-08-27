@@ -537,7 +537,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
             setPreviewImage(null);
           }}
         >
-          {bullets.length > 0 && (
+          {/* {bullets.length > 0 && (
             <Box
               sx={{
                 display: "flex",
@@ -702,6 +702,152 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                   ))}
                 </Box>
               )}
+            </Box>
+          )} */}
+          {bullets.length > 0 && (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 0.5,
+                color: "#757575",
+                fontSize: 16,
+              }}
+            >
+              {" "}
+              {/* Only render the bullets if we are NOT in editing mode */}{" "}
+              {props.editingBulletsIdx === null ? (
+                <>
+                  {" "}
+                  {currentBulletFormat === "list" ? (
+                    <List
+                      dense
+                      sx={{ listStyleType: "decimal", pl: 2, mt: 0.5 }}
+                    >
+                      {" "}
+                      {bullets.map((b, i) => (
+                        <ListItem
+                          key={i}
+                          sx={{ display: "list-item", py: 0, px: 0 }}
+                        >
+                          {" "}
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              fontSize: 16,
+                              cursor: editable ? "pointer" : "default",
+                            }}
+                            onClick={() => {
+                              console.log("CLICKED");
+                              if (editable) props.onBulletsEditStart?.(i);
+                            }}
+                          >
+                            {b}{" "}
+                          </Typography>{" "}
+                        </ListItem>
+                      ))}{" "}
+                    </List>
+                  ) : currentBulletFormat === "bullets" ? (
+                    <ul
+                      style={{
+                        paddingLeft: 16,
+                        margin: "4px 0",
+                        color: "#757575",
+                        fontSize: 16,
+                      }}
+                    >
+                      {" "}
+                      {bullets.map((b, i) => (
+                        <li
+                          key={i}
+                          style={{ listStyle: "disc", paddingRight: 8 }}
+                        >
+                          {" "}
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              fontSize: 16,
+                              cursor: editable ? "pointer" : "default",
+                            }}
+                            onClick={() => {
+                              console.log("CLICKED");
+                              if (editable) props.onBulletsEditStart?.(i);
+                            }}
+                          >
+                            {b}{" "}
+                          </Typography>{" "}
+                        </li>
+                      ))}{" "}
+                    </ul>
+                  ) : (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 0.5,
+                        color: "#757575",
+                        fontSize: 16,
+                      }}
+                    >
+                      {" "}
+                      {bullets.map((b, i) => (
+                        <Box key={i}>
+                          {" "}
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              fontSize: 16,
+                              cursor: editable ? "pointer" : "default",
+                            }}
+                            onClick={() => {
+                              console.log("CLICKED");
+                              if (editable) props.onBulletsEditStart?.(i);
+                            }}
+                          >
+                            {b}{" "}
+                          </Typography>{" "}
+                        </Box>
+                      ))}{" "}
+                    </Box>
+                  )}{" "}
+                </>
+              ) : (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 0.5,
+                    color: "#757575",
+                    fontSize: 16,
+                  }}
+                >
+                  {/* This block is only for the editing state */}{" "}
+                  <textarea
+                    value={props.editingBulletsValue}
+                    onChange={props.onBulletsEditChange}
+                    onBlur={() =>
+                      setTimeout(() => props.onBulletsEditSave?.(), 0)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        setTimeout(() => props.onBulletsEditSave?.(), 0);
+                      } else if (e.key === "Escape") {
+                        props.onBulletsEditCancel?.();
+                      }
+                    }}
+                    autoFocus
+                    style={{
+                      fontSize: 16,
+                      height: "150px",
+                      padding: "4px",
+                      border: "1px solid #ccc",
+                      borderRadius: 1,
+                      width: "100%",
+                    }}
+                  />{" "}
+                </Box>
+              )}{" "}
             </Box>
           )}
           <Box
