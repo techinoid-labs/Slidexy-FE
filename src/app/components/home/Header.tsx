@@ -35,6 +35,8 @@ export default function Header() {
   const navigationItems = [
     { label: "Home", hasDropdown: false, link: "/home" },
     { label: "Templates", hasDropdown: false, link: "/templates" },
+    { label: "Privacy", hasDropdown: false, link: "/privacy-policy" },
+
     // { label: "Pricing", hasDropdown: false, link: "/pricing" },
   ];
 
@@ -131,7 +133,7 @@ export default function Header() {
                       borderRadius: "999px",
                       textTransform: "none",
                       fontWeight: 500,
-                      fontSize:"16px",
+                      fontSize: "16px",
                       whiteSpace: "nowrap",
                     }}
                   >
@@ -141,7 +143,7 @@ export default function Header() {
 
                 <Link href="/presentation/create" passHref>
                   <Button
-                    variant="contained"                    
+                    variant="contained"
                     sx={{
                       mt: 0.5,
                       backgroundColor: "#4A00E0",
