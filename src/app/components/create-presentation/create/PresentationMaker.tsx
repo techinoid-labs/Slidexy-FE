@@ -56,7 +56,7 @@ export default function PresentationMaker({
   const [tone, setTone] = useState("");
   const [audience, setAudience] = useState("");
   const [slideCount, setSlideCount] = useState("");
-  const { setSlideTemplates, slideTemplates } = useTemplateSlides();
+  const { setSlideTemplates, slideTemplates, setPresentationId } = useTemplateSlides();
   console.log({ slideTemplates });
   const getPlaceholder = () => {
     switch (inputMode) {
@@ -178,8 +178,8 @@ export default function PresentationMaker({
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
-        ? { source: "website", inputWebsiteUrl: inputValue }
-        : { source: "text", textContent: inputValue };
+          ? { source: "website", inputWebsiteUrl: inputValue }
+          : { source: "text", textContent: inputValue };
 
     const promptMeta = { goal, tone, audience };
     const payload = {
@@ -248,38 +248,38 @@ export default function PresentationMaker({
     };
     console.log("TEMPLATE CLICKED", payload);
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+try {
+  const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-      // console.log("TEMPLATE RES", res);
-      if (!res.ok) {
-        let errorData: any = {};
-        try {
-          errorData = await res.json();
-        } catch {
-          errorData = { error: "Unknown error" };
-        }
-        throw new Error(errorData.error || "Failed to generate template");
-      }
+  let data: any;
+  try {
+    data = await res.json(); // ✅ parse once
+  } catch {
+    throw new Error("Invalid JSON response");
+  }
 
-      const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || "Failed to generate template");
+  }
 
-      // Populate template context
-      setProgress(100);
-      setSlideTemplates(data.slides);
-      // return;
-      router.push(`/text-to-template`);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      if (interval) clearInterval(interval);
-      setLoading(false);
-      setProgress(0);
-    }
+  console.log("POST Response:", data);
+
+  setProgress(100);
+  setSlideTemplates(data.slides);
+  setPresentationId(data.presentation_id);
+  router.push(`/text-to-template?pid=${data.presentation_id}`); // Pass via query param
+} catch (err: any) {
+  setError(err.message || "Something went wrong");
+} finally {
+  if (interval) clearInterval(interval);
+  setLoading(false);
+  setProgress(0);
+}
+
   };
 
   useEffect(() => {
@@ -535,15 +535,14 @@ export default function PresentationMaker({
           fontWeight: 600,
           mb: 4,
           height: { xs: 57, md: 70 },
-          border: `2px solid ${
-            inputMode === "Template"
+          border: `2px solid ${inputMode === "Template"
               ? !templatePrompt.trim()
                 ? "grey"
                 : "#8E2DE2"
               : !inputValue.trim() || Boolean(showYoutubeError)
-              ? "grey"
-              : "#8E2DE2"
-          }`,
+                ? "grey"
+                : "#8E2DE2"
+            }`,
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
@@ -553,8 +552,8 @@ export default function PresentationMaker({
                 ? 0.7
                 : 1
               : !inputValue.trim() || Boolean(showYoutubeError)
-              ? 0.7
-              : 1,
+                ? 0.7
+                : 1,
           "&:hover": { backgroundColor: "#f3eaff" },
           "&::before": {
             content: '""',
@@ -578,12 +577,12 @@ export default function PresentationMaker({
             color: loading
               ? "#fff"
               : inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "grey"
-                : "#8E2DE2"
-              : !inputValue.trim() || Boolean(showYoutubeError)
-              ? "grey"
-              : "#8E2DE2",
+                ? !templatePrompt.trim()
+                  ? "grey"
+                  : "#8E2DE2"
+                : !inputValue.trim() || Boolean(showYoutubeError)
+                  ? "grey"
+                  : "#8E2DE2",
             textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
             transition: "color 0.6s ease, text-shadow 0.6s ease",
             fontWeight: 600,
@@ -592,8 +591,8 @@ export default function PresentationMaker({
           {loading
             ? `${getProgressMessage(progress)} ${Math.round(progress)}%`
             : inputMode === "Template"
-            ? "Generate Template"
-            : "Generate Outlines"}
+              ? "Generate Template"
+              : "Generate Outlines"}
         </span>
 
         <Box
@@ -605,12 +604,12 @@ export default function PresentationMaker({
             background: loading
               ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
               : inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-                : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
-              : !inputValue.trim() || Boolean(showYoutubeError)
-              ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+                ? !templatePrompt.trim()
+                  ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+                  : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
+                : !inputValue.trim() || Boolean(showYoutubeError)
+                  ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+                  : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",

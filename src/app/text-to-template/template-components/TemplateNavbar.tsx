@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useRouter } from "next/navigation";
-import { useTemplateSlides } from "../context/TemplateSlidesContext";
+import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 const TemplateNavBar: React.FC<{
   onExportPPT?: () => void;
 }> = ({ onExportPPT }) => {

@@ -1,3 +1,5 @@
+"use client"
+
 // import React from "react";
 // import {
 //   Stage,
@@ -426,74 +428,73 @@
 
 //   return <PresentationViewer presentation={dummyData} />;
 // }
-import React, { useEffect, useState } from "react";
-import { Box, Typography } from "@mui/material";
-import { useTemplateSlides } from "../context/TemplateSlidesContext";
-import { Presentation } from "./types";
-import { dummyData } from "./dummyData";
-import PresentationViewer from "./PresentationViewer";
+// import { useEffect, useState } from "react"
+// import { Box, Typography } from "@mui/material"
+// import { useTemplateSlides } from "../../context/TemplateSlidesContext"
+// import type { Presentation } from "../types/presentation"
 
-export default function TemplateEditor() {
-  const { slideTemplates } = useTemplateSlides();
-  const [scale, setScale] = useState(1);
+// export default function TemplateEditor() {
+//   const { slideTemplates } = useTemplateSlides()
+//   const [scale, setScale] = useState(1)
 
-  const SLIDE_W = 990;
-  const SLIDE_H = 540;
+//   const SLIDE_W = 990
+//   const SLIDE_H = 540
 
-  const presentation: Presentation = {
-    slides: slideTemplates || [],
-  };
+//   const presentation: Presentation = {
+//     id : 
+//     slides: slideTemplates || [],
+//   }
 
-  useEffect(() => {
-    const updateScale = () => {
-      const availableWidth = window.innerWidth;
-      const availableHeight = window.innerHeight;
+//   useEffect(() => {
+//     const updateScale = () => {
+//       const availableWidth = window.innerWidth
+//       const availableHeight = window.innerHeight
 
-      const scaleX = availableWidth / SLIDE_W;
-      const scaleY = availableHeight / SLIDE_H;
+//       const scaleX = availableWidth / SLIDE_W
+//       const scaleY = availableHeight / SLIDE_H
 
-      // pick the smaller scale so it always fits
-      const newScale = Math.min(scaleX, scaleY, 1);
-      setScale(newScale);
-    };
+//       // pick the smaller scale so it always fits
+//       const newScale = Math.min(scaleX, scaleY, 1)
+//       setScale(newScale)
+//     }
 
-    updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
-  }, []);
+//     updateScale()
+//     window.addEventListener("resize", updateScale)
+//     return () => window.removeEventListener("resize", updateScale)
+//   }, [])
 
-  if (!presentation.slides.length) {
-    return (
-      <Box sx={{ textAlign: "center", mt: 4 }}>
-        <Typography variant="h6" color="text.secondary">
-          No template to show
-        </Typography>
-      </Box>
-    );
-  }
+//   if (!presentation.slides.length) {
+//     return (
+//       <Box sx={{ textAlign: "center", mt: 4 }}>
+//         <Typography variant="h6" color="text.secondary">
+//           No template to show
+//         </Typography>
+//       </Box>
+//     )
+//   }
 
-  return (
-    <Box
-      sx={{
-        // width: "100vw",
-        // height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        // overflow: "hidden",
-      }}
-    >
-      <Box
-        sx={{
-          transform: `scale(${scale})`,
-          transformOrigin: "top center",
-          width: SLIDE_W,
-          height: SLIDE_H,
-        }}
-      >
-        {/* <PresentationViewer presentation={dummyData} /> */}
-             <PresentationViewer presentation={presentation} />
-      </Box>
-    </Box>
-  );
-}
+//   return (
+//     <Box
+//       sx={{
+//         // width: "100vw",
+//         // height: "100vh",
+//         display: "flex",
+//         justifyContent: "center",
+//         alignItems: "center",
+//         // overflow: "hidden",
+//       }}
+//     >
+//       <Box
+//         sx={{
+//           transform: `scale(${scale})`,
+//           transformOrigin: "top center",
+//           width: SLIDE_W,
+//           height: SLIDE_H,
+//         }}
+//       >
+//         {/* <PresentationViewer presentation={dummyData} /> */}
+//         <PresentationViewer presentation={presentation} />
+//       </Box>
+//     </Box>
+//   )
+// }

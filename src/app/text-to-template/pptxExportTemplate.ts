@@ -1,5 +1,5 @@
 import PptxGenJS from "pptxgenjs";
-import { Presentation, TextElement, ShapeElement, ImageElement } from "./types";
+import { Presentation, TextElement, ShapeElement, ImageElement } from "./types/presentation";
 
 export const exportPresentationToPptx = (presentation: Presentation) => {
   const pptx = new PptxGenJS();
