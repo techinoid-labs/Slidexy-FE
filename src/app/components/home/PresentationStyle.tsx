@@ -2,8 +2,8 @@
 
 import { Box, Typography, Chip, Button } from "@mui/material";
 import Link from "next/link";
-import TemplateHero from "../../../../public/images/templatesHero.svg";
-import Image from "next/image";
+import Lottie from "lottie-react";
+import templateAnimation from "@/json/Gif8-template-section.json";
 
 export default function PresentationStyleSection() {
   const images = [
@@ -116,7 +116,7 @@ export default function PresentationStyleSection() {
             height: "100%",
             textAlign: { xs: "center", md: "left" },
             px: { xs: 3, md: 6 },
-            py: { xs: 4, md: 4 },            
+            py: { xs: 4, md: 4 },
           }}
         >
           <Typography
@@ -127,7 +127,7 @@ export default function PresentationStyleSection() {
               mb: 2,
             }}
           >
-           AI Popular Templates
+            AI Popular Templates
           </Typography>
           <Typography
             sx={{
@@ -165,18 +165,22 @@ export default function PresentationStyleSection() {
           </Link>
         </Box>
 
-        {/* Right Image Placeholder */}
-
+        {/* Right Lottie Animation (replaces Image) */}
         <Box
           sx={{
-            width: { xs: "100%", sm: "100%", md: "100%" },
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
           }}
         >
-          <Image
-            src={TemplateHero}
-            alt="TemplateHero"
-            className="sm:w-full object-cover"
-            priority
+          <Lottie
+            animationData={templateAnimation}
+            loop
+            autoplay
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
           />
         </Box>
       </Box>

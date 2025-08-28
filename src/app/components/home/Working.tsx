@@ -3,8 +3,7 @@
 import { Box, Typography, Chip, Button } from "@mui/material";
 import Link from "next/link";
 
-export default function WorkingSection() {  
-  
+export default function WorkingSection() {
   return (
     <Box
       sx={{
@@ -108,7 +107,7 @@ export default function WorkingSection() {
       </Box>
 
       {/* Try for Free Button - Mobile View (below heading) */}
-      < Box
+      <Box
         sx={{
           textAlign: "center",
           mb: 2,
@@ -116,7 +115,7 @@ export default function WorkingSection() {
           display: { xs: "block", md: "none" }, // Show only in xs
         }}
       >
-        <Link href="/presentation/create" passHref>  
+        <Link href="/presentation/create" passHref>
           <Button
             variant="contained"
             sx={{

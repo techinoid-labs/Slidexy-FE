@@ -4,6 +4,10 @@ import { Box, Typography, Chip } from "@mui/material";
 import Image from "next/image";
 import Lottie from "lottie-react";
 import exportAnimationData from "@/json/Final7.json";
+import infographicsAnimationData from "@/json/Gif5-infographics.json";
+import Gif10ContextAware from "@/json/Gif10-context-aware.json";
+import voiceGenerationAnimation from "@/json/Gif9-voice-generation.json";
+import regenerateIageAnimationData from "@/json/Gif4-image-regenerate.json";
 
 export default function PurposeSection() {
   return (
@@ -70,12 +74,11 @@ export default function PurposeSection() {
               fontSize: { xs: "1.9rem", md: "2.5rem" },
               color: "#18181B",
               mb: { xs: 1, md: 0.5 },
-
               textAlign: { xs: "center", md: "left" },
               lineHeight: 1.2,
             }}
           >
-            Why <br /> Slidexy?
+            Why <br /> Choose Slidexy?
           </Typography>
         </Box>
         <Typography
@@ -109,6 +112,7 @@ export default function PurposeSection() {
         }}
       >
         {/* Card 1 */}
+
         <Box
           sx={{
             gridRow: { md: "1 / span 2" },
@@ -153,6 +157,7 @@ export default function PurposeSection() {
               }}
             />
           </Box>
+
           <Typography
             sx={{
               fontWeight: 500,
@@ -164,6 +169,7 @@ export default function PurposeSection() {
           >
             Context-aware content generation
           </Typography>
+
           <Typography
             sx={{
               color: "#757575",
@@ -178,11 +184,8 @@ export default function PurposeSection() {
             tone, goals, keywords, and a smart title.
           </Typography>
 
-          {/* Hide on mobile */}
+          {/* Replace image with animation */}
           <Box
-            component="img"
-            src="/images/context-image.svg"
-            alt="Context Image"
             sx={{
               display: { xs: "none", md: "block" },
               position: "absolute",
@@ -190,11 +193,21 @@ export default function PurposeSection() {
               right: 0,
               width: 530,
               height: 580,
-              objectFit: "contain",
               pointerEvents: "none",
-              marginBottom: "40px",
+              mb: "40px",
             }}
-          />
+          >
+            <Lottie
+              animationData={Gif10ContextAware}
+              loop
+              autoplay
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+              }}
+            />
+          </Box>
         </Box>
 
         {/* Card 2 */}
@@ -207,79 +220,93 @@ export default function PurposeSection() {
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
             p: { xs: 4, md: 5 },
             minHeight: 180,
-            maxWidth: 570,
-            mr: { xs: 0, md: 2 },
+            width: "100%",
+            mx: "auto",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            position: "relative",
-            overflow: "hidden",
-            textAlign: { xs: "center", md: "left" },
-            alignItems: { xs: "center", md: "flex-start" },
+            flexDirection: "column", // stack vertically
+            // justifyContent: "space-between",
+            alignItems: "stretch",
+            textAlign: "left", // keep left alignment
+            gap: 2,
           }}
         >
+          {/* Top Content (Text Section) */}
           <Box
             sx={{
-              width: { xs: 24, md: 60 },
-              height: { xs: 24, md: 60 },
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              mt: { xs: 0, md: -1 },
-              mb: { xs: 2, md: 0 },
+              flexDirection: "column",
+              alignItems: "flex-start",
             }}
           >
-            <img
-              src="/images/light-purple-star.svg"
-              alt="Star Icon"
-              width={60}
-              height={60}
+            <Box
+              sx={{
+                width: { xs: 24, md: 60 },
+                height: { xs: 24, md: 60 },
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mt: { xs: 0, md: -1 },
+                mb: { xs: 2, md: 0 },
+              }}
+            >
+              <img
+                src="/images/natural-lang-star.svg"
+                alt="Star Icon"
+                width={60}
+                height={60}
+                style={{
+                  objectFit: "contain",
+                  maxWidth: "40px",
+                  maxHeight: "40px",
+                }}
+              />
+            </Box>
+            <Typography
+              sx={{
+                fontWeight: 500,
+                fontSize: { xs: "1.5rem", md: "1.6rem" },
+                color: "#18181B",
+                mb: 1,
+              }}
+            >
+              AI Image Regeneration
+            </Typography>
+            <Typography
+              sx={{
+                color: "#757575",
+                fontWeight: 400,
+                fontSize: { xs: "16px", md: "16px" },
+                mb: { xs: 2, md: 0 },
+              }}
+            >
+              Transform any picture with AI that refines and recreates stunning
+              results.
+            </Typography>
+          </Box>
+          {/* Bottom Animation */}
+          <Box
+            sx={{
+              // flexShrink: 0,
+              display: "flex",
+              alignItems: "flex-end", // stick to bottom
+              justifyContent: "flex-end", // aligned right
+              width: "100%",
+              // height: { xs: "auto", md: "240px" },
+            }}
+          >
+            <Lottie
+              animationData={regenerateIageAnimationData}
+              loop
+              autoplay
               style={{
+                width: "100%",
+                maxWidth: "300px",
+                height: "auto",
+                borderRadius: "8px",
                 objectFit: "contain",
-                maxWidth: "40px",
-                maxHeight: "40px",
               }}
             />
           </Box>
-          <Typography
-            sx={{
-              fontWeight: 500,
-              fontSize: { xs: "1.5rem", md: "1.6rem" },
-              color: "#18181B",
-              mb: 1,
-            }}
-          >
-            AI Infographics
-          </Typography>
-          <Typography
-            sx={{
-              maxWidth: "199px",
-              color: "#757575",
-              fontWeight: "400px",
-              fontSize: { xs: "16px", md: "16px" },
-              mb: 2,
-            }}
-          >
-            AI transcribes and analyzes spoken ideas to auto-generate slides
-            with key points and speaker notes.
-          </Typography>
-
-          {/* Hide on mobile */}
-          <Box
-            component="img"
-            src="/images/ai-card-img.svg"
-            alt="Bottom Right Illustration"
-            sx={{
-              display: { xs: "none", md: "block" },
-              position: "absolute",
-              bottom: -10,
-              right: 0,
-              width: 300,
-              height: 240,
-              objectFit: "cover",
-              zIndex: 1,
-            }}
-          />
         </Box>
 
         {/* Card 3 */}
@@ -357,28 +384,6 @@ export default function PurposeSection() {
               Google Slides, PNG, JPEG, PowerPoint, PDF
             </Typography>
           </Box>
-
-          {/* Right Side Image */}
-          {/* <Box
-            sx={{
-              flexShrink: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              maxWidth: { xs: "100%", md: "300px" },
-            }}
-          >
-            <img
-              src="/images/Export.svg"
-              alt="Export Preview"
-              style={{
-                width: "500px",
-                height: "100%",
-                borderRadius: "8px",
-                objectFit: "cover",
-              }}
-            />
-          </Box> */}
           {/* Right Side Animation */}
           <Box
             sx={{
@@ -482,10 +487,12 @@ export default function PurposeSection() {
             justifyContent: "center",
           }}
         >
-          <img
-            src="/images/VoiceAssistant.svg"
-            alt="Export Icon"
-            className="sm:w-[400px] w-[200px]"
+          <Lottie
+            animationData={voiceGenerationAnimation}
+            loop
+            autoplay
+            style={{ height: 350 }}
+            rendererSettings={{ preserveAspectRatio: "xMidYMid meet" }}
           />
         </Box>
       </Box>

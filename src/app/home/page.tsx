@@ -42,7 +42,7 @@ export default function Home() {
       <FeaturesSection />
       <PurposeSection />
       <PresentationStyleSection />
-      <WorkingSection />
+      {/* <WorkingSection /> */}
       {/* <TestimonialSection /> */}
       {/* <PricingSection /> */}
       <CommunitySection />
