@@ -56,7 +56,8 @@ export default function PresentationMaker({
   const [tone, setTone] = useState("");
   const [audience, setAudience] = useState("");
   const [slideCount, setSlideCount] = useState("");
-  const { setSlideTemplates, slideTemplates, setPresentationId } = useTemplateSlides();
+  const { setSlideTemplates, slideTemplates, setPresentationId } =
+    useTemplateSlides();
   console.log({ slideTemplates });
   const getPlaceholder = () => {
     switch (inputMode) {
@@ -148,10 +149,151 @@ export default function PresentationMaker({
   const showYoutubeError =
     inputMode === "Youtube" && inputValue && !isValidYoutubeUrl(inputValue);
 
+  // const handleSubmit = async () => {
+  //   setLoading(true);
+  //   setError("");
+  //   setProgress(0);
+  //   const startTime = Date.now();
+  //   let interval: NodeJS.Timeout | null = null;
+
+  //   interval = setInterval(() => {
+  //     setProgress((prev) => {
+  //       if (prev >= 95) return prev;
+  //       return prev + Math.random() * 0.8;
+  //     });
+  //   }, 200);
+
+  //   if (inputMode === "Website") {
+  //     try {
+  //       const url = new URL(inputValue);
+  //       if (!["http:", "https:"].includes(url.protocol)) throw new Error();
+  //     } catch {
+  //       setError("Please enter a valid website URL.");
+  //       setLoading(false);
+  //       if (interval) clearInterval(interval);
+  //       return;
+  //     }
+  //   }
+
+  //   const base =
+  //     inputMode === "Youtube"
+  //       ? { source: "youtube", inputUrl: inputValue }
+  //       : inputMode === "Website"
+  //       ? { source: "website", inputWebsiteUrl: inputValue }
+  //       : { source: "text", textContent: inputValue };
+
+  //   const promptMeta = { goal, tone, audience };
+  //   const payload = {
+  //     ...base,
+  //     meta: promptMeta,
+  //     slideCount: slideCount == "" ? 3 : slideCount,
+  //   };
+  //   // return;
+  //   try {
+  //     const res = await fetch(`${API_BASE_URL}/generate-slides`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     if (!res.ok) {
+  //       let errorData: any = {};
+  //       try {
+  //         errorData = await res.json();
+  //       } catch (e) {
+  //         errorData = { error: "Unknown error" };
+  //       }
+  //       throw new Error(errorData.error || "Failed to generate slides");
+  //     }
+
+  //     const data = await res.json();
+
+  //     const elapsed = Date.now() - startTime;
+  //     const minDelay = 1200;
+  //     const remaining = Math.max(0, minDelay - elapsed);
+
+  //     // setTimeout(() => {
+  //     setProgress(100);
+  //     setSlides(data.slides);
+  //     router.push(`/presentation/outline`);
+  //     // }, remaining);
+  //   } catch (err: any) {
+  //     setError(err.message || "Something went wrong");
+  //   } finally {
+  //     // setTimeout(() => {
+  //     if (interval) clearInterval(interval);
+  //     setLoading(false);
+  //     setProgress(0);
+  //     // }, 1800);
+  //   }
+  // };
+
+  // const handleTemplateSubmit = async () => {
+  //   setLoading(true);
+  //   setError("");
+  //   setProgress(0);
+  //   let interval: NodeJS.Timeout | null = null;
+
+  //   interval = setInterval(() => {
+  //     setProgress((prev) => {
+  //       if (prev >= 95) return prev;
+  //       return prev + Math.random() * 0.4;
+  //     });
+  //   }, 200);
+
+  //   const meta = { goal, tone, audience };
+  //   const payload = {
+  //     topic: templatePrompt,
+  //     meta,
+  //     slideCount: slideCount == "" ? 3 : slideCount,
+  //   };
+  //   console.log("TEMPLATE CLICKED", payload);
+
+  //   try {
+  //     const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     let data: any;
+  //     try {
+  //       data = await res.json(); // ✅ parse once
+  //     } catch {
+  //       throw new Error("Invalid JSON response");
+  //     }
+
+  //     if (!res.ok) {
+  //       throw new Error(data.error || "Failed to generate template");
+  //     }
+
+  //     console.log("POST Response:", data);
+
+  //     setProgress(100);
+  //     setSlideTemplates(data.slides);
+  //     setPresentationId(data.presentation_id);
+  //     router.push(`/text-to-template?pid=${data.presentation_id}`); // Pass via query param
+  //   } catch (err: any) {
+  //     setError(err.message || "Something went wrong");
+  //   } finally {
+  //     if (interval) clearInterval(interval);
+  //     setLoading(false);
+  //     setProgress(0);
+  //   }
+  // };
+
   const handleSubmit = async () => {
+    if (
+      (inputMode === "Template" && !templatePrompt.trim()) ||
+      (inputMode !== "Template" && !inputValue.trim())
+    ) {
+      return; // Guard against empty values even if button is bypassed
+    }
+
     setLoading(true);
     setError("");
     setProgress(0);
+
     const startTime = Date.now();
     let interval: NodeJS.Timeout | null = null;
 
@@ -178,16 +320,16 @@ export default function PresentationMaker({
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
-          ? { source: "website", inputWebsiteUrl: inputValue }
-          : { source: "text", textContent: inputValue };
+        ? { source: "website", inputWebsiteUrl: inputValue }
+        : { source: "text", textContent: inputValue };
 
     const promptMeta = { goal, tone, audience };
     const payload = {
       ...base,
       meta: promptMeta,
-      slideCount: slideCount == "" ? 3 : slideCount,
+      slideCount: slideCount === "" ? 3 : Number(slideCount),
     };
-    // return;
+
     try {
       const res = await fetch(`${API_BASE_URL}/generate-slides`, {
         method: "POST",
@@ -195,42 +337,44 @@ export default function PresentationMaker({
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        let errorData: any = {};
-        try {
-          errorData = await res.json();
-        } catch (e) {
-          errorData = { error: "Unknown error" };
-        }
-        throw new Error(errorData.error || "Failed to generate slides");
+      let data: any;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Invalid JSON response from server");
       }
 
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to generate slides");
+      }
 
       const elapsed = Date.now() - startTime;
       const minDelay = 1200;
       const remaining = Math.max(0, minDelay - elapsed);
 
-      // setTimeout(() => {
-      setProgress(100);
-      setSlides(data.slides);
-      router.push(`/presentation/outline`);
-      // }, remaining);
+      setTimeout(() => {
+        setProgress(100);
+        setSlides(data.slides);
+        router.push(`/presentation/outline`);
+      }, remaining);
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     } finally {
-      setTimeout(() => {
-        if (interval) clearInterval(interval);
-        setLoading(false);
-        setProgress(0);
-      }, 1800);
+      if (interval) clearInterval(interval);
+      setLoading(false);
+      // ❌ don’t reset progress immediately to avoid flicker after navigation
     }
   };
 
   const handleTemplateSubmit = async () => {
+    if (!templatePrompt.trim()) {
+      return; // Guard against empty template input
+    }
+
     setLoading(true);
     setError("");
     setProgress(0);
+
     let interval: NodeJS.Timeout | null = null;
 
     interval = setInterval(() => {
@@ -244,42 +388,41 @@ export default function PresentationMaker({
     const payload = {
       topic: templatePrompt,
       meta,
-      slideCount: slideCount == "" ? 3 : slideCount,
+      slideCount: slideCount === "" ? 3 : Number(slideCount),
     };
     console.log("TEMPLATE CLICKED", payload);
 
-try {
-  const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+    try {
+      const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-  let data: any;
-  try {
-    data = await res.json(); // ✅ parse once
-  } catch {
-    throw new Error("Invalid JSON response");
-  }
+      let data: any;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Invalid JSON response from server");
+      }
 
-  if (!res.ok) {
-    throw new Error(data.error || "Failed to generate template");
-  }
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to generate template");
+      }
 
-  console.log("POST Response:", data);
+      console.log("POST Response:", data);
 
-  setProgress(100);
-  setSlideTemplates(data.slides);
-  setPresentationId(data.presentation_id);
-  router.push(`/text-to-template?pid=${data.presentation_id}`); // Pass via query param
-} catch (err: any) {
-  setError(err.message || "Something went wrong");
-} finally {
-  if (interval) clearInterval(interval);
-  setLoading(false);
-  setProgress(0);
-}
-
+      setProgress(100);
+      setSlideTemplates(data.slides);
+      setPresentationId(data.presentation_id);
+      router.push(`/text-to-template?pid=${data.presentation_id}`);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      if (interval) clearInterval(interval);
+      setLoading(false);
+      // ❌ don’t reset progress immediately (avoid flicker after navigation)
+    }
   };
 
   useEffect(() => {
@@ -535,14 +678,15 @@ try {
           fontWeight: 600,
           mb: 4,
           height: { xs: 57, md: 70 },
-          border: `2px solid ${inputMode === "Template"
+          border: `2px solid ${
+            inputMode === "Template"
               ? !templatePrompt.trim()
                 ? "grey"
                 : "#8E2DE2"
               : !inputValue.trim() || Boolean(showYoutubeError)
-                ? "grey"
-                : "#8E2DE2"
-            }`,
+              ? "grey"
+              : "#8E2DE2"
+          }`,
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
@@ -552,8 +696,8 @@ try {
                 ? 0.7
                 : 1
               : !inputValue.trim() || Boolean(showYoutubeError)
-                ? 0.7
-                : 1,
+              ? 0.7
+              : 1,
           "&:hover": { backgroundColor: "#f3eaff" },
           "&::before": {
             content: '""',
@@ -577,12 +721,12 @@ try {
             color: loading
               ? "#fff"
               : inputMode === "Template"
-                ? !templatePrompt.trim()
-                  ? "grey"
-                  : "#8E2DE2"
-                : !inputValue.trim() || Boolean(showYoutubeError)
-                  ? "grey"
-                  : "#8E2DE2",
+              ? !templatePrompt.trim()
+                ? "grey"
+                : "#8E2DE2"
+              : !inputValue.trim() || Boolean(showYoutubeError)
+              ? "grey"
+              : "#8E2DE2",
             textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
             transition: "color 0.6s ease, text-shadow 0.6s ease",
             fontWeight: 600,
@@ -591,8 +735,8 @@ try {
           {loading
             ? `${getProgressMessage(progress)} ${Math.round(progress)}%`
             : inputMode === "Template"
-              ? "Generate Template"
-              : "Generate Outlines"}
+            ? "Generate Template"
+            : "Generate Outlines"}
         </span>
 
         <Box
@@ -604,12 +748,12 @@ try {
             background: loading
               ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
               : inputMode === "Template"
-                ? !templatePrompt.trim()
-                  ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-                  : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
-                : !inputValue.trim() || Boolean(showYoutubeError)
-                  ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-                  : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+              ? !templatePrompt.trim()
+                ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+                : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
+              : !inputValue.trim() || Boolean(showYoutubeError)
+              ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",
