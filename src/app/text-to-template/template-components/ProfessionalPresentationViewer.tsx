@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
-import { Box, Stack, Typography, CircularProgress, Alert, Chip, AppBar, Toolbar } from "@mui/material"
+import { useState, useEffect, useRef } from "react"
+import { Box, Stack, Typography, CircularProgress, Alert } from "@mui/material"
 import { Stage, Layer } from "react-konva"
 import SlideRenderer from "./SlideRenderer"
 import TemplateSelector from "./TemplateSelector"
@@ -19,14 +19,27 @@ interface ProfessionalPresentationViewerProps {
 
 const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerProps> = ({ presentationId }) => {
   const { presentation, loading, error } = usePresentation(presentationId)
-  const [selectedTemplate, setSelectedTemplate] = useState<"modern" | "corporate" | "creative">("modern")
+  const [selectedTemplate, setSelectedTemplate] = useState<"modern" | "corporate" | "creative" | "bold">("modern")
 
   const STAGE_W = 960
   const STAGE_H = 540
 
-  console.log(" Presentation data received:", presentation)
-  console.log(" Loading state:", loading)
-  console.log(" Error state:", error)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const [scale, setScale] = useState(1)
+
+  // handle responsive scaling
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth
+        const newScale = containerWidth / STAGE_W
+        setScale(newScale)
+      }
+    }
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   if (loading) {
     return (
@@ -56,24 +69,19 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
     )
   }
 
-  console.log("Converting slides with template:", selectedTemplate)
-  console.log("Number of slides to convert:", presentation.slides.length)
-
   // Convert backend data to slides using selected template
   const convertedPresentation: Presentation = {
-      id: presentation.id,  
-      meta : {
-        audience : presentation.meta.audience,
-        tone : presentation.meta.tone,
-      },            
+    id: presentation.id,
+    meta: {
+      audience: presentation.meta.audience,
+      tone: presentation.meta.tone,
+    },
     slides: presentation.slides.map((backendSlide, index) => {
-      console.log(` Converting slide ${index + 1}:`, backendSlide.slide_title || backendSlide.slide_id)
-
       switch (selectedTemplate) {
         case "modern":
           return createModernTemplate(backendSlide, index)
         case "corporate":
-         return createCorporateTemplate(backendSlide, index)
+          return createCorporateTemplate(backendSlide, index)
         case "creative":
           return createCreativeTemplate(backendSlide, index)
         case "bold":
@@ -84,35 +92,12 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
     }),
   }
 
-
-  console.log(" Converted presentation:", convertedPresentation)
-
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
-      {/* <AppBar
-        position="static"
-        sx={{
-          background: "linear-gradient(135deg, #2563eb 0%, #1e40af 50%, #7c3aed 100%)",
-          mb: 3,
-        }}
-      >
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            Professional Presentation Viewer
-          </Typography>
-          <Chip
-            label={`${presentation.slides.length} slides`}
-            color="secondary"
-            variant="outlined"
-            sx={{ color: "white", borderColor: "white" }}
-          />
-        </Toolbar>
-      </AppBar> */}
-
       <Box sx={{ p: 2 }}>
         {/* Header */}
         <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 500, mt: 7 }}>
             {presentation.topic || presentation.title || "AI in 2025"}
           </Typography>
           <Typography variant="subtitle1" sx={{ color: "#666", mb: 2 }}>
@@ -128,7 +113,6 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
         <Stack spacing={4}>
           {convertedPresentation.slides.map((slide, index) => {
             const slideKey = slide.slide_id || `slide-${index}`
-            console.log(`Rendering slide ${index + 1} with key:`, slideKey)
 
             return (
               <Box key={slideKey}>
@@ -136,19 +120,30 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
                   Slide {index + 1}
                   {slide.title && ` - ${slide.title}`}
                 </Typography>
+
+                {/* Responsive container */}
                 <Box
+                  ref={containerRef}
                   sx={{
                     border: "3px solid #e0e0e0",
                     borderRadius: 2,
-                    width: STAGE_W,
-                    height: STAGE_H,
-                    backgroundColor: "#ffffff",
+                    width: "100%",
+                    maxWidth: `${STAGE_W}px`,
                     mx: "auto",
+                    backgroundColor: "#ffffff",
                     boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
                     overflow: "hidden",
+                    aspectRatio: `${STAGE_W} / ${STAGE_H}`,
+                    //transform: `scale(${scale})`,
                   }}
                 >
-                  <Stage width={STAGE_W} height={STAGE_H}>
+                  <Stage
+                    width={STAGE_W}
+                    height={STAGE_H}
+                    scaleX={scale}
+                    scaleY={scale}
+                  
+                  >
                     <Layer>
                       <SlideRenderer slide={slide} />
                     </Layer>
@@ -162,7 +157,7 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
         {/* Footer Info */}
         <Box sx={{ mt: 4, textAlign: "center", color: "#666" }}>
           <Typography variant="body2">
-            Professional presentation templates • API Integration: {error ? "Fallback Mode" : "Connected"}
+           Presentation templates • Professional and Creative: {error ? "Fallback Mode" : "Connected"}
           </Typography>
         </Box>
       </Box>

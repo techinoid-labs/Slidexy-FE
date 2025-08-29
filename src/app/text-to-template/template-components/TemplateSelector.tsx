@@ -39,38 +39,39 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selectedTemplate, o
       </Typography>
       <Grid container spacing={2}>
         {templates.map((template) => (
-          //<Grid item xs={12} md={4} key={template.id}>
-            <Card
-              sx={{
-                cursor: "pointer",
-                border: selectedTemplate === template.id ? "2px solid #1976d2" : "2px solid transparent",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  transform: "translateY(-2px)",
-                  boxShadow: 3,
-                },
-              }}
-              onClick={() => onTemplateChange(template.id)}
-            >
-              <CardContent>
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: 120,
-                    objectFit: "cover",
-                    borderRadius: 1,
-                    mb: 2,
-                  }}
-                />
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                  {template.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {template.description}
-                </Typography>
-              </CardContent>
-            </Card>
-          //</Grid>
+          <Card
+            key={template.id}
+            sx={{
+              cursor: "pointer",
+              border: selectedTemplate === template.id ? "2px solid rgba(74, 0, 224, 1)" : "2px solid transparent",
+              transition: "all 0.2s ease",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: 3,
+              },
+            }}
+            onClick={() => onTemplateChange(template.id)}
+          >
+            <CardContent>
+              <Box
+                sx={{
+                  width: "100%",
+                  height: 10,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                  mb: 2,
+                  background:"rgba(242, 240, 255, 1)"
+
+                }}
+              />
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                {template.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {template.description}
+              </Typography>
+            </CardContent>
+          </Card>
         ))}
       </Grid>
     </Box>
