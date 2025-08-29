@@ -1,15 +1,14 @@
-import React from "react";
-import { Box, Stack, Button } from "@mui/material";
-import { Stage, Layer } from "react-konva";
-import SlideRenderer from "./SlideRenderer";
-import { exportPresentationToPptx } from "./pptxExportTemplate";
-import { Presentation } from "./types";
+"use client"
 
-const PresentationViewer: React.FC<{ presentation: Presentation }> = ({
-  presentation,
-}) => {
-  const STAGE_W = 960;
-  const STAGE_H = 540;
+import type React from "react"
+import { Box, Stack } from "@mui/material"
+import { Stage, Layer } from "react-konva"
+import SlideRenderer from "./SlideRenderer"
+import type { Presentation } from "../types/presentation"
+
+const PresentationViewer: React.FC<{ presentation: Presentation }> = ({ presentation }) => {
+  const STAGE_W = 960
+  const STAGE_H = 540
 
   return (
     <Stack spacing={4} sx={{ p: 2 }}>
@@ -43,7 +42,7 @@ const PresentationViewer: React.FC<{ presentation: Presentation }> = ({
         </Button>
       </Box> */}
     </Stack>
-  );
-};
+  )
+}
 
-export default PresentationViewer;
+export default PresentationViewer
