@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import type { BackendPresentation } from "../types/presentation"
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+console.log("[SlidesX] API_BASE_URL_FETCH:", API_BASE_URL);
 export const usePresentation = (presentationId: string) => {
   const [presentation, setPresentation] = useState<BackendPresentation | null>(null)
   const [loading, setLoading] = useState(true)
@@ -12,7 +13,7 @@ export const usePresentation = (presentationId: string) => {
     const fetchPresentation = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`http://localhost:5000/presentation/${presentationId}`)
+        const response = await fetch(`${API_BASE_URL}/presentation/${presentationId}`)
 
         if (!response.ok) {
           throw new Error("Failed to fetch presentation")
