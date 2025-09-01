@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Header from "@/app/components/home/Header";
 import HeroSection from "@/app/components/home/HeroSection";
 import { Box } from "@mui/material";
@@ -43,7 +43,7 @@ export default function Home() {
       <FeaturesSection />
       <PurposeSection />
       <PresentationStyleSection />
-      {/* <WorkingSection /> */}
+      <WorkingSection />
       {/* <TestimonialSection /> */}
       {/* <PricingSection /> */}
       <CommunitySection />
