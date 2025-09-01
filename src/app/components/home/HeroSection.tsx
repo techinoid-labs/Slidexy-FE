@@ -50,7 +50,8 @@ export default function HeroSection() {
       <Box
         sx={{
           width: "100%",
-          height: 672,
+          height: { sx: 672, md: 672 },
+          // height: 672,
           background: `radial-gradient(700px 220px at 50% 54%, #8E2DE210 0%, #FBF9FF 70%, #fff 100%)`,
           position: "relative",
           overflow: "hidden",
@@ -229,7 +230,6 @@ export default function HeroSection() {
                 sx={{
                   display: "flex",
                   justifyContent: "center",
-                  gap: "10px",
                   alignItems: "center",
                   mb: 2,
                   mt: 5,
@@ -281,7 +281,7 @@ export default function HeroSection() {
                     mt: { xs: 0, md: 2 },
                   }}
                 >
-                  <Typography
+                  {/* <Typography
                     variant="body2"
                     sx={{
                       fontSize: { xs: "0.875rem", sm: "1rem" },
@@ -293,15 +293,16 @@ export default function HeroSection() {
                     }}
                   >
                     Try for Free
-                  </Typography>
+                  </Typography> */}
 
                   {/* Try for Free Icon */}
-                  <Box sx={{ mt: 1 }}>
+                  <Box sx={{ mt: -5 }}>
                     <Image
-                      src="/images/try-for-free-vector.svg"
+                      // src="/images/try-for-free-vector.svg"
+                      src="/images/home/Arrow_08.gif"
                       alt="Arrow under text"
-                      width={90}
-                      height={90}
+                      width={190}
+                      height={190}
                       style={{ maxWidth: "100%", height: "auto" }}
                     />
                   </Box>
@@ -310,35 +311,35 @@ export default function HeroSection() {
             </Box>
           </Box>
 
-            <Box
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              mt: { sx: 0, md: 0 },
+              pb: { sx: 10, md: 0 },
+            }}
+          >
+            <Button
+              onClick={() => window.scroll(0, 800)}
+              color="primary"
+              endIcon={<KeyboardArrowDown />}
               sx={{
-                display: "flex",
-                justifyContent: "center",
-                mt: { sx: 0, md: 0 },
-                pb: { sx: 10, md: 0 },
+                fontSize: { xs: "1.1rem", sm: "1.2rem", md: "1.2rem" },
+                color: "#4A00E0",
+                whiteSpace: "nowrap",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "transparent",
+                  color: "primary.dark",
+                },
+                fontWeight: 450,
+                px: 2,
+                py: 1,
               }}
             >
-              <Button
-               onClick={()=>window.scroll(0,800)}
-                color="primary"
-                endIcon={<KeyboardArrowDown />}
-                sx={{
-                  fontSize: { xs: "1.1rem", sm: "1.2rem", md: "1.2rem" },
-                  color: "#4A00E0",
-                  whiteSpace: "nowrap",
-                  textTransform: "none",
-                  "&:hover": {
-                    backgroundColor: "transparent",
-                    color: "primary.dark",
-                  },
-                  fontWeight: 450,
-                  px: 2,
-                  py: 1,
-                }}
-              >
-                Learn More
-              </Button>
-            </Box>
+              Learn More
+            </Button>
+          </Box>
         </Container>
       </Box>
     </>

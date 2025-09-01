@@ -149,151 +149,10 @@ export default function PresentationMaker({
   const showYoutubeError =
     inputMode === "Youtube" && inputValue && !isValidYoutubeUrl(inputValue);
 
-  // const handleSubmit = async () => {
-  //   setLoading(true);
-  //   setError("");
-  //   setProgress(0);
-  //   const startTime = Date.now();
-  //   let interval: NodeJS.Timeout | null = null;
-
-  //   interval = setInterval(() => {
-  //     setProgress((prev) => {
-  //       if (prev >= 95) return prev;
-  //       return prev + Math.random() * 0.8;
-  //     });
-  //   }, 200);
-
-  //   if (inputMode === "Website") {
-  //     try {
-  //       const url = new URL(inputValue);
-  //       if (!["http:", "https:"].includes(url.protocol)) throw new Error();
-  //     } catch {
-  //       setError("Please enter a valid website URL.");
-  //       setLoading(false);
-  //       if (interval) clearInterval(interval);
-  //       return;
-  //     }
-  //   }
-
-  //   const base =
-  //     inputMode === "Youtube"
-  //       ? { source: "youtube", inputUrl: inputValue }
-  //       : inputMode === "Website"
-  //       ? { source: "website", inputWebsiteUrl: inputValue }
-  //       : { source: "text", textContent: inputValue };
-
-  //   const promptMeta = { goal, tone, audience };
-  //   const payload = {
-  //     ...base,
-  //     meta: promptMeta,
-  //     slideCount: slideCount == "" ? 3 : slideCount,
-  //   };
-  //   // return;
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/generate-slides`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(payload),
-  //     });
-
-  //     if (!res.ok) {
-  //       let errorData: any = {};
-  //       try {
-  //         errorData = await res.json();
-  //       } catch (e) {
-  //         errorData = { error: "Unknown error" };
-  //       }
-  //       throw new Error(errorData.error || "Failed to generate slides");
-  //     }
-
-  //     const data = await res.json();
-
-  //     const elapsed = Date.now() - startTime;
-  //     const minDelay = 1200;
-  //     const remaining = Math.max(0, minDelay - elapsed);
-
-  //     // setTimeout(() => {
-  //     setProgress(100);
-  //     setSlides(data.slides);
-  //     router.push(`/presentation/outline`);
-  //     // }, remaining);
-  //   } catch (err: any) {
-  //     setError(err.message || "Something went wrong");
-  //   } finally {
-  //     // setTimeout(() => {
-  //     if (interval) clearInterval(interval);
-  //     setLoading(false);
-  //     setProgress(0);
-  //     // }, 1800);
-  //   }
-  // };
-
-  // const handleTemplateSubmit = async () => {
-  //   setLoading(true);
-  //   setError("");
-  //   setProgress(0);
-  //   let interval: NodeJS.Timeout | null = null;
-
-  //   interval = setInterval(() => {
-  //     setProgress((prev) => {
-  //       if (prev >= 95) return prev;
-  //       return prev + Math.random() * 0.4;
-  //     });
-  //   }, 200);
-
-  //   const meta = { goal, tone, audience };
-  //   const payload = {
-  //     topic: templatePrompt,
-  //     meta,
-  //     slideCount: slideCount == "" ? 3 : slideCount,
-  //   };
-  //   console.log("TEMPLATE CLICKED", payload);
-
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(payload),
-  //     });
-
-  //     let data: any;
-  //     try {
-  //       data = await res.json(); // ✅ parse once
-  //     } catch {
-  //       throw new Error("Invalid JSON response");
-  //     }
-
-  //     if (!res.ok) {
-  //       throw new Error(data.error || "Failed to generate template");
-  //     }
-
-  //     console.log("POST Response:", data);
-
-  //     setProgress(100);
-  //     setSlideTemplates(data.slides);
-  //     setPresentationId(data.presentation_id);
-  //     router.push(`/text-to-template?pid=${data.presentation_id}`); // Pass via query param
-  //   } catch (err: any) {
-  //     setError(err.message || "Something went wrong");
-  //   } finally {
-  //     if (interval) clearInterval(interval);
-  //     setLoading(false);
-  //     setProgress(0);
-  //   }
-  // };
-
   const handleSubmit = async () => {
-    if (
-      (inputMode === "Template" && !templatePrompt.trim()) ||
-      (inputMode !== "Template" && !inputValue.trim())
-    ) {
-      return; // Guard against empty values even if button is bypassed
-    }
-
     setLoading(true);
     setError("");
     setProgress(0);
-
     const startTime = Date.now();
     let interval: NodeJS.Timeout | null = null;
 
@@ -327,9 +186,9 @@ export default function PresentationMaker({
     const payload = {
       ...base,
       meta: promptMeta,
-      slideCount: slideCount === "" ? 3 : Number(slideCount),
+      slideCount: slideCount == "" ? 3 : slideCount,
     };
-
+    // return;
     try {
       const res = await fetch(`${API_BASE_URL}/generate-slides`, {
         method: "POST",
@@ -337,44 +196,42 @@ export default function PresentationMaker({
         body: JSON.stringify(payload),
       });
 
-      let data: any;
-      try {
-        data = await res.json();
-      } catch {
-        throw new Error("Invalid JSON response from server");
+      if (!res.ok) {
+        let errorData: any = {};
+        try {
+          errorData = await res.json();
+        } catch (e) {
+          errorData = { error: "Unknown error" };
+        }
+        throw new Error(errorData.error || "Failed to generate slides");
       }
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to generate slides");
-      }
+      const data = await res.json();
 
       const elapsed = Date.now() - startTime;
       const minDelay = 1200;
       const remaining = Math.max(0, minDelay - elapsed);
 
-      setTimeout(() => {
-        setProgress(100);
-        setSlides(data.slides);
-        router.push(`/presentation/outline`);
-      }, remaining);
+      // setTimeout(() => {
+      setProgress(100);
+      setSlides(data.slides);
+      router.push(`/presentation/outline`);
+      // }, remaining);
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     } finally {
+      // setTimeout(() => {
       if (interval) clearInterval(interval);
       setLoading(false);
-      // ❌ don’t reset progress immediately to avoid flicker after navigation
+      setProgress(0);
+      // }, 1800);
     }
   };
 
   const handleTemplateSubmit = async () => {
-    if (!templatePrompt.trim()) {
-      return; // Guard against empty template input
-    }
-
     setLoading(true);
     setError("");
     setProgress(0);
-
     let interval: NodeJS.Timeout | null = null;
 
     interval = setInterval(() => {
@@ -388,7 +245,7 @@ export default function PresentationMaker({
     const payload = {
       topic: templatePrompt,
       meta,
-      slideCount: slideCount === "" ? 3 : Number(slideCount),
+      slideCount: slideCount == "" ? 3 : slideCount,
     };
     console.log("TEMPLATE CLICKED", payload);
 
@@ -401,9 +258,9 @@ export default function PresentationMaker({
 
       let data: any;
       try {
-        data = await res.json();
+        data = await res.json(); // ✅ parse once
       } catch {
-        throw new Error("Invalid JSON response from server");
+        throw new Error("Invalid JSON response");
       }
 
       if (!res.ok) {
@@ -421,9 +278,152 @@ export default function PresentationMaker({
     } finally {
       if (interval) clearInterval(interval);
       setLoading(false);
-      // ❌ don’t reset progress immediately (avoid flicker after navigation)
+      setProgress(0);
     }
   };
+
+  // const handleSubmit = async () => {
+  //   if (
+  //     (inputMode === "Template" && !templatePrompt.trim()) ||
+  //     (inputMode !== "Template" && !inputValue.trim())
+  //   ) {
+  //     return; // Guard against empty values even if button is bypassed
+  //   }
+
+  //   setLoading(true);
+  //   setError("");
+  //   setProgress(0);
+
+  //   const startTime = Date.now();
+  //   let interval: NodeJS.Timeout | null = null;
+
+  //   interval = setInterval(() => {
+  //     setProgress((prev) => {
+  //       if (prev >= 95) return prev;
+  //       return prev + Math.random() * 0.8;
+  //     });
+  //   }, 200);
+
+  //   if (inputMode === "Website") {
+  //     try {
+  //       const url = new URL(inputValue);
+  //       if (!["http:", "https:"].includes(url.protocol)) throw new Error();
+  //     } catch {
+  //       setError("Please enter a valid website URL.");
+  //       setLoading(false);
+  //       if (interval) clearInterval(interval);
+  //       return;
+  //     }
+  //   }
+
+  //   const base =
+  //     inputMode === "Youtube"
+  //       ? { source: "youtube", inputUrl: inputValue }
+  //       : inputMode === "Website"
+  //       ? { source: "website", inputWebsiteUrl: inputValue }
+  //       : { source: "text", textContent: inputValue };
+
+  //   const promptMeta = { goal, tone, audience };
+  //   const payload = {
+  //     ...base,
+  //     meta: promptMeta,
+  //     slideCount: slideCount === "" ? 3 : Number(slideCount),
+  //   };
+
+  //   try {
+  //     const res = await fetch(`${API_BASE_URL}/generate-slides`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     let data: any;
+  //     try {
+  //       data = await res.json();
+  //     } catch {
+  //       throw new Error("Invalid JSON response from server");
+  //     }
+
+  //     if (!res.ok) {
+  //       throw new Error(data.error || "Failed to generate slides");
+  //     }
+
+  //     const elapsed = Date.now() - startTime;
+  //     const minDelay = 1200;
+  //     const remaining = Math.max(0, minDelay - elapsed);
+
+  //     setTimeout(() => {
+  //       setProgress(100);
+  //       setSlides(data.slides);
+  //       router.push(`/presentation/outline`);
+  //     }, remaining);
+  //   } catch (err: any) {
+  //     setError(err.message || "Something went wrong");
+  //   } finally {
+  //     if (interval) clearInterval(interval);
+  //     setLoading(false);
+  //     // ❌ don’t reset progress immediately to avoid flicker after navigation
+  //   }
+  // };
+
+  // const handleTemplateSubmit = async () => {
+  //   if (!templatePrompt.trim()) {
+  //     return; // Guard against empty template input
+  //   }
+
+  //   setLoading(true);
+  //   setError("");
+  //   setProgress(0);
+
+  //   let interval: NodeJS.Timeout | null = null;
+
+  //   interval = setInterval(() => {
+  //     setProgress((prev) => {
+  //       if (prev >= 95) return prev;
+  //       return prev + Math.random() * 0.4;
+  //     });
+  //   }, 200);
+
+  //   const meta = { goal, tone, audience };
+  //   const payload = {
+  //     topic: templatePrompt,
+  //     meta,
+  //     slideCount: slideCount === "" ? 3 : Number(slideCount),
+  //   };
+  //   console.log("TEMPLATE CLICKED", payload);
+
+  //   try {
+  //     const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     let data: any;
+  //     try {
+  //       data = await res.json();
+  //     } catch {
+  //       throw new Error("Invalid JSON response from server");
+  //     }
+
+  //     if (!res.ok) {
+  //       throw new Error(data.error || "Failed to generate template");
+  //     }
+
+  //     console.log("POST Response:", data);
+
+  //     setProgress(100);
+  //     setSlideTemplates(data.slides);
+  //     setPresentationId(data.presentation_id);
+  //     router.push(`/text-to-template?pid=${data.presentation_id}`);
+  //   } catch (err: any) {
+  //     setError(err.message || "Something went wrong");
+  //   } finally {
+  //     if (interval) clearInterval(interval);
+  //     setLoading(false);
+  //     // ❌ don’t reset progress immediately (avoid flicker after navigation)
+  //   }
+  // };
 
   useEffect(() => {
     const prompt = searchParams.get("prompt");
