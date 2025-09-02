@@ -7,25 +7,25 @@ import { ArrowBack, ArrowForward, Star } from "@mui/icons-material";
 const testimonials = [
   {
     text: "Slidexy has been a lifesaver for our team. We can focus on creating content, not designing slides.",
-    name: "Floyd Miles",
+    name: "John D.",
     role: "Vice President, GoPro",
     avatar: "/images/avatar1.jpg",
     rating: 5,
   },
   {
-    text: "Using Slidexy simplified our workflow tremendously. It's intuitive and powerful.",
-    name: "Jane Cooper",
+    text: "I was amazed by how easy it was to use Slidexy. The presentations look professional and engaging",
+    name: "Emily K.",
     role: "Product Manager, Figma",
     avatar: "/images/avatar2.jpg",
     rating: 5,
   },
-  {
-    text: "An amazing tool for presentations. Saves hours of design work.",
-    name: "Robert Fox",
-    role: "CEO, TechCorp",
-    avatar: "/images/avatar3.jpg",
-    rating: 4,
-  },
+  // {
+  //   text: "An amazing tool for presentations. Saves hours of design work.",
+  //   name: "Robert Fox",
+  //   role: "CEO, TechCorp",
+  //   avatar: "/images/avatar3.jpg",
+  //   rating: 4,
+  // },
 ];
 
 export default function TestimonialSection() {
@@ -118,7 +118,7 @@ export default function TestimonialSection() {
         >
           <Avatar src={avatar} alt={name} sx={{ width: 56, height: 56 }} />
           <Typography sx={{ fontWeight: 600 }}>{name}</Typography>
-          <Typography sx={{ fontSize: 14, color: "gray" }}>{role}</Typography>
+          {/* <Typography sx={{ fontSize: 14, color: "gray" }}>{role}</Typography> */}
 
           {/* Stars */}
           <Box sx={{ display: "flex", gap: 0.5, mt: 1 }}>

@@ -44,7 +44,7 @@ export default function Home() {
       <PurposeSection />
       <PresentationStyleSection />
       <WorkingSection />
-      {/* <TestimonialSection /> */}
+      <TestimonialSection />
       {/* <PricingSection /> */}
       <CommunitySection />
       <Footer />
