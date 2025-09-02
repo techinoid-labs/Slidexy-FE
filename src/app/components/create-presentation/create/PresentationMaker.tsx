@@ -27,7 +27,7 @@ const getProgressMessage = (progress: number) => {
   if (progress < 17) return "Analyzing data...";
   if (progress < 24) return "Thinking...";
   if (progress < 43) return "Generating text ...";
-  if (progress < 68) return "Generating images...";
+  if (progress < 76) return "Generating images...";
   return "Finalizing...";
 };
 
@@ -218,7 +218,7 @@ export default function PresentationMaker({
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
-    setProgress(0);
+    setProgress(1);
     setSlides([]);
 
     let animationInterval: NodeJS.Timeout | null = null;
@@ -228,8 +228,9 @@ export default function PresentationMaker({
       if (animationInterval) clearInterval(animationInterval);
       animationInterval = setInterval(() => {
         setProgress((prev) => {
-          if (prev < targetProgress - 1) {
-            return prev + Math.min((targetProgress - prev) / 5, 2); // smooth ease
+          // smoothly ease progress up until target
+          if (prev < targetProgress - 0.5) {
+            return prev + Math.min((targetProgress - prev) / 4, 1.2);
           }
           return prev;
         });
@@ -300,7 +301,10 @@ export default function PresentationMaker({
             const event = JSON.parse(jsonStr);
 
             if (event.percent !== undefined) {
-              targetProgress = event.percent; // let smoother animate toward this
+              // If server jumps forward, update immediately
+              if (event.percent > targetProgress) {
+                targetProgress = event.percent;
+              }
             }
 
             if (event.error) {
@@ -329,6 +333,7 @@ export default function PresentationMaker({
     } catch (err: any) {
       setError(err.message || "Something went wrong");
       setLoading(false);
+      setProgress(0);
       if (animationInterval) clearInterval(animationInterval);
     }
   };
