@@ -218,7 +218,7 @@ export default function PresentationMaker({
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
-    setProgress(0);
+    setProgress(1);
     setSlides([]);
 
     // Validate website URL
