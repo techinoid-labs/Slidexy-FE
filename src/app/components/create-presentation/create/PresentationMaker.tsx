@@ -20,7 +20,7 @@ import { Card, CardMedia, Box as MuiBox } from "@mui/material";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-console.log("[SlidesX] API_BASE_URL:", API_BASE_URL);
+// console.log("[SlidesX] API_BASE_URL:", API_BASE_URL);
 
 const getProgressMessage = (progress: number) => {
   if (progress < 8) return "Initializing...";
@@ -58,7 +58,7 @@ export default function PresentationMaker({
   const [slideCount, setSlideCount] = useState("");
   const { setSlideTemplates, slideTemplates, setPresentationId } =
     useTemplateSlides();
-  console.log({ slideTemplates });
+  // console.log({ slideTemplates });
   const getPlaceholder = () => {
     switch (inputMode) {
       case "Youtube":
@@ -74,19 +74,6 @@ export default function PresentationMaker({
     setInputMode("Text");
     setInputValue(description);
   };
-
-  // const extractVideoId = (inputUrl: string) => {
-  //   try {
-  //     const urlObj = new URL(inputUrl);
-  //     if (urlObj.hostname.includes("youtube.com")) {
-  //       return urlObj.searchParams.get("v");
-  //     } else if (urlObj.hostname === "youtu.be") {
-  //       return urlObj.pathname.slice(1);
-  //     }
-  //   } catch (error) {
-  //     return null;
-  //   }
-  // };
 
   const extractVideoId = (inputUrl: string): string | null => {
     try {
@@ -149,20 +136,91 @@ export default function PresentationMaker({
   const showYoutubeError =
     inputMode === "Youtube" && inputValue && !isValidYoutubeUrl(inputValue);
 
+  //No Streaming submit
+  // const handleSubmit = async () => {
+  //   setLoading(true);
+  //   setError("");
+  //   setProgress(0);
+
+  //   let interval: NodeJS.Timeout | null = null;
+
+  //   // Progress animation
+  //   interval = setInterval(() => {
+  //     setProgress((prev) => {
+  //       if (prev >= 95) return prev;
+  //       return prev + Math.random() * 0.8;
+  //     });
+  //   }, 200);
+
+  //   // Validate website URL
+  //   if (inputMode === "Website") {
+  //     try {
+  //       const url = new URL(inputValue);
+  //       if (!["http:", "https:"].includes(url.protocol)) throw new Error();
+  //     } catch {
+  //       setError("Please enter a valid website URL.");
+  //       setLoading(false);
+  //       if (interval) clearInterval(interval);
+  //       return;
+  //     }
+  //   }
+
+  //   // Build payload
+  //   const base =
+  //     inputMode === "Youtube"
+  //       ? { source: "youtube", inputUrl: inputValue }
+  //       : inputMode === "Website"
+  //       ? { source: "website", inputWebsiteUrl: inputValue }
+  //       : { source: "text", textContent: inputValue };
+
+  //   const promptMeta = { goal, tone, audience };
+  //   const payload = {
+  //     ...base,
+  //     meta: promptMeta,
+  //     slideCount: slideCount === "" ? 3 : slideCount,
+  //   };
+
+  //   try {
+  //     const res = await fetch(`${API_BASE_URL}/generate-slides`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     let data: any;
+  //     try {
+  //       data = await res.json(); // ✅ parse once
+  //     } catch {
+  //       throw new Error("Invalid JSON response");
+  //     }
+
+  //     if (!res.ok) {
+  //       throw new Error(data.error || "Failed to generate slides");
+  //     }
+
+  //     // ✅ stop animation before navigation
+  //     if (interval) clearInterval(interval);
+
+  //     setProgress(100);
+  //     setSlides(data.slides);
+
+  //     router.push(`/presentation/outline`);
+  //   } catch (err: any) {
+  //     setError(err.message || "Something went wrong");
+  //     if (interval) clearInterval(interval);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  //Streaming submit
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
     setProgress(0);
-    const startTime = Date.now();
-    let interval: NodeJS.Timeout | null = null;
+    setSlides([]);
 
-    interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) return prev;
-        return prev + Math.random() * 0.8;
-      });
-    }, 200);
-
+    // Validate website URL
     if (inputMode === "Website") {
       try {
         const url = new URL(inputValue);
@@ -170,11 +228,11 @@ export default function PresentationMaker({
       } catch {
         setError("Please enter a valid website URL.");
         setLoading(false);
-        if (interval) clearInterval(interval);
         return;
       }
     }
 
+    // Build payload
     const base =
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
@@ -186,45 +244,70 @@ export default function PresentationMaker({
     const payload = {
       ...base,
       meta: promptMeta,
-      slideCount: slideCount == "" ? 3 : slideCount,
+      slideCount: slideCount === "" ? 3 : slideCount,
     };
-    // return;
+
     try {
       const res = await fetch(`${API_BASE_URL}/generate-slides`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        let errorData: any = {};
-        try {
-          errorData = await res.json();
-        } catch (e) {
-          errorData = { error: "Unknown error" };
-        }
-        throw new Error(errorData.error || "Failed to generate slides");
+      if (!res.ok || !res.body) {
+        throw new Error("Failed to connect to server");
       }
 
-      const data = await res.json();
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-      const elapsed = Date.now() - startTime;
-      const minDelay = 1200;
-      const remaining = Math.max(0, minDelay - elapsed);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      // setTimeout(() => {
-      setProgress(100);
-      setSlides(data.slides);
-      router.push(`/presentation/outline`);
-      // }, remaining);
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() || "";
+
+        for (const part of parts) {
+          if (!part.startsWith("data:")) continue;
+          const jsonStr = part.replace(/^data:\s*/, "").trim();
+          if (!jsonStr || jsonStr === "[DONE]") continue;
+
+          try {
+            const event = JSON.parse(jsonStr);
+
+            if (event.percent !== undefined) {
+              setProgress(event.percent);
+            }
+
+            if (event.error) {
+              setError(event.error);
+              setLoading(false);
+              return;
+            }
+
+            if (event.complete) {
+              setProgress(100);
+              if (event.slides) {
+                setSlides(event.slides);
+              }
+              setLoading(false);
+              router.push(`/presentation/outline`);
+              return;
+            }
+          } catch (err) {
+            console.error("Bad JSON chunk:", jsonStr);
+          }
+        }
+      }
     } catch (err: any) {
       setError(err.message || "Something went wrong");
-    } finally {
-      // setTimeout(() => {
-      if (interval) clearInterval(interval);
       setLoading(false);
-      setProgress(0);
-      // }, 1800);
     }
   };
 
@@ -281,149 +364,6 @@ export default function PresentationMaker({
       setProgress(0);
     }
   };
-
-  // const handleSubmit = async () => {
-  //   if (
-  //     (inputMode === "Template" && !templatePrompt.trim()) ||
-  //     (inputMode !== "Template" && !inputValue.trim())
-  //   ) {
-  //     return; // Guard against empty values even if button is bypassed
-  //   }
-
-  //   setLoading(true);
-  //   setError("");
-  //   setProgress(0);
-
-  //   const startTime = Date.now();
-  //   let interval: NodeJS.Timeout | null = null;
-
-  //   interval = setInterval(() => {
-  //     setProgress((prev) => {
-  //       if (prev >= 95) return prev;
-  //       return prev + Math.random() * 0.8;
-  //     });
-  //   }, 200);
-
-  //   if (inputMode === "Website") {
-  //     try {
-  //       const url = new URL(inputValue);
-  //       if (!["http:", "https:"].includes(url.protocol)) throw new Error();
-  //     } catch {
-  //       setError("Please enter a valid website URL.");
-  //       setLoading(false);
-  //       if (interval) clearInterval(interval);
-  //       return;
-  //     }
-  //   }
-
-  //   const base =
-  //     inputMode === "Youtube"
-  //       ? { source: "youtube", inputUrl: inputValue }
-  //       : inputMode === "Website"
-  //       ? { source: "website", inputWebsiteUrl: inputValue }
-  //       : { source: "text", textContent: inputValue };
-
-  //   const promptMeta = { goal, tone, audience };
-  //   const payload = {
-  //     ...base,
-  //     meta: promptMeta,
-  //     slideCount: slideCount === "" ? 3 : Number(slideCount),
-  //   };
-
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/generate-slides`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(payload),
-  //     });
-
-  //     let data: any;
-  //     try {
-  //       data = await res.json();
-  //     } catch {
-  //       throw new Error("Invalid JSON response from server");
-  //     }
-
-  //     if (!res.ok) {
-  //       throw new Error(data.error || "Failed to generate slides");
-  //     }
-
-  //     const elapsed = Date.now() - startTime;
-  //     const minDelay = 1200;
-  //     const remaining = Math.max(0, minDelay - elapsed);
-
-  //     setTimeout(() => {
-  //       setProgress(100);
-  //       setSlides(data.slides);
-  //       router.push(`/presentation/outline`);
-  //     }, remaining);
-  //   } catch (err: any) {
-  //     setError(err.message || "Something went wrong");
-  //   } finally {
-  //     if (interval) clearInterval(interval);
-  //     setLoading(false);
-  //     // ❌ don’t reset progress immediately to avoid flicker after navigation
-  //   }
-  // };
-
-  // const handleTemplateSubmit = async () => {
-  //   if (!templatePrompt.trim()) {
-  //     return; // Guard against empty template input
-  //   }
-
-  //   setLoading(true);
-  //   setError("");
-  //   setProgress(0);
-
-  //   let interval: NodeJS.Timeout | null = null;
-
-  //   interval = setInterval(() => {
-  //     setProgress((prev) => {
-  //       if (prev >= 95) return prev;
-  //       return prev + Math.random() * 0.4;
-  //     });
-  //   }, 200);
-
-  //   const meta = { goal, tone, audience };
-  //   const payload = {
-  //     topic: templatePrompt,
-  //     meta,
-  //     slideCount: slideCount === "" ? 3 : Number(slideCount),
-  //   };
-  //   console.log("TEMPLATE CLICKED", payload);
-
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(payload),
-  //     });
-
-  //     let data: any;
-  //     try {
-  //       data = await res.json();
-  //     } catch {
-  //       throw new Error("Invalid JSON response from server");
-  //     }
-
-  //     if (!res.ok) {
-  //       throw new Error(data.error || "Failed to generate template");
-  //     }
-
-  //     console.log("POST Response:", data);
-
-  //     setProgress(100);
-  //     setSlideTemplates(data.slides);
-  //     setPresentationId(data.presentation_id);
-  //     router.push(`/text-to-template?pid=${data.presentation_id}`);
-  //   } catch (err: any) {
-  //     setError(err.message || "Something went wrong");
-  //   } finally {
-  //     if (interval) clearInterval(interval);
-  //     setLoading(false);
-  //     // ❌ don’t reset progress immediately (avoid flicker after navigation)
-  //   }
-  // };
 
   useEffect(() => {
     const prompt = searchParams.get("prompt");
@@ -542,122 +482,6 @@ export default function PresentationMaker({
           Please enter a valid YouTube URL.
         </Typography>
       )}
-
-      {/* <Button
-        fullWidth
-        onClick={inputMode === "Template" ? handleTemplateSubmit : handleSubmit}
-        // disabled={
-        //   loading ||
-        //   (inputMode === "Template"
-        //     ? !templatePrompt.trim()
-        //     : !inputValue.trim())
-        // }
-        disabled={
-          loading ||
-          (inputMode === "Template"
-            ? !templatePrompt.trim()
-            : !inputValue.trim() || Boolean(showYoutubeError))
-        }
-        sx={{
-          position: "relative",
-          overflow: "hidden",
-          textTransform: "none",
-          borderRadius: "999px",
-          px: 6,
-          py: 1.75,
-          fontSize: "1.125rem",
-          fontWeight: 600,
-          mb: 4,
-          height: { xs: 57, md: 70 },
-          border: `2px solid ${
-            inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "grey"
-                : "#8E2DE2"
-              : !inputValue.trim()
-              ? "grey"
-              : "#8E2DE2"
-          }`,
-          backgroundColor: "#fff",
-          color: loading ? "#fff" : "#8E2DE2",
-          transition: "color 0.6s ease",
-          opacity:
-            inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? 0.7
-                : 1
-              : !inputValue.trim()
-              ? 0.7
-              : 1,
-          "&:hover": { backgroundColor: "#f3eaff" },
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            height: "100%",
-            width: `${progress}%`,
-            background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
-            transition: "width 0.2s ease-out",
-            zIndex: 0,
-          },
-          "& span, & .icon": {
-            position: "relative",
-            zIndex: 1,
-          },
-        }}
-      >
-        <span
-          style={{
-            color: loading
-              ? "#fff"
-              : inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "grey"
-                : "#8E2DE2"
-              : !inputValue.trim()
-              ? "grey"
-              : "#8E2DE2",
-            textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
-            transition: "color 0.6s ease, text-shadow 0.6s ease",
-            fontWeight: 600,
-          }}
-        >
-          {loading
-            ? `${getProgressMessage(progress)} ${Math.round(progress)}%`
-            : inputMode === "Template"
-            ? "Generate Template"
-            : "Generate Outlines"}
-        </span>
-
-        <Box
-          className="icon"
-          sx={{
-            width: 22,
-            height: 22,
-            ml: 1,
-            background: loading
-              ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
-              : inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-                : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
-              : !inputValue.trim()
-              ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
-            maskImage: 'url("/images/generate.svg")',
-            WebkitMaskImage: 'url("/images/generate.svg")',
-            maskSize: "cover",
-            WebkitMaskSize: "cover",
-            maskRepeat: "no-repeat",
-            WebkitMaskRepeat: "no-repeat",
-            maskPosition: "center",
-            WebkitMaskPosition: "center",
-            transition: "background 0.4s ease, box-shadow 0.4s ease",
-            boxShadow: loading ? "0 0 10px #8E2DE2, 0 0 5px #4A00E0" : "none",
-          }}
-        />
-      </Button> */}
       <Button
         fullWidth
         onClick={inputMode === "Template" ? handleTemplateSubmit : handleSubmit}
