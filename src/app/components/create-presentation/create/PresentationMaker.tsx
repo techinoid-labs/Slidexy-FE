@@ -220,6 +220,21 @@ export default function PresentationMaker({
     setProgress(0);
     setSlides([]);
 
+    let animationInterval: NodeJS.Timeout | null = null;
+    let targetProgress = 0;
+
+    const startAnimation = () => {
+      if (animationInterval) clearInterval(animationInterval);
+      animationInterval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev < targetProgress - 1) {
+            return prev + Math.min((targetProgress - prev) / 5, 2); // smooth ease
+          }
+          return prev;
+        });
+      }, 200);
+    };
+
     // Validate website URL
     if (inputMode === "Website") {
       try {
@@ -265,6 +280,8 @@ export default function PresentationMaker({
       const decoder = new TextDecoder();
       let buffer = "";
 
+      startAnimation();
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -282,20 +299,23 @@ export default function PresentationMaker({
             const event = JSON.parse(jsonStr);
 
             if (event.percent !== undefined) {
-              setProgress(event.percent);
+              targetProgress = event.percent; // let smoother animate toward this
             }
 
             if (event.error) {
               setError(event.error);
               setLoading(false);
+              if (animationInterval) clearInterval(animationInterval);
               return;
             }
 
             if (event.complete) {
-              setProgress(100);
+              targetProgress = 100;
               if (event.slides) {
                 setSlides(event.slides);
               }
+              if (animationInterval) clearInterval(animationInterval);
+              setProgress(100);
               setLoading(false);
               router.push(`/presentation/outline`);
               return;
@@ -308,6 +328,7 @@ export default function PresentationMaker({
     } catch (err: any) {
       setError(err.message || "Something went wrong");
       setLoading(false);
+      if (animationInterval) clearInterval(animationInterval);
     }
   };
 
