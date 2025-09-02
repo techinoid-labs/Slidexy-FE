@@ -218,24 +218,8 @@ export default function PresentationMaker({
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
-    setProgress(1);
+    setProgress(0);
     setSlides([]);
-
-    let animationInterval: NodeJS.Timeout | null = null;
-    let targetProgress = 0;
-
-    const startAnimation = () => {
-      if (animationInterval) clearInterval(animationInterval);
-      animationInterval = setInterval(() => {
-        setProgress((prev) => {
-          // smoothly ease progress up until target
-          if (prev < targetProgress - 0.5) {
-            return prev + Math.min((targetProgress - prev) / 4, 1.2);
-          }
-          return prev;
-        });
-      }, 200);
-    };
 
     // Validate website URL
     if (inputMode === "Website") {
@@ -282,8 +266,6 @@ export default function PresentationMaker({
       const decoder = new TextDecoder();
       let buffer = "";
 
-      startAnimation();
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -301,26 +283,20 @@ export default function PresentationMaker({
             const event = JSON.parse(jsonStr);
 
             if (event.percent !== undefined) {
-              // If server jumps forward, update immediately
-              if (event.percent > targetProgress) {
-                targetProgress = event.percent;
-              }
+              setProgress(event.percent); // 🔥 directly set from backend
             }
 
             if (event.error) {
               setError(event.error);
               setLoading(false);
-              if (animationInterval) clearInterval(animationInterval);
               return;
             }
 
             if (event.complete) {
-              targetProgress = 100;
+              setProgress(100);
               if (event.slides) {
                 setSlides(event.slides);
               }
-              if (animationInterval) clearInterval(animationInterval);
-              setProgress(100);
               setLoading(false);
               router.push(`/presentation/outline`);
               return;
@@ -334,7 +310,6 @@ export default function PresentationMaker({
       setError(err.message || "Something went wrong");
       setLoading(false);
       setProgress(0);
-      if (animationInterval) clearInterval(animationInterval);
     }
   };
 
