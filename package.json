@@ -16,6 +16,8 @@
     "@mui/icons-material": "^7.1.2",
     "@mui/material": "^7.1.2",
     "@reduxjs/toolkit": "^2.8.2",
+    "@stripe/react-stripe-js": "^4.0.0",
+    "@stripe/stripe-js": "^7.9.0",
     "cropperjs": "^2.0.1",
     "framer-motion": "^12.23.12",
     "html-to-image": "^1.11.13",

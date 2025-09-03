@@ -1,11 +1,18 @@
 "use client";
 
-import { Box, Typography, Chip, Button, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Chip,
+  Button,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 import Link from "next/link";
 import { useState } from "react";
 
 export default function PricingSection() {
-  const [plan, setPlan] = useState('monthly');
+  const [plan, setPlan] = useState("monthly");
 
   return (
     <Box

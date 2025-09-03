@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import CssBaseline from "@mui/material/CssBaseline";
 import initStore, { getStore } from "@/app/store/store"; // Adjust path
 import { TemplateSlidesProvider } from "../context/TemplateSlidesContext";
-
+import StripeProvider from "@/lib/StripeProvider";
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [storeReady, setStoreReady] = useState(false);
 
@@ -24,7 +24,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <ThemeProvider>
         <CssBaseline />
         <TemplateSlidesProvider>
-          <SlidesProvider>{children}</SlidesProvider>
+          <SlidesProvider>
+            <StripeProvider>{children}</StripeProvider>
+          </SlidesProvider>
         </TemplateSlidesProvider>
       </ThemeProvider>
     </Provider>

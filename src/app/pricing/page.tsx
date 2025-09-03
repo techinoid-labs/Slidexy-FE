@@ -36,10 +36,10 @@ export default function Pricing() {
       ></Box>
 
       {/* FOREGROUND CONTENT */}
-      <Header />            
+      <Header />
       <PricingSection />
-      <PurposeSection/>
-      <FAQSection/>
+      <PurposeSection />
+      <FAQSection />
       {/* <CommunitySection /> */}
       <Footer />
     </Box>

@@ -1,17 +1,35 @@
 "use client";
 
-import {
-  Box,
-  Typography,
-  Chip,
-  Button,
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@mui/material";
+import { Box, Typography, Chip, Button } from "@mui/material";
 import { useState } from "react";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function PricingSection() {
   const [plan, setPlan] = useState("monthly");
+
+  // Stripe Checkout Handler
+  const handleCheckout = async (pricePlan: string) => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/stripe/create-checkout-session`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan: pricePlan }),
+        }
+      );
+
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, "_blank");
+      } else {
+        console.error("No checkout URL returned");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+    }
+  };
 
   return (
     <Box
@@ -96,51 +114,8 @@ export default function PricingSection() {
           }}
         >
           Test the AI magic for free, then take it to the next level with
-          scalable plans.{" "}
+          scalable plans.
         </Typography>
-
-        {/* Toggle */}
-        {/* <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <ToggleButtonGroup
-            value={plan}
-            exclusive
-            onChange={(_, v) => v && setPlan(v)}
-            sx={{
-              background: "#fff",
-              borderRadius: "32px",
-              boxShadow: "0 1px 4px 0 rgba(80, 80, 120, 0.07)",
-              p: 0.5,
-              minWidth: 280,
-              height: 56,
-            }}
-          >
-            {["monthly", "yearly"].map((value) => (
-              <ToggleButton
-                key={value}
-                value={value}
-                sx={{
-                  fontWeight: 600,
-                  fontSize: "1.05rem",
-                  border: "none",
-                  borderRadius: "32px",
-                  px: 4,
-                  color: plan === value ? "#18181B" : "#757575",
-                  background: plan === value ? "#F3F0FF" : "transparent",
-                  transition: "all 0.2s",
-                }}
-              >
-                {value.charAt(0).toUpperCase() + value.slice(1)}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        </Box> */}
 
         {/* Secure Note */}
         <Typography
@@ -169,6 +144,7 @@ export default function PricingSection() {
             {
               name: "Basic",
               price: "$9",
+              pricePlan: "basic", // 👈 Replace with real Stripe Price ID for Basic
               color: "#F3F0FF",
               textColor: "#6C2BD7",
               borderColor: "#E9E9FF",
@@ -177,6 +153,7 @@ export default function PricingSection() {
             {
               name: "Exclusive",
               price: "$14",
+              pricePlan: "exclusive", // 👈 Replace with real Stripe Price ID for Exclusive
               color: "#6C2BD7",
               textColor: "#fff",
               borderColor: "#6C2BD7",
@@ -185,6 +162,7 @@ export default function PricingSection() {
             {
               name: "Platinum",
               price: "$20",
+              pricePlan: "platinum", // 👈 Replace with real Stripe Price ID for Platinum
               color: "#F3F0FF",
               textColor: "#6C2BD7",
               borderColor: "#E9E9FF",
@@ -192,7 +170,15 @@ export default function PricingSection() {
             },
           ].map(
             (
-              { name, price, color, textColor, borderColor, btnHover },
+              {
+                name,
+                price,
+                pricePlan,
+                color,
+                textColor,
+                borderColor,
+                btnHover,
+              },
               index
             ) => (
               <Box
@@ -269,6 +255,7 @@ export default function PricingSection() {
                   endIcon={
                     <span style={{ fontSize: 22, marginLeft: 4 }}>→</span>
                   }
+                  onClick={() => handleCheckout(pricePlan)}
                 >
                   Get Started
                 </Button>
