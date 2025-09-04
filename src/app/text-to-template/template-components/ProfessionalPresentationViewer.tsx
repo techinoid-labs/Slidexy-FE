@@ -7,19 +7,16 @@ import { Stage, Layer } from "react-konva"
 import SlideRenderer from "./SlideRenderer"
 import TemplateSelector from "./TemplateSelector"
 import { usePresentation } from "../hooks/usePresentation"
-import { createModernTemplate } from "../templates/modernTemplate"
-import { createCorporateTemplate } from "../templates/corporateTemplate"
-import { createCreativeTemplate } from "../templates/creativeTemplate"
-import { createBoldTemplate } from "../templates/boldTemplate"
 import type { Presentation } from "../types/presentation"
-
+import { convertPresentation } from "../../../utils/convertPresentation"
+import { useTemplateSlides } from "@/app/context/TemplateSlidesContext"
 interface ProfessionalPresentationViewerProps {
   presentationId: string
 }
 
 const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerProps> = ({ presentationId }) => {
   const { presentation, loading, error } = usePresentation(presentationId)
-  const [selectedTemplate, setSelectedTemplate] = useState<"modern" | "corporate" | "creative" | "bold">("modern")
+  const { selectedTemplate, setSelectedTemplate } = useTemplateSlides();
 
   const STAGE_W = 960
   const STAGE_H = 540
@@ -27,13 +24,19 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [scale, setScale] = useState(1)
 
-  // handle responsive scaling
   useEffect(() => {
     const handleResize = () => {
-      if (containerRef.current) {
+      // Mobile breakpoint (adjust as needed)
+      const isMobile = window.innerWidth < 600
+
+      if (isMobile) {
+        // Use window.innerWidth for scaling on mobile, minus some padding if needed
+        const mobileWidth = window.innerWidth - 32 // 16px padding on each side
+        setScale(mobileWidth / STAGE_W)
+      } else if (containerRef.current) {
+        // Desktop: use container width
         const containerWidth = containerRef.current.offsetWidth
-        const newScale = containerWidth / STAGE_W
-        setScale(newScale)
+        setScale(containerWidth / STAGE_W)
       }
     }
     handleResize()
@@ -69,28 +72,9 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
     )
   }
 
-  // Convert backend data to slides using selected template
-  const convertedPresentation: Presentation = {
-    id: presentation.id,
-    meta: {
-      audience: presentation.meta.audience,
-      tone: presentation.meta.tone,
-    },
-    slides: presentation.slides.map((backendSlide, index) => {
-      switch (selectedTemplate) {
-        case "modern":
-          return createModernTemplate(backendSlide, index)
-        case "corporate":
-          return createCorporateTemplate(backendSlide, index)
-        case "creative":
-          return createCreativeTemplate(backendSlide, index)
-        case "bold":
-          return createBoldTemplate(backendSlide, index)
-        default:
-          return createModernTemplate(backendSlide, index)
-      }
-    }),
-  }
+
+  // Convert from BackendPresentation to Presentation using the selected template
+  const convertedPresentation: Presentation = convertPresentation(presentation as any, selectedTemplate)
 
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
@@ -121,7 +105,7 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
                   {slide.title && ` - ${slide.title}`}
                 </Typography>
 
-                {/* Responsive container */}
+                {/* Responsive container for scaling */}
                 <Box
                   ref={containerRef}
                   sx={{
@@ -134,7 +118,8 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
                     boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
                     overflow: "hidden",
                     aspectRatio: `${STAGE_W} / ${STAGE_H}`,
-                    //transform: `scale(${scale})`,
+                    // Add minWidth for mobile
+                    minWidth: 0,
                   }}
                 >
                   <Stage
@@ -142,7 +127,7 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
                     height={STAGE_H}
                     scaleX={scale}
                     scaleY={scale}
-                  
+                    style={{ width: "100%", height: "100%" }} // Ensures canvas fills container
                   >
                     <Layer>
                       <SlideRenderer slide={slide} />
@@ -154,10 +139,10 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
           })}
         </Stack>
 
-        {/* Footer Info */}
+        {/* Footer */}
         <Box sx={{ mt: 4, textAlign: "center", color: "#666" }}>
           <Typography variant="body2">
-           Presentation templates • Professional and Creative: {error ? "Fallback Mode" : "Connected"}
+            Presentation templates • Professional and Creative: {error ? "Fallback Mode" : "Connected"}
           </Typography>
         </Box>
       </Box>

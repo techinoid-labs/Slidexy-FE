@@ -4,7 +4,7 @@ import type React from "react"
 import { Box, Typography, Card, CardContent, Grid } from "@mui/material"
 
 interface TemplateSelectorProps {
-  selectedTemplate: "modern" | "corporate" | "creative" | "bold"
+  selectedTemplate: string
   onTemplateChange: (template: "modern" | "corporate" | "creative" | "bold") => void
 }
 

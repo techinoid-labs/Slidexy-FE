@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import StepIndicator from "@/app/components/shared/StepIndicator";
-import StepsHeader from "@/app/components/shared/StepsHeader";
+import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
 import { getSlideDimensions } from "@/utils/slideUtils";
 
 export interface SlideApiResponse {
