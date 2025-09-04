@@ -11,7 +11,7 @@ import { setSlides } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import type { Slide } from "@/app/slice/slidesSlice";
 import StepIndicator from "@/app/components/shared/StepIndicator";
-import StepsHeader from "@/app/components/shared/StepsHeader";
+import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
 import { getSlideDimensions } from "@/utils/slideUtils";
 import { getSlideDimensions as getMobileSlideDimensions } from "@/utils/slideUtilsmobile";
 // const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT } =

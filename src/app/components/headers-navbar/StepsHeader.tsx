@@ -20,7 +20,8 @@ import { Typography } from "@mui/material";
 import { useSlides } from "@/app/context/SlidesContext";
 import { clearPersistedSlides } from "@/app/store/store";
 import { usePathname, useRouter } from "next/navigation";
-
+import ProfileModal from "../auth/ProfileModal";
+import AuthModal from "../auth/AuthModal";
 export default function StepsHeader() {
   const theme = useMuiTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -28,7 +29,8 @@ export default function StepsHeader() {
   const router = useRouter();
   const { removeSlides } = useSlides();
   const pathname = usePathname();
-
+ const [isProfileModalOpen, setProfileModalOpen] = React.useState(false);
+ const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
   const handleGoBack = () => {
     if (pathname === "/editor") {
       router.push("/presentation/outline");
@@ -42,6 +44,7 @@ export default function StepsHeader() {
   };
 
   return (
+    <>
     <AppBar
       position="sticky"
       elevation={0}
@@ -113,6 +116,14 @@ export default function StepsHeader() {
           }}
         >
           <Button
+                        variant="outlined"
+                        onClick={() => setProfileModalOpen(true)}
+                        sx={{ borderRadius: "999px" , height : 40, mr: 1, width: 100}}
+                      >
+                        Profile
+                      </Button>
+          
+          <Button
             onClick={() => {
               localStorage.removeItem("fileName");
               clearPersistedSlides();
@@ -140,5 +151,7 @@ export default function StepsHeader() {
         </Box>
       </Toolbar>
     </AppBar>
+    <ProfileModal open={isProfileModalOpen} onClose={() => setProfileModalOpen(false)} />    
+    </>
   );
 }

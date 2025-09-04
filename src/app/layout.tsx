@@ -5,12 +5,9 @@ import Providers from "./provider/Provider";
 import { ThemeProvider } from "@/lib/theme-provider";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider as ThemeContextProvider } from "./context/ThemeContext";
-import "./globals.css";
-
-<link
-  href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;700&family=Roboto:wght@400;500;600;700&display=swap"
-  rel="stylesheet"
-/>;
+import "./globals.css"; 
+import SessionWrapper from "@/lib/sessionWrapper";
+import {UserProvider} from "./context/AuthContext";
 const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
@@ -33,7 +30,13 @@ export default function RootLayout({
         <ThemeContextProvider>
           <ThemeProvider>
             <CssBaseline />
-            <Providers>{children}</Providers>
+            <SessionWrapper>
+              <UserProvider>
+                <Providers>
+                  {children}
+                </Providers>
+              </UserProvider>
+            </SessionWrapper>
           </ThemeProvider>
         </ThemeContextProvider>
       </body>

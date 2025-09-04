@@ -11,6 +11,7 @@ import type { Presentation } from "@/app/text-to-template/types/presentation";
 import { useTheme, useMediaQuery, Alert } from "@mui/material";
 import ProfessionalPresentationViewer from "./template-components/ProfessionalPresentationViewer";
 import TemplateNavBar from "./template-components/TemplateNavbar";
+import { convertPresentation } from "@/utils/convertPresentation";
 const theme = createTheme({
   palette: {
     primary: {
@@ -57,7 +58,7 @@ const Page = () => {
   const theme = useTheme();
  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const { slideTemplates, presentationId } = useTemplateSlides();
+  const { slideTemplates, presentationId, selectedTemplate } = useTemplateSlides();
 
   const presentation: Presentation = {
     slides: slideTemplates || [],
@@ -65,10 +66,16 @@ const Page = () => {
     
   };
 
-  const handleExportPPTX = () => {
-    console.log("called");
-        exportPresentationToPptx({ slides: slideTemplates || [], id: presentationId || "unknown" });
-  }
+const handleExportPPTX = () => {
+  const rawPresentation: Presentation = { 
+    slides: slideTemplates || [], 
+    id: presentationId || "unknown" 
+  };
+
+  const converted = convertPresentation(rawPresentation, selectedTemplate);
+  exportPresentationToPptx(converted);
+};
+
     return (
        <div
          style={{
@@ -88,10 +95,12 @@ const Page = () => {
                zIndex: 20,
              }}
            >
-             <TemplateNavBar onExportPPT={handleExportPPTX} />
+             <TemplateNavBar onExportPPT={handleExportPPTX} presentationId={presentationId}
+ />
            </div>
          ) : (
-           <TemplateNavBar onExportPPT={handleExportPPTX} />
+           <TemplateNavBar onExportPPT={handleExportPPTX} presentationId={presentationId}
+ />
          )}
    
          {/* Disclaimer Banner */}

@@ -5,9 +5,13 @@ import type { Slide } from "@/app/text-to-template/types/presentation";
 
 interface TemplateSlidesContextType {
   slideTemplates: Slide[] | [];
-  presentationId: string | null; 
+  presentationId: string | null;
+  selectedTemplate: string;
   setSlideTemplates: (templates: Slide[]) => void;
   setPresentationId: (id: string) => void;
+  setSelectedTemplate: React.Dispatch<
+    React.SetStateAction<"modern" | "corporate" | "creative" | "bold">
+  >;
   removeTemplates: () => void;
 }
 
@@ -22,7 +26,7 @@ export const TemplateSlidesProvider = ({
 }) => {
   const [slideTemplates, setSlideTemplatesState] = useState<Slide[]>([]);
   const [presentationId, setPresentationIdState] = useState<string | null>(null); // Initialize presentationId
-
+  const [selectedTemplate, setSelectedTemplate] = useState<"modern" | "corporate" | "creative" | "bold">("modern"); 
   const setSlideTemplates = (templates: Slide[]) => {
     setSlideTemplatesState(templates);
   };
@@ -40,10 +44,12 @@ export const TemplateSlidesProvider = ({
     <TemplateSlidesContext.Provider
       value={{
         slideTemplates,
-        presentationId, 
-        setSlideTemplates,
-        setPresentationId, 
-        removeTemplates,
+      presentationId,
+      selectedTemplate,
+      setSlideTemplates,
+      setPresentationId,
+      setSelectedTemplate,
+      removeTemplates,
       }}
     >
       {children}

@@ -2,7 +2,7 @@
 import PresentationMaker from "@/app/components/create-presentation/create/PresentationMaker";
 import { Box, Container, Typography, Button } from "@mui/material";
 import StepIndicator from "@/app/components/shared/StepIndicator";
-import StepsHeader from "@/app/components/shared/StepsHeader";
+import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
 
 const CreatePresentationPage = () => {
   const promptCards = [

@@ -1,5 +1,5 @@
 "use client";
-import Header from "@/app/components/home/Header";
+import Header from "@/app/components/headers-navbar/Header";
 import HeroSection from "@/app/components/home/HeroSection";
 import { Box } from "@mui/material";
 import Image from "next/image";
