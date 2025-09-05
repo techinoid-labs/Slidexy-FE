@@ -27,7 +27,11 @@ import ThemePanelMobile from "../components/modify-presentation/ThemePalleteMobi
 import { Button } from "@mui/material";
 import SlideShowPlayer from "@/app/components/modify-presentation/Slide-Preview";
 import { useSlideThemeContext } from "../context/ThemeContext";
-
+import { useSession } from "next-auth/react";
+import AuthModal from "../components/auth/AuthModal";
+import { useTemplateSlides } from "../context/TemplateSlidesContext";
+import { useUser } from "../context/AuthContext";
+import axios from "axios";
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
@@ -56,7 +60,12 @@ const Page = () => {
   const theme = useTheme();
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
   const [previewOpen, setPreviewOpen] = useState(false);
+  const { data: session } = useSession();
+  const { presentationId } = useTemplateSlides();
+  const datapresentationId = presentationId;
 
+  const { user, loading } = useUser();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
     setSelectedTextId(null);
@@ -65,7 +74,7 @@ const Page = () => {
     setIsMobileTextSelected(false);
     setIsMobileImageSelected(false);
     setIsThemePanelOpen(false);
-    setSelectedShapeIndex(null); 
+    setSelectedShapeIndex(null);
   };
 
   const handleClearCanvas = () => {
@@ -101,120 +110,68 @@ const Page = () => {
     setSlides(newSlides);
   };
 
-  const handleExportPPTX = () => {
-    const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
-      const elements: StructuredSlide["elements"] = [];
+  const handleExportPPTX = async () => {
+    if (loading) return;
 
-      slide.elements?.forEach((el: any) => {
-        const { element_type, text, properties = {}, konva_component } = el;
-        const {
-          x = 0,
-          y = 0,
-          width,
-          height,
-          w,
-          h,
-          fontSize = 18,
-          fill = "#444444",
-          fontFamily,
-          fontStyle,
-          fontWeight,
-          imageSrc,
-        } = properties;
+   if (!(session?.user || user)) {
+    setShowAuthModal(true);
+    return;
+  }
 
-        const xIn = x / 100;
-        const yIn = y / 100;
-        const wIn = (width || w || 400) / 100;
-        const hIn = (height || h || 200) / 100;
+    try {
+      console.log("Session:", session);
+      console.log("Token sent:", session?.user?.accessToken);
 
-        if (element_type === "bullet_point") {
-          elements.push({
-            element_type: "bullet_point",
-            text,
-            properties: {
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-              fontSize,
-              fill: fill.replace("#", ""),
-              fontFamily,
-              fontStyle,
-              fontWeight,
-            },
-          });
-        } else if (element_type === "image" && imageSrc) {
-          elements.push({
-            element_type: "image",
-            src: slide.image_url || undefined,
-            properties: {
-              imageSrc,
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-            },
-          });
-        } else if (element_type === "text" && text) {
-          elements.push({
-            element_type: "text",
-            text,
-            properties: {
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-              fontSize,
-              fill: fill.replace("#", ""),
-              fontFamily,
-              fontStyle,
-              fontWeight,
-            },
-          });
-        } else if (element_type === "shape") {
-          elements.push({
-            element_type: "shape",
-            text: konva_component,
-            properties: {
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-              fill: fill.replace("#", "") || "cccccc",
-            },
-          });
+      const token = session?.user?.accessToken;
+
+      if (!token) {
+        console.error("No access token available");
+        setShowAuthModal(true);
+        return;
+      }
+      if (!presentationId) {
+        console.error("No presentationId in context. Save presentation first.");
+        setShowAuthModal(true);
+        return;
+      }
+
+      const response = await axios.get(
+        `http://localhost:5000/api/presentations/${datapresentationId}/export`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob",
         }
-      });
+      );
 
-      const slideTitleProps: any = slide.slide_title?.properties || {};
-      const slideTitle = slide.slide_title?.text;
-
-      return {
-        slide_id: slide.slide_id,
-        slide_title: slideTitle
-          ? {
-              text: slideTitle,
-              properties: {
-                fontSize: slideTitleProps.fontSize,
-                fill: slideTitleProps.fill?.replace("#", ""),
-                fontStyle: slideTitleProps.fontStyle,
-                fontFamily: slideTitleProps.fontFamily,
-              },
-            }
-          : undefined,
-        elements,
-        image_url: slide.image_url,
-      };
-    });
-
-    exportSlidesAsPPT(structuredSlides);
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `presentation-${datapresentationId}.pptx`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export failed", error);
+      setShowAuthModal(true);
+    }
   };
 
   const isTextSelected = selectedTextId !== null && selectedTextId !== "";
   const isShapeSelected = selectedShapeIndex !== null;
   const isImageSelected = selectedImageIndex !== null;
 
-  const handleExportPDF = () => exportSlidesAsPDF(stageRefs.current);
+  const handleExportPDF = () => {
+    if (loading) return;
+
+    if (session?.user || user) {
+      setShowAuthModal(false);
+      exportSlidesAsPDF(stageRefs.current);
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
   const handleOpenThemePanel = () => {
     setIsThemePanelOpen(true);
@@ -223,7 +180,7 @@ const Page = () => {
     setSelectedTextId(null);
     setSelectedImageIndex(null);
     setSelectedImage(null);
-    setSelectedShapeIndex(null); 
+    setSelectedShapeIndex(null);
   };
 
   const handleCloseThemePanel = () => {
@@ -233,24 +190,34 @@ const Page = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        backgroundColor: "#FBFAFF",
-        maxWidth: "100%",
-        overflow: "hidden",
-      }}
-    >
-      {!isMobile ? (
-        <div
-          style={{
-            flexShrink: 0,
-            height: "80px",
-            zIndex: 20,
-          }}
-        >
+    <>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100vh",
+          backgroundColor: "#FBFAFF",
+          maxWidth: "100%",
+          overflow: "hidden",
+        }}
+      >
+        {!isMobile ? (
+          <div
+            style={{
+              flexShrink: 0,
+              height: "80px",
+              zIndex: 20,
+            }}
+          >
+            <UpperNavBar
+              onExportPDF={handleExportPDF}
+              onExportPPT={handleExportPPTX}
+              onClearCanvas={handleClearCanvas}
+              onPreview={() => setPreviewOpen(true)}
+              onOpenThemePanel={handleOpenThemePanel}
+            />
+          </div>
+        ) : (
           <UpperNavBar
             onExportPDF={handleExportPDF}
             onExportPPT={handleExportPPTX}
@@ -258,137 +225,134 @@ const Page = () => {
             onPreview={() => setPreviewOpen(true)}
             onOpenThemePanel={handleOpenThemePanel}
           />
-        </div>
-      ) : (
-        <UpperNavBar
-          onExportPDF={handleExportPDF}
-          onExportPPT={handleExportPPTX}
-          onClearCanvas={handleClearCanvas}
-          onPreview={() => setPreviewOpen(true)}
-          onOpenThemePanel={handleOpenThemePanel}
-        />
-      )}
-      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
-        {isMobile ? (
-          <>
-            <LowerNavbarMobile
-              showTemplatePanel={showTemplatePanel}
-              setShowTemplatePanel={setShowTemplatePanel}
-            />
-            <SlideEditorMobile slides={slides} stageRefs={stageRefs} />
-            <SlideShowPlayer
-              slides={slides}
-              theme={selectedTheme}
-              open={previewOpen}
-              onClose={() => setPreviewOpen(false)}
-            />
-            {isMobileTextSelected && !isShapeSelected && (
-              <TextSettingsPanelMobile
-                resetAll={resetAll}
-                onClose={() => setIsMobileTextSelected(false)}
-                style={{ top: 100, left: 100 }}
-              />
-            )}
-            {isMobileImageSelected && (
-              <ImageSettingsPanelMobile
-                resetAll={resetAll}
-                onClose={() => {
-                  setIsMobileImageSelected(false);
-                  setSelectedImageIndex(null);
-                  setSelectedImage(null);
-                }}
-                style={{ top: 100, left: 100 }}
-              />
-            )}
-            {isShapeSelected && (
-              <ShapeSettingsPanelMobile
-                resetAll={resetAll}
-                onClose={() => {
-                  setIsMobileTextSelected(false);
-                  setIsMobileImageSelected(false);
-                  setSelectedTextId(null);
-                  setSelectedImageIndex(null);
-                  setSelectedImage(null);
-                  setSelectedShapeIndex(null); 
-                }}
-                style={{ top: 100, left: 100 }}
-              />
-            )}
-            {isThemePanelOpen && !isShapeSelected && (
-              <ThemePanelMobile
-                parsedSlides={slides}
-                resetAll={resetAll}
-                onClose={handleCloseThemePanel}
-              />
-            )}
-          </>
-        ) : (
-          <div className="relative flex flex-1 min-h-0 overflow-hidden">
-            <div className="shrink-0 z-10">
-              <SideNavBar
+        )}
+        <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+          {isMobile ? (
+            <>
+              <LowerNavbarMobile
                 showTemplatePanel={showTemplatePanel}
                 setShowTemplatePanel={setShowTemplatePanel}
               />
-            </div>
-            <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
-              <SlideEditor slides={slides} stageRefs={stageRefs} />
+              <SlideEditorMobile slides={slides} stageRefs={stageRefs} />
               <SlideShowPlayer
                 slides={slides}
                 theme={selectedTheme}
                 open={previewOpen}
                 onClose={() => setPreviewOpen(false)}
               />
-            </div>
-            <div
-              className={`
+              {isMobileTextSelected && !isShapeSelected && (
+                <TextSettingsPanelMobile
+                  resetAll={resetAll}
+                  onClose={() => setIsMobileTextSelected(false)}
+                  style={{ top: 100, left: 100 }}
+                />
+              )}
+              {isMobileImageSelected && (
+                <ImageSettingsPanelMobile
+                  resetAll={resetAll}
+                  onClose={() => {
+                    setIsMobileImageSelected(false);
+                    setSelectedImageIndex(null);
+                    setSelectedImage(null);
+                  }}
+                  style={{ top: 100, left: 100 }}
+                />
+              )}
+              {isShapeSelected && (
+                <ShapeSettingsPanelMobile
+                  resetAll={resetAll}
+                  onClose={() => {
+                    setIsMobileTextSelected(false);
+                    setIsMobileImageSelected(false);
+                    setSelectedTextId(null);
+                    setSelectedImageIndex(null);
+                    setSelectedImage(null);
+                    setSelectedShapeIndex(null);
+                  }}
+                  style={{ top: 100, left: 100 }}
+                />
+              )}
+              {isThemePanelOpen && !isShapeSelected && (
+                <ThemePanelMobile
+                  parsedSlides={slides}
+                  resetAll={resetAll}
+                  onClose={handleCloseThemePanel}
+                />
+              )}
+            </>
+          ) : (
+            <div className="relative flex flex-1 min-h-0 overflow-hidden">
+              <div className="shrink-0 z-10">
+                <SideNavBar
+                  showTemplatePanel={showTemplatePanel}
+                  setShowTemplatePanel={setShowTemplatePanel}
+                />
+              </div>
+              <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
+                <SlideEditor slides={slides} stageRefs={stageRefs} />
+                <SlideShowPlayer
+                  slides={slides}
+                  theme={selectedTheme}
+                  open={previewOpen}
+                  onClose={() => setPreviewOpen(false)}
+                />
+              </div>
+              <div
+                className={`
                 ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
                 bg-white shadow-md transition-all duration-300 ease-in-out flex
-                ${
-                  !isLGScreen && showRightPanel
+                ${!isLGScreen && showRightPanel
                     ? "w-96"
                     : isLGScreen
-                    ? "w-[375px]"
-                    : "w-0"
-                }
+                      ? "w-[375px]"
+                      : "w-0"
+                  }
               `}
-            >
-              {!isLGScreen && (
-                <div
-                  className={`
+              >
+                {!isLGScreen && (
+                  <div
+                    className={`
                     absolute -left-5 top-24
                     bg-white border-r-0 border border-gray-200 shadow-xl
                     rounded-l-md px-2 py-2 cursor-pointer z-50
                   `}
-                  onClick={() => setShowRightPanel(!showRightPanel)}
-                >
-                  {showRightPanel ? (
-                    <CloseIcon color="primary" fontSize="small" />
-                  ) : (
-                    <SettingsIcon color="primary" fontSize="small" />
-                  )}
-                </div>
-              )}
-              <div
-                className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
-                  !showRightPanel && !isLGScreen
+                    onClick={() => setShowRightPanel(!showRightPanel)}
+                  >
+                    {showRightPanel ? (
+                      <CloseIcon color="primary" fontSize="small" />
+                    ) : (
+                      <SettingsIcon color="primary" fontSize="small" />
+                    )}
+                  </div>
+                )}
+                <div
+                  className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${!showRightPanel && !isLGScreen
                     ? "opacity-0 pointer-events-none"
                     : "opacity-100"
-                }`}
-              >
-                {isTextSelected && !isShapeSelected && (
-                  <TextSettingsPanel resetAll={resetAll} />
-                )}
-                {isImageSelected && <ImageSettingsPanel />}
-                {isShapeSelected && <ShapeSettingsPanel resetAll={resetAll} />}
-                {!isTextSelected && !isImageSelected && !isShapeSelected && (
-                  <ThemePanel parsedSlides={slides} resetAll={resetAll} />
-                )}
+                    }`}
+                >
+                  {isTextSelected && !isShapeSelected && (
+                    <TextSettingsPanel resetAll={resetAll} />
+                  )}
+                  {isImageSelected && <ImageSettingsPanel />}
+                  {isShapeSelected && <ShapeSettingsPanel resetAll={resetAll} />}
+                  {!isTextSelected && !isImageSelected && !isShapeSelected && (
+                    <ThemePanel parsedSlides={slides} resetAll={resetAll} />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
       </div>
-    </div>
+      {showAuthModal && (
+  <AuthModal
+    onClose={() => setShowAuthModal(false)}
+    presentationId={datapresentationId}
+  />
+)}
+    </>
   );
 };
 

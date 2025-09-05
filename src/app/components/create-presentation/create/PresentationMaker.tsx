@@ -238,8 +238,8 @@ export default function PresentationMaker({
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
-        ? { source: "website", inputWebsiteUrl: inputValue }
-        : { source: "text", textContent: inputValue };
+          ? { source: "website", inputWebsiteUrl: inputValue }
+          : { source: "text", textContent: inputValue };
 
     const promptMeta = { goal, tone, audience };
     const payload = {
@@ -249,7 +249,7 @@ export default function PresentationMaker({
     };
 
     try {
-      const res = await fetch(`${API_BASE_URL}/generate-slides`, {
+      const res = await fetch(`http://localhost:5000/generate-slides`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -294,13 +294,20 @@ export default function PresentationMaker({
 
             if (event.complete) {
               setProgress(100);
+
               if (event.slides) {
                 setSlides(event.slides);
               }
+
+              if (event.presentation_id) {
+                setPresentationId(event.presentation_id);
+              }
+
               setLoading(false);
-              router.push(`/presentation/outline`);
+              router.push(`/presentation/outline?pid=${event.presentation_id}`);
               return;
             }
+
           } catch (err) {
             console.error("Bad JSON chunk:", jsonStr);
           }
@@ -504,15 +511,14 @@ export default function PresentationMaker({
           fontWeight: 600,
           mb: 4,
           height: { xs: 57, md: 70 },
-          border: `2px solid ${
-            inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "grey"
-                : "#8E2DE2"
-              : !inputValue.trim() || Boolean(showYoutubeError)
+          border: `2px solid ${inputMode === "Template"
+            ? !templatePrompt.trim()
               ? "grey"
               : "#8E2DE2"
-          }`,
+            : !inputValue.trim() || Boolean(showYoutubeError)
+              ? "grey"
+              : "#8E2DE2"
+            }`,
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
@@ -522,8 +528,8 @@ export default function PresentationMaker({
                 ? 0.7
                 : 1
               : !inputValue.trim() || Boolean(showYoutubeError)
-              ? 0.7
-              : 1,
+                ? 0.7
+                : 1,
           "&:hover": { backgroundColor: "#f3eaff" },
           "&::before": {
             content: '""',
@@ -547,12 +553,12 @@ export default function PresentationMaker({
             color: loading
               ? "#fff"
               : inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "grey"
-                : "#8E2DE2"
-              : !inputValue.trim() || Boolean(showYoutubeError)
-              ? "grey"
-              : "#8E2DE2",
+                ? !templatePrompt.trim()
+                  ? "grey"
+                  : "#8E2DE2"
+                : !inputValue.trim() || Boolean(showYoutubeError)
+                  ? "grey"
+                  : "#8E2DE2",
             textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
             transition: "color 0.6s ease, text-shadow 0.6s ease",
             fontWeight: 600,
@@ -561,8 +567,8 @@ export default function PresentationMaker({
           {loading
             ? `${getProgressMessage(progress)} ${Math.round(progress)}%`
             : inputMode === "Template"
-            ? "Generate Template"
-            : "Generate Outlines"}
+              ? "Generate Template"
+              : "Generate Outlines"}
         </span>
 
         <Box
@@ -574,12 +580,12 @@ export default function PresentationMaker({
             background: loading
               ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
               : inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-                : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
-              : !inputValue.trim() || Boolean(showYoutubeError)
-              ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+                ? !templatePrompt.trim()
+                  ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+                  : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
+                : !inputValue.trim() || Boolean(showYoutubeError)
+                  ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+                  : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",

@@ -39,7 +39,9 @@ const SlideImage: React.FC<SlideImageProps> = ({
   const imageShadow = shadow ?? { offsetX: 0, offsetY: 0, blur: 0, color: "#000000" };
   const imageBorderRadius = borderRadius ?? 0;
 
-  const [image] = useImage(imageSrc || url || "");
+
+const [image] = useImage(imageSrc || url || "", "anonymous");
+
   const imageRef = useRef<any>(null);
   const trRef = useRef<any>(null);
   const { slides, setSlides, selectedSlideIndex, setSelectedImage, setIsAtBoundary, setSelectedImageIndex } = useSlides();
