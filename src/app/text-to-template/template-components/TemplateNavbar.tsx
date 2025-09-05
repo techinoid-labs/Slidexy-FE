@@ -44,6 +44,7 @@ const TemplateNavBar: React.FC<{
   const [error, setError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { user, loading } = useUser();
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   // Clear old title on mount
   useEffect(() => {
     localStorage.removeItem("templateFileName");
@@ -95,7 +96,7 @@ const TemplateNavBar: React.FC<{
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/presentations/${presentationId}/export`,
+        `${API_BASE_URL}/api/presentations/${presentationId}/export`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",

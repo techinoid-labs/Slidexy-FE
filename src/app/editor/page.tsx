@@ -76,7 +76,7 @@ const Page = () => {
     setIsThemePanelOpen(false);
     setSelectedShapeIndex(null);
   };
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const handleClearCanvas = () => {
     if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
 
@@ -136,7 +136,7 @@ const Page = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/presentations/${datapresentationId}/export`,
+        `${API_BASE_URL}/api/presentations/${datapresentationId}/export`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",

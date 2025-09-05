@@ -15,12 +15,12 @@ const PresentationPage = () => {
   const [error, setError] = useState("");
   const { setSelectedImage, setSelectedImageIndex, setSelectedShapeIndex, setSelectedTextId } = useSlides();
   const { setSelectedLayout, setSelectedTheme } = useSlideThemeContext();
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   useEffect(() => {
     if (id) {
       const fetchPresentation = async () => {
         try {
-          const response = await axios.get(`http://localhost:5000/api/presentations/${id}`);
+          const response = await axios.get(`${API_BASE_URL}/api/presentations/${id}`);
           setPresentation(response.data);
         } catch (err) {
           setError("Failed to load presentation.");
