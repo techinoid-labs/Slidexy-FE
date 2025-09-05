@@ -214,7 +214,7 @@ export default function PresentationMaker({
   // };
 
   //Streaming submit
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
@@ -249,7 +249,7 @@ export default function PresentationMaker({
     };
 
     try {
-      const res = await fetch(`http://localhost:5000/generate-slides`, {
+      const res = await fetch(`${API_BASE_URL}/generate-slides`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

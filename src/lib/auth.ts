@@ -1,7 +1,7 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
 import axios from "axios";
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ;
 export const authOptions: NextAuthOptions = {
     providers: [
         CredentialsProvider({
@@ -17,7 +17,7 @@ export const authOptions: NextAuthOptions = {
                 try {
                     // Call your backend login endpoint
                     const res = await axios.post(
-                        `http://localhost:5000/api/users/login`,
+                        `${API_BASE_URL}/api/users/login`,
                         {
                             email: credentials.email,
                             password: credentials.password,
