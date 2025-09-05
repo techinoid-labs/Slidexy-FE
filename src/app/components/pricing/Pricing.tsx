@@ -130,6 +130,7 @@ export default function PricingSection() {
         </Typography>
 
         {/* Pricing Cards */}
+
         <Box
           sx={{
             display: "flex",
@@ -144,7 +145,8 @@ export default function PricingSection() {
             {
               name: "Basic",
               price: "$9",
-              pricePlan: "basic", // 👈 Replace with real Stripe Price ID for Basic
+              tenure: "Weekly",
+              pricePlan: "basic",
               color: "#F3F0FF",
               textColor: "#6C2BD7",
               borderColor: "#E9E9FF",
@@ -152,8 +154,9 @@ export default function PricingSection() {
             },
             {
               name: "Exclusive",
-              price: "$14",
-              pricePlan: "exclusive", // 👈 Replace with real Stripe Price ID for Exclusive
+              price: "$39",
+              pricePlan: "exclusive",
+              tenure: "Monthly",
               color: "#6C2BD7",
               textColor: "#fff",
               borderColor: "#6C2BD7",
@@ -161,8 +164,9 @@ export default function PricingSection() {
             },
             {
               name: "Platinum",
-              price: "$20",
-              pricePlan: "platinum", // 👈 Replace with real Stripe Price ID for Platinum
+              price: "$200",
+              tenure: "Yearly",
+              pricePlan: "platinum",
               color: "#F3F0FF",
               textColor: "#6C2BD7",
               borderColor: "#E9E9FF",
@@ -178,6 +182,7 @@ export default function PricingSection() {
                 textColor,
                 borderColor,
                 btnHover,
+                tenure,
               },
               index
             ) => (
@@ -196,7 +201,7 @@ export default function PricingSection() {
                 }}
               >
                 <Box
-                  sx={{ display: "flex", flexDirection: "row", gap: "80px" }}
+                  sx={{ display: "flex", flexDirection: "row", gap: "20px" }}
                 >
                   <Box>
                     <Typography
@@ -204,25 +209,25 @@ export default function PricingSection() {
                         fontWeight: 600,
                         fontSize: "24px",
                         color: "#222",
-                        marginTop: "20px",
+                        marginTop: "15px",
                       }}
                     >
                       {name}
                     </Typography>
                   </Box>
 
-                  <Box sx={{ display: "flex", paddingBottom: "20px" }}>
+                  <Box sx={{ display: "flex", paddingBottom: "15px" }}>
                     <Typography
                       sx={{
                         fontWeight: 500,
-                        fontSize: "48px",
+                        fontSize: "42px",
                         color: "#18181B",
                       }}
                     >
                       {price}
                     </Typography>
                     <Typography sx={{ color: "#757575", mt: "40px" }}>
-                      /month
+                      /{tenure}
                     </Typography>
                   </Box>
                 </Box>
