@@ -3,7 +3,7 @@ import PresentationMaker from "@/app/components/create-presentation/create/Prese
 import { Box, Container, Typography, Button } from "@mui/material";
 import StepIndicator from "@/app/components/shared/StepIndicator";
 import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
-
+import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 const CreatePresentationPage = () => {
   const promptCards = [
     {
@@ -23,7 +23,7 @@ const CreatePresentationPage = () => {
       icon: "/top-element.svg",
     },
   ];
-
+const {presentationId, setPresentationId} = useTemplateSlides();
   return (
     <Box>
       <StepsHeader />
