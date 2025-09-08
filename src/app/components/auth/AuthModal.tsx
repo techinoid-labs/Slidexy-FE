@@ -19,12 +19,17 @@ interface AuthModalProps {
   presentationId: string | null | undefined;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+console.log({ API_BASE_URL });
 const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignup, setIsSignup] = useState(false);
   const [error, setError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -71,7 +76,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
     setLoading(true);
     try {
       if (isSignup) {
-        await axios.post(`http://localhost:5000/api/users/register`, {
+        await axios.post(`${API_BASE_URL}/api/users/register`, {
           email,
           password,
           presentationId: presentationId || null,
@@ -148,7 +153,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>

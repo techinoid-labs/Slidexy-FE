@@ -13,8 +13,14 @@ const nextConfig: NextConfig = {
         port: "5000",
         pathname: "/images/**",
       },
+      {
+        protocol: "https",
+        hostname: "dev.slidexy.net",
+        port: "5000",
+        pathname: "/images/**",
+      },
     ],
-    domains: ["source.unsplash.com", "placehold.co"],
+    domains: ["source.unsplash.com", "placehold.co", "dev.slidexy.net"],
   },
 };
 
