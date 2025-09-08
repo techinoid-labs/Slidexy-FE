@@ -84,8 +84,8 @@ export default function WaitingList() {
             <Image
               src="/images/Logo.svg"
               alt="Slides Logo"
-              width={118}
-              height={36}
+              width={218}
+              height={136}
               style={{ maxWidth: "100%", height: "auto" }}
             />
           </Box>
@@ -134,8 +134,8 @@ export default function WaitingList() {
               <img
                 src={icon.src}
                 alt={icon.alt}
-                width={36}
-                height={36}
+                width={25}
+                height={25}
                 className="object-cover hover:p-[20px] hover:bg-[#E8E4FF] rounded-full"
                 style={{ display: "block", cursor: "pointer" }}
               />
@@ -206,11 +206,13 @@ export default function WaitingList() {
                     }
                   }}
                   sx={{
-                    border: "1px solid #4A00E0",
+                    boxShadow: "0px 1px 2px 0.4px rgba(0, 0, 0, 0.25)",
                     px: { xs: "24px", sm: "24px" },
                     py: { xs: "12px", sm: "12px" },
                     fontSize: { xs: "16px", sm: "16px" },
                     fontWeight: "700",
+                    borderRadius: "30px", // keeps rounded shape
+                    backgroundColor: "white", // optional, makes shadow more visible
                   }}
                 >
                   Join Waitlist
@@ -340,6 +342,7 @@ export default function WaitingList() {
               />
               <Typography
                 component="span"
+                // color="#4A00E0"
                 sx={{ fontSize: "inherit", fontWeight: 500 }}
               >
                 COMING SOON
@@ -402,8 +405,8 @@ export default function WaitingList() {
                 gap: 1,
                 p: { xs: "8px", sm: "10px" },
                 borderRadius: "40px",
-                border: "1px solid",
-                borderColor: "#4A00E0",
+                // border: "1px solid",
+                // borderColor: "#4A00E0",
                 bgcolor: "#fff",
                 flexWrap: "wrap", // keeps button below on xs
                 pl: { sm: "32px", xs: "20px" },
@@ -490,179 +493,109 @@ export default function WaitingList() {
             </Alert>
           </Snackbar>
 
-          {/* Ratings Section */}
+          {/* Trusted Section */}
           <Box
             sx={{
               display: "flex",
-              gap: 2,
-              flexWrap: "wrap",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: "center",
               justifyContent: "center",
-              mx: "auto",
-              maxWidth: { xs: "100%", sm: "752px" },
-              background: "white",
-              p: { xs: "12px", sm: "15px" },
-              borderRadius: "70px",
+              mt: 3,
+              mb: 2,
+              gap: 0.1,
             }}
           >
-            <Box
+            {/* Avatars */}
+            <Stack direction="row" spacing={-1}>
+              <Image
+                src="/images/waitlist/trusted-waitlist.svg"
+                alt="User 1"
+                width={32}
+                height={32}
+                style={{ borderRadius: "50%", border: "2px solid #fff" }}
+              />
+              <Image
+                src="/images/waitlist/trusted-waitlist.svg"
+                alt="User 2"
+                width={32}
+                height={32}
+                style={{ borderRadius: "50%", border: "2px solid #fff" }}
+              />
+              <Image
+                src="/images/waitlist/trusted-waitlist.svg"
+                alt="User 3"
+                width={32}
+                height={32}
+                style={{ borderRadius: "50%", border: "2px solid #fff" }}
+              />
+            </Stack>
+
+            {/* Trusted Text */}
+            <Typography
+              variant="body2"
               sx={{
-                background: "#EFF8FF",
-                py: "8px",
-                px: "8px",
-                display: "flex",
-                gap: "5px",
-                borderRadius: "100px",
+                fontSize: { xs: "14px", sm: "15px" },
+                color: "text.secondary",
+                ml: { xs: 0, sm: 1 },
+                mt: { xs: 1, sm: 0 },
               }}
             >
-              <Image
-                src="/images/Capterra.svg"
-                alt="Slides Logo"
-                width={12}
-                height={12}
-              />
-              <Typography
-                variant="h4"
-                fontWeight={500}
-                sx={{
-                  fontSize: { xs: "12px", sm: "12px", md: "12px" },
-                  lineHeight: 1.2,
-                  textAlign: { xs: "center", md: "left" },
-                  color: "#175CD3",
-                }}
-              >
-                Capterra
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                background: "#EFF8FF",
-                py: "8px",
-                px: "8px",
-                display: "flex",
-                gap: "5px",
-                borderRadius: "100px",
-              }}
-            >
-              <Image
-                src="/images/GetApp.svg"
-                alt="GetApp"
-                width={12}
-                height={12}
-              />
-              <Typography
-                variant="h4"
-                fontWeight={500}
-                sx={{
-                  fontSize: { xs: "12px", sm: "12px", md: "12px" },
-                  lineHeight: 1.2,
-                  textAlign: { xs: "center", md: "left" },
-                  color: "#175CD3",
-                }}
-              >
-                GetApp
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                background: "#FFF6ED",
-                py: "8px",
-                px: "8px",
-                display: "flex",
-                gap: "5px",
-                borderRadius: "100px",
-              }}
-            >
-              <Image
-                src="/images/G2.svg"
-                alt="Slides Logo"
-                width={12}
-                height={12}
-              />
-              <Typography
-                variant="h4"
-                fontWeight={500}
-                sx={{
-                  fontSize: { xs: "12px", sm: "12px", md: "12px" },
-                  lineHeight: 1.2,
-                  textAlign: { xs: "center", md: "left" },
-                  color: "#175CD3",
-                }}
-              >
-                G2.com
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                background: "#4A00E0",
-                maxWidth: "48px",
-                borderRadius: "75px",
-                width: { sm: "48px" },
-              }}
-            >
-              <Typography
-                variant="h4"
-                fontWeight={700}
-                sx={{
-                  fontSize: { xs: "20px", sm: "20px", md: "20px" },
-                  textAlign: "center",
-                  color: "white",
-                }}
-              >
-                4.7
-              </Typography>
-            </Box>
-
-            <Box sx={{ marginTop: "2px" }}>
-              <Image
-                src="/images/Rating.svg"
-                alt="Slides Logo"
-                width={148}
-                height={12}
-              />
-            </Box>
-
-            <Box sx={{ marginTop: "5px" }}>
-              <Typography
-                variant="h4"
-                fontWeight={500}
-                sx={{
-                  fontSize: { xs: "12px", sm: "12px", md: "12px" },
-                  textAlign: "center",
-                  color: "black",
-                }}
-              >
-                (Based on 1,000+ reviews on)
-              </Typography>
-            </Box>
+              Trusted by 10k+ people
+            </Typography>
           </Box>
 
           {/* Social Icons */}
-          {/* <Stack
-          direction="row"
-          spacing={3}
-          justifyContent="center"
-          alignItems="center"
-          mt={5}
-          flexWrap="wrap"
-        >
-          {[
-            { src: "/images/facebook-icon.svg", alt: "Facebook" },
-            { src: "/images/x-icon.svg", alt: "Twitter" },
-            { src: "/images/instagram.svg", alt: "Instagram" },
-          ].map((icon, idx) => (
-            <Link key={idx} href="#">
-              <Box
-                component="img"
-                src={icon.src}
-                alt={icon.alt}
-                sx={{ width: { xs: 18, sm: 14 }, height: { xs: 18, sm: 14 } }}
-              />
-            </Link>
-          ))}
-        </Stack> */}
+          <Stack
+            direction="row"
+            spacing={2}
+            justifyContent="center"
+            alignItems="center"
+            sx={{ mb: 3 }}
+          >
+            {[
+              {
+                src: "/images/social-ico/facebook-ico.svg",
+                alt: "Facebook",
+                link: "https://web.facebook.com/Slidexy",
+              },
+              // {
+              //   src: "/images/x-icon.svg",
+              //   alt: "Twitter",
+              //   link: "https://web.facebook.com/Slidexy",
+              // },
+              {
+                src: "/images/social-ico/instagram-ico.svg",
+                alt: "Instagram",
+                link: "https://www.instagram.com/slidexy_ai/",
+              },
+              {
+                src: "/images/social-ico/linkedin-ico.svg",
+                alt: "linkedin",
+                link: "https://www.linkedin.com/company/slidexy/",
+              },
+              {
+                src: "/images/social-ico/tiktok-ico.svg",
+                alt: "tiktok",
+                link: "https://www.tiktok.com/@slidexy_ai",
+              },
+            ].map((icon, idx) => (
+              <NavLink
+                key={idx}
+                href={icon.link}
+                target="_blank"
+                underline="none"
+              >
+                <img
+                  src={icon.src}
+                  alt={icon.alt}
+                  width={25}
+                  height={25}
+                  className="object-cover hover:p-[20px] hover:bg-[#E8E4FF] rounded-full"
+                  style={{ display: "block", cursor: "pointer" }}
+                />
+              </NavLink>
+            ))}
+          </Stack>
         </Box>
       </div>
     </Box>

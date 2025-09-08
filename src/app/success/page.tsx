@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, redirect } from "next/navigation";
 import {
   Box,
   Typography,
@@ -13,6 +13,7 @@ import {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function SuccessPage() {
+  redirect("/home");
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const router = useRouter();

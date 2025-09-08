@@ -114,8 +114,8 @@ export default function Footer() {
             <img
               src={icon.src}
               alt={icon.alt}
-              width={36}
-              height={36}
+              width={25}
+              height={25}
               className="object-cover hover:p-[20px] hover:bg-[#E8E4FF] rounded-full"
               style={{ display: "block", cursor: "pointer" }}
             />

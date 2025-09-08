@@ -8,8 +8,10 @@ import CommunitySection from "../components/home/Community";
 import Footer from "../components/home/Footer";
 import PurposeSection from "../components/home/Purpose";
 import FAQSection from "../components/pricing/FAQ";
+import { redirect } from "next/navigation";
 
 export default function Pricing() {
+  redirect("/home");
   return (
     <Box
       component="main"

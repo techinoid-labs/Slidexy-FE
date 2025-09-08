@@ -66,27 +66,34 @@ export default function Header() {
           }}
         >
           {/* Logo */}
-          <Box sx={{ display: "flex", alignItems: "center", flexDirection: "row" }}>
-          <Link href="/" style={{ textDecoration: "none" }}>
-            <Box sx={{ display: "flex", alignItems: "center", flexDirection: "row" }}>
-              <Image
-                src="/images/Logo.svg"
-                alt="Slides Logo"
-                width={118}
-                height={36}
-              />
-            </Box>
-            {/* Profile button */}
-
-          </Link>
-
-          <Button
-            variant="outlined"
-            onClick={() => setProfileModalOpen(true)}
-            sx={{ borderRadius: "999px", height: 40, ml: 2, width : 100  }}
+          <Box
+            sx={{ display: "flex", alignItems: "center", flexDirection: "row" }}
           >
-            Profile
-          </Button>
+            <Link href="/" style={{ textDecoration: "none" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  flexDirection: "row",
+                }}
+              >
+                <Image
+                  src="/images/Logo.svg"
+                  alt="Slides Logo"
+                  width={158}
+                  height={56}
+                />
+              </Box>
+              {/* Profile button */}
+            </Link>
+
+            <Button
+              variant="outlined"
+              onClick={() => setProfileModalOpen(true)}
+              sx={{ borderRadius: "999px", height: 40, ml: 2, width: 100 }}
+            >
+              Profile
+            </Button>
           </Box>
           {/* Desktop Navigation */}
           <Box sx={{ display: "flex", alignSelf: "flex-end" }}>
@@ -105,7 +112,9 @@ export default function Header() {
                     <Link key={item.label} href={item.link} passHref>
                       <Button
                         color="inherit"
-                        endIcon={item.hasDropdown ? <KeyboardArrowDown /> : null}
+                        endIcon={
+                          item.hasDropdown ? <KeyboardArrowDown /> : null
+                        }
                         sx={{
                           color: isActive ? "text.primary" : "text.secondary", // ✅ active color
                           fontSize: "16px",
@@ -238,7 +247,10 @@ export default function Header() {
       </AppBar>
 
       {/* <AuthModal open={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} /> */}
-      <ProfileModal open={isProfileModalOpen} onClose={() => setProfileModalOpen(false)} />
+      <ProfileModal
+        open={isProfileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+      />
     </>
   );
 }
