@@ -18,8 +18,12 @@ import { useSearchParams } from "next/navigation";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { Card, CardMedia, Box as MuiBox } from "@mui/material";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
+import { useUser } from "@/app/context/AuthContext";
+import { Alert, AlertTitle, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const FE_URL = process.env.NEXT_PUBLIC_FE_BASE_URL;
 // console.log("[SlidesX] API_BASE_URL:", API_BASE_URL);
 
 const getProgressMessage = (progress: number) => {
@@ -40,6 +44,7 @@ export default function PresentationMaker({
     icon: string;
   }[];
 }) {
+  const { user } = useUser();
   const [inputMode, setInputMode] = useState("Text");
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
@@ -214,7 +219,6 @@ export default function PresentationMaker({
   // };
 
   //Streaming submit
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
@@ -238,14 +242,15 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
-          ? { source: "website", inputWebsiteUrl: inputValue }
-          : { source: "text", textContent: inputValue };
+        ? { source: "website", inputWebsiteUrl: inputValue }
+        : { source: "text", textContent: inputValue };
 
     const promptMeta = { goal, tone, audience };
     const payload = {
       ...base,
       meta: promptMeta,
       slideCount: slideCount === "" ? 3 : slideCount,
+      userData: user,
     };
 
     try {
@@ -258,8 +263,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
         body: JSON.stringify(payload),
       });
 
+      const response = await res.json();
+      // console.log(response);
       if (!res.ok || !res.body) {
-        throw new Error("Failed to connect to server");
+        // console.log("ERROR CALLED", response);
+        throw new Error(response.error);
       }
 
       const reader = res.body.getReader();
@@ -307,13 +315,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
               router.push(`/presentation/outline?pid=${event.presentation_id}`);
               return;
             }
-
           } catch (err) {
             console.error("Bad JSON chunk:", jsonStr);
           }
         }
       }
     } catch (err: any) {
+      console.log(err);
       setError(err.message || "Something went wrong");
       setLoading(false);
       setProgress(0);
@@ -329,7 +337,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 95) return prev;
-        return prev + Math.random() * 0.4;
+        const increment = Math.random() * (0.8 - 0.1) + 0.1;
+        return prev + increment;
       });
     }, 200);
 
@@ -339,7 +348,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
       meta,
       slideCount: slideCount == "" ? 3 : slideCount,
     };
-    console.log("TEMPLATE CLICKED", payload);
+
+    // console.log("TEMPLATE CLICKED", payload);
 
     try {
       const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
@@ -511,14 +521,15 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
           fontWeight: 600,
           mb: 4,
           height: { xs: 57, md: 70 },
-          border: `2px solid ${inputMode === "Template"
-            ? !templatePrompt.trim()
+          border: `2px solid ${
+            inputMode === "Template"
+              ? !templatePrompt.trim()
+                ? "grey"
+                : "#8E2DE2"
+              : !inputValue.trim() || Boolean(showYoutubeError)
               ? "grey"
               : "#8E2DE2"
-            : !inputValue.trim() || Boolean(showYoutubeError)
-              ? "grey"
-              : "#8E2DE2"
-            }`,
+          }`,
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
@@ -528,8 +539,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
                 ? 0.7
                 : 1
               : !inputValue.trim() || Boolean(showYoutubeError)
-                ? 0.7
-                : 1,
+              ? 0.7
+              : 1,
           "&:hover": { backgroundColor: "#f3eaff" },
           "&::before": {
             content: '""',
@@ -553,12 +564,12 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
             color: loading
               ? "#fff"
               : inputMode === "Template"
-                ? !templatePrompt.trim()
-                  ? "grey"
-                  : "#8E2DE2"
-                : !inputValue.trim() || Boolean(showYoutubeError)
-                  ? "grey"
-                  : "#8E2DE2",
+              ? !templatePrompt.trim()
+                ? "grey"
+                : "#8E2DE2"
+              : !inputValue.trim() || Boolean(showYoutubeError)
+              ? "grey"
+              : "#8E2DE2",
             textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
             transition: "color 0.6s ease, text-shadow 0.6s ease",
             fontWeight: 600,
@@ -567,8 +578,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
           {loading
             ? `${getProgressMessage(progress)} ${Math.round(progress)}%`
             : inputMode === "Template"
-              ? "Generate Template"
-              : "Generate Outlines"}
+            ? "Generate Template"
+            : "Generate Outlines"}
         </span>
 
         <Box
@@ -580,12 +591,12 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
             background: loading
               ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
               : inputMode === "Template"
-                ? !templatePrompt.trim()
-                  ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-                  : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
-                : !inputValue.trim() || Boolean(showYoutubeError)
-                  ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-                  : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+              ? !templatePrompt.trim()
+                ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+                : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
+              : !inputValue.trim() || Boolean(showYoutubeError)
+              ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",
@@ -600,10 +611,58 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
         />
       </Button>
 
-      {error && (
+      {/* {error && (
         <Typography color="error" sx={{ mt: 2 }}>
           {error}
         </Typography>
+      )} */}
+
+      {error && (
+        <Alert
+          severity="error"
+          variant="outlined"
+          sx={{
+            mt: 3,
+            borderRadius: "12px",
+            border: "1.5px solid #f44336",
+            backgroundColor: "#fff5f5",
+            color: "#d32f2f",
+            fontWeight: 500,
+          }}
+          action={
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              size="small"
+              onClick={() => setError("")}
+            >
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          }
+        >
+          <AlertTitle>Error</AlertTitle>
+          {error.includes("waiting list") ? (
+            <>
+              Daily trial limit reached. Try again tomorrow. You can also join
+              our{" "}
+              <a
+                href={`${FE_URL}/waiting-list`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#1976d2",
+                  fontWeight: 600,
+                  textDecoration: "underline",
+                }}
+              >
+                Waitlist
+              </a>
+              .
+            </>
+          ) : (
+            error
+          )}
+        </Alert>
       )}
 
       <Box sx={{ px: 2 }}>

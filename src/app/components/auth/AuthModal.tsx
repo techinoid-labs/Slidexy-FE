@@ -20,7 +20,7 @@ interface AuthModalProps {
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-console.log({ API_BASE_URL });
+
 const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,6 +32,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
   }>({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [authSuccess, setAuthSuccess] = useState(false); // ✅ Track login/signup success
 
   const validateField = (name: string, value: string) => {
     let message = "";
@@ -93,10 +94,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
       if (res?.error) {
         setError(res.error);
       } else {
-        onClose();
+        setAuthSuccess(true); // ✅ Switch to success screen
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Something went wrong");
+      const msg = err.response?.data?.message || "Something went wrong";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -120,85 +122,124 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
           gap: 2,
         }}
       >
-        <Typography variant="h6" fontWeight="bold" textAlign="center">
-          {isSignup ? "Create an Account" : "Welcome Back"}
-        </Typography>
+        {authSuccess ? (
+          // ✅ Success Screen
+          <>
+            <Typography variant="h6" fontWeight="bold" textAlign="center">
+              🎉 {isSignup ? "Account created!" : "Welcome back!"}
+            </Typography>
+            <Typography
+              variant="body2"
+              textAlign="center"
+              color="text.secondary"
+            >
+              You’re now logged in and ready to start creating presentations.
+            </Typography>
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{ mt: 2 }}
+              onClick={onClose}
+            >
+              Continue
+            </Button>
+          </>
+        ) : (
+          // ✅ Login / Signup Form
+          <>
+            <Typography variant="h6" fontWeight="bold" textAlign="center">
+              {isSignup ? "Start Your Free 7-Day Trial" : "Welcome Back"}
+            </Typography>
 
-        <TextField
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            validateField("email", e.target.value);
-          }}
-          error={Boolean(fieldErrors.email)}
-          helperText={fieldErrors.email}
-          fullWidth
-          required
-        />
+            {isSignup && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                textAlign="center"
+                sx={{ mb: 1 }}
+              >
+                You’ll get <b>10 presentations per day</b> for 7 days. <br />
+                No credit card required.
+              </Typography>
+            )}
 
-        <TextField
-          label="Password"
-          type={showPassword ? "text" : "password"}
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value);
-            validateField("password", e.target.value);
-          }}
-          error={Boolean(fieldErrors.password)}
-          helperText={fieldErrors.password}
-          fullWidth
-          required
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
-                  edge="end"
-                >
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+            <TextField
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                validateField("email", e.target.value);
+              }}
+              error={Boolean(fieldErrors.email)}
+              helperText={fieldErrors.email}
+              fullWidth
+              required
+            />
 
-        {error && (
-          <Typography color="error" variant="body2" textAlign="center">
-            {error}
-          </Typography>
+            <TextField
+              label="Password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                validateField("password", e.target.value);
+              }}
+              error={Boolean(fieldErrors.password)}
+              helperText={fieldErrors.password}
+              fullWidth
+              required
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {error && (
+              <Typography color="error" variant="body2" textAlign="center">
+                {error}
+              </Typography>
+            )}
+
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              disabled={loading}
+              fullWidth
+              sx={{ mt: 1 }}
+            >
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : isSignup ? (
+                "Start Free Trial"
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+
+            <Button
+              variant="text"
+              onClick={() => {
+                setIsSignup(!isSignup);
+                setError("");
+                setFieldErrors({});
+              }}
+              fullWidth
+            >
+              {isSignup
+                ? "Already have an account? Sign In"
+                : "Don’t have an account? Start Free Trial"}
+            </Button>
+          </>
         )}
-
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={loading}
-          fullWidth
-          sx={{ mt: 1 }}
-        >
-          {loading ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : isSignup ? (
-            "Sign Up"
-          ) : (
-            "Sign In"
-          )}
-        </Button>
-
-        <Button
-          variant="text"
-          onClick={() => {
-            setIsSignup(!isSignup);
-            setError("");
-            setFieldErrors({});
-          }}
-          fullWidth
-        >
-          {isSignup
-            ? "Already have an account? Sign In"
-            : "Don't have an account? Sign Up"}
-        </Button>
       </Box>
     </Modal>
   );

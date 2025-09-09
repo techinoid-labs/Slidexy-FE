@@ -62,16 +62,24 @@ const SlidesContext = createContext<SlidesContextType>({} as SlidesContextType);
 
 export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch();
-  const slides = useSelector((state: RootState) => state.slidesData?.slides || []);
+  const slides = useSelector(
+    (state: RootState) => state.slidesData?.slides || []
+  );
 
   const [pastSlides, setPastSlides] = useState<SlidesType[]>([]);
   const [futureSlides, setFutureSlides] = useState<SlidesType[]>([]);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<KonvaComponent | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
-  const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<KonvaComponent | null>(
+    null
+  );
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null
+  );
+  const [selectedShapeIndex, setSelectedShapeIndex] = useState<number | null>(
+    null
+  );
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState({
     visible: false,
@@ -88,9 +96,15 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const handleSetSlides = (newSlides: SlidesType) => {
-    console.log("[SlidesContext] handleSetSlides called with newSlides:", newSlides);
+    // console.log(
+    //   "[SlidesContext] handleSetSlides called with newSlides:",
+    //   newSlides
+    // );
+
     if (!deepEqual(slides, newSlides)) {
-      console.log("[SlidesContext] State changed, updating pastSlides and dispatching new slides");
+      console.log(
+        "[SlidesContext] State changed, updating pastSlides and dispatching new slides"
+      );
       setPastSlides((prev) => {
         const newPast = [...prev, structuredClone(slides)];
         console.log("[SlidesContext] Updated pastSlides:", newPast);
@@ -124,7 +138,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     setPastSlides(newPast);
     setFutureSlides((prev) => [structuredClone(slides), ...prev]);
     dispatch(setSlides(previous));
-    
+
     // Clear all selections on undo
     setSelectedImageId(null);
     setSelectedImageIndex(null);
@@ -132,10 +146,13 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     setSelectedShapeId(null);
     setSelectedShapeIndex(null);
     setSelectedTextId(null);
-    
+
     console.log("[SlidesContext] Undo performed, restored state:", previous);
     console.log("[SlidesContext] New pastSlides:", newPast);
-    console.log("[SlidesContext] New futureSlides:", [structuredClone(slides), ...futureSlides]);
+    console.log("[SlidesContext] New futureSlides:", [
+      structuredClone(slides),
+      ...futureSlides,
+    ]);
   };
 
   const redo = () => {
@@ -152,7 +169,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
       return newPast;
     });
     dispatch(setSlides(next));
-    
+
     // Clear all selections on redo
     setSelectedImageId(null);
     setSelectedImageIndex(null);
@@ -160,7 +177,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     setSelectedShapeId(null);
     setSelectedShapeIndex(null);
     setSelectedTextId(null);
-    
+
     console.log("[SlidesContext] Redo performed, restored state:", next);
     console.log("[SlidesContext] New futureSlides:", newFuture);
   };
@@ -218,7 +235,10 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     OTHERS: { START: 300, END: 399 },
   };
 
-  const assignZIndexToElements = (elements: KonvaComponent[], baseZIndex: number) => {
+  const assignZIndexToElements = (
+    elements: KonvaComponent[],
+    baseZIndex: number
+  ) => {
     elements.forEach((element, index) => {
       if (!element.properties) {
         element.properties = {} as any;
@@ -228,7 +248,10 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Helper function to find element by shape_id or image_id
-  const findElementById = (elements: KonvaComponent[], id: string): { element: KonvaComponent | null, index: number } => {
+  const findElementById = (
+    elements: KonvaComponent[],
+    id: string
+  ): { element: KonvaComponent | null; index: number } => {
     for (let i = 0; i < elements.length; i++) {
       const el = elements[i];
       if (
@@ -279,11 +302,18 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    const imageElements = elements.filter((el: KonvaComponent) => isImageElement(el));
-    const textElements = elements.filter((el: KonvaComponent) => isTextElement(el));
-    const shapeElements = elements.filter((el: KonvaComponent) => isShapeElement(el));
-    const otherElements = elements.filter((el: KonvaComponent) =>
-      !isImageElement(el) && !isTextElement(el) && !isShapeElement(el)
+    const imageElements = elements.filter((el: KonvaComponent) =>
+      isImageElement(el)
+    );
+    const textElements = elements.filter((el: KonvaComponent) =>
+      isTextElement(el)
+    );
+    const shapeElements = elements.filter((el: KonvaComponent) =>
+      isShapeElement(el)
+    );
+    const otherElements = elements.filter(
+      (el: KonvaComponent) =>
+        !isImageElement(el) && !isTextElement(el) && !isShapeElement(el)
     );
 
     if (isImageElement(selectedElement)) {
@@ -300,7 +330,9 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
       assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
     } else {
       const currentZIndex = selectedElement.properties?.zIndex || 1;
-      const maxZIndex = Math.max(...elements.map((el: KonvaComponent) => el.properties?.zIndex || 1));
+      const maxZIndex = Math.max(
+        ...elements.map((el: KonvaComponent) => el.properties?.zIndex || 1)
+      );
 
       if (currentZIndex < maxZIndex) {
         selectedElement.properties.zIndex = maxZIndex + 1;
@@ -356,11 +388,18 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    const imageElements = elements.filter((el: KonvaComponent) => isImageElement(el));
-    const textElements = elements.filter((el: KonvaComponent) => isTextElement(el));
-    const shapeElements = elements.filter((el: KonvaComponent) => isShapeElement(el));
-    const otherElements = elements.filter((el: KonvaComponent) =>
-      !isImageElement(el) && !isTextElement(el) && !isShapeElement(el)
+    const imageElements = elements.filter((el: KonvaComponent) =>
+      isImageElement(el)
+    );
+    const textElements = elements.filter((el: KonvaComponent) =>
+      isTextElement(el)
+    );
+    const shapeElements = elements.filter((el: KonvaComponent) =>
+      isShapeElement(el)
+    );
+    const otherElements = elements.filter(
+      (el: KonvaComponent) =>
+        !isImageElement(el) && !isTextElement(el) && !isShapeElement(el)
     );
 
     if (isImageElement(selectedElement)) {

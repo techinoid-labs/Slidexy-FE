@@ -15,10 +15,12 @@ type UserContextType = {
   loading: boolean;
   refreshUser: () => Promise<void>;
 };
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { data: session } = useSession();
   const [user, setUser] = useState<User>(null);
   const [loading, setLoading] = useState(false);
@@ -35,6 +37,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           Authorization: `Bearer ${session.user.accessToken}`,
         },
       });
+
       setUser(res.data);
     } catch (err) {
       console.error("Failed to fetch user", err);
@@ -54,7 +57,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </UserContext.Provider>
   );
 };
-
 
 export const useUser = () => {
   const ctx = useContext(UserContext);
