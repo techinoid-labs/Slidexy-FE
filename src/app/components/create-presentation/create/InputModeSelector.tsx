@@ -18,6 +18,7 @@ const modes = [
   { label: "Video-to-Deck", value: "Youtube" },
   { label: "Web-to-Deck", value: "Website" },
   { label: "Prompt-to-Template", value: "Template" },
+  { label: "Text-to-Infographics", value: "TextToInfographics" }
 ];
 
 export default function InputModeSelector({
@@ -47,11 +48,11 @@ export default function InputModeSelector({
     <Box
       sx={{
         display: "flex",
-        justifyContent: "center",
-        flexWrap: "wrap",
-        gap: 2,
+        justifyContent: "flex-start",
+        alignItems: "center",
+        gap: 4,
         mb: 4,
-        width: "100%",
+        width: "100%", // optional, keeps them responsive
       }}
     >
       {modes.map((modeObj) => {
@@ -59,25 +60,23 @@ export default function InputModeSelector({
         return (
           <Button
             key={modeObj.value}
-            fullWidth
             onClick={() => handleModeChange(modeObj.value)}
             disableElevation
             variant="outlined"
             sx={{
-              flex: { xs: "1 1 100%", sm: "1 1 0" },
               borderRadius: 1,
               fontWeight: 600,
-              fontSize: "0.80rem",
+              fontSize: "0.90rem",
               py: 1.5,
-              px: 4,
+              px: 2,
+              whiteSpace: "nowrap",
               backgroundColor: isActive
                 ? theme.palette.secondary.light + "10"
                 : "transparent",
-              border: `0px solid ${
-                isActive
+              border: `0px solid ${isActive
                   ? theme.palette.secondary.light
                   : theme.palette.grey[200]
-              }`,
+                }`,
               color: isActive
                 ? theme.palette.secondary.main
                 : theme.palette.grey[600],
@@ -97,5 +96,6 @@ export default function InputModeSelector({
         );
       })}
     </Box>
+
   );
 }

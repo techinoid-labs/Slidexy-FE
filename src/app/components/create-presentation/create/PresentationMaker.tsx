@@ -56,7 +56,7 @@ export default function PresentationMaker({
   const [tone, setTone] = useState("");
   const [audience, setAudience] = useState("");
   const [slideCount, setSlideCount] = useState("");
-  const { setSlideTemplates, slideTemplates, setPresentationId } =
+  const { setSlideTemplates, slideTemplates, setPresentationId, setInfographicId } =
     useTemplateSlides();
   // console.log({ slideTemplates });
   const getPlaceholder = () => {
@@ -214,7 +214,7 @@ export default function PresentationMaker({
   // };
 
   //Streaming submit
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
@@ -283,7 +283,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
             const event = JSON.parse(jsonStr);
 
             if (event.percent !== undefined) {
-              setProgress(event.percent); // 🔥 directly set from backend
+              setProgress(event.percent); 
             }
 
             if (event.error) {
@@ -319,6 +319,47 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
       setProgress(0);
     }
   };
+  const handleInfographicSubmit = async () => {
+  setLoading(true);
+  setError("");
+  setProgress(0);
+
+  const payload = { prompt: inputValue };
+  let interval: NodeJS.Timeout | null = null;
+
+  // Fake loader
+  interval = setInterval(() => {
+    setProgress((prev) => (prev >= 95 ? prev : prev + Math.random() * 2));
+  }, 200);
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/infographic`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to generate infographic");
+
+    console.log("Infographic response:", data);
+    const infographicId = data.infographic._id;
+    console.log("Extracted Infographic ID:", infographicId);
+    if (infographicId) {
+      setInfographicId(infographicId); 
+      console.log("Infographic ID saved:", infographicId);
+      router.push(`/infographic/${infographicId}`);
+    }
+
+    setProgress(100);
+  } catch (err: any) {
+    setError(err.message || "Something went wrong");
+  } finally {
+    if (interval) clearInterval(interval);
+    setLoading(false);
+  }
+};
+
 
   const handleTemplateSubmit = async () => {
     setLoading(true);
@@ -493,13 +534,22 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
       )}
       <Button
         fullWidth
-        onClick={inputMode === "Template" ? handleTemplateSubmit : handleSubmit}
+        onClick={
+          inputMode === "Template"
+            ? handleTemplateSubmit
+            : inputMode === "TextToInfographics"
+              ? handleInfographicSubmit
+              : handleSubmit
+        }
         disabled={
           loading ||
           (inputMode === "Template"
             ? !templatePrompt.trim()
-            : !inputValue.trim() || Boolean(showYoutubeError))
+            : inputMode === "TextToInfographics"
+              ? !inputValue.trim()
+              : !inputValue.trim() || Boolean(showYoutubeError))
         }
+
         sx={{
           position: "relative",
           overflow: "hidden",

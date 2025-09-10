@@ -41,6 +41,7 @@ export default function StepIndicator({ activeStep }: StepIndicatorProps) {
         mb: 4,
         width: "100%",
         overflowX: "auto",
+        backgroundColor: "#FFFF",
       }}
     >
       <Box
