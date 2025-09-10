@@ -7,9 +7,22 @@ import { useTemplateSlides } from "../../context/TemplateSlidesContext";
 import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
 import StepIndicator from "@/app/components/shared/StepsIndicatorInfographics";
 import Box from "@mui/material/Box";
+import { Button } from "@mui/material";
+import { toPng, toJpeg } from "html-to-image";
+import { useRef } from "react";
+import RecordRTC from "recordrtc";
+import domtoimage from 'dom-to-image';
+import html2canvas from "html2canvas";
+import DownloadIcon from "@mui/icons-material/Download";
 import { useParams } from "next/navigation";
 import { Alert, useMediaQuery, useTheme } from "@mui/material";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile } from "@ffmpeg/util";
+const ffmpeg = new FFmpeg();
 export default function InfographicPage() {
+  const [converting, setConverting] = useState(false);
+  const stageRef = useRef<any>(null);
+  const infographicRef = useRef<HTMLDivElement>(null);
   const { id } = useParams();
   const { infographicId, setInfographicId } = useTemplateSlides();
   const [loading, setLoading] = useState(true);
@@ -17,6 +30,9 @@ export default function InfographicPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const canvas = stageRef.current?.content?.querySelector("canvas") as HTMLCanvasElement;
+  const stageWidth = infographicRef.current?.offsetWidth || 1200;
+  const stageHeight = infographicRef.current?.offsetHeight || 600;
   useEffect(() => {
     if (!id) return;
     const fetchData = async () => {
@@ -52,6 +68,76 @@ export default function InfographicPage() {
       </div>
     );
   }
+ const captureStageWithHtml = async (
+  stageRef: { current: { toCanvas: () => HTMLCanvasElement } } | null,
+  infographicRef: HTMLDivElement | null
+): Promise<HTMLCanvasElement | null> => {
+  if (!stageRef?.current || !infographicRef) return null;
+
+  // Get the canvas from the stage
+  const stageCanvas = stageRef.current.toCanvas();
+  const stageWidth = stageCanvas.width;
+  const stageHeight = stageCanvas.height;
+
+  // Find the HTML overlay element
+  const htmlOverlay = infographicRef.querySelector("div[aria-label^='Infographic']");
+  if (!htmlOverlay || !(htmlOverlay instanceof HTMLElement)) {
+    // If not found or not an HTMLElement, just return the stage canvas
+    return stageCanvas;
+  }
+
+  // Calculate offsets
+  const overlayRect = htmlOverlay.getBoundingClientRect();
+  const parentRect = infographicRef.getBoundingClientRect();
+  const offsetX = overlayRect.left - parentRect.left;
+  const offsetY = overlayRect.top - parentRect.top;
+
+  // Render HTML overlay to canvas
+  const htmlCanvas = await html2canvas(htmlOverlay, {
+    backgroundColor: null,
+    scale: window.devicePixelRatio || 2,
+    useCORS: true,
+    width: stageWidth,
+    height: stageHeight,
+    x: offsetX,
+    y: offsetY,
+  });
+
+  // Create final canvas and draw both layers
+  const finalCanvas = document.createElement("canvas");
+  finalCanvas.width = stageWidth;
+  finalCanvas.height = stageHeight;
+
+  const ctx = finalCanvas.getContext("2d");
+  if (!ctx) return null;
+
+  ctx.drawImage(stageCanvas, 0, 0);
+  ctx.drawImage(htmlCanvas, 0, 0, stageWidth, stageHeight);
+
+  return finalCanvas;
+};
+
+
+
+  const handleDownload = async (format: "png" | "jpg") => {
+    if (!infographicRef.current || !stageRef.current) return;
+
+    try {
+      const canvas = await captureStageWithHtml(stageRef, infographicRef.current);
+      if (!canvas) return;
+
+      const link = document.createElement("a");
+      link.download = `${infographicData.infographic.title}.${format}`;
+      link.href = format === "png"
+        ? canvas.toDataURL("image/png")
+        : canvas.toDataURL("image/jpeg", 1);
+      link.click();
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  };
+
+
 
   const sanitizedHtml = DOMPurify.sanitize(infographicData.infographic.html);
 
@@ -95,8 +181,11 @@ export default function InfographicPage() {
         </div>
 
         {/* Infographic Renderer */}
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-[1200px] w-full border border-gray-100 mt-100 p-6 space-y-60">
-          <Stage width={1200} height={600}>
+        <div
+          ref={infographicRef}
+          className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-[1200px] w-full border border-gray-100 mt-100 p-6 space-y-60"
+        >
+          <Stage ref={stageRef} width={stageWidth} height={stageHeight}>
             <Layer>
               <Html
                 divProps={{
@@ -122,8 +211,42 @@ export default function InfographicPage() {
             </Layer>
           </Stage>
         </div>
+        <Box sx={{ mt: 4, display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<DownloadIcon />}
+            onClick={() => handleDownload("png")}
+          >
+            Download PNG
+          </Button>
 
-        {/* Extra Metadata Row */}
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<DownloadIcon />}
+            onClick={() => handleDownload("jpg")}
+          >
+            Download JPG
+          </Button>
+        </Box>
+
+        {/* Add progress indicator */}
+        {converting && (
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <div style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              backgroundColor: '#e3f2fd',
+              borderRadius: '8px',
+              color: '#1976d2',
+              fontWeight: 'bold'
+            }}>
+              🎬 Recording in progress... Please keep the infographic visible!
+            </div>
+          </Box>
+        )}
+
         {/* Extra Metadata Row */}
         <Box
           sx={{
@@ -132,6 +255,7 @@ export default function InfographicPage() {
             justifyContent: "center",
             gap: 3,
             mt: 6,
+            mb: 10,
           }}
         >
           {/* Infographic Type */}
