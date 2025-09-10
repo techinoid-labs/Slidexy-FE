@@ -25,7 +25,7 @@ const CreatePresentationPage = () => {
   ];
 const {presentationId, setPresentationId} = useTemplateSlides();
   return (
-    <Box>
+    <Box sx={{ backgroundColor: "#FFFFFF", minHeight: "100vh" }}>
       <StepsHeader />
       <Box sx={{ mt: 4 }}>
         <StepIndicator activeStep={0} />

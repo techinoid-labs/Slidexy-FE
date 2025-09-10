@@ -61,8 +61,12 @@ export default function PresentationMaker({
   const [tone, setTone] = useState("");
   const [audience, setAudience] = useState("");
   const [slideCount, setSlideCount] = useState("");
-  const { setSlideTemplates, slideTemplates, setPresentationId } =
-    useTemplateSlides();
+  const {
+    setSlideTemplates,
+    slideTemplates,
+    setPresentationId,
+    setInfographicId,
+  } = useTemplateSlides();
   // console.log({ slideTemplates });
   const getPlaceholder = () => {
     switch (inputMode) {
@@ -291,7 +295,7 @@ export default function PresentationMaker({
             const event = JSON.parse(jsonStr);
 
             if (event.percent !== undefined) {
-              setProgress(event.percent); // 🔥 directly set from backend
+              setProgress(event.percent);
             }
 
             if (event.error) {
@@ -325,6 +329,47 @@ export default function PresentationMaker({
       setError(err.message || "Something went wrong");
       setLoading(false);
       setProgress(0);
+    }
+  };
+  const handleInfographicSubmit = async () => {
+    setLoading(true);
+    setError("");
+    setProgress(0);
+
+    const payload = { prompt: inputValue };
+    let interval: NodeJS.Timeout | null = null;
+
+    // Fake loader
+    interval = setInterval(() => {
+      setProgress((prev) => (prev >= 95 ? prev : prev + Math.random() * 2));
+    }, 200);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/infographic`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.error || "Failed to generate infographic");
+
+      console.log("Infographic response:", data);
+      const infographicId = data.infographic._id;
+      console.log("Extracted Infographic ID:", infographicId);
+      if (infographicId) {
+        setInfographicId(infographicId);
+        console.log("Infographic ID saved:", infographicId);
+        router.push(`/infographic/${infographicId}`);
+      }
+
+      setProgress(100);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      if (interval) clearInterval(interval);
+      setLoading(false);
     }
   };
 
@@ -503,11 +548,19 @@ export default function PresentationMaker({
       )}
       <Button
         fullWidth
-        onClick={inputMode === "Template" ? handleTemplateSubmit : handleSubmit}
+        onClick={
+          inputMode === "Template"
+            ? handleTemplateSubmit
+            : inputMode === "TextToInfographics"
+            ? handleInfographicSubmit
+            : handleSubmit
+        }
         disabled={
           loading ||
           (inputMode === "Template"
             ? !templatePrompt.trim()
+            : inputMode === "TextToInfographics"
+            ? !inputValue.trim()
             : !inputValue.trim() || Boolean(showYoutubeError))
         }
         sx={{

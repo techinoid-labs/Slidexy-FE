@@ -40,6 +40,7 @@ export default function StepsAccordion() {
         gap: 3,
         justifyContent: "center",
         width: "100%",
+        bgcolor: "#FFFF",
       }}
     >
       {/* Step 1 */}
