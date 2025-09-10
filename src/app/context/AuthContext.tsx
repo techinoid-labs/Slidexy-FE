@@ -5,9 +5,18 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 
 type User = {
-  id: string;
+  _id: string;
   email: string;
   name?: string;
+  admin?: boolean;
+  presentations?: string[];
+  currentPresentationId?: string | null;
+  pricingPlan?: string | null;
+  trialActive?: boolean;
+  trialStart?: string;
+  trialEnd?: string;
+  daysLeft?: number;
+  presentationsLeftToday?: number;
 } | null;
 
 type UserContextType = {
@@ -15,6 +24,7 @@ type UserContextType = {
   loading: boolean;
   refreshUser: () => Promise<void>;
 };
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const UserContext = createContext<UserContextType | undefined>(undefined);
 

@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import { useUser } from "@/app/context/AuthContext";
 import { signOut } from "next-auth/react";
-import AuthModal from "./AuthModal"; 
-
+import AuthModal from "./AuthModal";
+import { useEffect } from "react";
 // helper: format gmail into name
 const extractNameFromEmail = (email: string): string => {
   if (!email) return "User";
@@ -40,17 +40,24 @@ const ProfileModal = ({
   onClose: () => void;
   presentationId?: string | null;
 }) => {
-  const { user, loading } = useUser();
+  const { user, loading, refreshUser } = useUser();
 
   const handleSignOut = async () => {
-  await signOut({ redirect: false }); // no page reload or redirect
-};
+    await signOut({ redirect: false }); // no page reload or redirect
+  };
 
   const displayName =
     user?.name ||
     (user?.email ? extractNameFromEmail(user.email) : "Anonymous User");
 
   const firstName = getFirstName(displayName);
+
+  useEffect(() => {
+    if (open) {
+      // console.log("USER FETCHED");
+      refreshUser();
+    }
+  }, [open]);
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -86,11 +93,42 @@ const ProfileModal = ({
                 <Typography variant="body2" color="text.secondary">
                   {user.email}
                 </Typography>
+
+                <Divider flexItem />
+
+                {/* Trial / Subscription Info */}
+                <Stack spacing={1} sx={{ width: "100%", textAlign: "center" }}>
+                  {user.trialActive && (
+                    <Typography variant="body2" color="success.main">
+                      🎉 Trial Active
+                    </Typography>
+                  )}
+
+                  {user.daysLeft !== undefined && (
+                    <Typography variant="body2" color="text.secondary">
+                      Days left in trial: <b>{user.daysLeft}</b>
+                    </Typography>
+                  )}
+
+                  {user.presentationsLeftToday !== undefined && (
+                    <Typography variant="body2" color="text.secondary">
+                      Presentations left today:{" "}
+                      <b>{user.presentationsLeftToday}</b>
+                    </Typography>
+                  )}
+
+                  {user.pricingPlan && (
+                    <Typography variant="body2" color="text.secondary">
+                      Plan: <b>{user.pricingPlan}</b>
+                    </Typography>
+                  )}
+                </Stack>
+
                 <Divider flexItem />
 
                 {/* Friendly message */}
                 <Typography variant="body2" color="text.secondary">
-                  Welcome back, {firstName}. Lets create presentations!
+                  Welcome back, {firstName}. Let’s create presentations!
                 </Typography>
 
                 {/* Actions */}
@@ -107,7 +145,10 @@ const ProfileModal = ({
             </CardContent>
           </Card>
         ) : (
-          <AuthModal onClose={onClose} presentationId={presentationId ?? null} />
+          <AuthModal
+            onClose={onClose}
+            presentationId={presentationId ?? null}
+          />
         )}
       </Box>
     </Modal>

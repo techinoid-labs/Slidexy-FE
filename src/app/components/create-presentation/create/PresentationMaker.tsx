@@ -267,11 +267,21 @@ export default function PresentationMaker({
         body: JSON.stringify(payload),
       });
 
-      const response = await res.json();
-      // console.log(response);
-      if (!res.ok || !res.body) {
-        // console.log("ERROR CALLED", response);
-        throw new Error(response.error);
+      if (!res.ok) {
+        // Try to parse error response
+        let errMsg = "Something went wrong";
+        try {
+          const errJson = await res.json();
+          errMsg = errJson.error || errMsg;
+        } catch {
+          // non-JSON error
+        }
+        throw new Error(errMsg);
+      }
+
+      // If response has no body, bail
+      if (!res.body) {
+        throw new Error("No response body received from server.");
       }
 
       const reader = res.body.getReader();
@@ -331,6 +341,7 @@ export default function PresentationMaker({
       setProgress(0);
     }
   };
+
   const handleInfographicSubmit = async () => {
     setLoading(true);
     setError("");
@@ -392,6 +403,7 @@ export default function PresentationMaker({
       topic: templatePrompt,
       meta,
       slideCount: slideCount == "" ? 3 : slideCount,
+      userData: user,
     };
 
     // console.log("TEMPLATE CLICKED", payload);
@@ -696,8 +708,8 @@ export default function PresentationMaker({
           <AlertTitle>Error</AlertTitle>
           {error.includes("waiting list") ? (
             <>
-              Daily trial limit reached. Try again tomorrow. You can also join
-              our{" "}
+              You’ve reached today’s trial limit. Please try again tomorrow, or
+              join our{" "}
               <a
                 href={`${FE_URL}/waiting-list`}
                 target="_blank"
@@ -708,12 +720,18 @@ export default function PresentationMaker({
                   textDecoration: "underline",
                 }}
               >
-                Waitlist
-              </a>
-              .
+                waitlist
+              </a>{" "}
+              for early access and extended usage.
             </>
           ) : (
-            error
+            // error
+            <>
+              We’re currently experiencing high demand, and your request
+              couldn’t be processed right now. Please try again in a few
+              minutes. If the issue persists, feel free to contact our support
+              team.
+            </>
           )}
         </Alert>
       )}
