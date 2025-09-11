@@ -22,6 +22,7 @@ import { clearPersistedSlides } from "@/app/store/store";
 import { usePathname, useRouter } from "next/navigation";
 import ProfileModal from "../auth/ProfileModal";
 import AuthModal from "../auth/AuthModal";
+import NavProfileHandler from "../auth/NavProfileHandler";
 export default function StepsHeader() {
   const theme = useMuiTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -29,8 +30,8 @@ export default function StepsHeader() {
   const router = useRouter();
   const { removeSlides } = useSlides();
   const pathname = usePathname();
- const [isProfileModalOpen, setProfileModalOpen] = React.useState(false);
- const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
+  const [isProfileModalOpen, setProfileModalOpen] = React.useState(false);
+  const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
   const handleGoBack = () => {
     if (pathname === "/editor") {
       router.push("/presentation/outline");
@@ -45,113 +46,122 @@ export default function StepsHeader() {
 
   return (
     <>
-    <AppBar
-      position="sticky"
-      elevation={0}
-      sx={{
-        background: "#fff",
-        minHeight: 80,
-        boxShadow: "none",
-        color: "text.primary",
-      }}
-    >
-      <Toolbar
+      <AppBar
+        position="sticky"
+        elevation={0}
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          px: { xs: 2, md: 8 },
-          minHeight: 60,
-          mt: 1,
-          flexDirection: "row",
+          background: "#fff",
+          minHeight: 80,
+          boxShadow: "none",
+          color: "text.primary",
         }}
       >
-        {/* Go Back Button */}
-        <Box
+        <Toolbar
           sx={{
             display: "flex",
+            justifyContent: "space-between",
             alignItems: "center",
+            px: { xs: 2, md: 8 },
+            minHeight: 60,
+            mt: 1,
+            flexDirection: "row",
           }}
         >
-          <Button
-            onClick={() => {
-              handleGoBack();
-            }}
-            startIcon={
-              <Image src="/arrow-left.svg" alt="Back" width={19} height={19} />
-            }
+          {/* Go Back Button */}
+          <Box
             sx={{
-              textTransform: "none",
-              fontWeight: 500,
-              color: "#1A1A1A",
-              fontSize: { xs: "0.8rem", md: "1rem" },
-              backgroundColor: "#F6F6F6",
-              "&:hover": {
-                backgroundColor: "#f3f0ff",
-              },
-              px: 2,
-              py: 1,
+              display: "flex",
+              alignItems: "center",
             }}
           >
-            Go back
-          </Button>
-        </Box>
-
-        {/* Logo */}
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Image
-              src="/images/Logo.svg"
-              alt="Slides Logo"
-              width={118}
-              height={36}
-            />
+            <Button
+              onClick={() => {
+                handleGoBack();
+              }}
+              startIcon={
+                <Image
+                  src="/arrow-left.svg"
+                  alt="Back"
+                  width={19}
+                  height={19}
+                />
+              }
+              sx={{
+                textTransform: "none",
+                fontWeight: 500,
+                color: "#1A1A1A",
+                fontSize: { xs: "0.8rem", md: "1rem" },
+                backgroundColor: "#F6F6F6",
+                "&:hover": {
+                  backgroundColor: "#f3f0ff",
+                },
+                px: 2,
+                py: 1,
+              }}
+            >
+              Go back
+            </Button>
           </Box>
-        </Link>
 
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <Button
+          {/* Logo */}
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Image
+                src="/images/Logo.svg"
+                alt="Slides Logo"
+                width={118}
+                height={36}
+              />
+            </Box>
+          </Link>
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            {/* <Button
                         variant="outlined"
                         onClick={() => setProfileModalOpen(true)}
                         sx={{ borderRadius: "999px" , height : 40, mr: 1, width: 100}}
                       >
                         Profile
-                      </Button>
-          
-          <Button
-            onClick={() => {
-              localStorage.removeItem("fileName");
-              clearPersistedSlides();
-              removeSlides();
-              handleGoBack();
-            }}
-            // startIcon={
-            //   <Image src="/arrow-left.svg" alt="Back" width={19} height={19} />
-            // }
-            sx={{
-              textTransform: "none",
-              fontWeight: 500,
-              color: "#1A1A1A",
-              fontSize: { xs: "0.8rem", md: "1rem" },
-              backgroundColor: "#F6F6F6",
-              "&:hover": {
-                backgroundColor: "#f3f0ff",
-              },
-              px: 2,
-              py: 1,
-            }}
-          >
-            Cancel
-          </Button>
-        </Box>
-      </Toolbar>
-    </AppBar>
-    <ProfileModal open={isProfileModalOpen} onClose={() => setProfileModalOpen(false)} />    
+                      </Button> */}
+
+            <Button
+              onClick={() => {
+                localStorage.removeItem("fileName");
+                clearPersistedSlides();
+                removeSlides();
+                handleGoBack();
+              }}
+              // startIcon={
+              //   <Image src="/arrow-left.svg" alt="Back" width={19} height={19} />
+              // }
+              sx={{
+                textTransform: "none",
+                fontWeight: 500,
+                color: "#1A1A1A",
+                fontSize: { xs: "0.8rem", md: "1rem" },
+                backgroundColor: "#F6F6F6",
+                "&:hover": {
+                  backgroundColor: "#f3f0ff",
+                },
+                px: 2,
+                py: 1,
+              }}
+            >
+              Cancel
+            </Button>
+            <NavProfileHandler setProfileModalOpen={setProfileModalOpen} />
+          </Box>
+        </Toolbar>
+      </AppBar>
+      <ProfileModal
+        open={isProfileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+      />
     </>
   );
 }

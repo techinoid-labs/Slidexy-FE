@@ -29,7 +29,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={raleway.variable} suppressHydrationWarning>
       <head>
-        {/* ✅ Meta Pixel Code */}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
@@ -52,9 +51,8 @@ export default function RootLayout({
             src="https://www.facebook.com/tr?id=1661409921482981&ev=PageView&noscript=1"
           />
         </noscript>
-        {/* ✅ End Meta Pixel Code */}
       </head>
-      <body className={raleway.className}>
+      <body className={raleway.className} suppressHydrationWarning>
         <ThemeContextProvider>
           <ThemeProvider>
             <CssBaseline />

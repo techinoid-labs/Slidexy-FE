@@ -11,6 +11,7 @@ import {
   MenuItem,
   useMediaQuery,
   useTheme as useMuiTheme,
+  Divider,
 } from "@mui/material";
 import { KeyboardArrowDown, Menu as MenuIcon } from "@mui/icons-material";
 import Image from "next/image";
@@ -19,13 +20,14 @@ import { usePathname } from "next/navigation"; // ✅ active route
 import { Typography } from "@mui/material";
 import AuthModal from "../auth/AuthModal";
 import ProfileModal from "../auth/ProfileModal";
-
+import NavProfileHandler from "../auth/NavProfileHandler";
+import { useUser } from "@/app/context/AuthContext";
 export default function Header() {
   const theme = useMuiTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const pathname = usePathname(); // ✅ get current path
-
+  const { user } = useUser();
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -86,14 +88,6 @@ export default function Header() {
               </Box>
               {/* Profile button */}
             </Link>
-
-            <Button
-              variant="outlined"
-              onClick={() => setProfileModalOpen(true)}
-              sx={{ borderRadius: "999px", height: 40, ml: 2, width: 100 }}
-            >
-              Profile
-            </Button>
           </Box>
           {/* Desktop Navigation */}
           <Box sx={{ display: "flex", alignSelf: "flex-end" }}>
@@ -143,7 +137,7 @@ export default function Header() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               {!isMobile && (
                 <>
-                  <Link href="/waiting-list" passHref>
+                  {/* <Link href="/waiting-list" passHref>
                     <Button
                       variant="outlined"
                       sx={{
@@ -163,7 +157,11 @@ export default function Header() {
                     >
                       Join the Waitlist
                     </Button>
-                  </Link>
+                  </Link> */}
+
+                  <NavProfileHandler
+                    setProfileModalOpen={setProfileModalOpen}
+                  />
 
                   <Link href="/presentation/create" passHref>
                     <Button
@@ -237,6 +235,32 @@ export default function Header() {
                       onClick={handleMenuClose}
                     >
                       Try for Free
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                      className="w-full flex justify-center items-center"
+                      // component={Link}
+                      // href="/presentation/create"
+                      onClick={handleMenuClose}
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <NavProfileHandler
+                          setProfileModalOpen={setProfileModalOpen}
+                        />
+
+                        {user && (
+                          <Typography
+                            onClick={() => {
+                              handleMenuClose();
+                              setProfileModalOpen(true);
+                            }}
+                            fontSize={12}
+                            className="truncate max-w-24"
+                          >
+                            {user?.email || "User"}
+                          </Typography>
+                        )}
+                      </div>
                     </MenuItem>
                   </Menu>
                 </>
