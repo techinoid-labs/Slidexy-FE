@@ -10,6 +10,8 @@ import SessionWrapper from "@/lib/sessionWrapper";
 import { UserProvider } from "./context/AuthContext";
 import Script from "next/script";
 
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+
 const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
@@ -51,6 +53,22 @@ export default function RootLayout({
             src="https://www.facebook.com/tr?id=1661409921482981&ev=PageView&noscript=1"
           />
         </noscript>
+
+        {/* ✅ Google Analytics */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${GA_ID}', {
+      page_path: window.location.pathname,
+    });
+  `}
+        </Script>
       </head>
       <body className={raleway.className} suppressHydrationWarning>
         <ThemeContextProvider>
