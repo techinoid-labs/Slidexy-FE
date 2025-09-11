@@ -19,8 +19,18 @@ const nextConfig: NextConfig = {
         port: "5000",
         pathname: "/images/**",
       },
+      {
+        protocol: "https",
+        hostname: "slidexy.sfo3.digitaloceanspaces.com",
+        pathname: "/**", // allow all paths
+      },
     ],
-    domains: ["source.unsplash.com", "placehold.co", "dev.slidexy.net"],
+    domains: [
+      "source.unsplash.com",
+      "placehold.co",
+      "dev.slidexy.net",
+      "slidexy.sfo3.digitaloceanspaces.com",
+    ],
   },
 };
 
