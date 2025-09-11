@@ -25,12 +25,15 @@ import { useSession, signIn } from "next-auth/react";
 import AuthModal from "../../components/auth/AuthModal";
 import { useUser } from "@/app/context/AuthContext";
 import ProfileModal from "../../components/auth/ProfileModal";
+import NavProfileHandler from "@/app/components/auth/NavProfileHandler";
 // --- Template NavBar ---
 const TemplateNavBar: React.FC<{
   onExportPPT?: () => void;
   presentationId?: string | null;
 }> = ({ onExportPPT, presentationId }) => {
-  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const router = useRouter();
@@ -103,8 +106,6 @@ const TemplateNavBar: React.FC<{
         }
       );
 
-
-
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -141,7 +142,12 @@ const TemplateNavBar: React.FC<{
           {/* Left section */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <IconButton onClick={() => router.push("/home")}>
-              <Image src="/images/home-icon.svg" alt="Home" width={20} height={20} />
+              <Image
+                src="/images/home-icon.svg"
+                alt="Home"
+                width={20}
+                height={20}
+              />
             </IconButton>
             <Box sx={{ display: "flex", flexDirection: "column" }}>
               {editing ? (
@@ -162,7 +168,11 @@ const TemplateNavBar: React.FC<{
                   }}
                 />
               ) : (
-                <Typography variant="subtitle1" onClick={handleEdit} sx={{ cursor: "pointer" }}>
+                <Typography
+                  variant="subtitle1"
+                  onClick={handleEdit}
+                  sx={{ cursor: "pointer" }}
+                >
                   {templateFileName || "Untitled"}
                 </Typography>
               )}
@@ -194,14 +204,15 @@ const TemplateNavBar: React.FC<{
                 </Button>
               )
             )}
+            <NavProfileHandler setProfileModalOpen={setIsProfileModalOpen} />
           </Box>
-          <Button
+          {/* <Button
             variant="outlined"
             onClick={() => setIsProfileModalOpen(true)}
             sx={{ borderRadius: "999px", height: 40, mr: 1, width: 100 }}
           >
             Profile
-          </Button>
+          </Button> */}
         </Toolbar>
 
         {/* Mobile menu */}
@@ -225,8 +236,16 @@ const TemplateNavBar: React.FC<{
       </AppBar>
 
       {/* Auth Modal */}
-      <ProfileModal open={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} presentationId={presentationId} />}
+      <ProfileModal
+        open={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          presentationId={presentationId}
+        />
+      )}
     </>
   );
 };

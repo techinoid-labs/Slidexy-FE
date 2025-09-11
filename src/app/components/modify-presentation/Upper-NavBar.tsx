@@ -25,6 +25,7 @@ import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useUser } from "@/app/context/AuthContext";
 import ProfileModal from "../auth/ProfileModal";
+import NavProfileHandler from "../auth/NavProfileHandler";
 
 // helper: extract readable name from email
 const extractNameFromEmail = (email: string): string => {
@@ -43,13 +44,21 @@ const UpperNavBar: React.FC<{
   onClearCanvas?: () => void;
   onPreview: () => void;
   onOpenThemePanel: () => void;
-}> = ({ onExportPDF, onExportPPT, onClearCanvas, onPreview, onOpenThemePanel }) => {
-  const [mobileMenuAnchor, setMobileMenuAnchor] = React.useState<null | HTMLElement>(null);
+}> = ({
+  onExportPDF,
+  onExportPPT,
+  onClearCanvas,
+  onPreview,
+  onOpenThemePanel,
+}) => {
+  const [mobileMenuAnchor, setMobileMenuAnchor] =
+    React.useState<null | HTMLElement>(null);
   const [isProfileModalOpen, setProfileModalOpen] = React.useState(false);
 
   const { user } = useUser();
   const displayName =
-    user?.name || (user?.email ? extractNameFromEmail(user.email) : "Anonymous");
+    user?.name ||
+    (user?.email ? extractNameFromEmail(user.email) : "Anonymous");
   const initial = displayName ? displayName[0].toUpperCase() : "U";
 
   const router = useRouter();
@@ -128,11 +137,29 @@ const UpperNavBar: React.FC<{
           }}
         >
           {/* Left Section */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, md: 1.5 } }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: { xs: 0.5, md: 1.5 },
+            }}
+          >
             <IconButton onClick={() => router.push("/home")}>
-              <Image src="/images/home-icon.svg" alt="Home" width={20} height={20} />
+              <Image
+                src="/images/home-icon.svg"
+                alt="Home"
+                width={20}
+                height={20}
+              />
             </IconButton>
-            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", ml: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                ml: 1,
+              }}
+            >
               {editing ? (
                 <input
                   ref={inputRef}
@@ -167,14 +194,23 @@ const UpperNavBar: React.FC<{
                   {fileName}
                 </Typography>
               )}
-              <Typography variant="caption" sx={{ color: "#888", fontSize: 12 }}>
+              <Typography
+                variant="caption"
+                sx={{ color: "#888", fontSize: 12 }}
+              >
                 File Type
               </Typography>
             </Box>
           </Box>
 
           {/* Right Section */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, md: 1 } }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: { xs: 0.5, md: 1 },
+            }}
+          >
             {/* Undo / Redo */}
             <IconButton onClick={undo} disabled={!canUndo}>
               <UndoIcon />
@@ -193,7 +229,12 @@ const UpperNavBar: React.FC<{
                 onPreview();
               }}
             >
-              <Box component="img" src="/preview.svg" alt="Preview" sx={{ width: 20, height: 20 }} />
+              <Box
+                component="img"
+                src="/preview.svg"
+                alt="Preview"
+                sx={{ width: 20, height: 20 }}
+              />
             </IconButton>
 
             {/* Theme */}
@@ -216,7 +257,8 @@ const UpperNavBar: React.FC<{
                   onClick={onExportPDF}
                   sx={{
                     bgcolor: "#18181B",
-                    background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                    background:
+                      "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
                     color: "#fff",
                     borderRadius: "999px",
                     px: 2,
@@ -233,7 +275,8 @@ const UpperNavBar: React.FC<{
                     onClick={onExportPPT}
                     sx={{
                       bgcolor: "#18181B",
-                      background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                      background:
+                        "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
                       color: "#fff",
                       borderRadius: "999px",
                       px: 2,
@@ -250,7 +293,8 @@ const UpperNavBar: React.FC<{
                   onClick={onClearCanvas}
                   sx={{
                     bgcolor: "#18181B",
-                    background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+                    background:
+                      "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
                     color: "#fff",
                     borderRadius: "999px",
                     px: 2,
@@ -267,13 +311,14 @@ const UpperNavBar: React.FC<{
 
             {/* Profile Button */}
             {!isMobile ? (
-              <Button
-                variant="outlined"
-                onClick={() => setProfileModalOpen(true)}
-                sx={{ borderRadius: "999px", height: 40, ml: 1, px: 2 }}
-              >
-                Profile
-              </Button>
+              // <Button
+              //   variant="outlined"
+              //   onClick={() => setProfileModalOpen(true)}
+              //   sx={{ borderRadius: "999px", height: 40, ml: 1, px: 2 }}
+              // >
+              //   Profile
+              // </Button>
+              <NavProfileHandler setProfileModalOpen={setProfileModalOpen} />
             ) : (
               <IconButton
                 onClick={() => setProfileModalOpen(true)}
@@ -285,7 +330,9 @@ const UpperNavBar: React.FC<{
                   p: 0,
                 }}
               >
-                <Avatar sx={{ width: 24, height: 24, fontSize: 14 }}>{initial}</Avatar>
+                <Avatar sx={{ width: 24, height: 24, fontSize: 14 }}>
+                  {initial}
+                </Avatar>
               </IconButton>
             )}
 
@@ -305,8 +352,12 @@ const UpperNavBar: React.FC<{
           onClose={handleMobileMenuClose}
         >
           <MenuItem onClick={onExportPDF}>Export as PDF</MenuItem>
-          {onExportPPT && <MenuItem onClick={onExportPPT}>Export as PPTX</MenuItem>}
-          {onClearCanvas && <MenuItem onClick={onClearCanvas}>Clear Canvas</MenuItem>}
+          {onExportPPT && (
+            <MenuItem onClick={onExportPPT}>Export as PPTX</MenuItem>
+          )}
+          {onClearCanvas && (
+            <MenuItem onClick={onClearCanvas}>Clear Canvas</MenuItem>
+          )}
           <Divider />
           <MenuItem
             onClick={() => {
@@ -321,7 +372,10 @@ const UpperNavBar: React.FC<{
       </AppBar>
 
       {/* Profile Modal */}
-      <ProfileModal open={isProfileModalOpen} onClose={() => setProfileModalOpen(false)} />
+      <ProfileModal
+        open={isProfileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+      />
     </>
   );
 };
