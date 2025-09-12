@@ -19,6 +19,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import { analyticsEvent } from "@/lib/gtag";
 
 export default function HeroSection() {
   const [inputValue, setInputValue] = useState("");
@@ -28,6 +29,12 @@ export default function HeroSection() {
 
   const handleRedirect = () => {
     const encodedQuery = encodeURIComponent(inputValue.trim());
+
+    analyticsEvent("get_started_click", {
+      category: "engagement",
+      label: "home_page_to_slide_generation",
+    });
+
     router.push(
       `/presentation/create${encodedQuery ? `?prompt=${encodedQuery}` : ""}`
     );

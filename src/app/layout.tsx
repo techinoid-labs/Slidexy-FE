@@ -9,6 +9,7 @@ import "./globals.css";
 import SessionWrapper from "@/lib/sessionWrapper";
 import { UserProvider } from "./context/AuthContext";
 import Script from "next/script";
+import AnalyticsTracker from "./components/analytics/AnalyticsTracker";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
@@ -76,7 +77,10 @@ export default function RootLayout({
             <CssBaseline />
             <SessionWrapper>
               <UserProvider>
-                <Providers>{children}</Providers>
+                <Providers>
+                  <AnalyticsTracker />
+                  {children}
+                </Providers>
               </UserProvider>
             </SessionWrapper>
           </ThemeProvider>
