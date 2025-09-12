@@ -13,6 +13,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 interface AuthModalProps {
   onClose: () => void;
@@ -71,20 +72,68 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
     return emailValid && passwordValid;
   };
 
+  const fpPromise = FingerprintJS.load();
+
+  async function getFingerprint() {
+    const fp = await fpPromise;
+    const result = await fp.get();
+    return result.visitorId;
+  }
+
+  // const handleSubmit = async () => {
+  //   if (!validateForm()) return;
+
+  //   setLoading(true);
+  //   try {
+  //     if (isSignup) {
+  //       await axios.post(`${API_BASE_URL}/api/users/register`, {
+  //         email,
+  //         password,
+  //         presentationId: presentationId || null,
+  //       });
+  //     }
+
+  //     const res = await signIn("credentials", {
+  //       redirect: false,
+  //       email,
+  //       password,
+  //       presentationId: presentationId || null,
+  //     });
+
+  //     if (res?.error) {
+  //       setError(res.error);
+  //     } else {
+  //       setAuthSuccess(true); // ✅ Switch to success screen
+  //     }
+  //   } catch (err: any) {
+  //     const msg = err.response?.data?.message || "Something went wrong";
+  //     setError(msg);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setLoading(true);
     try {
+      let res;
+
       if (isSignup) {
+        // Get fingerprint for signup only
+        const fingerprint = await getFingerprint();
+
         await axios.post(`${API_BASE_URL}/api/users/register`, {
           email,
           password,
           presentationId: presentationId || null,
+          fingerprint,
         });
       }
 
-      const res = await signIn("credentials", {
+      // Common flow → login user after either signup or direct login
+      res = await signIn("credentials", {
         redirect: false,
         email,
         password,
@@ -94,7 +143,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
       if (res?.error) {
         setError(res.error);
       } else {
-        setAuthSuccess(true); // ✅ Switch to success screen
+        setAuthSuccess(true); // ✅ show success screen
       }
     } catch (err: any) {
       const msg = err.response?.data?.message || "Something went wrong";
