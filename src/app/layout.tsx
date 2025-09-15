@@ -12,7 +12,7 @@ import Script from "next/script";
 import AnalyticsTracker from "./components/analytics/AnalyticsTracker";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
-
+const META_PIXEL_ID = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
 const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
@@ -42,7 +42,7 @@ export default function RootLayout({
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '1661409921482981');
+            fbq('init', '${META_PIXEL_ID}');
             fbq('track', 'PageView');
           `}
         </Script>
@@ -51,16 +51,16 @@ export default function RootLayout({
             height="1"
             width="1"
             style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=1661409921482981&ev=PageView&noscript=1"
+            src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
+            // src={`https://www.facebook.com/tr?id=1661409921482981&ev=PageView&noscript=1`}
           />
         </noscript>
 
-        {/* ✅ Google Analytics */}
-        <Script
+        {/* <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
           strategy="afterInteractive"
-        />
-        <Script id="ga-init" strategy="afterInteractive">
+        /> */}
+        {/* <Script id="ga-init" strategy="afterInteractive">
           {`
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -68,6 +68,21 @@ export default function RootLayout({
     gtag('config', '${GA_ID}', {
       page_path: window.location.pathname,
     });
+  `}
+        </Script> */}
+
+        {/* ✅ Google Analytics */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+          async
+        />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${GA_ID}');
   `}
         </Script>
       </head>
