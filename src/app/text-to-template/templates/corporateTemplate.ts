@@ -1,461 +1,580 @@
+import type { Slide, BackendSlide } from "../types/presentation";
 
+// Enhanced corporate color palette with vibrant, gradient-friendly tones
+const palette = {
+  primary: "#1E3A8A", // Rich navy
+  secondary: "#9A3412", // Deep terracotta
+  accent: "#F43F5E", // Vibrant rose
+  accent2: "#F59E0B", // Bright amber
+  bg: "#F5F5F4", // Soft neutral
+  surface: "#FEF3C7", // Warm cream
+  text: "#111827", // Deep charcoal
+  textSecondary: "#4B5563", // Muted gray
+  gradientStart: "#F43F5E", // Rose gradient start
+  gradientEnd: "#F59E0B", // Amber gradient end
+  gradientMid: "#EC4899", // Pink gradient mid-tone
+};
 
-import type { Slide, SlideElement } from "../types/presentation"
+// Utility: Decorative arc shape
+const decorativeArc = (
+  top: string,
+  left: string,
+  size = "150px",
+  color = palette.accent,
+  opacity = 0.2
+): string => `
+  <div style="
+    position: absolute;
+    top: ${top};
+    left: ${left};
+    width: ${size};
+    height: ${size};
+    border: 4px solid ${color};
+    border-radius: 50%;
+    clip-path: circle(50% at 50% 50%);
+    opacity: ${opacity};
+    z-index: 1;
+    transform: rotate(45deg);
+  "></div>
+`;
 
-export const createCorporateTemplate = (backendSlide: any, slideIndex: number): Slide => {
-  const elements: SlideElement[] = []
-  const { slide_id, slide_title, image_url, textBlock, imageBlock } = backendSlide
+// Utility: Subtle grid pattern
+const gridPattern = `
+  <div style="
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: 
+      linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    z-index: 0;
+    opacity: 0.1;
+  "></div>
+`;
 
-  // Professional corporate color palette
-  const primaryColors = ["#1e3a8a", "#0f172a", "#374151", "#1f2937"] // Deep blues and grays
-  const accentColors = ["#3b82f6", "#06b6d4", "#10b981", "#f59e0b"] // Bright accents
-  const primaryColor = primaryColors[slideIndex % primaryColors.length]
-  const accentColor = accentColors[slideIndex % accentColors.length]
+// Utility: Modern badge with gradient
+const modernBadge = (text: string): string => `
+  <div style="
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    background: linear-gradient(90deg, ${palette.accent}, ${palette.accent2});
+    color: ${palette.bg};
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+  ">${text}</div>
+`;
 
-  // Konva-compatible vertical gradient background
+// Utility: Extract text
+const getTextContent = (block: BackendSlide["textBlock"]): string[] => {
+  if (!block?.elements) return [];
+  return block.elements.map((el) => el.text || "").filter((text) => text.length > 0);
+};
+
+// Utility: Extract images
+const getImages = (backendSlide: BackendSlide): string[] => {
+  const images: string[] = [];
+  if (backendSlide.image_url?.trim()) images.push(backendSlide.image_url.trim());
+  backendSlide.imageBlock?.elements?.forEach((el) => {
+    if (el.properties?.imageSrc?.trim()) images.push(el.properties.imageSrc.trim());
+  });
+  return images;
+};
+
+// Refactored Corporate Template Generator
+export const createCorporateTemplate = (
+  backendSlide: BackendSlide,
+  slideIndex: number
+): Slide => {
+  const { slide_id, slide_title, textBlock, titleBlock } = backendSlide;
+  const elements: Slide["elements"] = [];
+
+  const textContent = getTextContent(textBlock);
+  const titleText =
+    titleBlock?.elements?.[0]?.text || slide_title?.text || `Slide ${slideIndex + 1}`;
+  const images = getImages(backendSlide);
+  const layoutType = slideIndex % 5;
+  let htmlTemplate = "";
+
+  switch (layoutType) {
+    case 0: // Enhanced Hero Title Slide
+      htmlTemplate = `
+        <div style="
+          display: flex;
+          flex-direction: ${images.length > 0 ? 'row' : 'column'};
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          padding: 2rem;
+          background: linear-gradient(135deg, ${palette.gradientStart}20, ${palette.gradientEnd}20, ${palette.bg});
+          position: relative;
+          overflow: hidden;
+          font-family: 'Inter', sans-serif;
+          gap: 1.5rem;
+        ">
+          ${gridPattern}
+          ${decorativeArc("10%", "90%", "180px", palette.accent2, 0.15)}
+          ${decorativeArc("80%", "20%", "120px", palette.accent, 0.1)}
+          <div style="
+            flex: ${images.length > 0 ? '1' : 'auto'};
+            max-width: ${images.length > 0 ? '550px' : '800px'};
+            text-align: ${images.length > 0 ? 'left' : 'center'};
+            z-index: 2;
+            padding: 1.5rem;
+            background: ${palette.surface};
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+          ">
+            ${modernBadge("Introduction")}
+            <h1 style="
+              font-size: 2rem;
+              font-weight: 800;
+              color: ${palette.text};
+              margin: 0 0 1rem;
+              line-height: 1.2;
+              text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            ">${titleText}</h1>
+            ${textContent.slice(0, 3).map((t, idx) => `
+              <div style="
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-bottom: 0.75rem;
+                padding: 0.5rem 1rem;
+                background: linear-gradient(90deg, ${palette.gradientMid}10, transparent);
+                border-radius: 8px;
+              ">
+                <div style="
+                  width: 10px;
+                  height: 10px;
+                  background: ${palette.accent2};
+                  border-radius: 50%;
+                "></div>
+                <p style="
+                  font-size: 1rem;
+                  color: ${palette.textSecondary};
+                  line-height: 1.5;
+                  font-weight: 500;
+                ">${t}</p>
+              </div>
+            `).join("")}
+          </div>
+          ${images.length > 0 ? `
+            <div style="
+              flex: 1;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              z-index: 2;
+            ">
+              <div style="
+                position: relative;
+                width: 90%;
+                max-height: 350px;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+                transition: transform 0.3s ease;
+              ">
+                <img src="${images[0]}" style="
+                  width: 100%;
+                  height: 100%;
+                  object-fit: cover;
+                "/>
+              </div>
+              <style>
+                div[style*="overflow: hidden"]:hover {
+                  transform: scale(1.05);
+                }
+              </style>
+            </div>
+          ` : ""}
+          <style>
+            div[style*="background: ${palette.surface}"]:hover {
+              transform: translateY(-8px);
+            }
+          </style>
+        </div>`;
+      break;
+
+    case 1: // Enhanced Split Content Layout
+      htmlTemplate = `
+        <div style="
+          display: grid;
+          grid-template-columns: ${images.length > 0 ? '1fr 1fr' : '1fr'};
+          height: 100%;
+          padding: 2rem;
+          background: linear-gradient(120deg, ${palette.gradientStart}10, ${palette.gradientEnd}10, ${palette.bg});
+          position: relative;
+          overflow: hidden;
+          font-family: 'Inter', sans-serif;
+          align-items: center;
+          gap: 1.5rem;
+        ">
+          ${gridPattern}
+          ${decorativeArc("15%", "85%", "140px", palette.accent, 0.2)}
+          ${decorativeArc("85%", "10%", "100px", palette.accent2, 0.15)}
+          <div style="
+            padding: 1.5rem;
+            background: ${palette.surface};
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 480px;
+overflow: hidden;
+          ">
+            ${modernBadge("Overview")}
+            <h2 style="
+              font-size: 1.5rem;
+              font-weight: 700;
+              color: ${palette.text};
+              margin-bottom: 1rem;
+            ">${titleText}</h2>
+            <div style="
+              display: grid;
+              gap: 0.75rem;
+            ">
+              ${textContent.slice(0, 4).map((t) => `
+                <div style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 0.75rem;
+                  padding: 0.5rem 0.75rem;
+                  border-radius: 8px;
+                  background: linear-gradient(90deg, ${palette.gradientMid}10, transparent);
+                  min-height: 60px;
+                ">
+                  <div style="
+                    width: 20px;
+                    height: 20px;
+                    background: linear-gradient(45deg, ${palette.accent}, ${palette.accent2});
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: ${palette.bg};
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                  ">${textContent.indexOf(t) + 1}</div>
+                  <p style="
+                    font-size: 0.95rem;
+                    color: ${palette.textSecondary};
+                    line-height: 1.5;
+                    flex: 1;
+                  ">${t}</p>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+          ${images.length > 0 ? `
+            <div style="
+              z-index: 2;
+              display: flex;
+              flex-direction: column;
+              gap: 1rem;
+              justify-content: center;
+              align-items: center;
+            ">
+              ${images.slice(0, 2).map((img, idx) => `
+                <div style="
+                  position: relative;
+                  width: ${idx === 0 ? '85%' : '65%'};
+                  max-height: ${idx === 0 ? '280px' : '180px'};
+                  border-radius: 12px;
+                  overflow: hidden;
+                  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+                  transition: transform 0.3s ease;
+                ">
+                  <img src="${img}" style="
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                  "/>
+                </div>
+              `).join("")}
+              <style>
+                div[style*="overflow: hidden"]:hover {
+                  transform: scale(1.03);
+                }
+              </style>
+            </div>
+          ` : ""}
+          <style>
+            div[style*="background: ${palette.surface}"]:hover {
+              transform: translateY(-8px);
+            }
+          </style>
+        </div>`;
+      break;
+
+    case 2: // Impactful Quote
+      htmlTemplate = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          padding: 3rem;
+          background: linear-gradient(135deg, ${palette.gradientStart}20, ${palette.gradientEnd}20);
+          position: relative;
+          overflow: hidden;
+          font-family: 'Inter', sans-serif;
+        ">
+          ${gridPattern}
+          ${decorativeArc("10%", "20%", "160px", palette.accent, 0.15)}
+          ${decorativeArc("80%", "80%", "120px", palette.accent2, 0.1)}
+          <div style="
+            z-index: 2;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            text-align: center;
+          ">
+            <blockquote style="
+              font-size: 2rem;
+              font-weight: 500;
+              color: ${palette.text};
+              font-family: 'Georgia', serif;
+              line-height: 1.4;
+              margin: 0 0 1.5rem;
+            ">${textContent[0] || "Vision shapes the future."}</blockquote>
+            <cite style="
+              font-size: 1.1rem;
+              font-weight: 600;
+              color: ${palette.accent};
+            ">${titleText}</cite>
+          </div>
+          ${images.length > 0 ? `
+            <div style="
+              z-index: 2;
+              margin-top: 2rem;
+              display: flex;
+              justify-content: center;
+              gap: 1.5rem;
+            ">
+              ${images.slice(0, 2).map((img) => `
+                <img src="${img}" style="
+                  width: 220px;
+                  height: 220px;
+                  object-fit: cover;
+                  border-radius: 12px;
+                  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+                  transition: transform 0.3s ease;
+                "/>
+              `).join("")}
+              <style>
+                img:hover {
+                  transform: scale(1.05);
+                }
+              </style>
+            </div>
+          ` : ""}
+          <style>
+            div[style*="backdrop-filter"]:hover {
+              transform: translateY(-10px);
+            }
+          </style>
+        </div>`;
+      break;
+
+    case 3: // Feature Highlights
+      const cardImages = images.slice(0, 3);
+      const cardTexts = textContent.slice(0, 3);
+      const placeholdersNeeded = 3 - cardImages.length;
+
+      htmlTemplate = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          padding: 2.5rem;
+          background: ${palette.bg};
+          position: relative;
+          overflow: hidden;
+          font-family: 'Inter', sans-serif;
+        ">
+          ${gridPattern}
+          ${decorativeArc("20%", "80%", "140px", palette.accent2, 0.15)}
+          ${modernBadge("Features")}
+          <h2 style="
+            font-size: 2rem;
+            font-weight: 500;
+            color: ${palette.text};
+            text-align: center;
+            margin-bottom: 2rem;
+          ">${titleText}</h2>
+          <div style="
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            max-height: 380px;
+          ">
+            ${cardImages.map((img, idx) => `
+              <div style="
+                background: ${palette.surface};
+                border-radius: 16px;
+                padding: 1.5rem;
+                box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+                transition: transform 0.3s ease;
+                text-align: center;
+                max-height: 380px;
+              ">
+                <img src="${img}" style="
+                  width: 100%;
+                  height: 160px;
+                  object-fit: cover;
+                  border-radius: 12px;
+                  margin-bottom: 1rem;
+                "/>
+                <h3 style="
+                  font-size: 1.5rem;
+                  font-weight: 600;
+                  color: ${palette.text};
+                ">Feature ${idx + 1}</h3>
+                <p style="
+                  font-size: 0.9rem;
+                  color: ${palette.textSecondary};
+                  line-height: 1;
+                ">${cardTexts[idx] || "Description placeholder"}</p>
+              </div>
+            `).join("")}
+            ${Array.from({ length: placeholdersNeeded }).map(() => `
+              <div style="
+                background: ${palette.surface};
+                border-radius: 16px;
+                padding: 1.5rem;
+                box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+                transition: transform 0.3s ease;
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: ${palette.textSecondary};
+                font-size: 1rem;
+                font-weight: 500;
+              ">Coming Soon</div>
+            `).join("")}
+          </div>
+          <style>
+            div[style*="background: ${palette.surface}"]:hover {
+              transform: translateY(-8px);
+            }
+          </style>
+        </div>`;
+      break;
+
+    case 4: // Dynamic Timeline
+      htmlTemplate = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          padding: 3rem;
+          background: linear-gradient(120deg, ${palette.bg}, ${palette.gradientEnd}20);
+          position: relative;
+          overflow: hidden;
+          font-family: 'Inter', sans-serif;
+        ">
+          ${gridPattern}
+          ${decorativeArc("85%", "15%", "160px", palette.accent, 0.15)}
+          ${modernBadge("Roadmap")}
+          <h2 style="
+            font-size: 2rem;
+            font-weight: 700;
+            color: ${palette.text};
+            text-align: center;
+            margin-bottom: 2rem;
+          ">${titleText}</h2>
+          <div style="
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+          ">
+            ${textContent.slice(0, 4).map((t, idx) => `
+              <div style="
+                background: ${palette.surface};
+                border-radius: 12px;
+                padding: 1.5rem;
+                box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+                transition: transform 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+              ">
+                <div style="
+                  width: 40px;
+                  height: 40px;
+                  background: ${palette.accent};
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  color: ${palette.bg};
+                  font-weight: 700;
+                  font-size: 1rem;
+                ">${String(idx + 1).padStart(2, '0')}</div>
+                <div>
+                  <h3 style="
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    color: ${palette.text};
+                    margin-bottom: 0.5rem;
+                  ">Phase ${idx + 1}</h3>
+                  <p style="
+                    font-size: 0.95rem;
+                    color: ${palette.textSecondary};
+                    line-height: 1.5;
+                  ">${t}</p>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+          <style>
+            div[style*="background: ${palette.surface}"]:hover {
+              transform: translateY(-8px);
+            }
+          </style>
+        </div>`;
+      break;
+
+    default:
+      htmlTemplate = `<div>Error: Invalid layout type</div>`;
+  }
+
   elements.push({
-    element_type: "shape",
-    konva_component: "Konva.Rect",
+    element_type: "html",
+    konva_component: "Konva.HTML",
     properties: {
       x: 0,
       y: 0,
       width: 960,
       height: 540,
-      fill: "#f8fafc", // fallback color
-      fillLinearGradientStartPoint: { x: 0, y: 0 },
-      fillLinearGradientEndPoint: { x: 960, y: 540 },
-      fillLinearGradientColorStops: [0, "#f8fafc", 1, "#e2e8f0"],
+      htmlContent: htmlTemplate,
       zIndex: 0,
     },
-    id: `bg-gradient-${slide_id || slideIndex}`,
-  })
-
-  // Header accent bar with horizontal gradient
-  elements.push({
-    element_type: "shape",
-    konva_component: "Konva.Rect",
-    properties: {
-      x: 0,
-      y: 0,
-      width: 960,
-      height: 8,
-      fill: primaryColor, // fallback color
-      fillLinearGradientStartPoint: { x: 0, y: 0 },
-      fillLinearGradientEndPoint: { x: 960, y: 0 },
-      fillLinearGradientColorStops: [0, primaryColor, 1, accentColor],
-      zIndex: 1,
-    },
-    id: `header-bar-${slide_id || slideIndex}`,
-  })
-
-  // Subtle geometric pattern overlay
-  elements.push({
-    element_type: "shape",
-    konva_component: "Konva.Rect",
-    properties: {
-      x: 700,
-      y: -50,
-      width: 400,
-      height: 400,
-      fill: primaryColor,
-      opacity: 0.03,
-      rotation: 45,
-      zIndex: 1,
-    },
-    id: `pattern-${slide_id || slideIndex}`,
-  })
-
-  const layoutType = slideIndex % 4
-
-  // Layout 0: Executive Summary / Cover
-  if (layoutType === 0) {
-    // Main content card with shadow
-    elements.push({
-      element_type: "shape",
-      konva_component: "Konva.Rect",
-      properties: {
-        x: 120,
-        y: 120,
-        width: 720,
-        height: 300,
-        fill: "#ffffff",
-        cornerRadius: 16,
-        shadowColor: "rgba(0,0,0,0.1)",
-        shadowBlur: 24,
-        zIndex: 2,
-      },
-      id: `main-card-${slide_id}-${slideIndex}`,
-    })
-
-    // Accent stripe with horizontal gradient
-    elements.push({
-      element_type: "shape",
-      konva_component: "Konva.Rect",
-      properties: {
-        x: 120,
-        y: 120,
-        width: 720,
-        height: 6,
-        fill: accentColor, // fallback color
-        fillLinearGradientStartPoint: { x: 120, y: 120 },
-        fillLinearGradientEndPoint: { x: 840, y: 120 },
-        fillLinearGradientColorStops: [0, accentColor, 1, primaryColor],
-        cornerRadius: 16,
-        zIndex: 3,
-      },
-      id: `accent-stripe-${slide_id}-${slideIndex}`,
-    })
-
-    if (slide_title?.text) {
-      elements.push({
-        element_type: "title",
-        konva_component: "Konva.Text",
-        text: slide_title.text,
-        properties: {
-          x: 160,
-          y: 200,
-          fontSize: 42,
-          fontFamily: "Inter, sans-serif",
-          fill: primaryColor,
-          fontWeight: "700",
-          width: 640,
-          align: "center",
-          zIndex: 4,
-        },
-        id: slide_title.id || `title-${slide_id}-${slideIndex}`,
-      })
-    }
-
-    // Subtitle area
-    if (textBlock?.elements?.[0]) {
-      elements.push({
-        element_type: "text",
-        konva_component: "Konva.Text",
-        text: textBlock.elements[0].text,
-        properties: {
-          x: 160,
-          y: 280,
-          fontSize: 18,
-          fontFamily: "Inter, sans-serif",
-          fill: "#64748b",
-          width: 640,
-          align: "center",
-          zIndex: 4,
-        },
-        id: `subtitle-${slide_id}-${slideIndex}`,
-      })
-    }
-  }
-
-  // Layout 1: Data-driven layout
-  else if (layoutType === 1) {
-    // Left content panel
-    elements.push({
-      element_type: "shape",
-      konva_component: "Konva.Rect",
-      properties: {
-        x: 60,
-        y: 80,
-        width: 420,
-        height: 380,
-        fill: "#ffffff",
-        cornerRadius: 12,
-        shadowColor: "rgba(0,0,0,0.08)",
-        shadowBlur: 16,
-        zIndex: 2,
-      },
-      id: `left-panel-${slide_id}-${slideIndex}`,
-    })
-
-    // Right visual panel with diagonal gradient
-    elements.push({
-      element_type: "shape",
-      konva_component: "Konva.Rect",
-      properties: {
-        x: 500,
-        y: 80,
-        width: 400,
-        height: 380,
-        fill: primaryColor + '15', // fallback color
-        fillLinearGradientStartPoint: { x: 500, y: 80 },
-        fillLinearGradientEndPoint: { x: 900, y: 460 },
-        fillLinearGradientColorStops: [0, primaryColor + '15', 1, accentColor + '10'],
-        cornerRadius: 12,
-        zIndex: 2,
-      },
-      id: `right-panel-${slide_id}-${slideIndex}`,
-    })
-
-    if (slide_title?.text) {
-      elements.push({
-        element_type: "title",
-        konva_component: "Konva.Text",
-        text: slide_title.text,
-        properties: {
-          x: 80,
-          y: 110,
-          fontSize: 32,
-          fontFamily: "Inter, sans-serif",
-          fill: primaryColor,
-          fontWeight: "600",
-          width: 380,
-          zIndex: 3,
-        },
-        id: slide_title.id || `title-${slide_id}-${slideIndex}`,
-      })
-    }
-
-    // Professional bullet points with custom styling
-    textBlock?.elements?.forEach((point: any, i: number) => {
-      // Bullet background
-      elements.push({
-        element_type: "shape",
-        konva_component: "Konva.Rect",
-        properties: {
-          x: 80,
-          y: 170 + i * 50,
-          width: 380,
-          height: 40,
-          fill: i % 2 === 0 ? "#f8fafc" : "transparent",
-          cornerRadius: 6,
-          zIndex: 2,
-        },
-        id: `bullet-bg-${slide_id}-${i}`,
-      })
-
-      // Modern bullet icon
-      elements.push({
-        element_type: "shape",
-        konva_component: "Konva.Rect",
-        properties: {
-          x: 95,
-          y: 185 + i * 50,
-          width: 8,
-          height: 8,
-          fill: accentColor,
-          cornerRadius: 2,
-          zIndex: 3,
-        },
-        id: `bullet-icon-${slide_id}-${i}`,
-      })
-
-      elements.push({
-        element_type: "bullet_point",
-        konva_component: "Konva.Text",
-        text: point.text,
-        properties: {
-          x: 115,
-          y: 180 + i * 50,
-          fontSize: 16,
-          fontFamily: "Inter, sans-serif",
-          fill: "#334155",
-          width: 340,
-          zIndex: 3,
-        },
-        id: point.id || `bullet-${slide_id}-${i}`,
-      })
-    })
-
-    // Image with professional styling
-    const imageSrc = imageBlock?.elements?.[0]?.properties?.imageSrc || image_url
-    if (imageSrc) {
-      elements.push({
-        element_type: "image",
-        konva_component: "Konva.Image",
-        properties: {
-          imageSrc,
-          x: 520,
-          y: 120,
-          width: 360,
-          height: 240,
-          zIndex: 3,
-          rounded: 12,
-          opacity: 0.95,
-        },
-        id: `image-${slide_id}-${slideIndex}`,
-      })
-    }
-  }
-
-  // Layout 2: Executive dashboard style
-  else if (layoutType === 2) {
-    // Top metrics bar with horizontal gradient
-    elements.push({
-      element_type: "shape",
-      konva_component: "Konva.Rect",
-      properties: {
-        x: 60,
-        y: 60,
-        width: 840,
-        height: 80,
-        fill: primaryColor, // fallback color
-        fillLinearGradientStartPoint: { x: 60, y: 60 },
-        fillLinearGradientEndPoint: { x: 900, y: 60 },
-        fillLinearGradientColorStops: [0, primaryColor, 1, accentColor],
-        cornerRadius: 12,
-        zIndex: 2,
-      },
-      id: `metrics-bar-${slide_id}-${slideIndex}`,
-    })
-
-    if (slide_title?.text) {
-      elements.push({
-        element_type: "title",
-        konva_component: "Konva.Text",
-        text: slide_title.text,
-        properties: {
-          x: 80,
-          y: 85,
-          fontSize: 28,
-          fontFamily: "Inter, sans-serif",
-          fill: "#ffffff",
-          fontWeight: "600",
-          width: 800,
-          align: "center",
-          zIndex: 3,
-        },
-        id: slide_title.id || `title-${slide_id}-${slideIndex}`,
-      })
-    }
-
-    // Content grid
-    const imageSrc = imageBlock?.elements?.[0]?.properties?.imageSrc || image_url
-    if (imageSrc) {
-      elements.push({
-        element_type: "shape",
-        konva_component: "Konva.Rect",
-        properties: {
-          x: 60,
-          y: 160,
-          width: 400,
-          height: 300,
-          fill: "#ffffff",
-          cornerRadius: 12,
-          shadowColor: "rgba(0,0,0,0.06)",
-          shadowBlur: 12,
-          zIndex: 2,
-        },
-        id: `image-container-${slide_id}-${slideIndex}`,
-      })
-
-      elements.push({
-        element_type: "image",
-        konva_component: "Konva.Image",
-        properties: {
-          imageSrc,
-          x: 80,
-          y: 180,
-          width: 360,
-          height: 200,
-          zIndex: 3,
-          rounded: 8,
-        },
-        id: `image-${slide_id}-${slideIndex}`,
-      })
-    }
-
-    // Text content panel
-    elements.push({
-      element_type: "shape",
-      konva_component: "Konva.Rect",
-      properties: {
-        x: 480,
-        y: 160,
-        width: 420,
-        height: 300,
-        fill: "#ffffff",
-        cornerRadius: 12,
-        shadowColor: "rgba(0,0,0,0.06)",
-        shadowBlur: 12,
-        zIndex: 2,
-      },
-      id: `text-panel-${slide_id}-${slideIndex}`,
-    })
-
-    textBlock?.elements?.forEach((point: any, i: number) => {
-      elements.push({
-        element_type: "bullet_point",
-        konva_component: "Konva.Text",
-        text: point.text,
-        properties: {
-          x: 500,
-          y: 190 + i * 35,
-          fontSize: 16,
-          fontFamily: "Inter, sans-serif",
-          fill: "#1e293b",
-          width: 380,
-          zIndex: 3,
-        },
-        id: point.id || `bullet-${slide_id}-${i}`,
-      })
-    })
-  }
-
-  // Layout 3: Statement/Quote with professional styling
-  else {
-    // Quote background with diagonal gradient
-    elements.push({
-      element_type: "shape",
-      konva_component: "Konva.Rect",
-      properties: {
-        x: 100,
-        y: 150,
-        width: 760,
-        height: 240,
-        fill: primaryColor + '08', // fallback color
-        fillLinearGradientStartPoint: { x: 100, y: 150 },
-        fillLinearGradientEndPoint: { x: 860, y: 390 },
-        fillLinearGradientColorStops: [0, primaryColor + '08', 1, accentColor + '05'],
-        cornerRadius: 20,
-        strokeWidth: 2,
-        stroke: `${accentColor}30`,
-        zIndex: 2,
-      },
-      id: `quote-bg-${slide_id}-${slideIndex}`,
-    })
-
-    // Quote mark decoration
-    elements.push({
-      element_type: "text",
-      konva_component: "Konva.Text",
-      text: '"',
-      properties: {
-        x: 140,
-        y: 120,
-        fontSize: 80,
-        fontFamily: "Georgia, serif",
-        fill: accentColor + '4D', // add transparency (4D = ~30% opacity in hex)
-        width: 80,
-        zIndex: 3,
-      },
-      id: `quote-mark-${slide_id}-${slideIndex}`,
-    })
-
-    if (slide_title?.text) {
-      elements.push({
-        element_type: "title",
-        konva_component: "Konva.Text",
-        text: slide_title.text,
-        properties: {
-          x: 140,
-          y: 220,
-          fontSize: 32,
-          fontFamily: "Inter, sans-serif",
-          fill: primaryColor,
-          fontWeight: "500",
-          width: 680,
-          align: "center",
-          zIndex: 4,
-        },
-        id: slide_title.id || `title-${slide_id}-${slideIndex}`,
-      })
-    }
-  }
+    id: `html-template-${slide_id || slideIndex}`,
+  });
 
   return {
     slide_id: slide_id || `slide-${slideIndex}`,
-    title: slide_title?.text || `Slide ${slideIndex + 1}`,
-    image_url: image_url || undefined,
+    title: titleText,
+    image_url: images[0],
     elements,
-  }
-}
+    htmlTemplate,
+  };
+};

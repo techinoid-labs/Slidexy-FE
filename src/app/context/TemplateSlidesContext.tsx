@@ -12,7 +12,7 @@ interface TemplateSlidesContextType {
   setPresentationId: (id: string) => void;
   setInfographicId: (id: string) => void ;
   setSelectedTemplate: React.Dispatch<
-    React.SetStateAction<"modern" | "corporate" | "creative" | "bold">
+    React.SetStateAction<"bold" | "modern" | "corporate" | "creative" | "minimal" | "Vyntra" | "civora" | "fluxera" | "linear" | "retro">
   >;
   removeTemplates: () => void;
 }
@@ -29,7 +29,7 @@ export const TemplateSlidesProvider = ({
   const [slideTemplates, setSlideTemplatesState] = useState<Slide[]>([]);
   const [presentationId, setPresentationIdState] = useState<string | null>(null); // Initialize presentationId
   const [infographicId, setInfographicId] = useState<string | null>(null); // New state for infographicId
-  const [selectedTemplate, setSelectedTemplate] = useState<"modern" | "corporate" | "creative" | "bold">("modern"); 
+  const [selectedTemplate, setSelectedTemplate] = useState<"bold" | "modern" | "corporate" | "creative" | "minimal" | "Vyntra" | "civora" | "fluxera" | "linear" | "retro">("modern"); 
   const setSlideTemplates = (templates: Slide[]) => {
     setSlideTemplatesState(templates);
   };
