@@ -13,7 +13,7 @@ import {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function SuccessPage() {
-  redirect("/home");
+  redirect("/");
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const router = useRouter();
@@ -95,7 +95,7 @@ export default function SuccessPage() {
                 fontWeight: 600,
                 textTransform: "none",
               }}
-              onClick={() => router.push("/home")}
+              onClick={() => router.push("/")}
             >
               Go to Homepage →
             </Button>

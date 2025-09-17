@@ -141,7 +141,7 @@ const TemplateNavBar: React.FC<{
         >
           {/* Left section */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton onClick={() => router.push("/home")}>
+            <IconButton onClick={() => router.push("/")}>
               <Image
                 src="/images/home-icon.svg"
                 alt="Home"

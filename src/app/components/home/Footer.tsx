@@ -8,10 +8,10 @@ export default function Footer() {
   const pathname = usePathname(); // ✅ current route
 
   const navLinks = [
-    { title: "Home", link: "/home" },
+    { title: "Home", link: "/" },
     { title: "Templates", link: "/templates" },
     { title: "Privacy", link: "/privacy-policy" },
-
+    { title: "FAQ's", link: "/faqs" },
     // { title: "Pricing", link: "/pricing" },
   ];
 
