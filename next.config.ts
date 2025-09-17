@@ -24,12 +24,18 @@ const nextConfig: NextConfig = {
         hostname: "slidexy.sfo3.digitaloceanspaces.com",
         pathname: "/**", // allow all paths
       },
+      {
+        protocol: "https",
+        hostname: "assets.slidexy.net",
+        pathname: "/**", // allow all paths
+      },
     ],
     domains: [
       "source.unsplash.com",
       "placehold.co",
       "dev.slidexy.net",
       "slidexy.sfo3.digitaloceanspaces.com",
+      "assets.slidexy.net",
     ],
   },
 };
