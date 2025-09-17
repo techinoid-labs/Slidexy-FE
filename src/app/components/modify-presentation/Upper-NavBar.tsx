@@ -144,7 +144,7 @@ const UpperNavBar: React.FC<{
               gap: { xs: 0.5, md: 1.5 },
             }}
           >
-            <IconButton onClick={() => router.push("/home")}>
+            <IconButton onClick={() => router.push("/")}>
               <Image
                 src="/images/home-icon.svg"
                 alt="Home"

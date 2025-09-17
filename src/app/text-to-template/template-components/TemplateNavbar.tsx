@@ -34,12 +34,14 @@ const TemplateNavBar: React.FC<{
   onExportPDF?: () => void;
   presentationId?: string | null;
 }> = ({ onExportPPT, onExportPDF, presentationId }) => {
-  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
-  
+
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -122,28 +124,32 @@ const TemplateNavBar: React.FC<{
       const rawPresentation: Presentation = {
         slides: slideTemplates,
         id: presentationId || "presentation",
-        topic: templateFileName || "Presentation"
+        topic: templateFileName || "Presentation",
       };
 
       // Convert presentation with selected template
-      const convertedPresentation = convertPresentation(rawPresentation, selectedTemplate);
+      const convertedPresentation = convertPresentation(
+        rawPresentation,
+        selectedTemplate
+      );
 
       // Add slide IDs to DOM elements for better targeting
       await addSlideIdentifiers();
 
       // Export to PDF
       await exportPresentationToPdf(convertedPresentation, {
-        filename: `${templateFileName || 'presentation'}.pdf`,
+        filename: `${templateFileName || "presentation"}.pdf`,
         quality: 0.95,
-        format: 'presentation',
-        orientation: 'landscape'
+        format: "presentation",
+        orientation: "landscape",
       });
 
-      console.log('PDF export completed successfully');
-      
+      console.log("PDF export completed successfully");
     } catch (error) {
-      console.error('PDF export failed:', error);
-      setPdfError(error instanceof Error ? error.message : 'Unknown error occurred');
+      console.error("PDF export failed:", error);
+      setPdfError(
+        error instanceof Error ? error.message : "Unknown error occurred"
+      );
     } finally {
       setIsExportingPDF(false);
     }
@@ -154,18 +160,20 @@ const TemplateNavBar: React.FC<{
     return new Promise((resolve) => {
       setTimeout(() => {
         // Find all slide containers and add data attributes
-        const slideContainers = document.querySelectorAll('[style*="border: 1px solid #ddd"]');
+        const slideContainers = document.querySelectorAll(
+          '[style*="border: 1px solid #ddd"]'
+        );
         slideContainers.forEach((container, index) => {
-          if (!container.getAttribute('data-slide-id')) {
-            container.setAttribute('data-slide-id', `slide-${index}`);
+          if (!container.getAttribute("data-slide-id")) {
+            container.setAttribute("data-slide-id", `slide-${index}`);
           }
         });
 
         // Also try to identify Konva stages
-        const konvaStages = document.querySelectorAll('.konvajs-content');
+        const konvaStages = document.querySelectorAll(".konvajs-content");
         konvaStages.forEach((stage, index) => {
-          if (!stage.getAttribute('data-slide-id')) {
-            stage.setAttribute('data-slide-id', `slide-${index}`);
+          if (!stage.getAttribute("data-slide-id")) {
+            stage.setAttribute("data-slide-id", `slide-${index}`);
           }
         });
 
@@ -196,8 +204,13 @@ const TemplateNavBar: React.FC<{
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton onClick={() => router.push("/home")}>
-              <Image src="/images/home-icon.svg" alt="Home" width={20} height={20} />
+            <IconButton onClick={() => router.push("/")}>
+              <Image
+                src="/images/home-icon.svg"
+                alt="Home"
+                width={20}
+                height={20}
+              />
             </IconButton>
             <Box sx={{ display: "flex", flexDirection: "column" }}>
               {editing ? (
@@ -311,11 +324,11 @@ const TemplateNavBar: React.FC<{
       {pdfError && (
         <Box
           sx={{
-            position: 'fixed',
+            position: "fixed",
             top: 100,
             right: 20,
-            bgcolor: 'error.main',
-            color: 'white',
+            bgcolor: "error.main",
+            color: "white",
             p: 2,
             borderRadius: 1,
             zIndex: 9999,
@@ -323,10 +336,10 @@ const TemplateNavBar: React.FC<{
           }}
         >
           <Typography variant="body2">PDF Export Error: {pdfError}</Typography>
-          <Button 
-            size="small" 
+          <Button
+            size="small"
             onClick={() => setPdfError(null)}
-            sx={{ color: 'white', mt: 1 }}
+            sx={{ color: "white", mt: 1 }}
           >
             Dismiss
           </Button>
