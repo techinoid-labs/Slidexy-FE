@@ -11,6 +11,8 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { useState } from "react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 type ContactFormInputs = {
   name: string;
   email: string;
@@ -27,11 +29,33 @@ export default function ContactSection() {
   });
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [errorSnackbar, setErrorSnackbar] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = (data: ContactFormInputs) => {
-    console.log("Contact Form Data:", data);
-    reset();
-    setOpenSnackbar(true); // show feedback
+  const onSubmit = async (data: ContactFormInputs) => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(`${API_BASE_URL}/api/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to submit contact form");
+      }
+
+      reset();
+      setOpenSnackbar(true);
+    } catch (error) {
+      console.error("Error submitting contact form:", error);
+      setErrorSnackbar(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -160,6 +184,7 @@ export default function ContactSection() {
             <Button
               type="submit"
               variant="contained"
+              disabled={loading}
               sx={{
                 backgroundColor: "#7C3AED",
                 textTransform: "none",
@@ -176,13 +201,13 @@ export default function ContactSection() {
                 },
               }}
             >
-              Send Message
+              {loading ? "Sending..." : "Send Message"}
             </Button>
           </Box>
         </Box>
       </Paper>
 
-      {/* Snackbar Feedback */}
+      {/* Success Snackbar */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={5000}
@@ -195,6 +220,22 @@ export default function ContactSection() {
           sx={{ width: "100%" }}
         >
           ✅ Thank you! Your message has been sent.
+        </Alert>
+      </Snackbar>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={errorSnackbar}
+        autoHideDuration={5000}
+        onClose={() => setErrorSnackbar(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setErrorSnackbar(false)}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          ❌ Oops! Something went wrong. Please try again.
         </Alert>
       </Snackbar>
     </Box>
