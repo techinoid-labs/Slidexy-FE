@@ -10,30 +10,26 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { usePricingPlans } from "@/hooks/usePricingPlans";
+import { useUser } from "@/app/context/AuthContext";
+import ProfileModal from "../auth/ProfileModal";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-type PricingPlan = {
-  _id: string;
-  name: string;
-  price: number;
-  billingPeriod: "monthly" | "yearly" | "weekly";
-  description?: string;
-  features: string[];
-  isActive: boolean;
-};
-
 export default function PricingSection() {
   const { plans, loading, error } = usePricingPlans();
+  const { user } = useUser();
+
+  const [isProfileModalOpen, setProfileModalOpen] = useState(false);
 
   const handleCheckout = async (pricePlan: string) => {
     try {
+      // console.log({ plan: pricePlan, userId: user?._id });
       const res = await fetch(
         `${API_BASE_URL}/api/stripe/create-checkout-session`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan: pricePlan }),
+          body: JSON.stringify({ plan: pricePlan, userId: user?._id }),
         }
       );
 
@@ -272,7 +268,13 @@ export default function PricingSection() {
                         "&:hover": { background: styles.btnHover },
                       }}
                       endIcon={<span style={{ fontSize: 22 }}>→</span>}
-                      onClick={() => handleCheckout(plan.name)}
+                      onClick={() => {
+                        if (!user) {
+                          setProfileModalOpen(true);
+                          return;
+                        }
+                        handleCheckout(plan.name);
+                      }}
                     >
                       Get Started
                     </Button>
@@ -309,6 +311,10 @@ export default function PricingSection() {
               })}
           </>
         )}
+        <ProfileModal
+          open={isProfileModalOpen}
+          onClose={() => setProfileModalOpen(false)}
+        />
       </Box>
     </Box>
   );
