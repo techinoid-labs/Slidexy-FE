@@ -92,35 +92,4 @@ export interface BackendSlide {
   imageBlock?: { elements: { properties: { imageSrc: string } }[] };
   titleBlock?: { elements: { id?: string; text: string }[] }; 
 }
-export interface TextElement extends SlideElement {
-  element_type: "text" | "title" | "bullet_point";
-  text: string;
-  properties: SlideElement["properties"] & {
-    fontSize?: number;
-    fontFamily?: string;
-    fontWeight?: string | number;
-    fontStyle?: string;
-    align?: "left" | "center" | "right";
-  };
-}
-
-export interface ShapeElement extends SlideElement {
-  element_type: "shape";
-  konva_component: "Konva.Rect" | "Konva.Circle" | "Konva.RegularPolygon" | "Konva.Line";
-  properties: SlideElement["properties"] & {
-    cornerRadius?: number;
-    radius?: number;
-    radiusX?: number;
-    radiusY?: number;
-    sides?: number;
-    points?: number[];
-  };
-}
-
-export interface ImageElement extends SlideElement {
-  element_type: "image";
-  properties: SlideElement["properties"] & {
-    imageSrc: string;
-  };
-}
 

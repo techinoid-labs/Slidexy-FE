@@ -261,7 +261,6 @@ export const createMinimalistTemplate = (backendSlide: BackendSlide, slideIndex:
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
             transition: transform 0.3s ease;
             max-height: 360px;
-            overflow: auto;
           ">
             ${minimalBadge("Overview")}
             <h2 style="

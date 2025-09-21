@@ -27,7 +27,7 @@ interface KonvaTextEditorProps {
   wrap?: "word" | "char";
   draggable?: boolean;
   isSelected: boolean;
-  onSelect: () => void;
+  onSelect: (e: any ) => void;
   verticalAlign?: string;
 }
 
@@ -233,11 +233,11 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     <>
       <Text
         ref={textRef}
-        onClick={onSelect}
+       onClick={(e) => onSelect(e)}
         onTap={onSelect}
         onDblClick={() => setIsEditing(true)}
         onTouchEnd={(e) => {
-          onSelect();
+          onSelect(e);
           const now = Date.now();
           const DOUBLE_TAP_DELAY = 300;
           if (lastTap.current && now - lastTap.current < DOUBLE_TAP_DELAY) {

@@ -89,15 +89,11 @@ const Page = () => {
       {!isMobile ? (
         <div style={{ flexShrink: 0, height: "80px", zIndex: 20 }}>
           <TemplateNavBar 
-            onExportPPT={handleExportPPTX} 
-            onExportPDF={handleExportPDF}
             presentationId={pid} 
           />
         </div>
       ) : (
         <TemplateNavBar 
-          onExportPPT={handleExportPPTX} 
-          onExportPDF={handleExportPDF}
           presentationId={pid} 
         />
       )}

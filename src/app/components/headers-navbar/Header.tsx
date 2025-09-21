@@ -40,6 +40,7 @@ export default function Header() {
     { label: "Home", hasDropdown: false, link: "/home" },
     { label: "Templates", hasDropdown: false, link: "/templates" },
     { label: "Privacy", hasDropdown: false, link: "/privacy-policy" },
+    { label : "Blogs", hasDropdown: false, link: "/blog"}
 
     // { label: "Pricing", hasDropdown: false, link: "/pricing" },
   ];

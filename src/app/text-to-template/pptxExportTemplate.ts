@@ -1,191 +1,376 @@
-// import PptxGenJS from "pptxgenjs";
-// import { Presentation, TextElement, ShapeElement, ImageElement } from "./types/presentation";
+// import PptxGenJS from 'pptxgenjs';
+// import type { Presentation } from './types/presentation';
 
-// export const exportPresentationToPptx = (presentation: Presentation) => {
+// const toPptxColor = (color: string) => color.replace('#', '');
+
+// export async function exportToPowerPoint(presentation: Presentation) {
 //   const pptx = new PptxGenJS();
+//   pptx.layout = 'LAYOUT_16x9';
 
-//   const templateFileName = localStorage.getItem("templateFileName");
+//   presentation.slides.forEach((slide) => {
+//     const pptxSlide = pptx.addSlide();
+//     const exportElements = slide.exportElements || [];
 
-//   // Layout constants
-//   const STAGE_W = 960;
-//   const STAGE_H = 540;
-//   const PPT_W = 10; // inches
-//   const PPT_H = 5.625; // inches
+//     exportElements.forEach((element) => {
+//       const { type, content, properties } = element;
 
-//   const pxToIn = (px: number, isW: boolean) =>
-//     (px / (isW ? STAGE_W : STAGE_H)) * (iAsW ? PPT_W : PPT_H);
-
-//   const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
-//   const hex = (c?: string, fb = "000000") => (c || fb).replace("#", "");
-
-//   // --- Helpers ---
-//   const addText = (slide: any, t: TextElement) => {
-//     const p = t.properties;
-//     const adjustedFontSize = Math.max(1, (p.fontSize ?? 14) - 3);
-
-//     slide.addText(t.text, {
-//       x: pxToIn(p.x, true),
-//       y: pxToIn(t.element_type === "title" ? p.y - 8 : p.y, false),
-//       w: pxToIn(p.width, true),
-//       h: pxToIn(p.height ?? 40, false),
-//       fontFace: p.fontFamily,
-//       fontSize: adjustedFontSize,
-//       color: hex(p.fill, "000000"),
-//       bold: p.fontWeight === "bold",
-//       italic: p.fontStyle === "italic",
-//       align: p.align || "left",
-//       valign: "top",
-//       margin: 0,
-//       bullet: t.element_type === "bullet_point",
-//     });
-//   };
-
-//   const addRect = (slide: any, p: ShapeElement["properties"]) => {
-//     const transparency = p.opacity;
-//     const shapeName = (p.cornerRadius ?? 0) > 0 ? "roundRect" : "rect";
-
-//     slide.addShape(shapeName, {
-//       x: pxToIn(p.x ?? 0, true),
-//       y: pxToIn(p.y ?? 0, false),
-//       w: pxToIn(p.width ?? 100, true),
-//       h: pxToIn(p.height ?? 100, false),
-//       fill: { type: "solid", color: hex(p.fill, "FFFFFF"), transparency: 30 },
-//       line: {
-//         color: p.stroke ? hex(p.stroke) : "000000",
-//         width: p.strokeWidth ?? 1,
-//         transparency: 30,
-//       },
-//       rotate: p.rotation ?? 0,
-//     });
-//   };
-
-//   const addCircle = (slide: any, p: ShapeElement["properties"]) => {
-//     const transparency = p.opacity == null ? 0 : (1 - clamp01(p.opacity)) * 100;
-//     const diameterW = (p.radiusX ?? p.radius ?? 50) * 2;
-//     const diameterH = (p.radiusY ?? p.radius ?? 50) * 2;
-
-//     slide.addShape("ellipse", {
-//       x: pxToIn(p.x ?? 0, true),
-//       y: pxToIn(p.y ?? 0, false),
-//       w: pxToIn(diameterW, true),
-//       h: pxToIn(diameterH, false),
-//       fill: { color: hex(p.fill, "FFFFFF"), transparency: 30 },
-//       line: {
-//         color: hex(p.stroke, "000000"),
-//         width: p.strokeWidth ?? 1,
-//         transparency: 30,
-//       },
-//       rotate: p.rotation ?? 0,
-//     });
-//   };
-
-//   const addRegularPolygon = (slide: any, p: ShapeElement["properties"]) => {
-//     const n = p.sides ?? 3;
-//     const shapeName =
-//       n === 3
-//         ? "triangle"
-//         : n === 5
-//         ? "pentagon"
-//         : n === 6
-//         ? "hexagon"
-//         : "rect"; // fallback
-
-//     const transparency =
-//       p.opacity == null ? undefined : (1 - clamp01(p.opacity)) * 100;
-
-//     slide.addShape(shapeName, {
-//       x: pxToIn(p.x ?? 0, true),
-//       y: pxToIn(p.y ?? 0, false),
-//       w: pxToIn(p.width ?? (p.radius ?? 50) * 2, true),
-//       h: pxToIn(p.height ?? (p.radius ?? 50) * 2, false),
-//       fill: { color: hex(p.fill, "FFFFFF"), transparency: 30 },
-//       line: {
-//         color: hex(p.stroke, "000000"),
-//         width: p.strokeWidth ?? 1,
-//         transparency: 30,
-//       },
-//       rotate: p.rotation ?? 0,
-//     });
-//   };
-
-//   const addLine = (slide: any, p: ShapeElement["properties"]) => {
-//     const pts = p.points || [];
-//     if (pts.length < 4) return;
-//     const [x1, y1, x2, y2] = pts;
-
-//     slide.addShape("line", {
-//       x: pxToIn(x1, true),
-//       y: pxToIn(y1, false),
-//       w: pxToIn(x2 - x1, true),
-//       h: pxToIn(y2 - y1, false),
-//       line: { color: hex(p.stroke, "000000"), width: p.strokeWidth ?? 1 },
-//       rotate: p.rotation ?? 0,
-//     });
-//   };
-
-//   const addImage = (slide: any, p: ImageElement["properties"]) => {
-//     if (!p.imageSrc) {
-//       console.warn("Skipping image: missing imageSrc", p);
-//       return;
-//     }
-
-//     const isData = p.imageSrc.startsWith("data:");
-//     slide.addImage({
-//       ...(isData ? { data: p.imageSrc } : { path: p.imageSrc }),
-//       x: pxToIn(p.x ?? 0, true),
-//       y: pxToIn(p.y ?? 0, false),
-//       w: pxToIn(p.width ?? 100, true),
-//       h: pxToIn(p.height ?? 100, false),
-//     });
-//   };
-
-//   pptx.defineLayout({ name: "LAYOUT_16x9", width: PPT_W, height: PPT_H });
-//   pptx.layout = "LAYOUT_16x9";
-
-//   presentation.slides.forEach((s) => {
-//     const slide = pptx.addSlide();
-
-//     // Background
-//     if (s.image_url) {
-//       const isData = s.image_url.startsWith("data:");
-//       slide.addImage({
-//         ...(isData ? { data: s.image_url } : { path: s.image_url }),
-//         x: 0,
-//         y: 0,
-//         w: PPT_W,
-//         h: PPT_H,
-//       });
-//     }
-
-//     // Elements in z-order
-//     const elements = [...s.elements].sort(
-//       (a, b) => (a.properties.zIndex ?? 0) - (b.properties.zIndex ?? 0)
-//     );
-
-//     elements.forEach((el) => {
-//       switch (el.element_type) {
-//         case "text":
-//         case "title":
-//         case "bullet_point":
-//           addText(slide, el as TextElement);
+//       switch (type) {
+//         case 'text':
+//           pptxSlide.addText(content || '', {
+//             x: (properties.x || 0) / 96,
+//             y: (properties.y || 0) / 96,
+//             w: properties.width ? properties.width / 96 : 'auto',
+//             h: properties.height ? properties.height / 96 : 'auto',
+//             fontSize: (properties.fontSize || 16) / 1.333,
+//             fontFace: properties.fontFamily?.split(',')[0].trim() || 'Arial',
+//             color: toPptxColor(properties.color || '#000000'),
+//             align: properties.align || 'left',
+//             opacity: properties.opacity || 1,
+//           });
 //           break;
 
-//         case "image":
-//           addImage(slide, (el as ImageElement).properties);
+//         case 'image':
+//           pptxSlide.addImage({
+//             path: properties.imageSrc || '',
+//             x: (properties.x || 0) / 96,
+//             y: (properties.y || 0) / 96,
+//             w: (properties.width || 300) / 96,
+//             h: (properties.height || 200) / 96,
+//             opacity: properties.opacity || 1,
+//           });
 //           break;
 
-//         case "shape": {
-//           const kc = el.konva_component;
-//           const p = (el as ShapeElement).properties;
-//           if (kc === "Konva.Rect") addRect(slide, p);
-//           else if (kc === "Konva.Circle") addCircle(slide, p);
-//           else if (kc === "Konva.RegularPolygon") addRegularPolygon(slide, p);
-//           else if (kc === "Konva.Line") addLine(slide, p);
+//         case 'shape':
+//           pptxSlide.addShape(
+//             properties.shapeType === 'circle' ? pptx.ShapeType.ellipse : pptx.ShapeType.rect,
+//             {
+//               x: (properties.x || 0) / 96,
+//               y: (properties.y || 0) / 96,
+//               w: (properties.width || 100) / 96,
+//               h: (properties.height || 100) / 96,
+//               fill: properties.fill && typeof properties.fill === 'object'
+//                 ? {
+//                     type: 'gradient',
+//                     color: [
+//                       { color: toPptxColor(properties.fill.start), position: 0 },
+//                       { color: toPptxColor(properties.fill.end), position: 1 },
+//                     ],
+//                     gradientType: 'linear',
+//                     angle: 135,
+//                   }
+//                 : { color: toPptxColor(properties.fill || 'transparent') },
+//               line: properties.stroke ? { color: toPptxColor(properties.stroke), width: properties.strokeWidth || 1 } : null,
+//               opacity: properties.opacity || 1,
+//             }
+//           );
 //           break;
-//         }
+
+//         case 'background':
+//           pptxSlide.background = {
+//             fill: properties.fill && typeof properties.fill === 'object'
+//               ? {
+//                   type: 'gradient',
+//                   color: [
+//                     { color: toPptxColor(properties.fill.start), position: 0 },
+//                     { color: toPptxColor(properties.fill.end), position: 1 },
+//                   ],
+//                   gradientType: 'linear',
+//                   angle: 135,
+//                 }
+//               : { color: toPptxColor(properties.fill || 'transparent') },
+//           };
+//           break;
 //       }
 //     });
 //   });
 
-//   pptx.writeFile({ fileName: `${templateFileName}.pptx` });
-// };
+//   await pptx.writeFile({ fileName: `${presentation.topic || 'presentation'}.pptx` });
+// }
+import PptxGen from 'pptxgenjs';
+import type { Presentation } from '@/app/text-to-template/types/presentation';
+import { toPng, toCanvas } from 'html-to-image';
+
+export const exportToPowerPoint = async (presentation: Presentation, filename: string = 'presentation.pptx'): Promise<void> => {
+  const pptx = new PptxGen();
+
+  // Set presentation properties
+  pptx.title = presentation.topic || 'Presentation';
+  pptx.subject = presentation.meta?.audience || 'General';
+  pptx.author = 'Generated by AI';
+
+  // Define slide dimensions (in inches, matching 960x540 pixels at 96 DPI)
+  const SLIDE_WIDTH = 10; // 960px / 96 DPI
+  const SLIDE_HEIGHT = 5.625; // 540px / 96 DPI
+
+  // Function to wait for DOM rendering and image loading
+  const waitForRender = (ms: number): Promise<void> => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+
+  // Function to wait for all images in a container to load
+  const waitForImagesToLoad = (container: Element): Promise<void> => {
+    return new Promise((resolve) => {
+      const images = container.querySelectorAll('img');
+      if (images.length === 0) {
+        resolve();
+        return;
+      }
+
+      let loadedCount = 0;
+      let errorCount = 0;
+      const totalImages = images.length;
+
+      const checkComplete = () => {
+        if (loadedCount + errorCount === totalImages) {
+          console.log(`Images loaded: ${loadedCount}, errors: ${errorCount}`);
+          resolve();
+        }
+      };
+
+      images.forEach((img, index) => {
+        if (img.complete) {
+          if (img.naturalWidth === 0) {
+            console.warn(`Image ${index} failed to load: ${img.src}`);
+            errorCount++;
+          } else {
+            loadedCount++;
+          }
+          checkComplete();
+        } else {
+          img.addEventListener('load', () => {
+            loadedCount++;
+            checkComplete();
+          });
+          img.addEventListener('error', (e) => {
+            console.warn(`Image ${index} failed to load: ${img.src}`, e);
+            errorCount++;
+            checkComplete();
+          });
+        }
+      });
+    });
+  };
+
+  // Function to preload images with fallback handling
+  const preloadImages = (container: Element): Promise<void> => {
+    return new Promise((resolve) => {
+      const images = container.querySelectorAll('img');
+      const imagePromises = Array.from(images).map((img) => {
+        return new Promise<void>((imageResolve) => {
+          if (img.complete && img.naturalWidth > 0) {
+            imageResolve();
+            return;
+          }
+
+          // Create a new image to test loading
+          const testImg = new Image();
+          testImg.onload = () => {
+            img.src = testImg.src; // Update the original image
+            imageResolve();
+          };
+          testImg.onerror = () => {
+            console.warn(`Failed to load image: ${img.src}, using placeholder`);
+            // Use a placeholder or remove the image
+            img.style.display = 'none';
+            imageResolve();
+          };
+          
+          // Set crossOrigin to handle CORS issues
+          testImg.crossOrigin = 'anonymous';
+          testImg.src = img.src;
+        });
+      });
+
+      Promise.allSettled(imagePromises).then(() => resolve());
+    });
+  };
+
+  // Enhanced function to convert a slide to a PNG image
+  const slideToImage = async (slideIndex: number): Promise<string> => {
+    const slideElement = document.querySelector(`.slide-container[data-slide-index="${slideIndex}"]`) as HTMLElement;
+    if (!slideElement) {
+      throw new Error(`Slide container for index ${slideIndex} not found in DOM`);
+    }
+
+    // Ensure the slide is visible
+    const style = window.getComputedStyle(slideElement);
+    if (style.display === 'none' || style.visibility === 'hidden') {
+      throw new Error(`Slide container for index ${slideIndex} is not visible`);
+    }
+
+    // Check if the slide has valid dimensions
+    const { width, height } = slideElement.getBoundingClientRect();
+    if (width === 0 || height === 0) {
+      throw new Error(`Slide container for index ${slideIndex} has invalid dimensions (width: ${width}, height: ${height})`);
+    }
+
+    // Preload and handle images
+    try {
+      await preloadImages(slideElement);
+      await waitForImagesToLoad(slideElement);
+      await waitForRender(500); // Give more time for rendering
+    } catch (error) {
+      console.warn(`Image loading issues for slide ${slideIndex}:`, error);
+    }
+
+    // Temporarily set the slide to full size for high-quality rendering
+    const stage = slideElement.querySelector('canvas');
+    let originalTransform = '';
+    let originalWidth = '';
+    let originalHeight = '';
+    if (stage) {
+      originalTransform = stage.style.transform;
+      originalWidth = stage.style.width;
+      originalHeight = stage.style.height;
+      stage.style.transform = 'scale(1)';
+      stage.style.width = `${960}px`;
+      stage.style.height = `${540}px`;
+    }
+
+    try {
+      // Wait for final rendering
+      await waitForRender(200);
+
+      // Try multiple rendering approaches
+      let dataUrl: string;
+      
+      try {
+        // First try: Standard toPng with enhanced options
+        dataUrl = await toPng(slideElement, {
+          quality: 1.0,
+          pixelRatio: 2, // Reduced from 3 to improve stability
+          backgroundColor: '#ffffff',
+          cacheBust: true,
+          skipFonts: false, // Changed to false to include fonts
+          preferredFontFormat: 'woff2',
+          filter: (node) => {
+            // Filter out problematic nodes
+            if (node instanceof HTMLImageElement) {
+              return node.complete && node.naturalWidth > 0;
+            }
+            return true;
+          },
+        });
+      } catch (error) {
+        console.warn(`toPng failed for slide ${slideIndex}, trying canvas approach:`, error);
+        
+        // Fallback: Use toCanvas then convert to PNG
+        try {
+          const canvas = await toCanvas(slideElement, {
+            quality: 1.0,
+            pixelRatio: 2,
+            backgroundColor: '#ffffff',
+            cacheBust: true
+          });
+          dataUrl = canvas.toDataURL('image/png', 1.0);
+        } catch (canvasError) {
+          console.error(`Both toPng and toCanvas failed for slide ${slideIndex}:`, canvasError);
+          throw new Error(`Failed to convert slide to image: ${canvasError instanceof Error ? canvasError.message : 'Unknown error'}`);
+        }
+      }
+
+      return dataUrl;
+    } finally {
+      // Restore original styling
+      if (stage) {
+        stage.style.transform = originalTransform;
+        stage.style.width = originalWidth;
+        stage.style.height = originalHeight;
+      }
+    }
+  };
+
+  // Enhanced function to create fallback slide content
+  const createFallbackSlide = (pptxSlide: any, slideIndex: number, slide: any) => {
+    // Add a white background
+    pptxSlide.background = { color: 'FFFFFF' };
+    
+    // Add slide title if available
+    if (slide.title) {
+      pptxSlide.addText(slide.title, {
+        x: 0.5,
+        y: 0.5,
+        w: SLIDE_WIDTH - 1,
+        h: 1,
+        fontSize: 28,
+        color: '333333',
+        align: 'center',
+        bold: true,
+      });
+    }
+
+    // Add basic text content from slide elements
+    let yOffset = slide.title ? 1.5 : 0.5;
+    const textElements = slide.elements?.filter((el: any) => 
+      ['text', 'title', 'bullet_point'].includes(el.element_type)
+    ) || [];
+
+    textElements.forEach((element: any, index: number) => {
+      if (element.text && yOffset < SLIDE_HEIGHT - 0.5) {
+        pptxSlide.addText(element.text, {
+          x: 0.5,
+          y: yOffset,
+          w: SLIDE_WIDTH - 1,
+          h: 0.5,
+          fontSize: element.element_type === 'title' ? 24 : 16,
+          color: '666666',
+          align: 'left',
+        });
+        yOffset += 0.6;
+      }
+    });
+
+    // Add error note
+    pptxSlide.addText(`Note: Visual elements from slide ${slideIndex + 1} could not be rendered`, {
+      x: 0.5,
+      y: SLIDE_HEIGHT - 1,
+      w: SLIDE_WIDTH - 1,
+      h: 0.5,
+      fontSize: 10,
+      color: 'FF6B6B',
+      align: 'center',
+      italic: true,
+    });
+  };
+
+  // Process each slide with enhanced error handling
+  for (let i = 0; i < presentation.slides.length; i++) {
+    const pptxSlide = pptx.addSlide();
+    const slide = presentation.slides[i];
+
+    try {
+      console.log(`Processing slide ${i + 1} of ${presentation.slides.length}`);
+      
+      // Convert slide to PNG
+      const imageData = await slideToImage(i);
+
+      // Add the image to the slide, covering the entire slide area
+      pptxSlide.addImage({
+        data: imageData,
+        x: 0,
+        y: 0,
+        w: SLIDE_WIDTH,
+        h: SLIDE_HEIGHT,
+      });
+
+      console.log(`Successfully processed slide ${i + 1}`);
+    } catch (error) {
+      console.error(`Failed to process slide ${i + 1}:`, error);
+      
+      // Create a fallback slide with text content
+      createFallbackSlide(pptxSlide, i, slide);
+    }
+
+    // Add a small delay between slides to prevent overwhelming the browser
+    await waitForRender(100);
+  }
+
+  // Save the presentation
+  try {
+    await pptx.writeFile({ fileName: filename });
+    console.log(`Successfully exported ${filename}`);
+  } catch (error) {
+    console.error('Error saving PPTX file:', error);
+    throw new Error('Failed to save PowerPoint presentation');
+  }
+};
