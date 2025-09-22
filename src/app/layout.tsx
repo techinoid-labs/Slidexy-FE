@@ -13,6 +13,7 @@ import AnalyticsTracker from "./components/analytics/AnalyticsTracker";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
+const GA_CONVERSION_ID = process.env.NEXT_PUBLIC_GA_CONVERSION_ID;
 const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
@@ -52,24 +53,8 @@ export default function RootLayout({
             width="1"
             style={{ display: "none" }}
             src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
-            // src={`https://www.facebook.com/tr?id=1661409921482981&ev=PageView&noscript=1`}
           />
         </noscript>
-
-        {/* <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-          strategy="afterInteractive"
-        /> */}
-        {/* <Script id="ga-init" strategy="afterInteractive">
-          {`
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${GA_ID}', {
-      page_path: window.location.pathname,
-    });
-  `}
-        </Script> */}
 
         {/* ✅ Google Analytics */}
         <Script
@@ -83,6 +68,17 @@ export default function RootLayout({
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', '${GA_ID}');
+  `}
+        </Script>
+
+        {/* ✅ Google Ads Conversion Tracking */}
+        <Script id="google-ads-conversion" strategy="afterInteractive">
+          {`
+    gtag('event', 'conversion', {
+      'send_to': '${GA_CONVERSION_ID}',
+      'value': 1.0,
+      'currency': 'PKR'
+    });
   `}
         </Script>
       </head>
