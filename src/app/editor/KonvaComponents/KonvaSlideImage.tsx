@@ -17,7 +17,7 @@ interface SlideImageProps {
   borderRadius?: number;
   isSelected: boolean;
   zIndex?: number | string;
-  onSelect: () => void;
+  onSelect: (e: any) => void;
 }
 
 const SlideImage: React.FC<SlideImageProps> = ({

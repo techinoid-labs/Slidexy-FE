@@ -692,3 +692,4 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
     htmlTemplate,
   };
 };
+

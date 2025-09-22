@@ -126,7 +126,7 @@ export const createModernTemplate = (backendSlide: BackendSlide, slideIndex: num
           ">
             <h1 style="
               font-size: 2rem;
-              font-weight: 800;
+              font-weight: 500;
               color: ${palette.primary};
               margin: 0 0 1.5rem;
               line-height: 1.2;
@@ -211,7 +211,7 @@ export const createModernTemplate = (backendSlide: BackendSlide, slideIndex: num
           ">
             <h2 style="
               font-size: 2.5rem;
-              font-weight: 700;
+              font-weight: 500;
               color: ${palette.primary};
               margin: 0 0 1.5rem;
             ">

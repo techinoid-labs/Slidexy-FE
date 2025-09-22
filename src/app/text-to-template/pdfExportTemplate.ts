@@ -3,341 +3,176 @@ import html2canvas from 'html2canvas';
 import type { Presentation } from './types/presentation';
 
 interface ExportOptions {
-  filename?: string;
+  filename: string;
   quality?: number;
-  format?: 'a4' | 'letter' | 'presentation';
+  format?: 'presentation' | 'a4';
   orientation?: 'landscape' | 'portrait';
+  pixelRatio?: number;
 }
 
 export const exportPresentationToPdf = async (
   presentation: Presentation,
-  options: ExportOptions = {}
+  options: ExportOptions
 ): Promise<void> => {
   const {
-    filename = 'presentation.pdf',
-    quality = 2,
+    filename,
+    quality = 5.0,
     format = 'presentation',
-    orientation = 'landscape'
+    orientation = 'landscape',
+    pixelRatio = 500,
   } = options;
 
-  try {
-    // Initialize jsPDF
-    let pdf: jsPDF;
-    
-    if (format === 'presentation') {
-      const width = orientation === 'landscape' ? 297 : 210;
-      const height = orientation === 'landscape' ? 167 : 118;
-      pdf = new jsPDF({
-        orientation,
-        unit: 'mm',
-        format: [width, height]
+  const STAGE_WIDTH = 1280; // Increased from 960
+  const STAGE_HEIGHT = 720; // Increased from 540
+
+  const pdf = new jsPDF({
+    orientation,
+    unit: 'px',
+    format: format === 'presentation' ? [STAGE_WIDTH, STAGE_HEIGHT] : 'a4',
+    compress: false,
+  });
+
+  // Wait for all images to load
+  const waitForImages = async (): Promise<void> => {
+    const images = document.querySelectorAll('img');
+    console.log(`Found ${images.length} images to load`);
+    const loadPromises = Array.from(images).map(
+      (img) =>
+        new Promise((resolve) => {
+          if (img.complete) {
+            console.log(`Image already loaded: ${img.src}`);
+            resolve(true);
+          } else {
+            img.onload = () => {
+              console.log(`Image loaded: ${img.src}`);
+              resolve(true);
+            };
+            img.onerror = () => {
+              console.warn(`Failed to load image: ${img.src}`);
+              resolve(false);
+            };
+          }
+        })
+    );
+    await Promise.all(loadPromises);
+  };
+
+  // Ensure all slides are visible and within bounds
+  const ensureSlideVisibility = () => {
+    const slides = document.querySelectorAll('.slide-container');
+    slides.forEach((slide, index) => {
+      const slideElement = slide as HTMLElement;
+      slideElement.style.visibility = 'visible';
+      slideElement.style.opacity = '1';
+      slideElement.style.display = 'block';
+      slideElement.style.position = 'relative';
+      slideElement.style.width = `${STAGE_WIDTH}px`;
+      slideElement.style.height = `${STAGE_HEIGHT}px`;
+      slideElement.style.overflow = 'hidden'; // Prevent content overflow
+      console.log(`Ensured visibility for slide ${index}`);
+    });
+  };
+
+  console.log('Starting PDF export process...');
+  await waitForImages();
+  ensureSlideVisibility();
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  const slides = document.querySelectorAll('.slide-container');
+  console.log(`Found ${slides.length} slide containers`);
+
+  if (slides.length === 0) {
+    throw new Error('No slides found for export');
+  }
+
+  for (let i = 0; i < slides.length; i++) {
+    try {
+      const slide = slides[i] as HTMLElement;
+      const canvasElement = slide.querySelector('canvas');
+      const htmlElement = slide.querySelector('[data-konva-html]');
+
+      console.log(`Processing slide ${i}:`, {
+        slideId: slide.getAttribute('data-slide-id') || `slide-${i}`,
+        hasCanvas: !!canvasElement,
+        hasHtml: !!htmlElement,
+        stageAvailable: !!window.konvaStages?.[i],
       });
-    } else {
-      pdf = new jsPDF({
-        orientation,
-        unit: 'mm',
-        format
-      });
-    }
 
-    const slides = presentation.slides || [];
-    
-    if (slides.length === 0) {
-      throw new Error('No slides found in presentation');
-    }
-
-    console.log(`Starting PDF export for ${slides.length} slides`);
-
-    // Wait for all content to load
-    await waitForContentLoad();
-
-    // Process each slide
-    for (let i = 0; i < slides.length; i++) {
-      const slide = slides[i];
-      console.log(`Processing slide ${i + 1}/${slides.length}`);
-      
-      // Try to capture Konva stage directly
-      let canvas = await captureKonvaStage(i);
-      
-      // Fallback to DOM element capture
-      if (!canvas) {
-        console.log(`Konva capture failed for slide ${i + 1}, trying DOM capture`);
-        canvas = await captureSlideContainer(i, quality);
-      }
-      
-      // Fallback to basic canvas with slide content
-      if (!canvas) {
-        console.log(`Both captures failed for slide ${i + 1}, creating fallback`);
-        canvas = await createFallbackCanvas(slide, i);
-      }
-      
-      if (!canvas) {
-        console.warn(`Could not capture slide ${i + 1}, skipping`);
+      if (!canvasElement && !htmlElement) {
+        console.warn(`Slide ${i} has no renderable content`);
         continue;
       }
 
-      // Add new page (except for first slide)
-      if (i > 0) {
-        pdf.addPage();
-      }
+      let imgData: string;
+      let imgWidth: number;
+      let imgHeight: number;
 
-      // Add canvas to PDF
-      await addCanvasToPdf(pdf, canvas, i + 1);
-    }
-
-    // Save the PDF
-    pdf.save(filename);
-    console.log(`PDF exported successfully: ${filename}`);
-    
-  } catch (error) {
-    console.error('PDF export failed:', error);
-    throw new Error(`Failed to export PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-};
-
-const captureKonvaStage = async (slideIndex: number): Promise<HTMLCanvasElement | null> => {
-  return new Promise((resolve) => {
-    try {
-      // Access global Konva stages
-      const stage = window.konvaStages?.[slideIndex];
-      
-      if (!stage) {
-        console.log(`No Konva stage found for slide index ${slideIndex}`);
-        resolve(null);
-        return;
-      }
-
-      // Ensure stage is fully rendered
-      stage.batchDraw();
-      
-      const canvas = stage.toCanvas({
-        width: 960,
-        height: 540,
-        pixelRatio: 2
-      });
-
-      // Verify canvas content
-      const ctx = canvas.getContext('2d');
-      const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-      const hasContent = imageData?.data.some((value: number) => value !== 0);
-
-      if (hasContent) {
-        console.log(`Successfully captured Konva stage for slide ${slideIndex + 1}`);
-        resolve(canvas);
+      if (canvasElement && window.konvaStages?.[i]) {
+        const stage = window.konvaStages[i];
+        console.log(`Attempting Konva stage export for slide ${i}`);
+        try {
+          stage.batchDraw();
+          imgData = stage.toDataURL({
+            mimeType: 'image/png',
+            quality: 1.0,
+            pixelRatio,
+          });
+          console.log(`Konva stage export successful for slide ${i}, data length: ${imgData.length}`);
+          const stageWidth = stage.width();
+          const stageHeight = stage.height();
+          imgWidth = pdf.internal.pageSize.getWidth();
+          imgHeight = (stageHeight * imgWidth) / stageWidth;
+        } catch (error) {
+          console.error(`Konva stage export failed for slide ${i}:`, error);
+          console.log(`Falling back to html2canvas for slide ${i}`);
+          const canvas = await html2canvas(slide, {
+            scale: pixelRatio,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: true,
+            windowWidth: STAGE_WIDTH,
+            windowHeight: STAGE_HEIGHT,
+          });
+          imgData = canvas.toDataURL('image/png', 1.0);
+          imgWidth = pdf.internal.pageSize.getWidth();
+          imgHeight = (canvas.height * imgWidth) / canvas.width;
+        }
       } else {
-        console.log(`Captured canvas for slide ${slideIndex + 1} is empty`);
-        resolve(null);
+        console.log(`Using html2canvas for slide ${i}`);
+        const canvas = await html2canvas(slide, {
+          scale: pixelRatio,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: true,
+          windowWidth: STAGE_WIDTH,
+          windowHeight: STAGE_HEIGHT,
+        });
+        imgData = canvas.toDataURL('image/png', 1.0);
+        imgWidth = pdf.internal.pageSize.getWidth();
+        imgHeight = (canvas.height * imgWidth) / canvas.width;
+      }
+
+      if (imgData && imgData !== 'data:,') {
+        if (i > 0) {
+          pdf.addPage();
+        }
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'SLOW');
+        console.log(`Added slide ${i} to PDF`);
+      } else {
+        console.warn(`No valid image data for slide ${i}`);
       }
     } catch (error) {
-      console.error('Konva stage capture error:', error);
-      resolve(null);
+      console.error(`Error processing slide ${i}:`, error);
+      continue;
     }
-  });
-};
-
-const captureSlideContainer = async (
-  slideIndex: number,
-  quality: number = 2
-): Promise<HTMLCanvasElement | null> => {
-  try {
-    const slideContainer = document.querySelector(`.slide-container.slide-${slideIndex}`);
-    
-    if (!slideContainer) {
-      console.log(`No slide container found for slide ${slideIndex}`);
-      return null;
-    }
-
-    console.log(`Capturing container for slide ${slideIndex + 1}`);
-    
-    // Ensure container is visible
-    (slideContainer as HTMLElement).style.display = 'block';
-    (slideContainer as HTMLElement).style.visibility = 'visible';
-    (slideContainer as HTMLElement).style.opacity = '1';
-    
-    // Scroll element into view
-    slideContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
-    // Wait for rendering
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const canvas = await html2canvas(slideContainer as HTMLElement, {
-      allowTaint: true,
-      useCORS: true,
-      scale: quality,
-      logging: true,
-      width: 960,
-      height: 540,
-      backgroundColor: '#ffffff',
-      foreignObjectRendering: true,
-      removeContainer: false,
-      onclone: (clonedDoc, element) => {
-        console.log('html2canvas cloning element:', element);
-        
-        element.style.display = 'block';
-        element.style.visibility = 'visible';
-        element.style.opacity = '1';
-        
-        // Copy canvas content
-        const canvases = element.querySelectorAll('canvas');
-        const originalCanvases = slideContainer.querySelectorAll('canvas');
-        
-        canvases.forEach((clonedCanvas, idx) => {
-          const originalCanvas = originalCanvases[idx] as HTMLCanvasElement;
-          if (originalCanvas) {
-            const ctx = clonedCanvas.getContext('2d');
-            if (ctx) {
-              clonedCanvas.width = originalCanvas.width;
-              clonedCanvas.height = originalCanvas.height;
-              ctx.drawImage(originalCanvas, 0, 0);
-            }
-          }
-        });
-      }
-    });
-
-    // Verify canvas content
-    const ctx = canvas.getContext('2d');
-    const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-    const hasContent = imageData?.data.some((value: number) => value !== 0);
-
-    if (hasContent) {
-      console.log(`Successfully captured DOM container for slide ${slideIndex + 1}`);
-      return canvas;
-    } else {
-      console.log(`Captured DOM canvas for slide ${slideIndex + 1} is empty`);
-      return null;
-    }
-  } catch (error) {
-    console.error('DOM element capture error:', error);
-    return null;
   }
-};
 
-const createFallbackCanvas = async (
-  slide: any,
-  slideIndex: number
-): Promise<HTMLCanvasElement | null> => {
+  console.log('Saving PDF...');
   try {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) return null;
-    
-    canvas.width = 960;
-    canvas.height = 540;
-    
-    // Fill with white background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 960, 540);
-    
-    // Add slide title
-    ctx.fillStyle = '#333333';
-    ctx.font = 'bold 32px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    const title = slide.title || `Slide ${slideIndex + 1}`;
-    ctx.fillText(title, 480, 100);
-    
-    // Add slide content
-    if (slide.elements && slide.elements.length > 0) {
-      ctx.font = '18px Arial, sans-serif';
-      ctx.textAlign = 'left';
-      
-      let yPosition = 180;
-      slide.elements.forEach((element: any, idx: number) => {
-        if (element.text && yPosition < 480) {
-          ctx.fillText(element.text, 80, yPosition);
-          yPosition += 30;
-        }
-      });
-    } else {
-      ctx.font = '18px Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#666666';
-      ctx.fillText('Slide content could not be captured', 480, 270);
-    }
-    
-    // Add slide number
-    ctx.font = '12px Arial, sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#999999';
-    ctx.fillText(`${slideIndex + 1}`, 920, 520);
-    
-    return canvas;
+    pdf.save(filename);
+    console.log(`PDF saved successfully: ${filename}`);
   } catch (error) {
-    console.error('Fallback canvas creation error:', error);
-    return null;
+    console.error('Failed to save PDF:', error);
+    throw new Error('Failed to save PDF');
   }
-};
-
-const addCanvasToPdf = async (
-  pdf: jsPDF,
-  canvas: HTMLCanvasElement,
-  slideNumber: number
-): Promise<void> => {
-  try {
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    
-    // Convert canvas to data URL
-    const imgData = canvas.toDataURL('image/png', 0.95);
-    
-    // Calculate scaling to fit page
-    const canvasAspectRatio = canvas.width / canvas.height;
-    const pdfAspectRatio = pdfWidth / pdfHeight;
-    
-    let scaledWidth: number;
-    let scaledHeight: number;
-    
-    if (canvasAspectRatio > pdfAspectRatio) {
-      scaledWidth = pdfWidth;
-      scaledHeight = pdfWidth / canvasAspectRatio;
-    } else {
-      scaledHeight = pdfHeight;
-      scaledWidth = pdfHeight * canvasAspectRatio;
-    }
-    
-    // Center the image
-    const x = (pdfWidth - scaledWidth) / 2;
-    const y = (pdfHeight - scaledHeight) / 2;
-    
-    // Add image to PDF
-    pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
-    
-    // Add slide number
-    pdf.setFontSize(8);
-    pdf.setTextColor(128, 128, 128);
-    pdf.text(`${slideNumber}`, pdfWidth - 15, pdfHeight - 5);
-    
-    console.log(`Added slide ${slideNumber} to PDF`);
-  } catch (error) {
-    console.error('Error adding canvas to PDF:', error);
-    throw error;
-  }
-};
-
-export const waitForContentLoad = async (): Promise<void> => {
-  return new Promise((resolve) => {
-    // Wait for images to load
-    const images = document.querySelectorAll('img');
-    const imagePromises = Array.from(images).map((img) => {
-      if (img.complete) return Promise.resolve();
-      return new Promise((res) => {
-        img.onload = res;
-        img.onerror = res;
-      });
-    });
-    
-    // Wait for Konva stages to render
-    const konvaPromises = Object.values(window.konvaStages || {}).map((stage: any) => {
-      return new Promise((res) => {
-        stage.batchDraw();
-        setTimeout(res, 100);
-      });
-    });
-    
-    Promise.all([...imagePromises, ...konvaPromises]).then(() => {
-      // Additional wait for any pending renders
-      setTimeout(resolve, 1000);
-    });
-  });
 };

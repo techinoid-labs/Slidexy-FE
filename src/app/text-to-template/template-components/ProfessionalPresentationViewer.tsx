@@ -23,7 +23,6 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
   const STAGE_H = 540;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const stageRefs = useRef<any[]>([]);
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
@@ -41,28 +40,6 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  // Store stage references globally for PDF export
-  useEffect(() => {
-    if (stageRefs.current.length > 0) {
-      if (typeof window !== 'undefined') {
-        window.konvaStages = {};
-        stageRefs.current.forEach((stage, index) => {
-          if (stage) {
-            window.konvaStages[index] = stage;
-            window[`konva_stage_slide-${index}`] = stage;
-            // Add data attributes to canvas
-            const canvas = stage.getCanvas?._canvas;
-            if (canvas) {
-              canvas.setAttribute('data-slide-id', `slide-${index}`);
-              canvas.setAttribute('data-slide-index', index.toString());
-            }
-          }
-        });
-        console.log('Stored stage references:', Object.keys(window.konvaStages));
-      }
-    }
-  }, [stageRefs.current]);
 
   if (loading) {
     return (
@@ -97,7 +74,6 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
       <Box sx={{ p: 2 }}>
-        {/* Presentation Header */}
         <Box
           sx={{
             mb: 4,
@@ -118,10 +94,8 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
           </Typography>
         </Box>
 
-        {/* Template Selector */}
         <TemplateSelector selectedTemplate={selectedTemplate} onTemplateChange={setSelectedTemplate} />
 
-        {/* Slides */}
         <Stack spacing={5}>
           {convertedPresentation.slides.map((slide, index) => {
             const slideKey = slide.slide_id || `slide-${index}`;
@@ -139,7 +113,8 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
                 </Box>
 
                 <Box
-                  ref={index === 0 ? containerRef : undefined}
+                  ref={containerRef}
+                  className="slide-container"
                   data-slide-id={slideKey}
                   data-slide-index={index}
                   sx={{
@@ -154,20 +129,14 @@ const ProfessionalPresentationViewer: React.FC<ProfessionalPresentationViewerPro
                     aspectRatio: `${STAGE_W} / ${STAGE_H}`,
                     minWidth: 0,
                     transition: "all 0.2s ease",
-                    visibility: 'visible',
-                    opacity: 1,
                   }}
-                  className={`slide-container slide-${index}`}
                 >
                   <Stage
                     width={STAGE_W}
                     height={STAGE_H}
                     scaleX={scale}
                     scaleY={scale}
-                    style={{ width: "100%", height: "100%", visibility: 'visible', opacity: 1 }}
-                    ref={(ref) => {
-                      stageRefs.current[index] = ref;
-                    }}
+                    style={{ width: "100%", height: "100%" }}
                   >
                     <Layer>
                       <SlideRenderer slide={slide} slideIndex={index} />

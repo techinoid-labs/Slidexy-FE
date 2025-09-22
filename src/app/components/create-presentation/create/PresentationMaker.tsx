@@ -347,7 +347,7 @@ export default function PresentationMaker({
     setError("");
     setProgress(0);
 
-    const payload = { prompt: inputValue };
+    const payload = { prompt: inputValue,  "useReferences": true };
     let interval: NodeJS.Timeout | null = null;
 
     // Fake loader

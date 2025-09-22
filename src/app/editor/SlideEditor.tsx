@@ -11,7 +11,11 @@ import { useSlides } from "../context/SlidesContext";
 import { getRandomSlide, getSlideDimensions } from "../../utils/slideUtils";
 import { applyElementPositioning } from "@/utils/slideTextPositioningUtils";
 import { v4 as uuidv4 } from "uuid";
-
+type SelectedElement = {
+  id: string;
+  type: "text" | "image" | "shape";
+  index: number;
+};
 const getDynamicConstants = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
   const IMAGE_WIDTH = 400;
@@ -49,6 +53,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scale, setScale] = useState(1);
+  const [selectedElements, setSelectedElements] = useState<SelectedElement[]>([]);
 
   const handleAddSlide = () => {
     const newSlide = getRandomSlide();
@@ -93,8 +98,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   useEffect(() => {
     const updatedSlides = structuredClone(slides);
     let changed = false;
-    updatedSlides.forEach((slide : any) => {
-      slide.elements.forEach((el : any) => {
+    updatedSlides.forEach((slide: any) => {
+      slide.elements.forEach((el: any) => {
         if (el.element_type === "image" && !el.properties.image_id) {
           el.properties.image_id = uuidv4();
           changed = true;
@@ -111,7 +116,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   useEffect(() => {
     const updatedSlides = structuredClone(slides);
     let changed = false;
-    updatedSlides.forEach((slide : any) => {
+    updatedSlides.forEach((slide: any) => {
       slide.elements.forEach((el: any) => {
         if (el.element_type === "shape" && !el.shape_id) {
           el.shape_id = uuidv4();
@@ -126,15 +131,54 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     }
   }, [slides, setSlides]);
 
-  const deselectAll = () => {
-    setSelectedTextId(null);
-    setSelectedImageIndex(null);
-    setSelectedShapeIndex(null);
-    setSelectedImage(null);
-    setSelectedImageId(null);
-    setSelectedShapeId(null);
-  };
+  const deselectAll = () => setSelectedElements([]);
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key.toLowerCase() === "a") {
+        e.preventDefault();
 
+        const currentSlide = slides[selectedIndex];
+        if (!currentSlide) return;
+
+        const all: SelectedElement[] = [];
+
+        // Add the title explicitly
+        if (currentSlide.slide_title?.text) {
+          all.push({
+            id: `title-${selectedIndex}`,
+            type: "text",
+            index: -1, // special index for title
+          });
+        }
+
+        // Add other elements (text, image, shape, etc.)
+        currentSlide.elements.forEach((el: any, i: number) => {
+          if (el.element_type === "image") {
+            all.push({ id: el.properties.image_id, type: "image", index: i });
+          } else if (el.element_type === "shape") {
+            all.push({ id: el.shape_id, type: "shape", index: i });
+          } else {
+            all.push({ id: `el-${selectedIndex}-${i}`, type: "text", index: i });
+          }
+        });
+
+        setSelectedElements(all);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [slides, selectedIndex]);
+
+  const handleSelect = (el: SelectedElement, multi = false) => {
+    if (multi) {
+      setSelectedElements((prev) =>
+        prev.find((p) => p.id === el.id) ? prev.filter((p) => p.id !== el.id) : [...prev, el]
+      );
+    } else {
+      setSelectedElements([el]);
+    }
+  };
   return (
     <Box
       sx={{
@@ -264,10 +308,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         : selectedTheme?.primaryColor ?? "#000"
                     }
                     fontStyle={titleProps.fontStyle}
-                    isSelected={selectedTextId === `title-${index}`}
-                    onSelect={() => {
-                      deselectAll();
-                      setSelectedTextId(`title-${index}`);
+                    isSelected={selectedElements.some((s) => s.id === `title-${index}`)}
+                    onSelect={(e) => {
+                      handleSelect(
+                        { id: `title-${index}`, type: "text", index: -1 },
+                        e.evt.ctrlKey
+                      );
                     }}
                   />
                 )}
@@ -308,22 +354,25 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       }
                       fontStyle={el.properties.fontStyle}
                       fontWeight={el.properties.fontWeight}
-                      isSelected={selectedTextId === `el-${index}-${i}`}
-                      onSelect={() => {
-                        deselectAll();
-                        setSelectedTextId(`el-${index}-${i}`);
+                      isSelected={selectedElements.some((s) => s.id === `el-${index}-${i}`)}
+                      onSelect={(e) => {
+                        handleSelect(
+                          { id: `el-${index}-${i}`, type: "text", index: i },
+                          e.evt.ctrlKey // allow ctrl+click multi select
+                        );
                       }}
                     />
                   );
                 })}
                 <KonvaShapeRenderer
                   elements={slide.elements}
-                  selectedShapeId={selectedShapeId}
-                  selectedShapeIndex={selectedShapeIndex}
-                  onSelectShape={(shapeIndex, shapeId) => {
-                    deselectAll();
-                    setSelectedShapeIndex(shapeIndex);
-                    setSelectedShapeId(shapeId);
+                  selectedShapeId={null} // old single-select state no longer needed
+                  selectedShapeIndex={null}
+                  onSelectShape={(shapeIndex, shapeId, e) => {
+                    handleSelect(
+                      { id: shapeId!, type: "shape", index: shapeIndex! },
+                      e.evt.ctrlKey
+                    );
                   }}
                 />
                 {slide.elements.map((el: any, i: number) => {
@@ -341,13 +390,14 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         opacity={el.properties.opacity}
                         shadow={el.properties.shadow}
                         borderRadius={el.properties.borderRadius}
-                        isSelected={selectedImageId === el.properties.image_id}
-                        onSelect={() => {
-                          deselectAll();
-                          setSelectedImage({ ...el });
-                          setSelectedImageId(el.properties.image_id);
-                          setSelectedImageIndex(i);
+                        isSelected={selectedElements.some((s) => s.id === el.properties.image_id)}
+                        onSelect={(e) => {
+                          handleSelect(
+                            { id: el.properties.image_id, type: "image", index: i },
+                            e.evt.ctrlKey
+                          );
                         }}
+
                       />
                     );
                   }

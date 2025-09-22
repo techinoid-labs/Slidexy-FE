@@ -20,7 +20,7 @@ interface KonvaShapeRendererProps {
   elements: any[];
   selectedShapeId: string | null;
   selectedShapeIndex: number | null;
-  onSelectShape: (index: number | null, shapeId: string | null) => void;
+  onSelectShape: (index: number | null, shapeId: string | null, e?: any) => void;
 }
 
 const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
@@ -115,22 +115,23 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
           style: { zIndex: el.properties.zIndex },
           ...el.properties,
           draggable: true,
-          onClick: () => {
-            onSelectShape(i, safeShapeId);
+          onClick: (e : any) => {
+            onSelectShape(i, safeShapeId, e);
             setSelectedShapeId(safeShapeId);
           },
-          onTap: () => {
-            onSelectShape(i, safeShapeId);
+          onTap: (e: any) => {
+            onSelectShape(i, safeShapeId, e);
             setSelectedShapeId(safeShapeId);
           },
-          onMouseDown: () => {
-            onSelectShape(i, safeShapeId);
+          onMouseDown: (e: any) => {
+            onSelectShape(i, safeShapeId, e);
             setSelectedShapeId(safeShapeId);
           },
-          onTouchStart: () => {
-            onSelectShape(i, safeShapeId);
+          onTouchStart: (e : any) => {
+            onSelectShape(i, safeShapeId, e);
             setSelectedShapeId(safeShapeId);
           },
+
           onTransformEnd: () => {
             const node = shapeRefs.current[i];
             if (!node) return;
@@ -208,11 +209,11 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
             const updatedSlides = slides.map((s, idx) =>
               idx === slideIdx
                 ? {
-                    ...s,
-                    elements: s.elements.map((e: any) =>
-                      e.shape_id === safeShapeId ? { ...e, properties: updated } : e
-                    ),
-                  }
+                  ...s,
+                  elements: s.elements.map((e: any) =>
+                    e.shape_id === safeShapeId ? { ...e, properties: updated } : e
+                  ),
+                }
                 : s
             );
 
@@ -245,20 +246,20 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
             const updatedSlides = slides.map((s, idx) =>
               idx === slideIdx
                 ? {
-                    ...s,
-                    elements: s.elements.map((e: any) =>
-                      e.shape_id === safeShapeId
-                        ? {
-                            ...e,
-                            properties: {
-                              ...e.properties,
-                              x: bounds.x,
-                              y: bounds.y,
-                            },
-                          }
-                        : e
-                    ),
-                  }
+                  ...s,
+                  elements: s.elements.map((e: any) =>
+                    e.shape_id === safeShapeId
+                      ? {
+                        ...e,
+                        properties: {
+                          ...e.properties,
+                          x: bounds.x,
+                          y: bounds.y,
+                        },
+                      }
+                      : e
+                  ),
+                }
                 : s
             );
 

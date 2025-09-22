@@ -32,6 +32,8 @@ import AuthModal from "../components/auth/AuthModal";
 import { useTemplateSlides } from "../context/TemplateSlidesContext";
 import { useUser } from "../context/AuthContext";
 import axios from "axios";
+import { SlideshowOutlined } from "@mui/icons-material";
+
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
@@ -110,53 +112,21 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     setSlides(newSlides);
   };
 
-  const handleExportPPTX = async () => {
-    if (loading) return;
+const handleExportPPTX = () => {
+  if (loading) return;
 
-   if (!(session?.user || user)) {
+  if (session?.user || user) {
+    setShowAuthModal(false);
+
+    // Export the current slides
+    exportSlidesAsPPT(slides);
+  } else {
     setShowAuthModal(true);
-    return;
   }
+};
 
-    try {
-      console.log("Session:", session);
-      console.log("Token sent:", session?.user?.accessToken);
 
-      const token = session?.user?.accessToken;
 
-      if (!token) {
-        console.error("No access token available");
-        setShowAuthModal(true);
-        return;
-      }
-      if (!presentationId) {
-        console.error("No presentationId in context. Save presentation first.");
-        setShowAuthModal(true);
-        return;
-      }
-
-      const response = await axios.get(
-        `${API_BASE_URL}/api/presentations/${datapresentationId}/export`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: "blob",
-        }
-      );
-
-      // Create a URL for the blob
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `presentation-${datapresentationId}.pptx`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Export failed", error);
-      setShowAuthModal(true);
-    }
-  };
 
   const isTextSelected = selectedTextId !== null && selectedTextId !== "";
   const isShapeSelected = selectedShapeIndex !== null;

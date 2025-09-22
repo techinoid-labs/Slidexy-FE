@@ -1,7 +1,4 @@
-"use client";
-
 import React, { useState, useRef, useEffect } from "react";
-import Image from "next/image";
 import {
   AppBar,
   Toolbar,
@@ -19,41 +16,40 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import { useRouter } from "next/navigation";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
-import axios from "axios";
 import { useSession } from "next-auth/react";
-import AuthModal from "../../components/auth/AuthModal";
 import { useUser } from "@/app/context/AuthContext";
-import ProfileModal from "../../components/auth/ProfileModal";
+import ProfileModal from "@/app/components/auth/ProfileModal";
 import NavProfileHandler from "@/app/components/auth/NavProfileHandler";
-import { exportPresentationToPdf } from "../pdfExportTemplate"; // Import the PDF export utility
+import AuthModal from "@/app/components/auth/AuthModal";
+import { exportPresentationToPdf } from "../pdfExportTemplate";
+import { exportToPowerPoint } from "../pptxExportTemplate";
 import { convertPresentation } from "@/utils/convertPresentation";
 import type { Presentation } from "@/app/text-to-template/types/presentation";
+import { enhanceSlideWithExportElements } from "@/utils/htmlToJsonParser";
 
 const TemplateNavBar: React.FC<{
-  onExportPPT?: () => void;
-  onExportPDF?: () => void;
   presentationId?: string | null;
-}> = ({ onExportPPT, onExportPDF, presentationId }) => {
+}> = ({ presentationId }) => {
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(
     null
   );
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
-  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [isExportingPPTX, setIsExportingPPTX] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { slideTemplates, selectedTemplate } = useTemplateSlides();
   const { data: session } = useSession();
+  const { user, loading } = useUser();
 
   const [templateFileName, setTemplateFileName] = useState("Untitled");
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { user, loading } = useUser();
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     localStorage.removeItem("templateFileName");
@@ -63,9 +59,11 @@ const TemplateNavBar: React.FC<{
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMenuAnchor(event.currentTarget);
   };
+
   const handleMobileMenuClose = () => setMobileMenuAnchor(null);
 
   const handleEdit = () => setEditing(true);
+
   const handleBlur = () => {
     const trimmed = templateFileName.trim();
     if (trimmed.length < 3) {
@@ -79,6 +77,7 @@ const TemplateNavBar: React.FC<{
     }
     setEditing(false);
   };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") inputRef.current?.blur();
   };
@@ -86,100 +85,51 @@ const TemplateNavBar: React.FC<{
   const handleExportClick = async (type: "pptx" | "pdf") => {
     if (loading) return;
 
-    if (session?.user || user) {
-      setShowAuthModal(false);
-    } else {
+    if (!session?.user && !user) {
       setShowAuthModal(true);
       return;
     }
 
     try {
-      const token = session?.user?.accessToken;
-      if (!token) {
-        console.error("No access token available");
-        return;
-      }
-
-      if (type === "pptx" && onExportPPT) {
-        onExportPPT();
-      } else if (type === "pdf") {
-        await handlePDFExport();
-      }
-    } catch (error) {
-      console.error(`${type.toUpperCase()} export failed`, error);
-    }
-  };
-
-  const handlePDFExport = async () => {
-    if (!slideTemplates || slideTemplates.length === 0) {
-      setPdfError("No slides available for export");
-      return;
-    }
-
-    setIsExportingPDF(true);
-    setPdfError(null);
-
-    try {
-      // Create presentation object from current slides
-      const rawPresentation: Presentation = {
+      const presentation: Presentation = {
         slides: slideTemplates,
         id: presentationId || "presentation",
         topic: templateFileName || "Presentation",
       };
 
-      // Convert presentation with selected template
       const convertedPresentation = convertPresentation(
-        rawPresentation,
+        presentation,
         selectedTemplate
       );
+      const enhancedPresentation = {
+        ...convertedPresentation,
+        slides: convertedPresentation.slides.map(
+          enhanceSlideWithExportElements
+        ),
+      };
 
-      // Add slide IDs to DOM elements for better targeting
-      await addSlideIdentifiers();
-
-      // Export to PDF
-      await exportPresentationToPdf(convertedPresentation, {
-        filename: `${templateFileName || "presentation"}.pdf`,
-        quality: 0.95,
-        format: "presentation",
-        orientation: "landscape",
-      });
-
-      console.log("PDF export completed successfully");
+      if (type === "pdf") {
+        setIsExportingPDF(true);
+        setExportError(null);
+        await exportPresentationToPdf(enhancedPresentation, {
+          filename: `${templateFileName || "presentation"}.pdf`,
+          quality: 1.0,
+          format: "presentation",
+          orientation: "landscape",
+          pixelRatio: 3,
+        });
+      } else if (type === "pptx") {
+        setIsExportingPPTX(true);
+        setExportError(null);
+        await exportToPowerPoint(enhancedPresentation);
+      }
     } catch (error) {
-      console.error("PDF export failed:", error);
-      setPdfError(
-        error instanceof Error ? error.message : "Unknown error occurred"
-      );
+      console.error(`${type.toUpperCase()} export failed`, error);
+      setExportError(error instanceof Error ? error.message : "Export failed");
     } finally {
       setIsExportingPDF(false);
+      setIsExportingPPTX(false);
     }
-  };
-
-  // Helper function to add identifiers to slide elements
-  const addSlideIdentifiers = async (): Promise<void> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Find all slide containers and add data attributes
-        const slideContainers = document.querySelectorAll(
-          '[style*="border: 1px solid #ddd"]'
-        );
-        slideContainers.forEach((container, index) => {
-          if (!container.getAttribute("data-slide-id")) {
-            container.setAttribute("data-slide-id", `slide-${index}`);
-          }
-        });
-
-        // Also try to identify Konva stages
-        const konvaStages = document.querySelectorAll(".konvajs-content");
-        konvaStages.forEach((stage, index) => {
-          if (!stage.getAttribute("data-slide-id")) {
-            stage.setAttribute("data-slide-id", `slide-${index}`);
-          }
-        });
-
-        resolve();
-      }, 500); // Wait for elements to be rendered
-    });
   };
 
   return (
@@ -205,7 +155,7 @@ const TemplateNavBar: React.FC<{
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <IconButton onClick={() => router.push("/")}>
-              <Image
+              <img
                 src="/images/home-icon.svg"
                 alt="Home"
                 width={20}
@@ -246,32 +196,38 @@ const TemplateNavBar: React.FC<{
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {isMobile ? (
-              <IconButton onClick={handleMobileMenuOpen}>
-                <MenuIcon />
-              </IconButton>
-            ) : (
+            {!isMobile && (
               <>
-                {/* {onExportPPT && (
-                  <Button
-                    onClick={() => handleExportClick("pptx")}
-                    disabled={slideTemplates.length <= 0}
-                    sx={{
-                      bgcolor: slideTemplates.length > 0 ? "#4A00E0" : "#ccc",
-                      color: "#fff",
-                      borderRadius: "999px",
-                      px: 2,
-                      mr: 1,
-                    }}
-                  >
-                    Export as PPTX
-                  </Button>
-                )} */}
-                {/* <Button
+                <Button
+                  onClick={() => handleExportClick("pptx")}
+                  disabled={slideTemplates.length <= 0 || isExportingPPTX}
+                  sx={{
+                    bgcolor:
+                      slideTemplates.length > 0 && !isExportingPPTX
+                        ? "#4A00E0"
+                        : "#ccc",
+                    color: "#fff",
+                    borderRadius: "999px",
+                    px: 2,
+                    mr: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  {isExportingPPTX && (
+                    <CircularProgress size={16} color="inherit" />
+                  )}
+                  Export as PPTX
+                </Button>
+                <Button
                   onClick={() => handleExportClick("pdf")}
                   disabled={slideTemplates.length <= 0 || isExportingPDF}
                   sx={{
-                    bgcolor: slideTemplates.length > 0 && !isExportingPDF ? "#4A00E0" : "#ccc",
+                    bgcolor:
+                      slideTemplates.length > 0 && !isExportingPDF
+                        ? "#4A00E0"
+                        : "#ccc",
                     color: "#fff",
                     borderRadius: "999px",
                     px: 2,
@@ -280,9 +236,11 @@ const TemplateNavBar: React.FC<{
                     gap: 1,
                   }}
                 >
-                  {isExportingPDF && <CircularProgress size={16} color="inherit" />}
+                  {isExportingPDF && (
+                    <CircularProgress size={16} color="inherit" />
+                  )}
                   Export as PDF
-                </Button> */}
+                </Button>
               </>
             )}
             <NavProfileHandler setProfileModalOpen={setIsProfileModalOpen} />
@@ -294,16 +252,18 @@ const TemplateNavBar: React.FC<{
             onClose={handleMobileMenuClose}
           >
             <Divider />
-            {onExportPPT && (
-              <MenuItem
-                onClick={() => {
-                  handleExportClick("pptx");
-                  handleMobileMenuClose();
-                }}
-              >
+            <MenuItem
+              onClick={() => {
+                handleExportClick("pptx");
+                handleMobileMenuClose();
+              }}
+              disabled={isExportingPPTX}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {isExportingPPTX && <CircularProgress size={12} />}
                 <Typography fontSize={14}>Export as PPTX</Typography>
-              </MenuItem>
-            )}
+              </Box>
+            </MenuItem>
             <MenuItem
               onClick={() => {
                 handleExportClick("pdf");
@@ -320,8 +280,7 @@ const TemplateNavBar: React.FC<{
         </Toolbar>
       </AppBar>
 
-      {/* PDF Error Display */}
-      {pdfError && (
+      {exportError && (
         <Box
           sx={{
             position: "fixed",
@@ -335,10 +294,10 @@ const TemplateNavBar: React.FC<{
             maxWidth: 300,
           }}
         >
-          <Typography variant="body2">PDF Export Error: {pdfError}</Typography>
+          <Typography variant="body2">Export Error: {exportError}</Typography>
           <Button
             size="small"
-            onClick={() => setPdfError(null)}
+            onClick={() => setExportError(null)}
             sx={{ color: "white", mt: 1 }}
           >
             Dismiss

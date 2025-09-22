@@ -211,7 +211,6 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
                   color: ${palette.dark};
                   line-height: 1.2;
                   margin-bottom: 1rem;
-                  animation: fadeIn 1.5s ease-in-out;
                 ">
                   ${titleText.split(" ").map((word, idx) => `
                     <span style="display: inline-block; animation-delay: ${idx * 0.1}s">${word}&nbsp;</span>
