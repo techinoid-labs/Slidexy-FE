@@ -4,6 +4,48 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 
+// type User = {
+//   _id: string;
+//   email: string;
+//   name?: string;
+//   admin?: boolean;
+//   presentations?: string[];
+//   currentPresentationId?: string | null;
+//   pricingPlan?: string | null;
+//   trialActive?: boolean;
+//   trialStart?: string;
+//   trialEnd?: string;
+//   daysLeft?: number;
+//   presentationsLeftToday?: number;
+// } | null;
+
+type PricingPlan = {
+  _id: string;
+  name: string;
+  stripePriceId?: string;
+  price: number;
+  currency: string;
+  billingPeriod: string; // "month" | "year"
+  description?: string;
+  features?: string[];
+  isActive?: boolean;
+  createdAt?: string;
+  __v?: number;
+};
+
+type Subscription = {
+  _id: string;
+  stripeId: string;
+  status: "active" | "canceled" | "incomplete" | "past_due" | "trialing"; // refine if you want
+  plan?: PricingPlan | null; // ✅ populated
+  planSnapshot?: PricingPlan | null; // ✅ frozen copy
+  startDate: string;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
+  endDate?: string | null;
+};
+
 type User = {
   _id: string;
   email: string;
@@ -11,7 +53,8 @@ type User = {
   admin?: boolean;
   presentations?: string[];
   currentPresentationId?: string | null;
-  pricingPlan?: string | null;
+  pricingPlan?: PricingPlan | null;
+  subscription?: Subscription | null;
   trialActive?: boolean;
   trialStart?: string;
   trialEnd?: string;

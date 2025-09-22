@@ -97,7 +97,7 @@ const ProfileModal = ({
                 <Divider flexItem />
 
                 {/* Trial / Subscription Info */}
-                <Stack spacing={1} sx={{ width: "100%", textAlign: "center" }}>
+                {/* <Stack spacing={1} sx={{ width: "100%", textAlign: "center" }}>
                   {user.trialActive && (
                     <Typography variant="body2" color="success.main">
                       🎉 Trial Active
@@ -116,10 +116,58 @@ const ProfileModal = ({
                       <b>{user.presentationsLeftToday}</b>
                     </Typography>
                   )}
+                </Stack> */}
+                {/* Trial / Subscription Info */}
+                <Stack spacing={1} sx={{ width: "100%", textAlign: "center" }}>
+                  {/* Active Subscription */}
+                  {user?.subscription &&
+                    user.subscription.status === "active" && (
+                      <>
+                        <Typography variant="body2" color="primary">
+                          ✅ Active Plan: <b>{user.subscription.plan?.name}</b>
+                        </Typography>
 
-                  {user.pricingPlan && (
-                    <Typography variant="body2" color="text.secondary">
-                      Plan: <b>{user.pricingPlan}</b>
+                        {user.daysLeft !== undefined && (
+                          <Typography variant="body2" color="text.secondary">
+                            Days left in billing cycle: <b>{user.daysLeft}</b>
+                          </Typography>
+                        )}
+
+                        {user.presentationsLeftToday !== undefined && (
+                          <Typography variant="body2" color="text.secondary">
+                            Presentations left today:{" "}
+                            <b>{user.presentationsLeftToday}</b>
+                          </Typography>
+                        )}
+                      </>
+                    )}
+
+                  {/* Trial (only if no active sub) */}
+                  {!user?.subscription && user?.trialActive && (
+                    <>
+                      <Typography variant="body2" color="success.main">
+                        🎉 Trial Active
+                      </Typography>
+
+                      {user.daysLeft !== undefined && (
+                        <Typography variant="body2" color="text.secondary">
+                          Days left in trial: <b>{user.daysLeft}</b>
+                        </Typography>
+                      )}
+
+                      {user.presentationsLeftToday !== undefined && (
+                        <Typography variant="body2" color="text.secondary">
+                          Presentations left today:{" "}
+                          <b>{user.presentationsLeftToday}</b>
+                        </Typography>
+                      )}
+                    </>
+                  )}
+
+                  {/* No subscription + trial ended */}
+                  {!user?.subscription && !user?.trialActive && (
+                    <Typography variant="body2" color="error.main">
+                      ⚠️ No active plan or trial
                     </Typography>
                   )}
                 </Stack>
