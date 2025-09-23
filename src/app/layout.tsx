@@ -13,6 +13,9 @@ import AnalyticsTracker from "./components/analytics/AnalyticsTracker";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
+const GA_CONVERSION_ID = process.env.NEXT_PUBLIC_GA_CONVERSION_ID;
+const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
+
 const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
@@ -32,6 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={raleway.variable} suppressHydrationWarning>
       <head>
+        {/* Meta Pixels */}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
@@ -52,26 +56,10 @@ export default function RootLayout({
             width="1"
             style={{ display: "none" }}
             src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
-            // src={`https://www.facebook.com/tr?id=1661409921482981&ev=PageView&noscript=1`}
           />
         </noscript>
 
-        {/* <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-          strategy="afterInteractive"
-        /> */}
-        {/* <Script id="ga-init" strategy="afterInteractive">
-          {`
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${GA_ID}', {
-      page_path: window.location.pathname,
-    });
-  `}
-        </Script> */}
-
-        {/* ✅ Google Analytics */}
+        {/* Google Analytics */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
           strategy="afterInteractive"
@@ -85,6 +73,29 @@ export default function RootLayout({
     gtag('config', '${GA_ID}');
   `}
         </Script>
+
+        {/* Google Ads Conversion Tracking */}
+        <Script id="google-ads-conversion" strategy="afterInteractive">
+          {`
+    gtag('event', 'conversion', {
+      'send_to': '${GA_CONVERSION_ID}',
+      'value': 1.0,
+      'currency': 'PKR'
+    });
+  `}
+        </Script>
+        {/* Clarity Project Snippet */}
+        {CLARITY_ID && (
+          <Script id="ms-clarity" strategy="afterInteractive">
+            {`
+              (function(c,l,a,r,i,t,y){
+                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "${CLARITY_ID}");
+            `}
+          </Script>
+        )}
       </head>
       <body className={raleway.className} suppressHydrationWarning>
         <ThemeContextProvider>
