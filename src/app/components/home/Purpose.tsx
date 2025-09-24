@@ -78,7 +78,7 @@ export default function PurposeSection() {
               lineHeight: 1.2,
             }}
           >
-            Why <br /> Choose Slidexy?
+            Why <br /> Teams & Creators Use Slidexy
           </Typography>
         </Box>
         <Typography
@@ -93,8 +93,9 @@ export default function PurposeSection() {
             fontWeight: 400,
           }}
         >
-          Turn any thought into a polished, on-brand presentation powered by AI,
-          styled by designers.
+          Stop spending hours formatting slides. With Slidexy, your content,
+          layout, and design are handled by AI. You get consistent, branded
+          presentations—fast, reliable, and intelligent.
         </Typography>
       </Box>
 

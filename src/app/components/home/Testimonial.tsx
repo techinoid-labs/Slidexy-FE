@@ -6,14 +6,14 @@ import { ArrowBack, ArrowForward, Star } from "@mui/icons-material";
 
 const testimonials = [
   {
-    text: "Slidexy has been a lifesaver for our team. We can focus on creating content, not designing slides.",
+    text: "Slidexy cut my slide prep time in half! The AI presentation generator is a game-changer.",
     name: "John D.",
     role: "Vice President, GoPro",
     avatar: "/images/avatar1.jpg",
     rating: 5,
   },
   {
-    text: "I was amazed by how easy it was to use Slidexy. The presentations look professional and engaging",
+    text: "From video uploads to full decks—this AI PPT maker saves me hours every week.",
     name: "Emily K.",
     role: "Product Manager, Figma",
     avatar: "/images/avatar2.jpg",
