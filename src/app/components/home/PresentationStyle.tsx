@@ -6,15 +6,6 @@ import Lottie from "lottie-react";
 import templateAnimation from "@/json/Gif8-template-section.json";
 
 export default function PresentationStyleSection() {
-  const images = [
-    "/images/theme01.svg",
-    "/images/theme02.svg",
-    "/images/theme03.svg",
-    "/images/theme04.svg",
-    "/images/theme05.svg",
-    "/images/theme06.svg",
-  ];
-
   return (
     <Box
       sx={{
@@ -74,7 +65,7 @@ export default function PresentationStyleSection() {
             mb: 2,
           }}
         >
-          Style meets Intelligence
+          Intelligent, Beautiful Templates{" "}
         </Typography>
         <Typography
           sx={{
@@ -85,9 +76,9 @@ export default function PresentationStyleSection() {
             mx: { xs: "auto", md: 0 },
           }}
         >
-          Turn any thought into a polished, on-brand presentation
-          <br />
-          powered by AI, styled by designers.
+          Access a library of AI-powered presentation templates—perfect for
+          startups, students, marketers, and educators. Each template adapts to
+          your style, goals, and voice.
         </Typography>
       </Box>
 
