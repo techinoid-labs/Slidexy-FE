@@ -125,7 +125,8 @@ const ProfileModal = ({
                               Price:{" "}
                               <b>
                                 {user.subscription.plan?.currency}{" "}
-                                {user.subscription.plan?.price} / Yearly
+                                {user.subscription.plan?.price} /{" "}
+                                {user.subscription.plan?.billingPeriod.toUpperCase()}
                               </b>
                             </Typography>
 
