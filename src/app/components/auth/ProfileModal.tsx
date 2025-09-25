@@ -42,6 +42,8 @@ const ProfileModal = ({
 }) => {
   const { user, loading, refreshUser } = useUser();
 
+  console.log(user);
+
   const handleSignOut = async () => {
     await signOut({ redirect: false }); // no page reload or redirect
   };
@@ -95,41 +97,93 @@ const ProfileModal = ({
                 </Typography>
 
                 <Divider flexItem />
-
-                {/* Trial / Subscription Info */}
-                {/* <Stack spacing={1} sx={{ width: "100%", textAlign: "center" }}>
-                  {user.trialActive && (
-                    <Typography variant="body2" color="success.main">
-                      🎉 Trial Active
-                    </Typography>
-                  )}
-
-                  {user.daysLeft !== undefined && (
-                    <Typography variant="body2" color="text.secondary">
-                      Days left in trial: <b>{user.daysLeft}</b>
-                    </Typography>
-                  )}
-
-                  {user.presentationsLeftToday !== undefined && (
-                    <Typography variant="body2" color="text.secondary">
-                      Presentations left today:{" "}
-                      <b>{user.presentationsLeftToday}</b>
-                    </Typography>
-                  )}
-                </Stack> */}
-                {/* Trial / Subscription Info */}
-                <Stack spacing={1} sx={{ width: "100%", textAlign: "center" }}>
+                <Stack spacing={2} sx={{ width: "100%", textAlign: "center" }}>
                   {/* Active Subscription */}
                   {user?.subscription &&
                     user.subscription.status === "active" && (
-                      <>
-                        <Typography variant="body2" color="primary">
-                          ✅ Active Plan: <b>{user.subscription.plan?.name}</b>
+                      <Card
+                        variant="outlined"
+                        sx={{
+                          borderRadius: 2,
+                          p: 2,
+                          borderColor: "primary.main",
+                        }}
+                      >
+                        <Stack spacing={1.2} alignItems="center">
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            fontWeight="bold"
+                          >
+                            ✅ Active Plan: {user.subscription.plan?.name}
+                          </Typography>
+
+                          <Divider flexItem />
+
+                          <Stack spacing={0.8}>
+                            <Typography variant="body2" color="text.secondary">
+                              Price:{" "}
+                              <b>
+                                {user.subscription.plan?.currency}{" "}
+                                {user.subscription.plan?.price} / Yearly
+                              </b>
+                            </Typography>
+
+                            <Typography variant="body2" color="text.secondary">
+                              Valid till{" "}
+                              <b>
+                                {new Date(
+                                  user.subscription.currentPeriodEnd
+                                ).toLocaleDateString()}
+                              </b>
+                            </Typography>
+
+                            {user.subscription.cancelAtPeriodEnd && (
+                              <Typography
+                                variant="body2"
+                                color="error.main"
+                                fontWeight="medium"
+                              >
+                                ⚠️ Your plan will cancel at the end of this
+                                period
+                              </Typography>
+                            )}
+                            {user.presentationsLeftToday !== undefined && (
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Presentations left today:{" "}
+                                <b>{user.presentationsLeftToday}</b>
+                              </Typography>
+                            )}
+                          </Stack>
+                        </Stack>
+                      </Card>
+                    )}
+
+                  {/* Trial (only if no active sub) */}
+                  {!user?.subscription && user?.trialActive && (
+                    <Card
+                      variant="outlined"
+                      sx={{
+                        borderRadius: 2,
+                        p: 2,
+                        borderColor: "success.main",
+                      }}
+                    >
+                      <Stack spacing={1.2} alignItems="center">
+                        <Typography
+                          variant="subtitle1"
+                          color="success.main"
+                          fontWeight="bold"
+                        >
+                          🎉 Trial Active
                         </Typography>
 
                         {user.daysLeft !== undefined && (
                           <Typography variant="body2" color="text.secondary">
-                            Days left in billing cycle: <b>{user.daysLeft}</b>
+                            Days left in trial: <b>{user.daysLeft}</b>
                           </Typography>
                         )}
 
@@ -139,36 +193,24 @@ const ProfileModal = ({
                             <b>{user.presentationsLeftToday}</b>
                           </Typography>
                         )}
-                      </>
-                    )}
-
-                  {/* Trial (only if no active sub) */}
-                  {!user?.subscription && user?.trialActive && (
-                    <>
-                      <Typography variant="body2" color="success.main">
-                        🎉 Trial Active
-                      </Typography>
-
-                      {user.daysLeft !== undefined && (
-                        <Typography variant="body2" color="text.secondary">
-                          Days left in trial: <b>{user.daysLeft}</b>
-                        </Typography>
-                      )}
-
-                      {user.presentationsLeftToday !== undefined && (
-                        <Typography variant="body2" color="text.secondary">
-                          Presentations left today:{" "}
-                          <b>{user.presentationsLeftToday}</b>
-                        </Typography>
-                      )}
-                    </>
+                      </Stack>
+                    </Card>
                   )}
 
                   {/* No subscription + trial ended */}
                   {!user?.subscription && !user?.trialActive && (
-                    <Typography variant="body2" color="error.main">
-                      ⚠️ No active plan or trial
-                    </Typography>
+                    <Card
+                      variant="outlined"
+                      sx={{ borderRadius: 2, p: 2, borderColor: "error.main" }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        color="error.main"
+                        fontWeight="bold"
+                      >
+                        ⚠️ No active plan or trial
+                      </Typography>
+                    </Card>
                   )}
                 </Stack>
 
