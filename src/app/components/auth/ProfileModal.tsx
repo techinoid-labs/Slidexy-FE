@@ -149,13 +149,60 @@ const ProfileModal = ({
                                 period
                               </Typography>
                             )}
-                            {user.presentationsLeftToday !== undefined && (
+
+                            {/* Usage stats */}
+                            {user.subscriptionUsage?.presentationsLeftToday !==
+                              undefined && (
                               <Typography
                                 variant="body2"
                                 color="text.secondary"
                               >
                                 Presentations left today:{" "}
-                                <b>{user.presentationsLeftToday}</b>
+                                <b>
+                                  {
+                                    user.subscriptionUsage
+                                      .presentationsLeftToday
+                                  }
+                                </b>
+                              </Typography>
+                            )}
+
+                            {user.subscriptionUsage?.imageDecksLeftToday !==
+                              undefined && (
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Image decks left today:{" "}
+                                <b>
+                                  {user.subscriptionUsage.imageDecksLeftToday}
+                                </b>
+                              </Typography>
+                            )}
+
+                            {user.subscriptionUsage
+                              ?.predefinedDecksLeftToday !== undefined && (
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Predefined decks left today:{" "}
+                                <b>
+                                  {
+                                    user.subscriptionUsage
+                                      .predefinedDecksLeftToday
+                                  }
+                                </b>
+                              </Typography>
+                            )}
+
+                            {user.subscriptionUsage?.daysLeft !== undefined && (
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Days left in plan:{" "}
+                                <b>{user.subscriptionUsage.daysLeft}</b>
                               </Typography>
                             )}
                           </Stack>
@@ -163,8 +210,8 @@ const ProfileModal = ({
                       </Card>
                     )}
 
-                  {/* Trial (only if no active sub) */}
-                  {!user?.subscription && user?.trialActive && (
+                  {/* Trial (only if no active subscription) */}
+                  {!user?.subscription && user?.trial?.active && (
                     <Card
                       variant="outlined"
                       sx={{
@@ -182,16 +229,16 @@ const ProfileModal = ({
                           🎉 Trial Active
                         </Typography>
 
-                        {user.daysLeft !== undefined && (
+                        {user.trial.daysLeft !== undefined && (
                           <Typography variant="body2" color="text.secondary">
-                            Days left in trial: <b>{user.daysLeft}</b>
+                            Days left in trial: <b>{user.trial.daysLeft}</b>
                           </Typography>
                         )}
 
-                        {user.presentationsLeftToday !== undefined && (
+                        {user.trial.presentationsLeftToday !== undefined && (
                           <Typography variant="body2" color="text.secondary">
                             Presentations left today:{" "}
-                            <b>{user.presentationsLeftToday}</b>
+                            <b>{user.trial.presentationsLeftToday}</b>
                           </Typography>
                         )}
                       </Stack>
@@ -199,7 +246,7 @@ const ProfileModal = ({
                   )}
 
                   {/* No subscription + trial ended */}
-                  {!user?.subscription && !user?.trialActive && (
+                  {!user?.subscription && !user?.trial?.active && (
                     <Card
                       variant="outlined"
                       sx={{ borderRadius: 2, p: 2, borderColor: "error.main" }}

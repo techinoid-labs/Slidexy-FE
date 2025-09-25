@@ -19,13 +19,30 @@ import { useSession } from "next-auth/react";
 //   presentationsLeftToday?: number;
 // } | null;
 
+type PlanConfig = {
+  decksPerDay: number;
+  imageDecks: number;
+  predefinedDecks: number;
+  features: {
+    deepResearch: boolean;
+    aiAgent: boolean;
+    presentationAgent: boolean;
+  };
+};
+
+type PlanConfigMap = {
+  weekly: PlanConfig;
+  monthly: PlanConfig;
+  yearly: PlanConfig;
+};
+
 type PricingPlan = {
   _id: string;
   name: string;
   stripePriceId?: string;
   price: number;
   currency: string;
-  billingPeriod: string; // "month" | "year"
+  billingPeriod: "weekly" | "monthly" | "yearly"; // match backend
   description?: string;
   features?: string[];
   isActive?: boolean;
@@ -36,14 +53,38 @@ type PricingPlan = {
 type Subscription = {
   _id: string;
   stripeId: string;
-  status: "active" | "canceled" | "incomplete" | "past_due" | "trialing"; // refine if you want
-  plan?: PricingPlan | null; // ✅ populated
-  planSnapshot?: PricingPlan | null; // ✅ frozen copy
+  status:
+    | "active"
+    | "canceled"
+    | "incomplete"
+    | "past_due"
+    | "trialing"
+    | "unpaid"
+    | "incomplete_expired";
+  plan?: PricingPlan | null; // populated from DB
+  planSnapshot?: PricingPlan | null; // frozen copy
   startDate: string;
   currentPeriodStart: string;
   currentPeriodEnd: string;
   cancelAtPeriodEnd: boolean;
   endDate?: string | null;
+};
+
+type TrialInfo = {
+  active: boolean;
+  start?: string;
+  end?: string;
+  daysLeft: number;
+  presentationsLeftToday: number;
+};
+
+type SubscriptionUsage = {
+  active: boolean;
+  daysLeft: number;
+  presentationsLeftToday: number;
+  imageDecksLeftToday: number;
+  predefinedDecksLeftToday: number;
+  config: PlanConfig | null;
 };
 
 type User = {
@@ -55,11 +96,10 @@ type User = {
   currentPresentationId?: string | null;
   pricingPlan?: PricingPlan | null;
   subscription?: Subscription | null;
-  trialActive?: boolean;
-  trialStart?: string;
-  trialEnd?: string;
-  daysLeft?: number;
-  presentationsLeftToday?: number;
+
+  // 🔹 new structured fields
+  trial: TrialInfo;
+  subscriptionUsage: SubscriptionUsage;
 } | null;
 
 type UserContextType = {
