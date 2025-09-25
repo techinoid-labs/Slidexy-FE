@@ -151,7 +151,7 @@ const ProfileModal = ({
                             )}
 
                             {/* Usage stats */}
-                            {user.subscriptionUsage?.presentationsLeftToday !==
+                            {/* {user.subscriptionUsage?.presentationsLeftToday !==
                               undefined && (
                               <Typography
                                 variant="body2"
@@ -165,7 +165,7 @@ const ProfileModal = ({
                                   }
                                 </b>
                               </Typography>
-                            )}
+                            )} */}
 
                             {user.subscriptionUsage?.imageDecksLeftToday !==
                               undefined && (
@@ -235,10 +235,24 @@ const ProfileModal = ({
                           </Typography>
                         )}
 
-                        {user.trial.presentationsLeftToday !== undefined && (
+                        {/* {user.trial.presentationsLeftToday !== undefined && (
                           <Typography variant="body2" color="text.secondary">
                             Presentations left today:{" "}
                             <b>{user.trial.presentationsLeftToday}</b>
+                          </Typography>
+                        )} */}
+
+                        {user.trial.imageDecksLeftToday !== undefined && (
+                          <Typography variant="body2" color="text.secondary">
+                            Image decks left today:{" "}
+                            <b>{user.trial.imageDecksLeftToday}</b>
+                          </Typography>
+                        )}
+
+                        {user.trial.predefinedDecksLeftToday !== undefined && (
+                          <Typography variant="body2" color="text.secondary">
+                            Predefined decks left today:{" "}
+                            <b>{user.trial.predefinedDecksLeftToday}</b>
                           </Typography>
                         )}
                       </Stack>

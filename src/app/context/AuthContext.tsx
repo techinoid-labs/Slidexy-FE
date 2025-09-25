@@ -76,6 +76,9 @@ type TrialInfo = {
   end?: string;
   daysLeft: number;
   presentationsLeftToday: number;
+  imageDecksLeftToday: number;
+  predefinedDecksLeftToday: number;
+  config: any;
 };
 
 type SubscriptionUsage = {
