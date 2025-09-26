@@ -40,12 +40,12 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
   const { setSlides, slides, aiThemes, setAiThemes } = useSlides();
 
   const themeImageUrls = [
-    "/theme-1.jpeg",
-    "/theme-2.jpeg",
-    "/theme-3.jpeg",
+    "/theme-2.jpg",
+    "/theme-1.jpg",
+    "/theme-3.jpg",
     "/theme-4.jpg",
-    "/theme-5.jpeg",
-    "/theme-6.jpg",
+    "/theme-5.jpg",
+    "/theme-7.jpg",
   ];
 
   const defaultThemes: Theme[] = [
@@ -58,7 +58,7 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
     },
     {
       font: "Roboto",
-      primaryColor: "#4A148C",
+      primaryColor: "#FAFA",
       secondaryColor: "#F50057",
       backgroundColor: "#F3E5F5",
       image_url: themeImageUrls[1],
@@ -72,7 +72,7 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
     },
     {
       font: "Poppins",
-      primaryColor: "#9E7e12",
+      primaryColor: "#f1f1f1",
       secondaryColor: "#FFD600",
       backgroundColor: "#F1F8E9",
       image_url: themeImageUrls[3],
@@ -352,7 +352,7 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
                 <Typography
                   fontSize={15}
                   fontWeight={500}
-                  sx={{ color: theme.primaryColor }}
+                  // sx={{ color: theme.primaryColor }}
                 >
                   {theme.font}
                 </Typography>
