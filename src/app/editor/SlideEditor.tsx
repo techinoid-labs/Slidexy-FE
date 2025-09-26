@@ -154,28 +154,35 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     setSelectedImage(null);
     setSelectedShapeIndex(null);
   };
-
-// Add this useEffect in your SlideEditor component, after the existing useEffects
-
 useEffect(() => {
   const handleKeyDown = (e: KeyboardEvent) => {
+    // --- allow typing inside editors ---
+    const active = document.activeElement as HTMLElement | null;
+    const isTyping =
+      active?.tagName === "INPUT" ||
+      active?.tagName === "TEXTAREA" ||
+      active?.isContentEditable;
+
     // Handle undo/redo shortcuts
-    if (e.ctrlKey && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+    if (e.ctrlKey && e.key.toLowerCase() === "z" && !e.shiftKey) {
       e.preventDefault();
       undo();
       return;
     }
-    
-    if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) {
+
+    if (
+      e.ctrlKey &&
+      (e.key.toLowerCase() === "y" ||
+        (e.key.toLowerCase() === "z" && e.shiftKey))
+    ) {
       e.preventDefault();
       redo();
       return;
     }
 
-    // Your existing Ctrl+A logic
+    // Ctrl+A select all
     if (e.ctrlKey && e.key.toLowerCase() === "a") {
       e.preventDefault();
-
       const currentSlide = slides[selectedIndex];
       if (!currentSlide) return;
 
@@ -203,8 +210,8 @@ useEffect(() => {
       return;
     }
 
-    // Your existing delete logic
-    if (e.key === "Delete" || e.key === "Backspace") {
+    // Delete element (only if NOT typing text)
+    if ((e.key === "Delete" || e.key === "Backspace") && !isTyping) {
       e.preventDefault();
       if (selectedElements.length === 0) return;
 
@@ -231,7 +238,8 @@ useEffect(() => {
 
   window.addEventListener("keydown", handleKeyDown);
   return () => window.removeEventListener("keydown", handleKeyDown);
-}, [slides, selectedIndex, selectedElements, setSlides, undo, redo]); 
+}, [slides, selectedIndex, selectedElements, setSlides, undo, redo]);
+
   const handleSelect = (el: SelectedElement, multi = false) => {
     if (multi) {
       setSelectedElements((prev) =>

@@ -27,7 +27,7 @@ interface KonvaTextEditorProps {
   wrap?: "word" | "char";
   draggable?: boolean;
   isSelected: boolean;
-  onSelect: (e: any ) => void;
+  onSelect: (e: any) => void;
   verticalAlign?: string;
 }
 
@@ -68,7 +68,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   const parsed = id.match(/(?:title|el)-(\d+)(?:-(\d+))?/);
   const slideIndex = parsed ? parseInt(parsed[1], 10) : -1;
   const elementIndex = parsed?.[2] ? parseInt(parsed[2], 10) : null;
-
+  const caretRef = useRef<number | null>(null);
   useEffect(() => {
     if (isSelected && textRef.current && trRef.current) {
       trRef.current.nodes([textRef.current]);
@@ -146,9 +146,53 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   );
 
   const handleDragEnd = useCallback(
-  (e: any) => {
+    (e: any) => {
+      const node = textRef.current;
+      if (!node) return;
+
+      const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
+        node,
+        getSlideDimensions().SLIDE_WIDTH,
+        getSlideDimensions().SLIDE_HEIGHT
+      );
+
+      if (isAtBoundary) {
+        node.position({ x: lastValidPos.x, y: lastValidPos.y });
+      } else {
+        node.position({ x: newX, y: newY });
+        setLastValidPos({ x: newX, y: newY });
+      }
+
+      updateSlides(text, {
+        x: node.x(),
+        y: node.y(),
+        width,
+        fontSize,
+        fontFamily,
+        fontWeight,
+        fontStyle,
+        align,
+      });
+
+      setIsAtBoundary(isAtBoundary);
+    },
+    [text, width, fontSize, fontFamily, fontWeight, fontStyle, align, updateSlides, setIsAtBoundary, lastValidPos]
+  );
+
+
+  const handleTransformEnd = useCallback(() => {
     const node = textRef.current;
     if (!node) return;
+
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+    node.scaleX(1);
+    node.scaleY(1);
+
+    const newWidth = Math.max(30, node.width() * scaleX);
+    const newHeight = Math.max(20, node.height() * scaleY);
+    node.width(newWidth);
+    node.height(newHeight);
 
     const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
       node,
@@ -156,65 +200,21 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
       getSlideDimensions().SLIDE_HEIGHT
     );
 
-    if (isAtBoundary) {
-      node.position({ x: lastValidPos.x, y: lastValidPos.y });
-    } else {
-      node.position({ x: newX, y: newY });
-      setLastValidPos({ x: newX, y: newY });
-    }
+    node.position({ x: newX, y: newY });
+    setIsAtBoundary(isAtBoundary);
 
     updateSlides(text, {
-      x: node.x(),
-      y: node.y(),
-      width,
+      x: newX,
+      y: newY,
+      width: newWidth,
+      height: newHeight,
       fontSize,
       fontFamily,
       fontWeight,
       fontStyle,
       align,
     });
-
-    setIsAtBoundary(isAtBoundary);
-  },
-  [text, width, fontSize, fontFamily, fontWeight, fontStyle, align, updateSlides, setIsAtBoundary, lastValidPos]
-);
-
-
- const handleTransformEnd = useCallback(() => {
-  const node = textRef.current;
-  if (!node) return;
-
-  const scaleX = node.scaleX();
-  const scaleY = node.scaleY();
-  node.scaleX(1);
-  node.scaleY(1);
-
-  const newWidth = Math.max(30, node.width() * scaleX);
-  const newHeight = Math.max(20, node.height() * scaleY);
-  node.width(newWidth);
-  node.height(newHeight);
-
-  const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
-    node,
-    getSlideDimensions().SLIDE_WIDTH,
-    getSlideDimensions().SLIDE_HEIGHT
-  );
-
-  node.position({ x: newX, y: newY });
-  setIsAtBoundary(isAtBoundary);
-
-  updateSlides(text, {
-    x: newX,
-    y: newY,
-    width: newWidth,
-    height: newHeight,
-    fontSize,
-    fontFamily,
-    fontWeight,
-    fontStyle,
-    align,
-  });
-}, [text, fontSize, fontFamily, fontWeight, fontStyle, align, updateSlides, setIsAtBoundary]);
+  }, [text, fontSize, fontFamily, fontWeight, fontStyle, align, updateSlides, setIsAtBoundary]);
 
 
   useEffect(() => {
@@ -233,7 +233,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
     <>
       <Text
         ref={textRef}
-       onClick={(e) => onSelect(e)}
+        onClick={(e) => onSelect(e)}
         onTap={onSelect}
         onDblClick={() => setIsEditing(true)}
         onTouchEnd={(e) => {
@@ -308,6 +308,8 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
             ref={textareaRef}
             value={inputValue}
             onChange={(e) => {
+              const target = e.target;
+              caretRef.current = target.selectionStart;
               setInputValue(e.target.value);
               if (textareaRef.current) {
                 textareaRef.current.style.height = "auto";
