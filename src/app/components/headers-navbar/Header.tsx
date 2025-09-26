@@ -41,7 +41,7 @@ export default function Header() {
     { label: "Templates", hasDropdown: false, link: "/templates" },
     { label: "Privacy", hasDropdown: false, link: "/privacy-policy" },
     { label: "FAQ's", hasDropdown: false, link: "/faqs" },
-    { label: "Blogs", hasDropdown: false, link: "/blog" },
+    //{ label: "Blogs", hasDropdown: false, link: "/blog" },
 
     // { label: "Pricing", hasDropdown: false, link: "/pricing" },
   ];
@@ -169,7 +169,8 @@ export default function Header() {
                     <Button
                       variant="contained"
                       sx={{
-                        mt: 0.5,
+                        mt: 0.9,
+                        mb: 1.06,
                         backgroundColor: "#4A00E0",
                         color: "#fff",
                         borderRadius: "999px",

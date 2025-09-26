@@ -89,7 +89,6 @@ export default function PresentationStyleSection() {
           flexDirection: { xs: "column", md: "row" },
           alignItems: "center",
           background: "#fff",
-          borderRadius: "32px",
           boxShadow: "0 2px 24px 0 rgba(80, 80, 120, 0.07)",
           width: "100%",
           height: { xs: "auto", md: "auto" },
@@ -171,7 +170,7 @@ export default function PresentationStyleSection() {
             animationData={templateAnimation}
             loop
             autoplay
-            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+            style={{ width: "100%", height: "100%", borderRadius: "32px" }}
           />
         </Box>
       </Box>

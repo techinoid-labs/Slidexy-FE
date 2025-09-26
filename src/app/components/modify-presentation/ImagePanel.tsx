@@ -539,7 +539,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                 value={borderRadius}
                 onChange={handleRadiusChange}
                 min={0}
-                max={100}
+                max={500}
                 sx={{ mb: 2 }}
               />
               <Typography sx={{ fontSize: 12, color: "#6D6D6D" }}>
