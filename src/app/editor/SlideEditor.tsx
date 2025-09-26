@@ -47,6 +47,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     selectedShapeIndex,
     setSelectedShapeIndex,
     setSlides,
+    undo,
+    redo,
   } = useSlides();
 
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
@@ -153,44 +155,83 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     setSelectedShapeIndex(null);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key.toLowerCase() === "a") {
-        e.preventDefault();
+// Add this useEffect in your SlideEditor component, after the existing useEffects
 
-        const currentSlide = slides[selectedIndex];
-        if (!currentSlide) return;
+useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    // Handle undo/redo shortcuts
+    if (e.ctrlKey && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+      e.preventDefault();
+      undo();
+      return;
+    }
+    
+    if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) {
+      e.preventDefault();
+      redo();
+      return;
+    }
 
-        const all: SelectedElement[] = [];
+    // Your existing Ctrl+A logic
+    if (e.ctrlKey && e.key.toLowerCase() === "a") {
+      e.preventDefault();
 
-        // Add the title explicitly
-        if (currentSlide.slide_title?.text) {
-          all.push({
-            id: `title-${selectedIndex}`,
-            type: "text",
-            index: -1, // special index for title
-          });
-        }
+      const currentSlide = slides[selectedIndex];
+      if (!currentSlide) return;
 
-        // Add other elements (text, image, shape, etc.)
-        currentSlide.elements.forEach((el: any, i: number) => {
-          if (el.element_type === "image") {
-            all.push({ id: el.properties.image_id, type: "image", index: i });
-          } else if (el.element_type === "shape") {
-            all.push({ id: el.shape_id, type: "shape", index: i });
-          } else {
-            all.push({ id: `el-${selectedIndex}-${i}`, type: "text", index: i });
-          }
+      const all: SelectedElement[] = [];
+
+      if (currentSlide.slide_title?.text) {
+        all.push({
+          id: `title-${selectedIndex}`,
+          type: "text",
+          index: -1,
         });
-
-        setSelectedElements(all);
       }
-    };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slides, selectedIndex]);
+      currentSlide.elements.forEach((el: any, i: number) => {
+        if (el.element_type === "image") {
+          all.push({ id: el.properties.image_id, type: "image", index: i });
+        } else if (el.element_type === "shape") {
+          all.push({ id: el.shape_id, type: "shape", index: i });
+        } else {
+          all.push({ id: `el-${selectedIndex}-${i}`, type: "text", index: i });
+        }
+      });
 
+      setSelectedElements(all);
+      return;
+    }
+
+    // Your existing delete logic
+    if (e.key === "Delete" || e.key === "Backspace") {
+      e.preventDefault();
+      if (selectedElements.length === 0) return;
+
+      const updatedSlides = structuredClone(slides);
+      const currentSlide = updatedSlides[selectedIndex];
+      if (!currentSlide) return;
+
+      if (selectedElements.some((el) => el.index === -1)) {
+        currentSlide.slide_title.text = "";
+      }
+
+      const indexesToRemove = new Set(
+        selectedElements.filter((el) => el.index >= 0).map((el) => el.index)
+      );
+
+      currentSlide.elements = currentSlide.elements.filter(
+        (_: any, i: number) => !indexesToRemove.has(i)
+      );
+
+      setSlides(updatedSlides);
+      setSelectedElements([]);
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [slides, selectedIndex, selectedElements, setSlides, undo, redo]); 
   const handleSelect = (el: SelectedElement, multi = false) => {
     if (multi) {
       setSelectedElements((prev) =>

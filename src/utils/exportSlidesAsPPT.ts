@@ -4,7 +4,7 @@ import { get } from "idb-keyval";
 export type StructuredSlide = {
   slide_id: string;
   slide_title?: {
-    text?: string;
+    text: string;
     properties?: {
       fontSize?: number;
       fontFamily?: string;
@@ -15,7 +15,7 @@ export type StructuredSlide = {
   };
   elements: {
     useThemeColor?: boolean;
-     element_type?: string;
+    element_type: "title" | "bullet_point" | "image" | "text" | "shape";
     text?: string;
     src?: string;
     // properties?: {
@@ -55,7 +55,7 @@ export type StructuredSlide = {
       sides?: number;
     };
   }[];
-  image_url: string | null;
+  image_url?: string;
 };
 
 const LOCAL_STORAGE_THEME_KEY = "slidesTheme";
