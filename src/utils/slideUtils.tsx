@@ -21,7 +21,10 @@ export const restrictShapeBounds = (
     const radius = Math.max(properties.radius || MIN_SIZE / 2, MIN_SIZE / 2);
     width = height = radius * 2;
   } else if (shapeType === "Konva.Star") {
-    const outerRadius = Math.max(properties.outerRadius || MIN_SIZE / 2, MIN_SIZE / 2);
+    const outerRadius = Math.max(
+      properties.outerRadius || MIN_SIZE / 2,
+      MIN_SIZE / 2
+    );
     width = height = outerRadius * 2;
   } else if (shapeType === "Konva.RegularPolygon") {
     const radius = Math.max(properties.radius || MIN_SIZE / 2, MIN_SIZE / 2);
@@ -146,8 +149,6 @@ export const constrainToCanvas = (
   return { x: newX, y: newY, isAtBoundary };
 };
 
-
-
 export const constrainImageToCanvas = (
   node: any,
   slideWidth: number,
@@ -186,11 +187,6 @@ export const constrainImageToCanvas = (
 
   return { x: newX, y: newY, isAtBoundary };
 };
-
-
-
-
-
 
 export const getRandomSlide = () => {
   const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
@@ -233,58 +229,57 @@ export const getRandomSlide = () => {
           zIndex: index + 1,
           x: LEFT_PADDING + 10,
           y: 80 + index * (fontSize + lineSpacing),
-
         },
       };
     });
 
-  return {
-    slide_id: `slide-${Date.now()}`,
-    slide_title: {
-      text: titles[Math.floor(Math.random() * titles.length)],
-      properties: {
-        fontSize: 24,
-        fontFamily: "",
-        fill: "#444",
-        fontWeight: "bold",
-      },
-    },
-    elements: [
-      ...getRandomBullets(3),
-      {
-        element_type: "image",
-        konva_component: "Konva.Image",
-        properties: {
-          imageSrc: "/images/create-presentation/new-slide-img.png",
-          // x: SLIDE_WIDTH - 500,
-          // y: (SLIDE_HEIGHT - 400) / 2,
-          // width: 480,
-          // height: 400,
-          x: SLIDE_WIDTH - 400,
-          y: (SLIDE_HEIGHT - 320) / 2,
-          width: getSlideDimensions().IMAGE_WIDTH,
-          height: getSlideDimensions().IMAGE_HEIGHT,
-          zIndex: 4,
-        },
-      },
-    ],
-    image_url: "/images/create-presentation/new-slide-img.png",
-  };
-
   // return {
   //   slide_id: `slide-${Date.now()}`,
   //   slide_title: {
-  //     text: "",
+  //     text: titles[Math.floor(Math.random() * titles.length)],
   //     properties: {
   //       fontSize: 24,
-  //       fontFamily: "Arial",
-  //       fill: "#000",
-  //       fontStyle: "normal",
+  //       fontFamily: "",
+  //       fill: "#444",
+  //       fontWeight: "bold",
   //     },
   //   },
-  //   elements: [],
-  //   image_url: null,
+  //   elements: [
+  //     ...getRandomBullets(3),
+  //     {
+  //       element_type: "image",
+  //       konva_component: "Konva.Image",
+  //       properties: {
+  //         imageSrc: "/images/create-presentation/new-slide-img.png",
+  //         // x: SLIDE_WIDTH - 500,
+  //         // y: (SLIDE_HEIGHT - 400) / 2,
+  //         // width: 480,
+  //         // height: 400,
+  //         x: SLIDE_WIDTH - 400,
+  //         y: (SLIDE_HEIGHT - 320) / 2,
+  //         width: getSlideDimensions().IMAGE_WIDTH,
+  //         height: getSlideDimensions().IMAGE_HEIGHT,
+  //         zIndex: 4,
+  //       },
+  //     },
+  //   ],
+  //   image_url: "/images/create-presentation/new-slide-img.png",
   // };
+
+  return {
+    slide_id: `slide-${Date.now()}`,
+    slide_title: {
+      text: "",
+      properties: {
+        fontSize: 24,
+        fontFamily: "Arial",
+        fill: "#000",
+        fontStyle: "normal",
+      },
+    },
+    elements: [],
+    image_url: null,
+  };
 };
 
 export const getLayoutProps = (layout: number) => {

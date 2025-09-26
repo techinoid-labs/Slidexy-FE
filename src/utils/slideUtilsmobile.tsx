@@ -3,7 +3,7 @@ export const getSlideDimensions = () => {
   const windowHeight = typeof window !== "undefined" ? window.innerHeight : 400;
   const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 500);
   const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 400);
-  
+
   const LEFT_PADDING = 17;
   const IMAGE_WIDTH = 200;
   const IMAGE_HEIGHT = 190;
@@ -58,8 +58,12 @@ export const restrictShapeBounds = (
   }
 
   // Clamp position so shape doesn't overflow canvas
-  if (["Konva.Line", "Konva.Arrow", "Konva.Circle", "Konva.Star"].includes(shapeType)) {
-    maxX = canvasWidth - width;  // extra padding for small shapes
+  if (
+    ["Konva.Line", "Konva.Arrow", "Konva.Circle", "Konva.Star"].includes(
+      shapeType
+    )
+  ) {
+    maxX = canvasWidth - width; // extra padding for small shapes
     maxY = window.innerHeight - 500;
   } else {
     maxX = canvasWidth - width + 50;
@@ -229,41 +233,56 @@ export const getRandomSlide = () => {
       };
     });
 
+  // return {
+  //   slide_id: `slide-${Date.now()}`,
+  //   slide_title: {
+  //     text: titles[Math.floor(Math.random() * titles.length)],
+  //     properties: {
+  //       fontSize: 14,
+  //       fontWeight: "normal",
+  //       fontFamily: "Roboto",
+  //       fill: "#000",
+  //       fontStyle: "normal",
+  //       align: "left",
+  //       x: LEFT_PADDING,
+  //       y: 25,
+  //       width: 220,
+  //     },
+  //   },
+  //   elements: [
+  //     ...getRandomBullets(3),
+  //     {
+  //       element_type: "image",
+  //       konva_component: "Konva.Image",
+  //       properties: {
+  //         imageSrc: "/images/create-presentation/new-slide-img.png",
+  //         // x: SLIDE_WIDTH - 500,
+  //         // y: (SLIDE_HEIGHT - 400) / 2,
+  //         // width: 480,
+  //         // height: 400,
+  //         x: SLIDE_WIDTH - 250,
+  //         y : SLIDE_HEIGHT - 250,
+  //         width: getSlideDimensions().IMAGE_WIDTH,
+  //         height: getSlideDimensions().IMAGE_HEIGHT,
+  //       },
+  //     },
+  //   ],
+  //   image_url: "/images/create-presentation/new-slide-img.png",
+  // };
+
   return {
     slide_id: `slide-${Date.now()}`,
     slide_title: {
-      text: titles[Math.floor(Math.random() * titles.length)],
+      text: "",
       properties: {
-        fontSize: 14,
-        fontWeight: "normal",
-        fontFamily: "Roboto",
+        fontSize: 24,
+        fontFamily: "Arial",
         fill: "#000",
         fontStyle: "normal",
-        align: "left",
-        x: LEFT_PADDING,
-        y: 25,
-        width: 220,
       },
     },
-    elements: [
-      ...getRandomBullets(3),
-      {
-        element_type: "image",
-        konva_component: "Konva.Image",
-        properties: {
-          imageSrc: "/images/create-presentation/new-slide-img.png",
-          // x: SLIDE_WIDTH - 500,
-          // y: (SLIDE_HEIGHT - 400) / 2,
-          // width: 480,
-          // height: 400,
-          x: SLIDE_WIDTH - 250,
-          y : SLIDE_HEIGHT - 250,
-          width: getSlideDimensions().IMAGE_WIDTH,
-          height: getSlideDimensions().IMAGE_HEIGHT,
-        },
-      },
-    ],
-    image_url: "/images/create-presentation/new-slide-img.png",
+    elements: [],
+    image_url: null,
   };
 };
 
