@@ -5,8 +5,20 @@ import Link from "next/link";
 import Lottie from "lottie-react";
 import Gif10ContextAware from "@/json/Gif10-context-aware.json";
 import StepsAccordion from "./components/working/StepsAccordion";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { analyticsEvent } from "@/lib/gtag";
 
 export default function WorkingSection() {
+  const router = useRouter();
+  const handleRedirect = () => {
+    analyticsEvent("get_started_click", {
+      category: "engagement",
+      label: "home_page_to_slide_generation",
+    });
+
+    router.push(`/presentation/create`);
+  };
   return (
     <Box
       sx={{
@@ -67,6 +79,7 @@ export default function WorkingSection() {
       >
         <Button
           variant="contained"
+          onClick={() => handleRedirect()}
           sx={{
             background: "#6C2BD7",
             color: "#fff",
