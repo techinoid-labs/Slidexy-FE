@@ -153,7 +153,7 @@ export default function HeroSection() {
                   style={{ marginRight: "4px", width: 18, height: 18 }}
                 />
               }
-              label="No sign-up needed for the first deck."
+              label="No sign-up needed for your first AI-generated deck"
               sx={{
                 px: 1.5,
                 py: 0.7,
@@ -187,14 +187,7 @@ export default function HeroSection() {
                 textOverflow: "ellipsis",
               }}
             >
-              Your Idea,{" "}
-              <Typography
-                component="span"
-                variant="inherit"
-                sx={{ color: "#000000" }}
-              >
-                Instantly on Slides.
-              </Typography>
+              Slidexy — Your AI Presentation Maker
             </Typography>
 
             <Typography
@@ -210,7 +203,9 @@ export default function HeroSection() {
               }}
             >
               <span>
-                Turn any thought into a polished, on-brand presentation{" "}
+                Turn ideas, voice, or prompts into polished slides instantly.
+                Use our AI slide generator to build pitch decks, reports, or
+                classroom presentations in seconds.{" "}
               </span>
               <Box
                 component="span"
