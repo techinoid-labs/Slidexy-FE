@@ -127,18 +127,125 @@ const Page = () => {
     setSlides(newSlides);
   };
 
-  const handleExportPPTX = () => {
-    if (loading) return;
+ const handleExportPPTX = () => {
+  if (loading) return;
 
-    if (session?.user || user) {
-      setShowAuthModal(false);
+  if (session?.user || user) {
+    setShowAuthModal(false);
 
-      // Export the current slides
-      exportSlidesAsPPT(slides);
-    } else {
-      setShowAuthModal(true);
-    }
-  };
+    // Build structuredSlides (your old logic)
+    const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
+      const elements: StructuredSlide["elements"] = [];
+
+      slide.elements?.forEach((el: any) => {
+        const { element_type, text, properties = {}, konva_component } = el;
+        const {
+          x = 0,
+          y = 0,
+          width,
+          height,
+          w,
+          h,
+          fontSize = 18,
+          fill = "#444444",
+          fontFamily,
+          fontStyle,
+          fontWeight,
+          imageSrc,
+        } = properties;
+
+        const xIn = x / 100;
+        const yIn = y / 100;
+        const wIn = (width || w || 400) / 100;
+        const hIn = (height || h || 200) / 100;
+
+        if (element_type === "bullet_point") {
+          elements.push({
+            element_type: "bullet_point",
+            text,
+            properties: {
+              x: xIn,
+              y: yIn,
+              w: wIn,
+              h: hIn,
+              fontSize,
+              fill: fill.replace("#", ""),
+              fontFamily,
+              fontStyle,
+              fontWeight,
+            },
+          });
+        } else if (element_type === "image" && imageSrc) {
+          elements.push({
+            element_type: "image",
+            src: slide.image_url || undefined,
+            properties: {
+              imageSrc,
+              x: xIn,
+              y: yIn,
+              w: wIn,
+              h: hIn,
+            },
+          });
+        } else if (element_type === "text" && text) {
+          elements.push({
+            element_type: "text",
+            text,
+            properties: {
+              x: xIn,
+              y: yIn,
+              w: wIn,
+              h: hIn,
+              fontSize,
+              fill: fill.replace("#", ""),
+              fontFamily,
+              fontStyle,
+              fontWeight,
+            },
+          });
+        } else if (element_type === "shape") {
+          elements.push({
+            element_type: "shape",
+            text: konva_component,
+            properties: {
+              x: xIn,
+              y: yIn,
+              w: wIn,
+              h: hIn,
+              fill: fill.replace("#", "") || "cccccc",
+            },
+          });
+        }
+      });
+
+      const slideTitleProps: any = slide.slide_title?.properties || {};
+      const slideTitle = slide.slide_title?.text;
+
+      return {
+        slide_id: slide.slide_id,
+        slide_title: slideTitle
+          ? {
+              text: slideTitle,
+              properties: {
+                fontSize: slideTitleProps.fontSize,
+                fill: slideTitleProps.fill?.replace("#", ""),
+                fontStyle: slideTitleProps.fontStyle,
+                fontFamily: slideTitleProps.fontFamily,
+              },
+            }
+          : undefined,
+        elements,
+        image_url: slide.image_url,
+      };
+    });
+
+    // ✅ Export the transformed slides
+    exportSlidesAsPPT(structuredSlides);
+  } else {
+    setShowAuthModal(true);
+  }
+};
+
 
 
 

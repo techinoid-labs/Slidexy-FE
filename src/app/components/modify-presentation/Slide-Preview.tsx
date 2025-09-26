@@ -8,7 +8,8 @@ import SlideRenderer from "../../editor/KonvaComponents/KonvaSlideRenderer";
 import { getSlideDimensions } from "../../../utils/slideUtils";
 
 const getDynamicConstants = () => {
-    const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, SLIDE_HEIGHT_MOBILE, SLIDE_WIDTH_MOBILE } = getSlideDimensions();
+    const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, SLIDE_HEIGHT_MOBILE, SLIDE_WIDTH_MOBILE } =
+        getSlideDimensions();
     const IMAGE_WIDTH = 400;
     const IMAGE_PADDING = 40;
     const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
@@ -56,6 +57,24 @@ const SlideShowPlayer = ({ slides, open, onClose, theme }: any) => {
     const handlePrevious = () => {
         setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
     };
+
+    // Keyboard navigation
+    useEffect(() => {
+        if (!open) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "ArrowRight") {
+                handleNext();
+            } else if (e.key === "ArrowLeft") {
+                handlePrevious();
+            } else if (e.key === "Escape") {
+                onClose();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [open, slides.length]);
 
     if (!slides.length) return null;
 
