@@ -42,7 +42,7 @@ const ProfileModal = ({
 }) => {
   const { user, loading, refreshUser } = useUser();
 
-  console.log(user);
+  // console.log(user);
 
   const handleSignOut = async () => {
     await signOut({ redirect: false }); // no page reload or redirect

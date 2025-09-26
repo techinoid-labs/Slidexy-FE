@@ -330,7 +330,8 @@ export default function PresentationMaker({
               return;
             }
           } catch (err) {
-            console.error("Bad JSON chunk:", jsonStr);
+            // console.error("Bad JSON chunk:", jsonStr);
+            // console.log("Bad JSON chunk:", jsonStr);
           }
         }
       }
@@ -341,6 +342,8 @@ export default function PresentationMaker({
       setProgress(0);
     }
   };
+
+  console.log(error);
 
   const handleInfographicSubmit = async () => {
     setLoading(true);
@@ -751,10 +754,10 @@ export default function PresentationMaker({
           }
         >
           <AlertTitle>Error</AlertTitle>
-          {error.includes("waiting list") ? (
+          {error?.toLowerCase()?.includes("trial") ? (
             <>
-              You’ve reached today’s trial limit. Please try again tomorrow, or
-              join our{" "}
+              You’ve reached today’s limit. Please try again tomorrow, or join
+              our{" "}
               <a
                 href={`${FE_URL}/waiting-list`}
                 target="_blank"

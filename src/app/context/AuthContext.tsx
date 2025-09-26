@@ -75,7 +75,7 @@ type TrialInfo = {
   start?: string;
   end?: string;
   daysLeft: number;
-  presentationsLeftToday: number;
+  // presentationsLeftToday: number;
   imageDecksLeftToday: number;
   predefinedDecksLeftToday: number;
   config: any;
@@ -84,7 +84,7 @@ type TrialInfo = {
 type SubscriptionUsage = {
   active: boolean;
   daysLeft: number;
-  presentationsLeftToday: number;
+  // presentationsLeftToday: number;
   imageDecksLeftToday: number;
   predefinedDecksLeftToday: number;
   config: PlanConfig | null;
