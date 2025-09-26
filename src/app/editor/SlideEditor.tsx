@@ -70,6 +70,18 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       setSelectedIndex(Math.max(0, newSlides.length - 1));
     }
   };
+  useEffect(() => {
+    setSelectedTextId(null);
+    setSelectedImageId(null);
+    setSelectedShapeId(null);
+
+    if (selectedElements.length === 1) {
+      const el = selectedElements[0];
+      if (el.type === "text") setSelectedTextId(el.id);
+      if (el.type === "image") setSelectedImageId(el.id);
+      if (el.type === "shape") setSelectedShapeId(el.id);
+    }
+  }, [selectedElements]);
 
   useEffect(() => {
     const preservedThemeData = localStorage.getItem("slidesTheme");
@@ -131,7 +143,16 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     }
   }, [slides, setSlides]);
 
-  const deselectAll = () => setSelectedElements([]);
+  const deselectAll = () => {
+    setSelectedElements([]);
+    setSelectedTextId(null);
+    setSelectedImageId(null);
+    setSelectedShapeId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+    setSelectedShapeIndex(null);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key.toLowerCase() === "a") {
@@ -314,6 +335,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                         { id: `title-${index}`, type: "text", index: -1 },
                         e.evt.ctrlKey
                       );
+                      setSelectedTextId(`title-${index}`);
+                      setSelectedImageId(null);
+                      setSelectedImageIndex(null);
+                      setSelectedImage(null);
+                      setSelectedShapeId(null);
+                      setSelectedShapeIndex(null);
                     }}
                   />
                 )}
@@ -342,11 +369,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       verticalAlign={el.properties.verticalAlign}
                       wrap="word"
                       fontSize={el.properties.fontSize}
-                      fontFamily={
-                        selectedTheme?.font ||
-                        el.properties.fontFamily ||
-                        "Arial"
-                      }
+                      fontFamily={el.properties.fontFamily || "Arial"}
                       fill={
                         !el.useThemeColor
                           ? el.properties.fill
@@ -360,19 +383,27 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           { id: `el-${index}-${i}`, type: "text", index: i },
                           e.evt.ctrlKey // allow ctrl+click multi select
                         );
+                        setSelectedTextId(`el-${index}-${i}`);
+                        setSelectedImageId(null);
+                        setSelectedImageIndex(null);
+                        setSelectedImage(null);
+                        setSelectedShapeId(null);
+                        setSelectedShapeIndex(null);
                       }}
                     />
                   );
                 })}
                 <KonvaShapeRenderer
                   elements={slide.elements}
-                  selectedShapeId={null} // old single-select state no longer needed
-                  selectedShapeIndex={null}
+                  selectedShapeId={selectedShapeId}
+                  selectedShapeIndex={selectedShapeIndex}
                   onSelectShape={(shapeIndex, shapeId, e) => {
                     handleSelect(
                       { id: shapeId!, type: "shape", index: shapeIndex! },
                       e.evt.ctrlKey
                     );
+                    setSelectedShapeId(shapeId!);
+                    setSelectedShapeIndex(shapeIndex!);
                   }}
                 />
                 {slide.elements.map((el: any, i: number) => {
@@ -396,6 +427,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                             { id: el.properties.image_id, type: "image", index: i },
                             e.evt.ctrlKey
                           );
+                          setSelectedImage({ ...el });
+                          setSelectedImageId(el.properties.image_id);
+                          setSelectedImageIndex(i);
                         }}
 
                       />

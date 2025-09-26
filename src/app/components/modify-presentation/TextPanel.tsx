@@ -417,7 +417,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         </Box>
 
         {/* Forward / Backward in one line */}
-        <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+        {/* <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
             disabled={!hasValidElement}
@@ -488,7 +488,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           </Button>
         </Box>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 2 }} /> */}
 
         {/* Duplicate / Delete in one line */}
         <Box sx={{ display: "flex", gap: 2 }}>

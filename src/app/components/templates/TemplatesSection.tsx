@@ -224,6 +224,7 @@ export default function TemplatesSection() {
                 border: "1px solid #F6F6F6",
                 borderRadius: "12px",
                 overflow: "hidden",
+                alignItems : "center"
               }}
             >
               {/* Image Container */}
@@ -299,7 +300,7 @@ export default function TemplatesSection() {
                   fontWeight: 600,
                   px: 2,
                   mt: 2,
-                }}
+                }}  
               >
                 {template.title}
               </Typography>
@@ -312,6 +313,7 @@ export default function TemplatesSection() {
                   px: 2,
                   pb: 2,
                   color: "text.secondary",
+                  alignContent: "center"
                 }}
               >
                 {template.category}

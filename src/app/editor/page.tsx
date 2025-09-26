@@ -33,6 +33,8 @@ import { useTemplateSlides } from "../context/TemplateSlidesContext";
 import { useUser } from "../context/AuthContext";
 import axios from "axios";
 import { SlideshowOutlined } from "@mui/icons-material";
+import { useEffect } from "react";
+import { getContrastingBackground } from "@/utils/colorUtils";
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
@@ -78,7 +80,20 @@ const Page = () => {
     setIsThemePanelOpen(false);
     setSelectedShapeIndex(null);
   };
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const backgroundStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    height: "100vh",
+    background: getContrastingBackground(
+      selectedTheme?.primaryColor || "#1a1a1a"
+    ),
+    maxWidth: "100%",
+    overflow: "hidden",
+    transition: "background 0.5s ease-in-out", // smooth gamma transition
+  };
+
+
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const handleClearCanvas = () => {
     if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
 
@@ -112,25 +127,26 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     setSlides(newSlides);
   };
 
-const handleExportPPTX = () => {
-  if (loading) return;
+  const handleExportPPTX = () => {
+    if (loading) return;
 
-  if (session?.user || user) {
-    setShowAuthModal(false);
+    if (session?.user || user) {
+      setShowAuthModal(false);
 
-    // Export the current slides
-    exportSlidesAsPPT(slides);
-  } else {
-    setShowAuthModal(true);
-  }
-};
-
-
+      // Export the current slides
+      exportSlidesAsPPT(slides);
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
 
-  const isTextSelected = selectedTextId !== null && selectedTextId !== "";
-  const isShapeSelected = selectedShapeIndex !== null;
-  const isImageSelected = selectedImageIndex !== null;
+
+
+  const isTextSelected = selectedTextId !== null && selectedTextId !== "" && !selectedImageIndex && !selectedShapeIndex;
+  const isShapeSelected = selectedShapeIndex !== null && !selectedTextId && !selectedImageIndex;
+  const isImageSelected = selectedImageIndex !== null && !selectedTextId && !selectedShapeIndex;
+
 
   const handleExportPDF = () => {
     if (loading) return;
@@ -158,6 +174,11 @@ const handleExportPPTX = () => {
   };
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  useEffect(() => {
+    if (isTextSelected || isImageSelected || isShapeSelected) {
+      setIsThemePanelOpen(false);
+    }
+  }, [isTextSelected, isImageSelected, isShapeSelected]);
 
   return (
     <>
@@ -166,10 +187,14 @@ const handleExportPPTX = () => {
           display: "flex",
           flexDirection: "column",
           height: "100vh",
-          backgroundColor: "#FBFAFF",
+          background: getContrastingBackground(
+            selectedTheme?.primaryColor || "#1a1a1a"
+          ),
           maxWidth: "100%",
           overflow: "hidden",
+          transition: "background 0.5s ease-in-out"
         }}
+        className="animated-bg"
       >
         {!isMobile ? (
           <div
@@ -317,11 +342,11 @@ const handleExportPPTX = () => {
 
       </div>
       {showAuthModal && (
-  <AuthModal
-    onClose={() => setShowAuthModal(false)}
-    presentationId={datapresentationId}
-  />
-)}
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          presentationId={datapresentationId}
+        />
+      )}
     </>
   );
 };

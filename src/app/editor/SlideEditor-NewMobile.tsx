@@ -285,11 +285,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       verticalAlign={el.properties.verticalAlign}
                       wrap="word"
                       fontSize={el.properties.fontSize}
-                      fontFamily={
-                        selectedTheme?.font ||
-                        el.properties.fontFamily ||
-                        "Arial"
-                      }
+                      fontFamily={el.properties.fontFamily || "Arial"}
                       fill={
                         !el.useThemeColor
                           ? el.properties.fill

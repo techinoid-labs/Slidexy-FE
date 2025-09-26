@@ -247,190 +247,183 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  // Helper function to find element by shape_id or image_id
-  const findElementById = (
-    elements: KonvaComponent[],
-    id: string
-  ): { element: KonvaComponent | null; index: number } => {
-    for (let i = 0; i < elements.length; i++) {
-      const el = elements[i];
-      if (
-        (el.shape_id && el.shape_id === id) ||
-        (el.properties?.image_id && el.properties.image_id === id)
-      ) {
-        return { element: el, index: i };
-      }
+function findElementById(
+  elements: KonvaComponent[],
+  id: string
+): { element: KonvaComponent; index: number } | null {
+  for (let i = 0; i < elements.length; i++) {
+    const el = elements[i];
+
+    if (el.id && el.id === id) {
+      return { element: el, index: i };
     }
-    return { element: null, index: -1 };
-  };
 
-  const bringElementForward = (el: number | string | KonvaComponent) => {
-    console.log("bringElementForward clicked", el);
+    if (el.shape_id && el.shape_id === id) {
+      return { element: el, index: i };
+    }
 
-    let selectedElement: KonvaComponent | null = null;
+    if (el.properties && (el.properties as any).image_id === id) {
+      return { element: el, index: i };
+    }
+  }
+  return null;
+}
 
-    const currentSlide = slides[selectedSlideIndex];
-    if (!currentSlide || !currentSlide.elements) return;
+const bringElementForward = (el: number | string | KonvaComponent) => {
+  console.log("bringElementForward clicked", el);
 
-    const elements = currentSlide.elements.map((el: KonvaComponent) => ({
-      ...el,
-      properties: { ...el.properties },
-    }));
+  let selectedElement: KonvaComponent | null = null;
+  const currentSlide = slides[selectedSlideIndex];
+  if (!currentSlide) return;
 
-    if (typeof el === "number") {
-      selectedElement = elements[el];
-    } else if (typeof el === "string") {
-      // Check if it's a shape_id or image_id
-      const found = findElementById(elements, el);
-      selectedElement = found.element;
+  const elements = currentSlide.elements.map((el: KonvaComponent) => ({
+    ...el,
+    properties: { ...el.properties },
+  }));
+
+  if (typeof el === "number") {
+    selectedElement = elements[el];
+  } else if (typeof el === "string") {
+    const found = findElementById(elements, el);
+    selectedElement = found ? found.element : null;
+  } else {
+    if (selectedTextId) {
+      const found = findElementById(elements, selectedTextId);
+      selectedElement = found ? found.element : null;
+    } else if (selectedImageId) {
+      const found = findElementById(elements, selectedImageId);
+      selectedElement = found ? found.element : null;
+    } else if (selectedShapeId) {
+      const found = findElementById(elements, selectedShapeId);
+      selectedElement = found ? found.element : null;
     } else {
-      // Use current selections
-      if (selectedImageId) {
-        const found = findElementById(elements, selectedImageId);
-        selectedElement = found.element;
-      } else if (selectedShapeId) {
-        const found = findElementById(elements, selectedShapeId);
-        selectedElement = found.element;
-      } else {
-        console.warn("No element selected for forward operation");
-        return;
-      }
-    }
-
-    if (!selectedElement) {
-      console.warn("Selected element not found");
+      console.warn("No element selected for forward operation");
       return;
     }
+  }
 
-    const imageElements = elements.filter((el: KonvaComponent) =>
-      isImageElement(el)
-    );
-    const textElements = elements.filter((el: KonvaComponent) =>
-      isTextElement(el)
-    );
-    const shapeElements = elements.filter((el: KonvaComponent) =>
-      isShapeElement(el)
-    );
-    const otherElements = elements.filter(
-      (el: KonvaComponent) =>
-        !isImageElement(el) && !isTextElement(el) && !isShapeElement(el)
-    );
+  if (!selectedElement) {
+    console.warn("Selected element not found");
+    return;
+  }
 
-    if (isImageElement(selectedElement)) {
-      assignZIndexToElements(imageElements, Z_INDEX_RANGES.IMAGES.START);
-      assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
-      assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
-    } else if (isTextElement(selectedElement)) {
-      assignZIndexToElements(imageElements, Z_INDEX_RANGES.IMAGES.START);
-      assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
-      assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
-    } else if (isShapeElement(selectedElement)) {
-      assignZIndexToElements(imageElements, Z_INDEX_RANGES.IMAGES.START);
-      assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
-      assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
-    } else {
-      const currentZIndex = selectedElement.properties?.zIndex || 1;
-      const maxZIndex = Math.max(
-        ...elements.map((el: KonvaComponent) => el.properties?.zIndex || 1)
-      );
+  const imageElements = elements.filter(isImageElement);
+  const textElements = elements.filter(isTextElement);
+  const shapeElements = elements.filter(isShapeElement);
+  const otherElements = elements.filter(
+    (el: KonvaComponent) =>
+      !isImageElement(el) && !isTextElement(el) && !isShapeElement(el)
+  );
 
-      if (currentZIndex < maxZIndex) {
-        selectedElement.properties.zIndex = maxZIndex + 1;
-      }
+  if (isImageElement(selectedElement)) {
+    assignZIndexToElements(imageElements, Z_INDEX_RANGES.IMAGES.START);
+    assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
+    assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
+  } else if (isTextElement(selectedElement)) {
+    assignZIndexToElements(imageElements, Z_INDEX_RANGES.IMAGES.START);
+    assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
+    assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
+  } else if (isShapeElement(selectedElement)) {
+    assignZIndexToElements(imageElements, Z_INDEX_RANGES.IMAGES.START);
+    assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
+    assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
+  } else {
+    const currentZIndex = selectedElement.properties?.zIndex || 1;
+    const maxZIndex = Math.max(
+      ...elements.map((el: KonvaComponent) => el.properties?.zIndex || 1)
+    );
+    if (currentZIndex < maxZIndex) {
+      selectedElement.properties.zIndex = maxZIndex + 1;
     }
+  }
 
-    assignZIndexToElements(otherElements, Z_INDEX_RANGES.OTHERS.START);
+  assignZIndexToElements(otherElements, Z_INDEX_RANGES.OTHERS.START);
 
-    const updatedSlides = structuredClone(slides);
-    updatedSlides[selectedSlideIndex] = {
-      ...updatedSlides[selectedSlideIndex],
-      elements,
-    };
-
-    handleSetSlides(updatedSlides);
+  const updatedSlides = structuredClone(slides);
+  updatedSlides[selectedSlideIndex] = {
+    ...updatedSlides[selectedSlideIndex],
+    elements,
   };
 
-  const sendElementBackward = (el: number | string | KonvaComponent) => {
-    console.log("sendElementBackward clicked", el);
+  handleSetSlides(updatedSlides);
+};
 
-    let selectedElement: KonvaComponent | null = null;
+const sendElementBackward = (el: number | string | KonvaComponent) => {
+  console.log("sendElementBackward clicked", el);
 
-    const currentSlide = slides[selectedSlideIndex];
-    if (!currentSlide || !currentSlide.elements) return;
+  let selectedElement: KonvaComponent | null = null;
+  const currentSlide = slides[selectedSlideIndex];
+  if (!currentSlide || !currentSlide.elements) return;
 
-    const elements = currentSlide.elements.map((el: KonvaComponent) => ({
-      ...el,
-      properties: { ...el.properties },
-    }));
+  const elements = currentSlide.elements.map((el: KonvaComponent) => ({
+    ...el,
+    properties: { ...el.properties },
+  }));
 
-    if (typeof el === "number") {
-      selectedElement = elements[el];
-    } else if (typeof el === "string") {
-      // Check if it's a shape_id or image_id
-      const found = findElementById(elements, el);
-      selectedElement = found.element;
+  if (typeof el === "number") {
+    selectedElement = elements[el];
+  } else if (typeof el === "string") {
+    const found = findElementById(elements, el);
+    selectedElement = found ? found.element : null;
+  } else {
+    if (selectedImageId) {
+      const found = findElementById(elements, selectedImageId);
+      selectedElement = found ? found.element : null;
+    } else if (selectedShapeId) {
+      const found = findElementById(elements, selectedShapeId);
+      selectedElement = found ? found.element : null;
+    } else if (selectedTextId) {
+      const found = findElementById(elements, selectedTextId);
+      selectedElement = found ? found.element : null;
     } else {
-      // Use current selections
-      if (selectedImageId) {
-        const found = findElementById(elements, selectedImageId);
-        selectedElement = found.element;
-      } else if (selectedShapeId) {
-        const found = findElementById(elements, selectedShapeId);
-        selectedElement = found.element;
-      } else {
-        console.warn("No element selected for backward operation");
-        return;
-      }
-    }
-
-    if (!selectedElement) {
-      console.warn("Selected element not found");
+      console.warn("No element selected for backward operation");
       return;
     }
+  }
 
-    const imageElements = elements.filter((el: KonvaComponent) =>
-      isImageElement(el)
-    );
-    const textElements = elements.filter((el: KonvaComponent) =>
-      isTextElement(el)
-    );
-    const shapeElements = elements.filter((el: KonvaComponent) =>
-      isShapeElement(el)
-    );
-    const otherElements = elements.filter(
-      (el: KonvaComponent) =>
-        !isImageElement(el) && !isTextElement(el) && !isShapeElement(el)
-    );
+  if (!selectedElement) {
+    console.warn("Selected element not found");
+    return;
+  }
 
-    if (isImageElement(selectedElement)) {
-      assignZIndexToElements(textElements, Z_INDEX_RANGES.IMAGES.START);
-      assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
-      assignZIndexToElements(imageElements, Z_INDEX_RANGES.TEXT.START);
-    } else if (isTextElement(selectedElement)) {
-      assignZIndexToElements(textElements, Z_INDEX_RANGES.IMAGES.START);
-      assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
-      assignZIndexToElements(imageElements, Z_INDEX_RANGES.TEXT.START);
-    } else if (isShapeElement(selectedElement)) {
-      assignZIndexToElements(shapeElements, Z_INDEX_RANGES.IMAGES.START);
-      assignZIndexToElements(imageElements, Z_INDEX_RANGES.SHAPES.START);
-      assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
-    } else {
-      const currentZIndex = selectedElement.properties?.zIndex || 1;
-      if (currentZIndex > 1) {
-        selectedElement.properties.zIndex = Math.max(1, currentZIndex - 1);
-      }
+  const imageElements = elements.filter(isImageElement);
+  const textElements = elements.filter(isTextElement);
+  const shapeElements = elements.filter(isShapeElement);
+  const otherElements = elements.filter(
+    (el: KonvaComponent) =>
+      !isImageElement(el) && !isTextElement(el) && !isShapeElement(el)
+  );
+
+  if (isImageElement(selectedElement)) {
+    assignZIndexToElements(textElements, Z_INDEX_RANGES.IMAGES.START);
+    assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
+    assignZIndexToElements(imageElements, Z_INDEX_RANGES.TEXT.START);
+  } else if (isTextElement(selectedElement)) {
+    assignZIndexToElements(textElements, Z_INDEX_RANGES.IMAGES.START);
+    assignZIndexToElements(shapeElements, Z_INDEX_RANGES.SHAPES.START);
+    assignZIndexToElements(imageElements, Z_INDEX_RANGES.TEXT.START);
+  } else if (isShapeElement(selectedElement)) {
+    assignZIndexToElements(shapeElements, Z_INDEX_RANGES.IMAGES.START);
+    assignZIndexToElements(imageElements, Z_INDEX_RANGES.SHAPES.START);
+    assignZIndexToElements(textElements, Z_INDEX_RANGES.TEXT.START);
+  } else {
+    const currentZIndex = selectedElement.properties?.zIndex || 1;
+    if (currentZIndex > 1) {
+      selectedElement.properties.zIndex = Math.max(1, currentZIndex - 1);
     }
+  }
 
-    assignZIndexToElements(otherElements, Z_INDEX_RANGES.OTHERS.START);
+  assignZIndexToElements(otherElements, Z_INDEX_RANGES.OTHERS.START);
 
-    const updatedSlides = structuredClone(slides);
-    updatedSlides[selectedSlideIndex] = {
-      ...updatedSlides[selectedSlideIndex],
-      elements,
-    };
-
-    handleSetSlides(updatedSlides);
+  const updatedSlides = structuredClone(slides);
+  updatedSlides[selectedSlideIndex] = {
+    ...updatedSlides[selectedSlideIndex],
+    elements,
   };
+
+  handleSetSlides(updatedSlides);
+};
+
 
   const addText = (props?: any) => {
     console.log("addText called with props:", props);
