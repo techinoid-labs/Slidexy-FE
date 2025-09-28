@@ -15,6 +15,9 @@ import { useUser } from "@/app/context/AuthContext";
 import { signOut } from "next-auth/react";
 import AuthModal from "./AuthModal";
 import { useEffect } from "react";
+
+const FE_URL = process.env.NEXT_PUBLIC_FE_BASE_URL;
+
 // helper: format gmail into name
 const extractNameFromEmail = (email: string): string => {
   if (!email) return "User";
@@ -42,7 +45,7 @@ const ProfileModal = ({
 }) => {
   const { user, loading, refreshUser } = useUser();
 
-  // console.log(user);
+  console.log(user);
 
   const handleSignOut = async () => {
     await signOut({ redirect: false }); // no page reload or redirect
@@ -166,7 +169,7 @@ const ProfileModal = ({
                                 </b>
                               </Typography>
                             )} */}
-
+                            {/* Usage stats */}
                             {user.subscriptionUsage?.imageDecksLeftToday !==
                               undefined && (
                               <Typography
@@ -196,15 +199,21 @@ const ProfileModal = ({
                               </Typography>
                             )}
 
-                            {user.subscriptionUsage?.daysLeft !== undefined && (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                Days left in plan:{" "}
-                                <b>{user.subscriptionUsage.daysLeft}</b>
-                              </Typography>
-                            )}
+                            {/* 🚨 Daily limit reached message */}
+                            {user.subscriptionUsage?.imageDecksLeftToday ===
+                              0 &&
+                              user.subscriptionUsage
+                                ?.predefinedDecksLeftToday === 0 && (
+                                <Typography
+                                  variant="body2"
+                                  color="error.main"
+                                  fontWeight="bold"
+                                  sx={{ mt: 1 }}
+                                >
+                                  ⚠️ You’ve reached your daily deck limit for
+                                  today.
+                                </Typography>
+                              )}
                           </Stack>
                         </Stack>
                       </Card>
@@ -255,6 +264,19 @@ const ProfileModal = ({
                             <b>{user.trial.predefinedDecksLeftToday}</b>
                           </Typography>
                         )}
+
+                        {/* 🚨 Daily limit reached message */}
+                        {user.trial.imageDecksLeftToday === 0 &&
+                          user.trial.predefinedDecksLeftToday === 0 && (
+                            <Typography
+                              variant="body2"
+                              color="error.main"
+                              fontWeight="bold"
+                              sx={{ mt: 1 }}
+                            >
+                              ⚠️ You’ve reached your daily deck limit for today.
+                            </Typography>
+                          )}
                       </Stack>
                     </Card>
                   )}
@@ -265,13 +287,36 @@ const ProfileModal = ({
                       variant="outlined"
                       sx={{ borderRadius: 2, p: 2, borderColor: "error.main" }}
                     >
-                      <Typography
-                        variant="subtitle1"
-                        color="error.main"
-                        fontWeight="bold"
-                      >
-                        ⚠️ No active plan or trial
-                      </Typography>
+                      <Stack spacing={1.5} alignItems="center">
+                        <Typography
+                          variant="subtitle1"
+                          color="error.main"
+                          fontWeight="bold"
+                        >
+                          ⚠️ No active plan or trial
+                        </Typography>
+
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          align="center"
+                        >
+                          To continue creating decks, please{" "}
+                          <a
+                            href={`${FE_URL}/pricing`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: "#1976d2",
+                              fontWeight: 600,
+                              textDecoration: "underline",
+                            }}
+                          >
+                            purchase a plan
+                          </a>
+                          .
+                        </Typography>
+                      </Stack>
                     </Card>
                   )}
                 </Stack>
