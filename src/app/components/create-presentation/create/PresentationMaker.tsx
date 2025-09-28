@@ -756,10 +756,10 @@ export default function PresentationMaker({
           <AlertTitle>Error</AlertTitle>
           {error?.toLowerCase()?.includes("trial") ? (
             <>
-              You’ve reached today’s limit. Please try again tomorrow, or join
-              our{" "}
+              You’ve reached today’s limit. Please try again tomorrow, or you
+              can upgrade to one of our paid{" "}
               <a
-                href={`${FE_URL}/waiting-list`}
+                href={`${FE_URL}/pricing`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -768,9 +768,9 @@ export default function PresentationMaker({
                   textDecoration: "underline",
                 }}
               >
-                waitlist
+                Plans
               </a>{" "}
-              for early access and extended usage.
+              to get the full experience{" "}
             </>
           ) : (
             // error
