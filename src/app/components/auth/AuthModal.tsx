@@ -16,7 +16,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 interface AuthModalProps {
-  onClose: () => void;
+  onClose: any;
   presentationId: string | null | undefined;
 }
 

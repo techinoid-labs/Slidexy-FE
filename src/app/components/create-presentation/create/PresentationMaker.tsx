@@ -21,6 +21,7 @@ import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 import { useUser } from "@/app/context/AuthContext";
 import { Alert, AlertTitle, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import PresentaionErrorAlert from "./PresentationErrorAlert";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const FE_URL = process.env.NEXT_PUBLIC_FE_BASE_URL;
@@ -330,17 +331,20 @@ export default function PresentationMaker({
               return;
             }
           } catch (err) {
-            console.error("Bad JSON chunk:", jsonStr);
+            // console.error("Bad JSON chunk:", jsonStr);
+            // console.log("Bad JSON chunk:", jsonStr);
           }
         }
       }
     } catch (err: any) {
-      console.log(err);
+      // console.log(err);
       setError(err.message || "Something went wrong");
       setLoading(false);
       setProgress(0);
     }
   };
+
+  // console.log(error);
 
   const handleInfographicSubmit = async () => {
     setLoading(true);
@@ -721,66 +725,10 @@ export default function PresentationMaker({
         />
       </Button>
 
-      {/* {error && (
-        <Typography color="error" sx={{ mt: 2 }}>
-          {error}
-        </Typography>
-      )} */}
-
+      {/* ERROR HANDLING */}
       {error && (
-        <Alert
-          severity="error"
-          variant="outlined"
-          sx={{
-            mt: 3,
-            borderRadius: "12px",
-            border: "1.5px solid #f44336",
-            backgroundColor: "#fff5f5",
-            color: "#d32f2f",
-            fontWeight: 500,
-          }}
-          action={
-            <IconButton
-              aria-label="close"
-              color="inherit"
-              size="small"
-              onClick={() => setError("")}
-            >
-              <CloseIcon fontSize="inherit" />
-            </IconButton>
-          }
-        >
-          <AlertTitle>Error</AlertTitle>
-          {error.includes("waiting list") ? (
-            <>
-              You’ve reached today’s trial limit. Please try again tomorrow, or
-              join our{" "}
-              <a
-                href={`${FE_URL}/waiting-list`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: "#1976d2",
-                  fontWeight: 600,
-                  textDecoration: "underline",
-                }}
-              >
-                waitlist
-              </a>{" "}
-              for early access and extended usage.
-            </>
-          ) : (
-            // error
-            <>
-              We’re currently experiencing high demand, and your request
-              couldn’t be processed right now. Please try again in a few
-              minutes. If the issue persists, feel free to contact our support
-              team.
-            </>
-          )}
-        </Alert>
+        <PresentaionErrorAlert error={error} onClose={() => setError("")} />
       )}
-
       <Box sx={{ px: 2 }}>
         <Box
           sx={{

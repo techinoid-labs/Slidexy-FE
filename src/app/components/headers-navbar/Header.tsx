@@ -25,9 +25,9 @@ import { useUser } from "@/app/context/AuthContext";
 export default function Header() {
   const theme = useMuiTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const pathname = usePathname(); // ✅ get current path
   const { user } = useUser();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
