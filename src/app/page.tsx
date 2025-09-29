@@ -1,11 +1,3 @@
-// import Image from "next/image";
-// import Link from "next/link";
-// import { redirect } from "next/navigation";
-
-// export default function Home() {
-//   redirect("/home");
-// }
-
 "use client";
 import Header from "@/app/components/headers-navbar/Header";
 import HeroSection from "@/app/components/home/HeroSection";
@@ -54,7 +46,7 @@ export default function Home() {
       <PresentationStyleSection />
       <WorkingSection />
       <TestimonialSection />
-      <PricingSection />
+      {/* <PricingSection /> */}
       <CommunitySection />
       <ContactSection />
       <Footer />

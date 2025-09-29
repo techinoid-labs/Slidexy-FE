@@ -343,7 +343,9 @@ const ProfileModal = ({
                             ⚠️ No active plan or trial
                           </Typography>
 
-                          <Typography
+                          {/* FOR PAYMENT ADDED FEEDBACK */}
+
+                          {/* <Typography
                             variant="body2"
                             color="text.secondary"
                             align="center"
@@ -362,6 +364,28 @@ const ProfileModal = ({
                               purchase a plan
                             </a>
                             .
+                          </Typography> */}
+
+                          {/* FOR NO PAYMENT FEEDBACK */}
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            align="center"
+                          >
+                            Please join our{" "}
+                            <a
+                              href={`${FE_URL}/waiting-list`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: "#1976d2",
+                                fontWeight: 600,
+                                textDecoration: "underline",
+                              }}
+                            >
+                              waiting list
+                            </a>{" "}
+                            to receive updates on our upcomming plans. .
                           </Typography>
                         </Stack>
                       </Card>
