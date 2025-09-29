@@ -193,23 +193,6 @@ const ProfileModal = ({
                                   period
                                 </Typography>
                               )}
-
-                              {/* Usage stats */}
-                              {/* {user.subscriptionUsage?.presentationsLeftToday !==
-                              undefined && (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                Presentations left today:{" "}
-                                <b>
-                                  {
-                                    user.subscriptionUsage
-                                      .presentationsLeftToday
-                                  }
-                                </b>
-                              </Typography>
-                            )} */}
                               {/* Usage stats */}
                               {user.subscriptionUsage?.imageDecksLeftToday !==
                                 undefined && (
@@ -345,7 +328,7 @@ const ProfileModal = ({
 
                           {/* FOR PAYMENT ADDED FEEDBACK */}
 
-                          {/* <Typography
+                          <Typography
                             variant="body2"
                             color="text.secondary"
                             align="center"
@@ -364,10 +347,10 @@ const ProfileModal = ({
                               purchase a plan
                             </a>
                             .
-                          </Typography> */}
+                          </Typography>
 
                           {/* FOR NO PAYMENT FEEDBACK */}
-                          <Typography
+                          {/* <Typography
                             variant="body2"
                             color="text.secondary"
                             align="center"
@@ -386,7 +369,7 @@ const ProfileModal = ({
                               waiting list
                             </a>{" "}
                             to receive updates on our upcomming plans. .
-                          </Typography>
+                          </Typography> */}
                         </Stack>
                       </Card>
                     )}
