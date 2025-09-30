@@ -14,9 +14,10 @@ import {
 import { useUser } from "@/app/context/AuthContext";
 import { signOut } from "next-auth/react";
 import AuthModal from "./AuthModal";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const FE_URL = process.env.NEXT_PUBLIC_FE_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // helper: format gmail into name
 const extractNameFromEmail = (email: string): string => {
@@ -44,11 +45,75 @@ const ProfileModal = ({
   presentationId?: string | null;
 }) => {
   const { user, loading, refreshUser } = useUser();
+  const [cancelError, setCancelError] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   // console.log(user);
 
   const handleSignOut = async () => {
     await signOut({ redirect: false }); // no page reload or redirect
+  };
+
+  // const handleCancelRenewal = async () => {
+  //   setCancelLoading(true);
+  //   setCancelError(""); // reset old error
+  //   try {
+  //     const res = await fetch(
+  //       `${API_BASE_URL}/api/stripe/cancel-subscription`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ userId: user?._id }),
+  //       }
+  //     );
+
+  //     const data = await res.json();
+
+  //     if (res.ok && data.success) {
+  //       await refreshUser();
+  //     } else {
+  //       setCancelError(data.error || "Something went wrong. Please try again.");
+  //     }
+  //   } catch (err: any) {
+  //     setCancelError(err.message || "Network error. Please try again.");
+  //   } finally {
+  //     setCancelLoading(false);
+  //   }
+  // };
+
+  const handleCancelRenewal = async () => {
+    setCancelLoading(true);
+    setCancelError("");
+
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/stripe/cancel-subscription`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId: user?._id }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        await refreshUser();
+        if (user?.subscription) {
+          user.subscription.cancelAtPeriodEnd = false;
+        }
+      } else {
+        setCancelError(data.error || "Something went wrong. Please try again.");
+      }
+    } catch (err: any) {
+      setCancelError(err.message || "Network error. Please try again.");
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
   const displayName =
@@ -61,6 +126,7 @@ const ProfileModal = ({
     if (open) {
       // console.log("USER FETCHED");
       refreshUser();
+      setCancelError("");
     }
   }, [open]);
 
@@ -77,17 +143,17 @@ const ProfileModal = ({
         }}
       >
         {loading ? (
-          <Card sx={{ borderRadius: 3, boxShadow: 6, p: 3 }}>
+          <Card sx={{ borderRadius: 3, boxShadow: 6, p: 2 }}>
             <CardContent>
               <Typography align="center">Loading...</Typography>
             </CardContent>
           </Card>
         ) : user ? (
-          <Card sx={{ borderRadius: 3, boxShadow: 6, p: 3, maxWidth: "100%" }}>
+          <Card sx={{ borderRadius: 3, boxShadow: 6, p: 2, maxWidth: "100%" }}>
             <CardContent>
-              <Stack spacing={2} alignItems="center">
+              <Stack spacing={1.5} alignItems="center">
                 {/* Avatar */}
-                <Avatar sx={{ width: 64, height: 64, bgcolor: "primary.main" }}>
+                <Avatar sx={{ width: 60, height: 60, bgcolor: "primary.main" }}>
                   {displayName[0].toUpperCase()}
                 </Avatar>
 
@@ -130,118 +196,182 @@ const ProfileModal = ({
                     </Stack>
                   </Card>
                 )}
-
+                {/*Non Admin (Trial and Paid)  */}
                 {!user?.admin && (
                   <Stack
-                    spacing={2}
+                    spacing={1.5}
                     sx={{ width: "100%", textAlign: "center" }}
                   >
                     {/* Active Subscription */}
                     {user?.subscription &&
-                      user.subscription.status === "active" && (
-                        <Card
-                          variant="outlined"
-                          sx={{
-                            borderRadius: 2,
-                            p: 2,
-                            borderColor: "primary.main",
-                          }}
-                        >
-                          <Stack spacing={1.2} alignItems="center">
-                            <Typography
-                              variant="subtitle1"
-                              color="primary"
-                              fontWeight="bold"
-                            >
-                              ✅ Active Plan: {user.subscription.plan?.name}
+                    user.subscription.status === "active" ? (
+                      <Card
+                        variant="outlined"
+                        sx={{
+                          borderRadius: 2,
+                          p: 1,
+                          borderColor: "primary.main",
+                        }}
+                      >
+                        <Stack spacing={1.2} alignItems="center">
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            fontWeight="bold"
+                          >
+                            ✅ Active Plan: {user.subscription.plan?.name}
+                          </Typography>
+
+                          <Divider flexItem />
+
+                          <Stack spacing={0.8}>
+                            <Typography variant="body2" color="text.secondary">
+                              Price:{" "}
+                              <b>
+                                {user.subscription.plan?.currency}{" "}
+                                {user.subscription.plan?.price} /{" "}
+                                {user.subscription.plan?.billingPeriod.toUpperCase()}
+                              </b>
                             </Typography>
 
-                            <Divider flexItem />
+                            <Typography variant="body2" color="text.secondary">
+                              Valid till{" "}
+                              <b>
+                                {new Date(
+                                  user.subscription.currentPeriodEnd
+                                ).toLocaleDateString()}
+                              </b>
+                            </Typography>
 
-                            <Stack spacing={0.8}>
+                            {/* Usage stats */}
+                            {user.subscriptionUsage?.imageDecksLeftToday !==
+                              undefined && (
                               <Typography
                                 variant="body2"
                                 color="text.secondary"
                               >
-                                Price:{" "}
+                                Image decks left today:{" "}
                                 <b>
-                                  {user.subscription.plan?.currency}{" "}
-                                  {user.subscription.plan?.price} /{" "}
-                                  {user.subscription.plan?.billingPeriod.toUpperCase()}
+                                  {user.subscriptionUsage.imageDecksLeftToday}
                                 </b>
                               </Typography>
+                            )}
 
+                            {user.subscriptionUsage
+                              ?.predefinedDecksLeftToday !== undefined && (
                               <Typography
                                 variant="body2"
                                 color="text.secondary"
                               >
-                                Valid till{" "}
+                                Predefined decks left today:{" "}
                                 <b>
-                                  {new Date(
-                                    user.subscription.currentPeriodEnd
-                                  ).toLocaleDateString()}
+                                  {
+                                    user.subscriptionUsage
+                                      .predefinedDecksLeftToday
+                                  }
                                 </b>
                               </Typography>
+                            )}
 
-                              {user.subscription.cancelAtPeriodEnd && (
+                            {/* 🚨 Daily limit reached message */}
+                            {user.subscriptionUsage?.imageDecksLeftToday ===
+                              0 &&
+                              user.subscriptionUsage
+                                ?.predefinedDecksLeftToday === 0 && (
                                 <Typography
                                   variant="body2"
                                   color="error.main"
-                                  fontWeight="medium"
+                                  fontWeight="bold"
+                                  sx={{ mt: 1 }}
                                 >
-                                  ⚠️ Your plan will cancel at the end of this
-                                  period
+                                  ⚠️ You’ve reached your daily deck limit for
+                                  today.
                                 </Typography>
                               )}
-                              {/* Usage stats */}
-                              {user.subscriptionUsage?.imageDecksLeftToday !==
-                                undefined && (
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  Image decks left today:{" "}
-                                  <b>
-                                    {user.subscriptionUsage.imageDecksLeftToday}
-                                  </b>
-                                </Typography>
-                              )}
-
-                              {user.subscriptionUsage
-                                ?.predefinedDecksLeftToday !== undefined && (
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  Predefined decks left today:{" "}
-                                  <b>
-                                    {
-                                      user.subscriptionUsage
-                                        .predefinedDecksLeftToday
-                                    }
-                                  </b>
-                                </Typography>
-                              )}
-
-                              {/* 🚨 Daily limit reached message */}
-                              {user.subscriptionUsage?.imageDecksLeftToday ===
-                                0 &&
-                                user.subscriptionUsage
-                                  ?.predefinedDecksLeftToday === 0 && (
-                                  <Typography
-                                    variant="body2"
-                                    color="error.main"
-                                    fontWeight="bold"
-                                    sx={{ mt: 1 }}
-                                  >
-                                    ⚠️ You’ve reached your daily deck limit for
-                                    today.
-                                  </Typography>
-                                )}
-                            </Stack>
                           </Stack>
-                        </Card>
-                      )}
+                        </Stack>
+                      </Card>
+                    ) : (
+                      <Card
+                        variant="outlined"
+                        sx={{
+                          borderRadius: 2,
+                          p: 2,
+                          borderColor: "primary.main",
+                        }}
+                      >
+                        <Stack spacing={1.2} alignItems="center">
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            fontWeight="bold"
+                          >
+                            Current Plan: {user?.subscription?.plan?.name}
+                          </Typography>
+
+                          <Divider flexItem />
+
+                          <Stack spacing={0.8}>
+                            <Typography variant="body2" color="text.secondary">
+                              Price:{" "}
+                              <b>
+                                {user?.subscription?.plan?.currency}{" "}
+                                {user?.subscription?.plan?.price} /{" "}
+                                {user?.subscription?.plan?.billingPeriod.toUpperCase()}
+                              </b>
+                            </Typography>
+
+                            <Typography variant="body2" color="text.secondary">
+                              Valid till <b>--</b>
+                            </Typography>
+
+                            <Typography
+                              variant="body2"
+                              color="error.main"
+                              fontWeight="medium"
+                            >
+                              Status: <b>{user?.subscription?.status} </b>
+                            </Typography>
+
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              align="center"
+                            >
+                              To continue creating decks, please{" "}
+                              <a
+                                href={`${FE_URL}/pricing`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  color: "#1976d2",
+                                  fontWeight: 600,
+                                  textDecoration: "underline",
+                                }}
+                              >
+                                purchase a plan
+                              </a>
+                              .
+                            </Typography>
+                          </Stack>
+                        </Stack>
+                      </Card>
+                    )}
+
+                    {user?.subscription?.cancelAtPeriodEnd && (
+                      <Typography
+                        variant="body2"
+                        color="error.main"
+                        fontWeight="medium"
+                      >
+                        ⚠️ Your plan will cancel after:{" "}
+                        <b>
+                          {new Date(
+                            user.subscription.currentPeriodEnd
+                          ).toLocaleDateString()}
+                        </b>
+                      </Typography>
+                    )}
 
                     {/* Trial (only if no active subscription) */}
                     {!user?.subscription && user?.trial?.active && (
@@ -267,13 +397,6 @@ const ProfileModal = ({
                               Days left in trial: <b>{user.trial.daysLeft}</b>
                             </Typography>
                           )}
-
-                          {/* {user.trial.presentationsLeftToday !== undefined && (
-                          <Typography variant="body2" color="text.secondary">
-                            Presentations left today:{" "}
-                            <b>{user.trial.presentationsLeftToday}</b>
-                          </Typography>
-                        )} */}
 
                           {user.trial.imageDecksLeftToday !== undefined && (
                             <Typography variant="body2" color="text.secondary">
@@ -384,15 +507,51 @@ const ProfileModal = ({
                 </Typography>
 
                 {/* Actions */}
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={handleSignOut}
-                  sx={{ borderRadius: 2, textTransform: "none" }}
-                  fullWidth
-                >
-                  Sign Out
-                </Button>
+                <Box sx={{ width: "100%" }}>
+                  <Stack direction="row" spacing={2} justifyContent="center">
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={handleSignOut}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: "none",
+                        // flex: 1, // 🔑 makes both buttons same width
+                      }}
+                    >
+                      Sign Out
+                    </Button>
+
+                    {!user?.subscription?.cancelAtPeriodEnd &&
+                      user?.subscription?.status === "active" && (
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={handleCancelRenewal}
+                          sx={{
+                            borderRadius: 2,
+                            textTransform: "none",
+                            // flex: 1, // 🔑 same width as Sign Out
+                          }}
+                          disabled={cancelLoading}
+                        >
+                          {cancelLoading ? "Cancelling..." : "Cancel Renewal"}
+                        </Button>
+                      )}
+                  </Stack>
+
+                  {/* Error shown below row */}
+                  {cancelError && (
+                    <Typography
+                      variant="body2"
+                      color="error"
+                      align="center"
+                      sx={{ mt: 1 }}
+                    >
+                      {cancelError}
+                    </Typography>
+                  )}
+                </Box>
               </Stack>
             </CardContent>
           </Card>

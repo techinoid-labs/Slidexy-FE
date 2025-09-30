@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter, redirect } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Box,
   Typography,
@@ -9,19 +9,17 @@ import {
   CircularProgress,
   Paper,
 } from "@mui/material";
+import Image from "next/image";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function SuccessPage() {
-  // redirect("/");
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
   const [sessionData, setSessionData] = useState<any>(null);
-
-  console.log(sessionData);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -50,54 +48,85 @@ export default function SuccessPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#F9FAFB",
-        px: 2,
+        px: 1,
       }}
     >
       <Paper
-        elevation={3}
+        elevation={0}
         sx={{
-          maxWidth: 500,
-          p: 4,
-          borderRadius: 4,
+          maxWidth: 600,
+          width: "100%",
+          p: 5,
+          borderRadius: 3,
           textAlign: "center",
+          bgcolor: "white",
+          boxShadow: "0 2px 16px 0 rgba(80, 80, 120, 0.07)",
         }}
       >
         {loading ? (
           <CircularProgress />
         ) : (
           <>
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: 600, color: "#4A00E0", mb: 2 }}
+            {/* Success Icon */}
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mx: "auto",
+                mb: 3,
+              }}
             >
-              🎉 Payment Successful!
-            </Typography>
-            <Typography sx={{ color: "#555", mb: 3 }}>
-              Thank you for subscribing to our {sessionData?.plan ?? "plan"}.
-              Your payment was processed successfully.
+              <Image
+                width={150}
+                height={150}
+                alt="success-check"
+                src={`/images/success/success-icon.svg`}
+              />
+            </Box>
+
+            {/* Heading */}
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: 600, color: "black", mb: 1 }}
+            >
+              Payment Successful!
             </Typography>
 
+            {/* Subtext */}
+            <Typography fontSize={14} sx={{ color: "#6B6B6B", mb: 2 }}>
+              Thank you for subscribing to our plan. Your payment was processed
+              successfully.
+            </Typography>
+
+            {/* Email */}
             {sessionData?.email && (
-              <Typography sx={{ color: "#777", mb: 2 }}>
-                A confirmation has been sent to{" "}
-                <strong>{sessionData.email}</strong>.
+              <Typography fontSize={14} sx={{ color: "#6B6B6B", mb: 4 }}>
+                A confirmation email has been sent to{" "}
+                <span style={{ fontWeight: 600 }}>{sessionData.email}</span>
               </Typography>
             )}
 
+            {/* Button */}
             <Button
+              fullWidth
               variant="contained"
-              color="primary"
               sx={{
                 borderRadius: "999px",
-                px: 4,
                 py: 1.5,
                 fontWeight: 600,
                 textTransform: "none",
+                background: "linear-gradient(90deg, #6a11cb, #4A00E0)",
+                "&:hover": {
+                  background: "linear-gradient(90deg, #5a0fb9, #4A00E0)",
+                },
               }}
               onClick={() => router.push("/")}
             >
-              Go to Homepage →
+              Go to Homepage
             </Button>
           </>
         )}
