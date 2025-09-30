@@ -102,10 +102,10 @@ const ProfileModal = ({
       const data = await res.json();
 
       if (res.ok && data.success) {
-        await refreshUser();
         if (user?.subscription) {
-          user.subscription.cancelAtPeriodEnd = false;
+          user.subscription.cancelAtPeriodEnd = true;
         }
+        // await refreshUser();
       } else {
         setCancelError(data.error || "Something went wrong. Please try again.");
       }
