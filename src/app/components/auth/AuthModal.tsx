@@ -207,7 +207,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
                 textAlign="center"
                 sx={{ mb: 1 }}
               >
-                You’ll get <b>10 presentations per day</b> for 7 days. <br />
+                You’ll get <b>a limited number of decks per day</b> and explore
+                for <b>7 days</b>. <br />
                 No credit card required.
               </Typography>
             )}

@@ -48,40 +48,11 @@ const ProfileModal = ({
   const [cancelError, setCancelError] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
 
-  // console.log(user);
+  console.log(user);
 
   const handleSignOut = async () => {
     await signOut({ redirect: false }); // no page reload or redirect
   };
-
-  // const handleCancelRenewal = async () => {
-  //   setCancelLoading(true);
-  //   setCancelError(""); // reset old error
-  //   try {
-  //     const res = await fetch(
-  //       `${API_BASE_URL}/api/stripe/cancel-subscription`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({ userId: user?._id }),
-  //       }
-  //     );
-
-  //     const data = await res.json();
-
-  //     if (res.ok && data.success) {
-  //       await refreshUser();
-  //     } else {
-  //       setCancelError(data.error || "Something went wrong. Please try again.");
-  //     }
-  //   } catch (err: any) {
-  //     setCancelError(err.message || "Network error. Please try again.");
-  //   } finally {
-  //     setCancelLoading(false);
-  //   }
-  // };
 
   const handleCancelRenewal = async () => {
     setCancelLoading(true);
@@ -202,7 +173,7 @@ const ProfileModal = ({
                     spacing={1.5}
                     sx={{ width: "100%", textAlign: "center" }}
                   >
-                    {/* Active Subscription */}
+                    {/*  Subscription Related */}
                     {user?.subscription &&
                     user.subscription.status === "active" ? (
                       <Card
@@ -291,7 +262,7 @@ const ProfileModal = ({
                           </Stack>
                         </Stack>
                       </Card>
-                    ) : (
+                    ) : user?.subscription ? (
                       <Card
                         variant="outlined"
                         sx={{
@@ -356,7 +327,7 @@ const ProfileModal = ({
                           </Stack>
                         </Stack>
                       </Card>
-                    )}
+                    ) : null}
 
                     {user?.subscription?.cancelAtPeriodEnd && (
                       <Typography
@@ -451,7 +422,7 @@ const ProfileModal = ({
 
                           {/* FOR PAYMENT ADDED FEEDBACK */}
 
-                          <Typography
+                          {/* <Typography
                             variant="body2"
                             color="text.secondary"
                             align="center"
@@ -470,10 +441,10 @@ const ProfileModal = ({
                               purchase a plan
                             </a>
                             .
-                          </Typography>
+                          </Typography> */}
 
                           {/* FOR NO PAYMENT FEEDBACK */}
-                          {/* <Typography
+                          <Typography
                             variant="body2"
                             color="text.secondary"
                             align="center"
@@ -492,7 +463,7 @@ const ProfileModal = ({
                               waiting list
                             </a>{" "}
                             to receive updates on our upcomming plans. .
-                          </Typography> */}
+                          </Typography>
                         </Stack>
                       </Card>
                     )}

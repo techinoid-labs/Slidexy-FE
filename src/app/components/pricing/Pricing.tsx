@@ -147,168 +147,172 @@ export default function PricingSection() {
           <>
             {error && <Alert severity="error">{error}</Alert>}
             {plans.length &&
-              plans?.map((plan) => {
-                const styleMap: Record<
-                  string,
-                  {
-                    color: string;
-                    textColor: string;
-                    borderColor: string;
-                    btnHover: string;
-                  }
-                > = {
-                  Basic: {
-                    color: "#F3F0FF",
-                    textColor: "#6C2BD7",
-                    borderColor: "#E9E9FF",
-                    btnHover: "#E9E9FF",
-                  },
-                  Exclusive: {
-                    color: "#6C2BD7",
-                    textColor: "#fff",
-                    borderColor: "#6C2BD7",
-                    btnHover: "#4A00E0",
-                  },
-                  Platinum: {
-                    color: "#F3F0FF",
-                    textColor: "#6C2BD7",
-                    borderColor: "#E9E9FF",
-                    btnHover: "#E9E9FF",
-                  },
-                };
+              plans
+                .filter((plan) => plan.isActive)
+                ?.map((plan) => {
+                  const styleMap: Record<
+                    string,
+                    {
+                      color: string;
+                      textColor: string;
+                      borderColor: string;
+                      btnHover: string;
+                    }
+                  > = {
+                    Basic: {
+                      color: "#F3F0FF",
+                      textColor: "#6C2BD7",
+                      borderColor: "#E9E9FF",
+                      btnHover: "#E9E9FF",
+                    },
+                    Exclusive: {
+                      color: "#6C2BD7",
+                      textColor: "#fff",
+                      borderColor: "#6C2BD7",
+                      btnHover: "#4A00E0",
+                    },
+                    Platinum: {
+                      color: "#F3F0FF",
+                      textColor: "#6C2BD7",
+                      borderColor: "#E9E9FF",
+                      btnHover: "#E9E9FF",
+                    },
+                  };
 
-                const styles = styleMap[plan.name] || styleMap["Basic"];
+                  const styles = styleMap[plan.name] || styleMap["Basic"];
 
-                const tenure =
-                  plan.billingPeriod === "weekly"
-                    ? "Week"
-                    : plan.billingPeriod === "monthly"
-                    ? "Month"
-                    : "Year";
+                  const tenure =
+                    plan.billingPeriod === "weekly"
+                      ? "Week"
+                      : plan.billingPeriod === "monthly"
+                      ? "Month"
+                      : "Year";
 
-                return (
-                  <Box
-                    key={plan._id}
-                    sx={{
-                      minWidth: { xs: "335px" },
-                      maxWidth: { sm: "355px", xs: "auto" },
-                      background: "#fff",
-                      borderRadius: "20px",
-                      border: `1px solid ${styles.borderColor}`,
-                      boxShadow: "0 2px 16px 0 rgba(80, 80, 120, 0.07)",
-                      p: { sm: "40px", xs: "30px" },
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                    }}
-                  >
-                    {/* Name + Price */}
+                  return (
                     <Box
+                      key={plan._id}
                       sx={{
+                        minWidth: { xs: "335px" },
+                        maxWidth: { sm: "355px", xs: "auto" },
+                        background: "#fff",
+                        borderRadius: "20px",
+                        border: `1px solid ${styles.borderColor}`,
+                        boxShadow: "0 2px 16px 0 rgba(80, 80, 120, 0.07)",
+                        p: { sm: "40px", xs: "30px" },
                         display: "flex",
-                        flexDirection: "row",
-                        gap: "20px",
+                        flexDirection: "column",
+                        alignItems: "center",
                       }}
                     >
-                      <Typography
+                      {/* Name + Price */}
+                      <Box
                         sx={{
-                          fontWeight: 600,
-                          fontSize: "24px",
-                          color: "#222",
-                          mt: "15px",
+                          display: "flex",
+                          flexDirection: "row",
+                          gap: "20px",
                         }}
                       >
-                        {plan.name}
-                      </Typography>
-
-                      <Box sx={{ display: "flex", pb: "15px" }}>
                         <Typography
                           sx={{
-                            fontWeight: 500,
-                            fontSize: "42px",
-                            color: "#18181B",
+                            fontWeight: 600,
+                            fontSize: "24px",
+                            color: "#222",
+                            mt: "15px",
                           }}
                         >
-                          ${plan.price}
+                          {plan.name}
                         </Typography>
-                        <Typography sx={{ color: "#757575", mt: "40px" }}>
-                          /{tenure}
-                        </Typography>
-                      </Box>
-                    </Box>
 
-                    {/* Description */}
-                    <Typography
-                      sx={{
-                        color: "#757575",
-                        fontSize: "1rem",
-                        mb: 3,
-                        textAlign: "center",
-                      }}
-                    >
-                      {plan.description ||
-                        "Choose the plan that fits your business needs"}
-                    </Typography>
-
-                    {/* Button */}
-                    <Button
-                      variant="contained"
-                      sx={{
-                        background: styles.color,
-                        color: styles.textColor,
-                        borderRadius: "999px",
-                        px: 4,
-                        py: 1.5,
-                        fontWeight: 600,
-                        fontSize: "1.1rem",
-                        textTransform: "none",
-                        width: "100%",
-                        mb: 3,
-                        boxShadow: "none",
-                        "&:hover": { background: styles.btnHover },
-                      }}
-                      endIcon={<span style={{ fontSize: 22 }}>→</span>}
-                      onClick={() => {
-                        if (!user) {
-                          setProfileModalOpen(true);
-                          return;
-                        }
-                        handleCheckout(plan.name);
-                      }}
-                    >
-                      Get Started
-                    </Button>
-
-                    {/* Features */}
-                    <Box sx={{ width: "100%" }}>
-                      {plan.features.map((feature, i) => (
-                        <Box
-                          key={i}
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            mb: 1.5,
-                            width: "100%",
-                          }}
-                        >
-                          <span
-                            style={{
-                              color: "#6C2BD7",
-                              fontSize: 20,
-                              marginRight: 10,
+                        <Box sx={{ display: "flex", pb: "15px" }}>
+                          <Typography
+                            sx={{
+                              fontWeight: 500,
+                              fontSize: "42px",
+                              color: "#18181B",
                             }}
                           >
-                            ✔
-                          </span>
-                          <Typography sx={{ color: "#222", fontSize: "1rem" }}>
-                            {feature}
+                            ${plan.price}
+                          </Typography>
+                          <Typography sx={{ color: "#757575", mt: "40px" }}>
+                            /{tenure}
                           </Typography>
                         </Box>
-                      ))}
+                      </Box>
+
+                      {/* Description */}
+                      <Typography
+                        sx={{
+                          color: "#757575",
+                          fontSize: "1rem",
+                          mb: 3,
+                          textAlign: "center",
+                        }}
+                      >
+                        {plan.description ||
+                          "Choose the plan that fits your business needs"}
+                      </Typography>
+
+                      {/* Button */}
+                      <Button
+                        variant="contained"
+                        sx={{
+                          background: styles.color,
+                          color: styles.textColor,
+                          borderRadius: "999px",
+                          px: 4,
+                          py: 1.5,
+                          fontWeight: 600,
+                          fontSize: "1.1rem",
+                          textTransform: "none",
+                          width: "100%",
+                          mb: 3,
+                          boxShadow: "none",
+                          "&:hover": { background: styles.btnHover },
+                        }}
+                        endIcon={<span style={{ fontSize: 22 }}>→</span>}
+                        onClick={() => {
+                          if (!user) {
+                            setProfileModalOpen(true);
+                            return;
+                          }
+                          handleCheckout(plan.name);
+                        }}
+                      >
+                        Get Started
+                      </Button>
+
+                      {/* Features */}
+                      <Box sx={{ width: "100%" }}>
+                        {plan.features.map((feature, i) => (
+                          <Box
+                            key={i}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 1.5,
+                              width: "100%",
+                            }}
+                          >
+                            <span
+                              style={{
+                                color: "#6C2BD7",
+                                fontSize: 20,
+                                marginRight: 10,
+                              }}
+                            >
+                              ✔
+                            </span>
+                            <Typography
+                              sx={{ color: "#222", fontSize: "1rem" }}
+                            >
+                              {feature}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
                     </Box>
-                  </Box>
-                );
-              })}
+                  );
+                })}
           </>
         )}
         <ProfileModal
