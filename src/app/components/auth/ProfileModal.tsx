@@ -422,7 +422,7 @@ const ProfileModal = ({
 
                           {/* FOR PAYMENT ADDED FEEDBACK */}
 
-                          {/* <Typography
+                          <Typography
                             variant="body2"
                             color="text.secondary"
                             align="center"
@@ -441,10 +441,10 @@ const ProfileModal = ({
                               purchase a plan
                             </a>
                             .
-                          </Typography> */}
+                          </Typography>
 
                           {/* FOR NO PAYMENT FEEDBACK */}
-                          <Typography
+                          {/* <Typography
                             variant="body2"
                             color="text.secondary"
                             align="center"
@@ -463,7 +463,7 @@ const ProfileModal = ({
                               waiting list
                             </a>{" "}
                             to receive updates on our upcomming plans. .
-                          </Typography>
+                          </Typography> */}
                         </Stack>
                       </Card>
                     )}
