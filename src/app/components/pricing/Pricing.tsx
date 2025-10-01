@@ -29,7 +29,11 @@ export default function PricingSection() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan: pricePlan, userId: user?._id }),
+          body: JSON.stringify({
+            plan: pricePlan,
+            userId: user?._id,
+            email: user?.email,
+          }),
         }
       );
 
