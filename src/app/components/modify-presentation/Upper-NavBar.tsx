@@ -316,11 +316,12 @@ const UpperNavBar: React.FC<{
             )}
 
             {/* Profile Button */}
-
-            <NavProfileHandler
-              setProfileModalOpen={setProfileModalOpen}
-              setAuthModalOpen={setShowAuthModal}
-            />
+            {!isMobile ? (
+              <NavProfileHandler
+                setProfileModalOpen={setProfileModalOpen}
+                setAuthModalOpen={setShowAuthModal}
+              />
+            ) : null}
 
             {/* Mobile Hamburger for extra actions */}
             {isMobile && (
