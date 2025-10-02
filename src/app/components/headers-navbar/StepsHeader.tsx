@@ -20,7 +20,7 @@ import { Typography } from "@mui/material";
 import { useSlides } from "@/app/context/SlidesContext";
 import { clearPersistedSlides } from "@/app/store/store";
 import { usePathname, useRouter } from "next/navigation";
-import ProfileModal from "../auth/ProfileModal";
+// import ProfileModal from "../auth/ProfileModal";
 import AuthModal from "../auth/AuthModal";
 import NavProfileHandler from "../auth/NavProfileHandler";
 export default function StepsHeader() {
@@ -99,7 +99,7 @@ export default function StepsHeader() {
                 py: 1,
               }}
             >
-              Go back
+              {!isMobile ? "Go back" : ""}
             </Button>
           </Box>
 
@@ -128,7 +128,6 @@ export default function StepsHeader() {
                       >
                         Profile
                       </Button> */}
-
             <Button
               onClick={() => {
                 localStorage.removeItem("fileName");
@@ -154,14 +153,21 @@ export default function StepsHeader() {
             >
               Cancel
             </Button>
-            <NavProfileHandler setProfileModalOpen={setProfileModalOpen} />
+            <NavProfileHandler
+              setProfileModalOpen={setProfileModalOpen}
+              setAuthModalOpen={setAuthModalOpen}
+            />
           </Box>
         </Toolbar>
       </AppBar>
-      <ProfileModal
+      <AuthModal
+        open={isAuthModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+      />
+      {/* <ProfileModal
         open={isProfileModalOpen}
         onClose={() => setProfileModalOpen(false)}
-      />
+      /> */}
     </>
   );
 }

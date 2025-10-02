@@ -92,7 +92,6 @@ const Page = () => {
     transition: "background 0.5s ease-in-out", // smooth gamma transition
   };
 
-
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const handleClearCanvas = () => {
     if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
@@ -127,133 +126,134 @@ const Page = () => {
     setSlides(newSlides);
   };
 
- const handleExportPPTX = () => {
-  if (loading) return;
+  const handleExportPPTX = () => {
+    if (loading) return;
 
-  if (session?.user || user) {
-    setShowAuthModal(false);
+    if (session?.user || user) {
+      setShowAuthModal(false);
 
-    // Build structuredSlides (your old logic)
-    const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
-      const elements: StructuredSlide["elements"] = [];
+      // Build structuredSlides (your old logic)
+      const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
+        const elements: StructuredSlide["elements"] = [];
 
-      slide.elements?.forEach((el: any) => {
-        const { element_type, text, properties = {}, konva_component } = el;
-        const {
-          x = 0,
-          y = 0,
-          width,
-          height,
-          w,
-          h,
-          fontSize = 18,
-          fill = "#444444",
-          fontFamily,
-          fontStyle,
-          fontWeight,
-          imageSrc,
-        } = properties;
+        slide.elements?.forEach((el: any) => {
+          const { element_type, text, properties = {}, konva_component } = el;
+          const {
+            x = 0,
+            y = 0,
+            width,
+            height,
+            w,
+            h,
+            fontSize = 18,
+            fill = "#444444",
+            fontFamily,
+            fontStyle,
+            fontWeight,
+            imageSrc,
+          } = properties;
 
-        const xIn = x / 100;
-        const yIn = y / 100;
-        const wIn = (width || w || 400) / 100;
-        const hIn = (height || h || 200) / 100;
+          const xIn = x / 100;
+          const yIn = y / 100;
+          const wIn = (width || w || 400) / 100;
+          const hIn = (height || h || 200) / 100;
 
-        if (element_type === "bullet_point") {
-          elements.push({
-            element_type: "bullet_point",
-            text,
-            properties: {
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-              fontSize,
-              fill: fill.replace("#", ""),
-              fontFamily,
-              fontStyle,
-              fontWeight,
-            },
-          });
-        } else if (element_type === "image" && imageSrc) {
-          elements.push({
-            element_type: "image",
-            src: slide.image_url || undefined,
-            properties: {
-              imageSrc,
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-            },
-          });
-        } else if (element_type === "text" && text) {
-          elements.push({
-            element_type: "text",
-            text,
-            properties: {
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-              fontSize,
-              fill: fill.replace("#", ""),
-              fontFamily,
-              fontStyle,
-              fontWeight,
-            },
-          });
-        } else if (element_type === "shape") {
-          elements.push({
-            element_type: "shape",
-            text: konva_component,
-            properties: {
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-              fill: fill.replace("#", "") || "cccccc",
-            },
-          });
-        }
+          if (element_type === "bullet_point") {
+            elements.push({
+              element_type: "bullet_point",
+              text,
+              properties: {
+                x: xIn,
+                y: yIn,
+                w: wIn,
+                h: hIn,
+                fontSize,
+                fill: fill.replace("#", ""),
+                fontFamily,
+                fontStyle,
+                fontWeight,
+              },
+            });
+          } else if (element_type === "image" && imageSrc) {
+            elements.push({
+              element_type: "image",
+              src: slide.image_url || undefined,
+              properties: {
+                imageSrc,
+                x: xIn,
+                y: yIn,
+                w: wIn,
+                h: hIn,
+              },
+            });
+          } else if (element_type === "text" && text) {
+            elements.push({
+              element_type: "text",
+              text,
+              properties: {
+                x: xIn,
+                y: yIn,
+                w: wIn,
+                h: hIn,
+                fontSize,
+                fill: fill.replace("#", ""),
+                fontFamily,
+                fontStyle,
+                fontWeight,
+              },
+            });
+          } else if (element_type === "shape") {
+            elements.push({
+              element_type: "shape",
+              text: konva_component,
+              properties: {
+                x: xIn,
+                y: yIn,
+                w: wIn,
+                h: hIn,
+                fill: fill.replace("#", "") || "cccccc",
+              },
+            });
+          }
+        });
+
+        const slideTitleProps: any = slide.slide_title?.properties || {};
+        const slideTitle = slide.slide_title?.text;
+
+        return {
+          slide_id: slide.slide_id,
+          slide_title: slideTitle
+            ? {
+                text: slideTitle,
+                properties: {
+                  fontSize: slideTitleProps.fontSize,
+                  fill: slideTitleProps.fill?.replace("#", ""),
+                  fontStyle: slideTitleProps.fontStyle,
+                  fontFamily: slideTitleProps.fontFamily,
+                },
+              }
+            : undefined,
+          elements,
+          image_url: slide.image_url,
+        };
       });
 
-      const slideTitleProps: any = slide.slide_title?.properties || {};
-      const slideTitle = slide.slide_title?.text;
+      // ✅ Export the transformed slides
+      exportSlidesAsPPT(structuredSlides);
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
-      return {
-        slide_id: slide.slide_id,
-        slide_title: slideTitle
-          ? {
-              text: slideTitle,
-              properties: {
-                fontSize: slideTitleProps.fontSize,
-                fill: slideTitleProps.fill?.replace("#", ""),
-                fontStyle: slideTitleProps.fontStyle,
-                fontFamily: slideTitleProps.fontFamily,
-              },
-            }
-          : undefined,
-        elements,
-        image_url: slide.image_url,
-      };
-    });
-
-    // ✅ Export the transformed slides
-    exportSlidesAsPPT(structuredSlides);
-  } else {
-    setShowAuthModal(true);
-  }
-};
-
-
-
-
-
-  const isTextSelected = selectedTextId !== null && selectedTextId !== "" && !selectedImageIndex && !selectedShapeIndex;
-  const isShapeSelected = selectedShapeIndex !== null && !selectedTextId && !selectedImageIndex;
-  const isImageSelected = selectedImageIndex !== null && !selectedTextId && !selectedShapeIndex;
-
+  const isTextSelected =
+    selectedTextId !== null &&
+    selectedTextId !== "" &&
+    !selectedImageIndex &&
+    !selectedShapeIndex;
+  const isShapeSelected =
+    selectedShapeIndex !== null && !selectedTextId && !selectedImageIndex;
+  const isImageSelected =
+    selectedImageIndex !== null && !selectedTextId && !selectedShapeIndex;
 
   const handleExportPDF = () => {
     if (loading) return;
@@ -299,7 +299,7 @@ const Page = () => {
           ),
           maxWidth: "100%",
           overflow: "hidden",
-          transition: "background 0.5s ease-in-out"
+          transition: "background 0.5s ease-in-out",
         }}
         className="animated-bg"
       >
@@ -317,6 +317,8 @@ const Page = () => {
               onClearCanvas={handleClearCanvas}
               onPreview={() => setPreviewOpen(true)}
               onOpenThemePanel={handleOpenThemePanel}
+              showAuthModal={showAuthModal}
+              setShowAuthModal={setShowAuthModal}
             />
           </div>
         ) : (
@@ -326,6 +328,8 @@ const Page = () => {
             onClearCanvas={handleClearCanvas}
             onPreview={() => setPreviewOpen(true)}
             onOpenThemePanel={handleOpenThemePanel}
+            showAuthModal={showAuthModal}
+            setShowAuthModal={setShowAuthModal}
           />
         )}
         <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
@@ -390,7 +394,10 @@ const Page = () => {
                   setShowTemplatePanel={setShowTemplatePanel}
                 />
               </div>
-              <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
+              <div
+                className="flex-1 overflow-auto z-0"
+                style={{ marginTop: 12 }}
+              >
                 <SlideEditor slides={slides} stageRefs={stageRefs} />
                 <SlideShowPlayer
                   slides={slides}
@@ -403,12 +410,13 @@ const Page = () => {
                 className={`
                 ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
                 bg-white shadow-md transition-all duration-300 ease-in-out flex
-                ${!isLGScreen && showRightPanel
+                ${
+                  !isLGScreen && showRightPanel
                     ? "w-96"
                     : isLGScreen
-                      ? "w-[375px]"
-                      : "w-0"
-                  }
+                    ? "w-[375px]"
+                    : "w-0"
+                }
               `}
               >
                 {!isLGScreen && (
@@ -428,16 +436,19 @@ const Page = () => {
                   </div>
                 )}
                 <div
-                  className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${!showRightPanel && !isLGScreen
-                    ? "opacity-0 pointer-events-none"
-                    : "opacity-100"
-                    }`}
+                  className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
+                    !showRightPanel && !isLGScreen
+                      ? "opacity-0 pointer-events-none"
+                      : "opacity-100"
+                  }`}
                 >
                   {isTextSelected && !isShapeSelected && (
                     <TextSettingsPanel resetAll={resetAll} />
                   )}
                   {isImageSelected && <ImageSettingsPanel />}
-                  {isShapeSelected && <ShapeSettingsPanel resetAll={resetAll} />}
+                  {isShapeSelected && (
+                    <ShapeSettingsPanel resetAll={resetAll} />
+                  )}
                   {!isTextSelected && !isImageSelected && !isShapeSelected && (
                     <ThemePanel parsedSlides={slides} resetAll={resetAll} />
                   )}
@@ -446,10 +457,10 @@ const Page = () => {
             </div>
           )}
         </div>
-
       </div>
       {showAuthModal && (
         <AuthModal
+          open={showAuthModal}
           onClose={() => setShowAuthModal(false)}
           presentationId={datapresentationId}
         />

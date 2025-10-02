@@ -19,7 +19,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation"; // ✅ active route
 import { Typography } from "@mui/material";
 import AuthModal from "../auth/AuthModal";
-import ProfileModal from "../auth/ProfileModal";
+// import ProfileModal from "../auth/ProfileModal";
 import NavProfileHandler from "../auth/NavProfileHandler";
 import { useUser } from "@/app/context/AuthContext";
 export default function Header() {
@@ -31,6 +31,9 @@ export default function Header() {
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
+
+  const isAcountsPage = pathname.includes("account");
+  console.log(isAcountsPage);
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -163,31 +166,34 @@ export default function Header() {
 
                   <NavProfileHandler
                     setProfileModalOpen={setProfileModalOpen}
+                    setAuthModalOpen={setAuthModalOpen}
                   />
 
-                  <Link href="/presentation/create" passHref>
-                    <Button
-                      variant="contained"
-                      sx={{
-                        mt: 0.9,
-                        mb: 1.06,
-                        backgroundColor: "#4A00E0",
-                        color: "#fff",
-                        borderRadius: "999px",
-                        px: "20px",
-                        py: "12px",
-                        maxHeight: "48px",
-                        textTransform: "none",
-                        fontWeight: 600,
-                        whiteSpace: "nowrap",
-                        "&:hover": {
-                          backgroundColor: "#3a00b8",
-                        },
-                      }}
-                    >
-                      Try for Free →
-                    </Button>
-                  </Link>
+                  {!isAcountsPage && (
+                    <Link href="/presentation/create" passHref>
+                      <Button
+                        variant="contained"
+                        sx={{
+                          mt: 0.9,
+                          mb: 1.06,
+                          backgroundColor: "#4A00E0",
+                          color: "#fff",
+                          borderRadius: "999px",
+                          px: "20px",
+                          py: "12px",
+                          maxHeight: "48px",
+                          textTransform: "none",
+                          fontWeight: 600,
+                          whiteSpace: "nowrap",
+                          "&:hover": {
+                            backgroundColor: "#3a00b8",
+                          },
+                        }}
+                      >
+                        Try for Free →
+                      </Button>
+                    </Link>
+                  )}
                 </>
               )}
 
@@ -244,25 +250,28 @@ export default function Header() {
                       className="w-full flex justify-center items-center"
                       // component={Link}
                       // href="/presentation/create"
-                      onClick={handleMenuClose}
+                      // onClick={handleMenuClose}
                     >
                       <div className="flex items-center gap-2 w-full">
                         <NavProfileHandler
+                          // size={20}
+                          showMail={true} //For showing email on mobile view
                           setProfileModalOpen={setProfileModalOpen}
+                          setAuthModalOpen={setAuthModalOpen}
                         />
-
+                        {/* 
                         {user && (
                           <Typography
                             onClick={() => {
-                              handleMenuClose();
-                              setProfileModalOpen(true);
+                              // handleMenuClose();
+                              // setProfileModalOpen(true);
                             }}
                             fontSize={12}
-                            className="truncate max-w-24"
+                            className="truncate max-w-36"
                           >
                             {user?.email || "User"}
                           </Typography>
-                        )}
+                        )} */}
                       </div>
                     </MenuItem>
                   </Menu>
@@ -273,11 +282,14 @@ export default function Header() {
         </Toolbar>
       </AppBar>
 
-      {/* <AuthModal open={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} /> */}
-      <ProfileModal
+      <AuthModal
+        open={isAuthModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+      />
+      {/* <ProfileModal
         open={isProfileModalOpen}
         onClose={() => setProfileModalOpen(false)}
-      />
+      /> */}
     </>
   );
 }
