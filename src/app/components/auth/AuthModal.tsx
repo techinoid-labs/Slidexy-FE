@@ -17,12 +17,17 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 interface AuthModalProps {
   onClose: any;
-  presentationId: string | null | undefined;
+  open: any;
+  presentationId?: string | null | undefined;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
+const AuthModal: React.FC<AuthModalProps> = ({
+  open,
+  onClose,
+  presentationId,
+}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignup, setIsSignup] = useState(false);
@@ -154,7 +159,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, presentationId }) => {
   };
 
   return (
-    <Modal open onClose={onClose}>
+    <Modal open={open} onClose={onClose}>
       <Box
         sx={{
           position: "absolute",

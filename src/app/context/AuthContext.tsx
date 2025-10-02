@@ -4,21 +4,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 
-// type User = {
-//   _id: string;
-//   email: string;
-//   name?: string;
-//   admin?: boolean;
-//   presentations?: string[];
-//   currentPresentationId?: string | null;
-//   pricingPlan?: string | null;
-//   trialActive?: boolean;
-//   trialStart?: string;
-//   trialEnd?: string;
-//   daysLeft?: number;
-//   presentationsLeftToday?: number;
-// } | null;
-
 type PlanConfig = {
   decksPerDay: number;
   imageDecks: number;
@@ -42,7 +27,7 @@ type PricingPlan = {
   stripePriceId?: string;
   price: number;
   currency: string;
-  billingPeriod: "weekly" | "monthly" | "yearly"; // match backend
+  billingPeriod: "weekly" | "monthly" | "yearly";
   description?: string;
   features?: string[];
   isActive?: boolean;
@@ -61,8 +46,8 @@ type Subscription = {
     | "trialing"
     | "unpaid"
     | "incomplete_expired";
-  plan?: PricingPlan | null; // populated from DB
-  planSnapshot?: PricingPlan | null; // frozen copy
+  plan?: PricingPlan | null;
+  planSnapshot?: PricingPlan | null;
   startDate: string;
   currentPeriodStart: string;
   currentPeriodEnd: string;
@@ -75,7 +60,6 @@ type TrialInfo = {
   start?: string;
   end?: string;
   daysLeft: number;
-  // presentationsLeftToday: number;
   imageDecksLeftToday: number;
   predefinedDecksLeftToday: number;
   config: any;
@@ -84,7 +68,6 @@ type TrialInfo = {
 type SubscriptionUsage = {
   active: boolean;
   daysLeft: number;
-  // presentationsLeftToday: number;
   imageDecksLeftToday: number;
   predefinedDecksLeftToday: number;
   config: PlanConfig | null;

@@ -88,7 +88,6 @@ export default function SuccessPage() {
                 src={`/images/success/success-icon.svg`}
               />
             </Box>
-
             {/* Heading */}
             <Typography
               variant="h5"
@@ -96,13 +95,11 @@ export default function SuccessPage() {
             >
               Payment Successful!
             </Typography>
-
             {/* Subtext */}
             <Typography fontSize={14} sx={{ color: "#6B6B6B", mb: 2 }}>
               Thank you for subscribing to our plan. Your payment was processed
               successfully.
             </Typography>
-
             {/* Email */}
             {sessionData?.email && (
               <Typography fontSize={14} sx={{ color: "#6B6B6B", mb: 4 }}>
@@ -110,7 +107,6 @@ export default function SuccessPage() {
                 <span style={{ fontWeight: 600 }}>{sessionData.email}</span>
               </Typography>
             )}
-
             {/* Button */}
             <Button
               fullWidth
@@ -128,6 +124,24 @@ export default function SuccessPage() {
               onClick={() => router.push("/")}
             >
               Go to Homepage
+            </Button>
+            or
+            <Button
+              fullWidth
+              variant="contained"
+              sx={{
+                borderRadius: "999px",
+                py: 1.5,
+                fontWeight: 600,
+                textTransform: "none",
+                background: "linear-gradient(90deg, #6a11cb, #4A00E0)",
+                "&:hover": {
+                  background: "linear-gradient(90deg, #5a0fb9, #4A00E0)",
+                },
+              }}
+              onClick={() => router.push("/account")}
+            >
+              Check your Subscription
             </Button>
           </>
         )}

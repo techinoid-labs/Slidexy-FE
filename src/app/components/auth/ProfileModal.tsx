@@ -527,10 +527,11 @@ const ProfileModal = ({
             </CardContent>
           </Card>
         ) : (
-          <AuthModal
-            onClose={onClose}
-            presentationId={presentationId ?? null}
-          />
+          <></>
+          // <AuthModal
+          //   onClose={onClose}
+          //   presentationId={presentationId ?? null}
+          // />
         )}
       </Box>
     </Modal>

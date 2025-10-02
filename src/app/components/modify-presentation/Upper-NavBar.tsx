@@ -24,7 +24,8 @@ import { useRouter } from "next/navigation";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useUser } from "@/app/context/AuthContext";
-import ProfileModal from "../auth/ProfileModal";
+// import ProfileModal from "../auth/ProfileModal";
+import AuthModal from "../auth/AuthModal";
 import NavProfileHandler from "../auth/NavProfileHandler";
 
 // helper: extract readable name from email
@@ -44,16 +45,21 @@ const UpperNavBar: React.FC<{
   onClearCanvas?: () => void;
   onPreview: () => void;
   onOpenThemePanel: () => void;
+  showAuthModal?: any;
+  setShowAuthModal?: any;
 }> = ({
   onExportPDF,
   onExportPPT,
   onClearCanvas,
   onPreview,
   onOpenThemePanel,
+  showAuthModal,
+  setShowAuthModal,
 }) => {
   const [mobileMenuAnchor, setMobileMenuAnchor] =
     React.useState<null | HTMLElement>(null);
   const [isProfileModalOpen, setProfileModalOpen] = React.useState(false);
+  const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
 
   const { user } = useUser();
   const displayName =
@@ -311,30 +317,11 @@ const UpperNavBar: React.FC<{
 
             {/* Profile Button */}
             {!isMobile ? (
-              // <Button
-              //   variant="outlined"
-              //   onClick={() => setProfileModalOpen(true)}
-              //   sx={{ borderRadius: "999px", height: 40, ml: 1, px: 2 }}
-              // >
-              //   Profile
-              // </Button>
-              <NavProfileHandler setProfileModalOpen={setProfileModalOpen} />
-            ) : (
-              <IconButton
-                onClick={() => setProfileModalOpen(true)}
-                sx={{
-                  color: "#222",
-                  backgroundColor: "#F8F8FA",
-                  width: 28,
-                  height: 28,
-                  p: 0,
-                }}
-              >
-                <Avatar sx={{ width: 24, height: 24, fontSize: 14 }}>
-                  {initial}
-                </Avatar>
-              </IconButton>
-            )}
+              <NavProfileHandler
+                setProfileModalOpen={setProfileModalOpen}
+                setAuthModalOpen={setShowAuthModal}
+              />
+            ) : null}
 
             {/* Mobile Hamburger for extra actions */}
             {isMobile && (
@@ -368,14 +355,16 @@ const UpperNavBar: React.FC<{
           >
             Reset Themes
           </MenuItem>
+          <Divider />
+          <MenuItem>
+            <NavProfileHandler
+              showMail={true}
+              setProfileModalOpen={setProfileModalOpen}
+              setAuthModalOpen={setShowAuthModal}
+            />
+          </MenuItem>
         </Menu>
       </AppBar>
-
-      {/* Profile Modal */}
-      <ProfileModal
-        open={isProfileModalOpen}
-        onClose={() => setProfileModalOpen(false)}
-      />
     </>
   );
 };

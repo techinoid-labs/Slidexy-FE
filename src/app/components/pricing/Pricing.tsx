@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { usePricingPlans } from "@/hooks/usePricingPlans";
 import { useUser } from "@/app/context/AuthContext";
 import ProfileModal from "../auth/ProfileModal";
+import AuthModal from "../auth/AuthModal";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -19,7 +20,8 @@ export default function PricingSection() {
   const { plans, loading, error } = usePricingPlans();
   const { user } = useUser();
 
-  const [isProfileModalOpen, setProfileModalOpen] = useState(false);
+  // const [isProfileModalOpen, setProfileModalOpen] = useState(false);
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
 
   const handleCheckout = async (pricePlan: string) => {
     try {
@@ -276,7 +278,7 @@ export default function PricingSection() {
                         endIcon={<span style={{ fontSize: 22 }}>→</span>}
                         onClick={() => {
                           if (!user) {
-                            setProfileModalOpen(true);
+                            setAuthModalOpen(true);
                             return;
                           }
                           handleCheckout(plan.name);
@@ -319,9 +321,13 @@ export default function PricingSection() {
                 })}
           </>
         )}
-        <ProfileModal
+        {/* <ProfileModal
           open={isProfileModalOpen}
           onClose={() => setProfileModalOpen(false)}
+        /> */}
+        <AuthModal
+          open={isAuthModalOpen}
+          onClose={() => setAuthModalOpen(false)}
         />
       </Box>
     </Box>
