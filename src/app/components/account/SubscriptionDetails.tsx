@@ -29,6 +29,8 @@ const SubscriptionDetails: React.FC = () => {
   const [cancelLoading, setCancelLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  console.log(user);
+
   useEffect(() => {
     refreshUser();
   }, []);
@@ -83,6 +85,7 @@ const SubscriptionDetails: React.FC = () => {
 
   const isActive = sub?.status === "active";
   const isCanceled = sub?.cancelAtPeriodEnd;
+  const isEnded = sub?.status === "canceled" && !!sub?.endDate;
   const trialActive = !sub && trial?.active;
 
   const formatDate = (dateStr?: string) => {
@@ -95,8 +98,12 @@ const SubscriptionDetails: React.FC = () => {
       <Typography variant="h5" fontWeight={700} gutterBottom>
         My Subscriptions
       </Typography>
-      <Typography variant="body2" sx={{ color: "text.secondary", mb: 4 }}>
+      <Typography variant="body2" sx={{ color: "text.secondary", mb: 1 }}>
         View & Manage your subscription and usage.
+      </Typography>
+      <Typography variant="body2" sx={{ color: "#5b21b6", mb: 4 }}>
+        <b>Email:</b>
+        {user.email}
       </Typography>
 
       <Card
@@ -120,66 +127,80 @@ const SubscriptionDetails: React.FC = () => {
                 variant="body2"
                 sx={{ color: "text.secondary", mb: 0.75 }}
               >
-                {isActive ? "Current Plan" : trialActive ? "Trial" : "Status"}
+                {isActive
+                  ? "Current Plan"
+                  : isCanceled
+                  ? "Cancels Soon"
+                  : isEnded
+                  ? "Canceled Plan"
+                  : trialActive
+                  ? "Trial"
+                  : "Status"}
               </Typography>
 
               <Typography
                 variant="h5"
-                sx={{ color: "#5b21b6", fontWeight: 700, mb: 2 }}
+                sx={{
+                  color: isActive ? "#5b21b6" : "text.primary",
+                  fontWeight: 700,
+                  mb: 2,
+                }}
               >
-                {isActive
-                  ? sub?.plan?.name
-                  : trialActive
-                  ? "Trial Active"
-                  : "No Active Plan"}
+                {sub?.plan?.name ||
+                  (trialActive ? "Trial Active" : "No Active Plan")}
               </Typography>
 
-              {(isActive || trialActive) && (
-                <>
-                  <Typography variant="subtitle2" sx={{ mb: 1.25 }}>
-                    What’s included:
-                  </Typography>
-                  <List dense disablePadding>
-                    <ListItem disableGutters sx={{ py: 0.5 }}>
-                      <ListItemIcon sx={{ minWidth: 28 }}>
-                        <CheckRoundedIcon
-                          sx={{ fontSize: 18, color: "text.secondary" }}
-                        />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={`Image Decks: ${
-                          isActive
-                            ? user.subscriptionUsage?.imageDecksLeftToday
-                            : trial?.imageDecksLeftToday
-                        }`}
-                        primaryTypographyProps={{ fontSize: 14 }}
+              {/* {(isActive || trialActive) && ( */}
+              <>
+                <Typography variant="subtitle2" sx={{ mb: 1.25 }}>
+                  What’s included:
+                </Typography>
+                <List dense disablePadding>
+                  <ListItem disableGutters sx={{ py: 0.5 }}>
+                    <ListItemIcon sx={{ minWidth: 28 }}>
+                      <CheckRoundedIcon
+                        sx={{ fontSize: 18, color: "text.secondary" }}
                       />
-                    </ListItem>
-                    <ListItem disableGutters sx={{ py: 0.5 }}>
-                      <ListItemIcon sx={{ minWidth: 28 }}>
-                        <CheckRoundedIcon
-                          sx={{ fontSize: 18, color: "text.secondary" }}
-                        />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={`Predefined Decks: ${
-                          isActive
-                            ? user.subscriptionUsage?.predefinedDecksLeftToday
-                            : trial?.predefinedDecksLeftToday
-                        }`}
-                        primaryTypographyProps={{ fontSize: 14 }}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={`Image Decks: ${
+                        isActive
+                          ? user.subscriptionUsage?.imageDecksLeftToday
+                          : trial?.imageDecksLeftToday
+                      }`}
+                      primaryTypographyProps={{ fontSize: 14 }}
+                    />
+                  </ListItem>
+                  <ListItem disableGutters sx={{ py: 0.5 }}>
+                    <ListItemIcon sx={{ minWidth: 28 }}>
+                      <CheckRoundedIcon
+                        sx={{ fontSize: 18, color: "text.secondary" }}
                       />
-                    </ListItem>
-                  </List>
-                </>
-              )}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={`Predefined Decks: ${
+                        isActive
+                          ? user.subscriptionUsage?.predefinedDecksLeftToday
+                          : trial?.predefinedDecksLeftToday
+                      }`}
+                      primaryTypographyProps={{ fontSize: 14 }}
+                    />
+                  </ListItem>
+                </List>
+              </>
+              {/* )} */}
             </Box>
 
             {/* Right */}
             <Box textAlign="right">
               {isActive && (
                 <Typography
-                  sx={{ fontSize: 34, fontWeight: 700, lineHeight: 1 }}
+                  color="#5b21b6"
+                  sx={{
+                    fontSize: { xs: 14, md: 36 },
+                    fontWeight: 700,
+                    lineHeight: 1,
+                  }}
                 >
                   {sub?.plan?.currency} {sub?.plan?.price}
                   <Typography
@@ -203,13 +224,14 @@ const SubscriptionDetails: React.FC = () => {
           >
             {isActive && (
               <>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "text.secondary", fontSize: 14 }}
-                >
-                  Billing cycle: {formatDate(sub?.currentPeriodEnd)}
-                </Typography>
-
+                {!isCanceled && (
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.secondary", fontSize: 14 }}
+                  >
+                    Billing cycle: {formatDate(sub?.currentPeriodEnd)}
+                  </Typography>
+                )}
                 {!isCanceled && (
                   <Button
                     variant="outlined"
@@ -235,6 +257,29 @@ const SubscriptionDetails: React.FC = () => {
               {formatDate(sub?.currentPeriodEnd)}
             </Typography>
           )}
+          {isEnded && (
+            <Typography
+              variant="body2"
+              sx={{ color: "error.main", mt: 2, textAlign: "left" }}
+            >
+              Your subscription was cancelled on:{" "}
+              <b>{formatDate(sub?.currentPeriodEnd)} </b> you can also
+              <a
+                href={`${FE_URL}/pricing`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#1976d2",
+                  fontWeight: 600,
+                  textDecoration: "underline",
+                }}
+              >
+                {" "}
+                re-subscribe
+              </a>
+              .
+            </Typography>
+          )}
 
           {/* Trial message */}
           {trialActive && (
@@ -247,7 +292,7 @@ const SubscriptionDetails: React.FC = () => {
           )}
 
           {/* No plan */}
-          {!isActive && !trialActive && (
+          {!isActive && !trialActive && !isEnded && (
             <Typography
               variant="body2"
               sx={{ color: "error.main", mt: 2, fontWeight: 500 }}
