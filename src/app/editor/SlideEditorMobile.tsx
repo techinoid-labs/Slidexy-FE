@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
+import { Stage, Layer, Rect, Image as KonvaImage, Group, Circle, Ellipse } from "react-konva";
 import useImage from "use-image";
 import { Box } from "@mui/material";
 import SlideImage from "./KonvaComponents/KonvaSlideImageMobile";
@@ -350,8 +350,24 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                     }
                   }}
                 >
-                  <Layer>
-                  <html> </html>
+                  <Layer clipFunc={(ctx) => {
+                    ctx.beginPath();
+                    const radius = 50;
+                    const width = getDynamicConstants().SLIDE_WIDTH;
+                    const height = getDynamicConstants().SLIDE_HEIGHT;
+
+                    ctx.moveTo(radius, 0);
+                    ctx.lineTo(width - radius, 0);
+                    ctx.quadraticCurveTo(width, 0, width, radius);
+                    ctx.lineTo(width, height - radius);
+                    ctx.quadraticCurveTo(width, height, width - radius, height);
+                    ctx.lineTo(radius, height);
+                    ctx.quadraticCurveTo(0, height, 0, height - radius);
+                    ctx.lineTo(0, radius);
+                    ctx.quadraticCurveTo(0, 0, radius, 0);
+                    ctx.closePath();
+                  }}>
+
                     {selectedTheme?.image_url && bgImage ? (
                       <KonvaImage
                         image={bgImage}
@@ -374,14 +390,107 @@ const SlideEditor = ({ slides = [], stageRefs, onClearCanvas }: any) => {
                         }}
                       />
                     ) : (
-                      <Rect
-                        name="background"
-                        x={0}
-                        y={0}
-                        width={SLIDE_WIDTH}
-                        height={SLIDE_HEIGHT}
-                        fill={selectedTheme?.backgroundColor || "#fff"}
-                      />
+                      <Group
+                      >
+                        <Rect
+                          name="background"
+                          x={0}
+                          y={0}
+                          width={getDynamicConstants().SLIDE_WIDTH}
+                          height={getDynamicConstants().SLIDE_HEIGHT}                        
+                          fillPriority="radial-gradient"
+                          fillRadialGradientStartPoint={{ x: 200, y: 200 }}
+                          fillRadialGradientEndPoint={{ x: 200, y: 200 }}
+                          fillRadialGradientStartRadius={0}
+                          fillRadialGradientEndRadius={400}
+                          fillRadialGradientColorStops={[
+                            0, "rgba(250, 248, 245, 1)",   // off-white
+                            0.4, "rgba(241, 234, 246, 0.6)", // cream
+                            1, "rgba(240, 240, 240, 1)",
+                            // light gray
+                          ]}
+                        />
+                        <Circle
+                          x={150}
+                          y={100}
+                          radius={180}
+                          fillPriority="radial-gradient"
+                          fillRadialGradientStartPoint={{ x: 150, y: 100 }}
+                          fillRadialGradientEndPoint={{ x: 150, y: 100 }}
+                          fillRadialGradientStartRadius={0}
+                          fillRadialGradientEndRadius={180}
+                          fillRadialGradientColorStops={[
+                            0, "rgba(205, 185, 220, 0.6)", // lavender
+                            1, "rgba(255, 255, 255, 0)",   // transparent fade
+                          ]}
+                        />
+
+                        {/* Blob 2 */}
+                        <Circle
+                          x={400}
+                          y={150}
+                          radius={220}
+                          fillPriority="radial-gradient"
+                          fillRadialGradientStartPoint={{ x: 180, y: 120 }}
+                          fillRadialGradientEndPoint={{ x: 180, y: 120 }}
+                          fillRadialGradientStartRadius={0}
+                          fillRadialGradientEndRadius={220}
+                          fillRadialGradientColorStops={[
+                            0, "rgba(200, 220, 210, 0.5)", // sage green
+                            1, "rgba(255, 255, 255, 0)",
+                          ]}
+                        />
+
+                        {/* Blob 3 */}
+                        <Ellipse
+                          x={250}
+                          y={300}
+                          radiusX={180}
+                          radiusY={120}
+                          fillPriority="radial-gradient"
+                          fillRadialGradientStartPoint={{ x: 200, y: 150 }}
+                          fillRadialGradientEndPoint={{ x: 200, y: 150 }}
+                          fillRadialGradientStartRadius={0}
+                          fillRadialGradientEndRadius={180}
+                          fillRadialGradientColorStops={[
+                            0, "rgba(255, 232, 255, 0.4)", // dusty purple
+                            1, "rgba(255, 255, 255, 0)",
+                          ]}
+                        />
+
+                        {/* Blob 4 */}
+                        <Ellipse
+                          x={500}
+                          y={350}
+                          radiusX={150}
+                          radiusY={100}
+                          fillPriority="radial-gradient"
+                          fillRadialGradientStartPoint={{ x: 200, y: 350 }}
+                          fillRadialGradientEndPoint={{ x: 200, y: 350 }}
+                          fillRadialGradientStartRadius={0}
+                          fillRadialGradientEndRadius={150}
+                          fillRadialGradientColorStops={[
+                            0, "rgba(245, 210, 210, 0.5)", // soft blush
+                            1, "rgba(255, 255, 255, 0)",
+                          ]}
+                        />
+
+                        {/* Blob 5 */}
+                        <Circle
+                          x={100}
+                          y={320}
+                          radius={130}
+                          fillPriority="radial-gradient"
+                          fillRadialGradientStartPoint={{ x: 100, y: 320 }}
+                          fillRadialGradientEndPoint={{ x: 100, y: 320 }}
+                          fillRadialGradientStartRadius={0}
+                          fillRadialGradientEndRadius={130}
+                          fillRadialGradientColorStops={[
+                            0, "rgba(200, 210, 230, 0.4)", // dusty blue
+                            1, "rgba(255, 255, 255, 0)",
+                          ]}
+                        />
+                      </Group>
                     )}
                     <Rect
                       x={0}

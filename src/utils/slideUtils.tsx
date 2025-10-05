@@ -47,7 +47,7 @@ export const restrictShapeBounds = (
 
   // Define canvas boundaries with padding
   const padding = 10;
-  const maxX = canvasWidth - width - padding;
+  const maxX = canvasWidth - width - padding + 50;
   const maxY =
     shapeType === "Konva.Line" || shapeType === "Konva.Arrow"
       ? canvasHeight - height - padding

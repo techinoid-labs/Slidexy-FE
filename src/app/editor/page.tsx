@@ -22,19 +22,16 @@ import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mo
 import SlideEditorMobile from "./SlideEditor-NewMobile";
 import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
 import TextSettingsPanelMobile from "@/app/components/new-ui/Text-Panel";
-import ShapeSettingsPanelMobile from "@/app/components/modify-presentation/ShapePanelMobile"; // Adjust if file is ShapeSettingsPanelMobile.tsx
+import ShapeSettingsPanelMobile from "@/app/components/modify-presentation/ShapePanelMobile";
 import ThemePanelMobile from "../components/modify-presentation/ThemePalleteMobile";
-import { Button } from "@mui/material";
 import SlideShowPlayer from "@/app/components/modify-presentation/Slide-Preview";
 import { useSlideThemeContext } from "../context/ThemeContext";
 import { useSession } from "next-auth/react";
 import AuthModal from "../components/auth/AuthModal";
 import { useTemplateSlides } from "../context/TemplateSlidesContext";
 import { useUser } from "../context/AuthContext";
-import axios from "axios";
-import { SlideshowOutlined } from "@mui/icons-material";
-import { useEffect } from "react";
 import { getContrastingBackground } from "@/utils/colorUtils";
+import { getRandomSlide } from "@/utils/slideUtils";
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
@@ -52,9 +49,10 @@ const Page = () => {
     setSelectedImage,
     isMobileImageSelected,
     setIsMobileImageSelected,
-    setSelectedShapeIndex, // Ensure this is included from SlidesContext
+    setSelectedShapeIndex,
   } = useSlides();
-  const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
+  const { selectedTheme } = useSlideThemeContext();
+  const { presentationId } = useTemplateSlides();
   const dispatch = useDispatch();
   const router = useRouter();
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
@@ -65,11 +63,9 @@ const Page = () => {
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
   const [previewOpen, setPreviewOpen] = useState(false);
   const { data: session } = useSession();
-  const { presentationId } = useTemplateSlides();
-  const datapresentationId = presentationId;
-
   const { user, loading } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
+
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
     setSelectedTextId(null);
@@ -80,20 +76,7 @@ const Page = () => {
     setIsThemePanelOpen(false);
     setSelectedShapeIndex(null);
   };
-  const backgroundStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    height: "100vh",
-    background: getContrastingBackground(
-      selectedTheme?.primaryColor || "#1a1a1a"
-    ),
-    maxWidth: "100%",
-    overflow: "hidden",
-    transition: "background 0.5s ease-in-out", // smooth gamma transition
-  };
 
-
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const handleClearCanvas = () => {
     if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
 
@@ -127,104 +110,103 @@ const Page = () => {
     setSlides(newSlides);
   };
 
- const handleExportPPTX = () => {
-  if (loading) return;
+  const handleExportPPTX = () => {
+    if (loading) return;
 
-  if (session?.user || user) {
-    setShowAuthModal(false);
+    if (session?.user || user) {
+      setShowAuthModal(false);
 
-    // Build structuredSlides (your old logic)
-    const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
-      const elements: StructuredSlide["elements"] = [];
+      const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
+        const elements: StructuredSlide["elements"] = [];
 
-      slide.elements?.forEach((el: any) => {
-        const { element_type, text, properties = {}, konva_component } = el;
-        const {
-          x = 0,
-          y = 0,
-          width,
-          height,
-          w,
-          h,
-          fontSize = 18,
-          fill = "#444444",
-          fontFamily,
-          fontStyle,
-          fontWeight,
-          imageSrc,
-        } = properties;
+        slide.elements?.forEach((el: any) => {
+          const { element_type, text, properties = {}, konva_component } = el;
+          const {
+            x = 0,
+            y = 0,
+            width,
+            height,
+            w,
+            h,
+            fontSize = 18,
+            fill = "#444444",
+            fontFamily,
+            fontStyle,
+            fontWeight,
+            imageSrc,
+          } = properties;
 
-        const xIn = x / 100;
-        const yIn = y / 100;
-        const wIn = (width || w || 400) / 100;
-        const hIn = (height || h || 200) / 100;
+          const xIn = x / 100;
+          const yIn = y / 100;
+          const wIn = (width || w || 400) / 100;
+          const hIn = (height || h || 200) / 100;
 
-        if (element_type === "bullet_point") {
-          elements.push({
-            element_type: "bullet_point",
-            text,
-            properties: {
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-              fontSize,
-              fill: fill.replace("#", ""),
-              fontFamily,
-              fontStyle,
-              fontWeight,
-            },
-          });
-        } else if (element_type === "image" && imageSrc) {
-          elements.push({
-            element_type: "image",
-            src: slide.image_url || undefined,
-            properties: {
-              imageSrc,
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-            },
-          });
-        } else if (element_type === "text" && text) {
-          elements.push({
-            element_type: "text",
-            text,
-            properties: {
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-              fontSize,
-              fill: fill.replace("#", ""),
-              fontFamily,
-              fontStyle,
-              fontWeight,
-            },
-          });
-        } else if (element_type === "shape") {
-          elements.push({
-            element_type: "shape",
-            text: konva_component,
-            properties: {
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: hIn,
-              fill: fill.replace("#", "") || "cccccc",
-            },
-          });
-        }
-      });
+          if (element_type === "bullet_point") {
+            elements.push({
+              element_type: "bullet_point",
+              text,
+              properties: {
+                x: xIn,
+                y: yIn,
+                w: wIn,
+                h: hIn,
+                fontSize,
+                fill: fill.replace("#", ""),
+                fontFamily,
+                fontStyle,
+                fontWeight,
+              },
+            });
+          } else if (element_type === "image" && imageSrc) {
+            elements.push({
+              element_type: "image",
+              src: slide.image_url || undefined,
+              properties: {
+                imageSrc,
+                x: xIn,
+                y: yIn,
+                w: wIn,
+                h: hIn,
+              },
+            });
+          } else if (element_type === "text" && text) {
+            elements.push({
+              element_type: "text",
+              text,
+              properties: {
+                x: xIn,
+                y: yIn,
+                w: wIn,
+                h: hIn,
+                fontSize,
+                fill: fill.replace("#", ""),
+                fontFamily,
+                fontStyle,
+                fontWeight,
+              },
+            });
+          } else if (element_type === "shape") {
+            elements.push({
+              element_type: "shape",
+              text: konva_component,
+              properties: {
+                x: xIn,
+                y: yIn,
+                w: wIn,
+                h: hIn,
+                fill: fill.replace("#", "") || "cccccc",
+              },
+            });
+          }
+        });
 
-      const slideTitleProps: any = slide.slide_title?.properties || {};
-      const slideTitle = slide.slide_title?.text;
+        const slideTitleProps: any = slide.slide_title?.properties || {};
+        const slideTitle = slide.slide_title?.text;
 
-      return {
-        slide_id: slide.slide_id,
-        slide_title: slideTitle
-          ? {
+        return {
+          slide_id: slide.slide_id,
+          slide_title: slideTitle
+            ? {
               text: slideTitle,
               properties: {
                 fontSize: slideTitleProps.fontSize,
@@ -233,27 +215,21 @@ const Page = () => {
                 fontFamily: slideTitleProps.fontFamily,
               },
             }
-          : undefined,
-        elements,
-        image_url: slide.image_url,
-      };
-    });
+            : undefined,
+          elements,
+          image_url: slide.image_url,
+        };
+      });
 
-    // ✅ Export the transformed slides
-    exportSlidesAsPPT(structuredSlides);
-  } else {
-    setShowAuthModal(true);
-  }
-};
-
-
-
-
+      exportSlidesAsPPT(structuredSlides);
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
   const isTextSelected = selectedTextId !== null && selectedTextId !== "" && !selectedImageIndex && !selectedShapeIndex;
   const isShapeSelected = selectedShapeIndex !== null && !selectedTextId && !selectedImageIndex;
   const isImageSelected = selectedImageIndex !== null && !selectedTextId && !selectedShapeIndex;
-
 
   const handleExportPDF = () => {
     if (loading) return;
@@ -281,11 +257,6 @@ const Page = () => {
   };
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  useEffect(() => {
-    if (isTextSelected || isImageSelected || isShapeSelected) {
-      setIsThemePanelOpen(false);
-    }
-  }, [isTextSelected, isImageSelected, isShapeSelected]);
 
   return (
     <>
@@ -299,7 +270,7 @@ const Page = () => {
           ),
           maxWidth: "100%",
           overflow: "hidden",
-          transition: "background 0.5s ease-in-out"
+          transition: "background 0.5s ease-in-out",
         }}
         className="animated-bg"
       >
@@ -387,8 +358,7 @@ const Page = () => {
               <div className="shrink-0 z-10">
                 <SideNavBar
                   showTemplatePanel={showTemplatePanel}
-                  setShowTemplatePanel={setShowTemplatePanel}
-                />
+                  setShowTemplatePanel={setShowTemplatePanel} />
               </div>
               <div className="flex-1 overflow-auto z-0" style={{ marginTop: 12 }}>
                 <SlideEditor slides={slides} stageRefs={stageRefs} />
@@ -401,23 +371,18 @@ const Page = () => {
               </div>
               <div
                 className={`
-                ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
-                bg-white shadow-md transition-all duration-300 ease-in-out flex
-                ${!isLGScreen && showRightPanel
-                    ? "w-96"
-                    : isLGScreen
-                      ? "w-[375px]"
-                      : "w-0"
-                  }
-              `}
+                  ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
+                  bg-white shadow-md transition-all duration-300 ease-in-out flex
+                  ${!isLGScreen && showRightPanel ? "w-96" : isLGScreen ? "w-[375px]" : "w-0"}
+                `}
               >
                 {!isLGScreen && (
                   <div
                     className={`
-                    absolute -left-5 top-24
-                    bg-white border-r-0 border border-gray-200 shadow-xl
-                    rounded-l-md px-2 py-2 cursor-pointer z-50
-                  `}
+                      absolute -left-5 top-24
+                      bg-white border-r-0 border border-gray-200 shadow-xl
+                      rounded-l-md px-2 py-2 cursor-pointer z-50
+                    `}
                     onClick={() => setShowRightPanel(!showRightPanel)}
                   >
                     {showRightPanel ? (
@@ -429,8 +394,8 @@ const Page = () => {
                 )}
                 <div
                   className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${!showRightPanel && !isLGScreen
-                    ? "opacity-0 pointer-events-none"
-                    : "opacity-100"
+                      ? "opacity-0 pointer-events-none"
+                      : "opacity-100"
                     }`}
                 >
                   {isTextSelected && !isShapeSelected && (
@@ -446,12 +411,11 @@ const Page = () => {
             </div>
           )}
         </div>
-
       </div>
       {showAuthModal && (
         <AuthModal
           onClose={() => setShowAuthModal(false)}
-          presentationId={datapresentationId}
+          presentationId={presentationId}
         />
       )}
     </>

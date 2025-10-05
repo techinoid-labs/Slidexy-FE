@@ -1,5 +1,3 @@
-// NEW
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -397,3 +395,9 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
 };
 
 export default TemplatePanel;
+
+
+
+
+
+

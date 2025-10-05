@@ -37,7 +37,7 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   x,
   y,
   fontSize = 24,
-  fontFamily = "Roboto",
+  fontFamily = "Raleway",
   fill = "#000",
   fontStyle,
   fontWeight,
@@ -253,9 +253,10 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
         // height={50}
         fill={fill}
         verticalAlign={verticalAlign}
-        fontFamily={fontFamily?.trim() || selectedTheme?.font || "Roboto"}
+        fontFamily={fontFamily?.trim() || selectedTheme?.font || "Raleway"}
         fontStyle={fontWeight || "normal"}
         fontWeight={fontWeight || "normal"}
+        shadowColor="rgba(0, 0, 0, 0.1)"
         align={align}
         padding={12}
         opacity={opacity}
@@ -334,8 +335,8 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
                 return Math.max(0, Math.min(nodePos.x, maxX));
               })(),
               fontSize: `${fontSize}px`,
-              fontFamily: fontFamily?.trim() || selectedTheme?.font || "Roboto",
-              // fontStyle: fontWeight || "normal",
+              fontFamily: fontFamily?.trim() || selectedTheme?.font || "Ralway",
+              fontStyle: fontWeight || "normal",
               fontWeight: fontWeight || "normal",
               padding: "12px",
 
