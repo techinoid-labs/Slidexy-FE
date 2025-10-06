@@ -14,9 +14,12 @@ import {
   Twitter,
   Instagram,
   ArrowUpward,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
 interface Blog {
   _id: string;
   title: string;
@@ -32,6 +35,8 @@ interface BlogDetailProps {
   relatedBlogs?: Blog[];
   purpleColor: string;
   purpleLight: string;
+  isAdmin?: boolean;
+  onDelete?: () => void;
 }
 
 const BlogDetail: React.FC<BlogDetailProps> = ({
@@ -39,6 +44,8 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
   relatedBlogs = [],
   purpleColor,
   purpleLight,
+  isAdmin = false,
+  onDelete,
 }) => {
   const router = useRouter();
 
@@ -51,22 +58,60 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
     });
   };
 
+  const handleEdit = () => {
+    router.push(`/blog/edit/${blog._id}`);
+  };
+
   return (
     <Box sx={{ bgcolor: "#FAFBFC" }}>
       {/* Title Section */}
       <Container maxWidth="lg" sx={{ pt: 4, mb: 4 }}>
-        <Typography
-          variant="h2"
-          sx={{
-            fontWeight: 700,
-            fontSize: { xs: "2rem", md: "2.5rem" },
-            lineHeight: 1.2,
-            color: "#1a1a2e",
-            mb: 2,
-          }}
-        >
-          {blog.title}
-        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: "2rem", md: "2.5rem" },
+              lineHeight: 1.2,
+              color: "#1a1a2e",
+              flex: 1,
+            }}
+          >
+            {blog.title}
+          </Typography>
+
+          {/* Admin Actions */}
+          {isAdmin && (
+            <Stack direction="row" spacing={1} sx={{ ml: 2 }}>
+              <IconButton
+                onClick={handleEdit}
+                sx={{
+                  bgcolor: purpleLight,
+                  color: purpleColor,
+                  "&:hover": {
+                    bgcolor: purpleColor,
+                    color: "white",
+                  },
+                }}
+              >
+                <EditIcon />
+              </IconButton>
+              <IconButton
+                onClick={onDelete}
+                sx={{
+                  bgcolor: "rgba(244, 67, 54, 0.1)",
+                  color: "#f44336",
+                  "&:hover": {
+                    bgcolor: "#f44336",
+                    color: "white",
+                  },
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Stack>
+          )}
+        </Box>
 
         {/* Meta Info */}
         <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 2 }}>
@@ -134,7 +179,6 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
 
       {/* Article Content */}
       <Container maxWidth="md" sx={{ mb: 8 }}>
-        {/* Main Content */}
         <Box
           sx={{
             "& h1, & h2, & h3, & h4": {
@@ -160,71 +204,6 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
           }}
           dangerouslySetInnerHTML={{ __html: blog.content }}
         />
-
-        {/* Share Section
-        <Box
-          sx={{
-            mt: 8,
-            pt: 4,
-            borderTop: "1px solid #e0e0e0",
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 600,
-              fontSize: "1rem",
-              mb: 2,
-              color: "#1a1a2e",
-            }}
-          >
-            Share this article
-          </Typography>
-          <Stack direction="row" spacing={1}>
-            <IconButton
-              sx={{
-                width: 40,
-                height: 40,
-                bgcolor: purpleLight,
-                color: purpleColor,
-                "&:hover": {
-                  bgcolor: purpleColor,
-                  color: "white",
-                },
-              }}
-            >
-              <Facebook sx={{ fontSize: 20 }} />
-            </IconButton>
-            <IconButton
-              sx={{
-                width: 40,
-                height: 40,
-                bgcolor: purpleLight,
-                color: purpleColor,
-                "&:hover": {
-                  bgcolor: purpleColor,
-                  color: "white",
-                },
-              }}
-            >
-              <Twitter sx={{ fontSize: 20 }} />
-            </IconButton>
-            <IconButton
-              sx={{
-                width: 40,
-                height: 40,
-                bgcolor: purpleLight,
-                color: purpleColor,
-                "&:hover": {
-                  bgcolor: purpleColor,
-                  color: "white",
-                },
-              }}
-            >
-              <Instagram sx={{ fontSize: 20 }} />
-            </IconButton>
-          </Stack>
-        </Box> */}
       </Container>
 
       {/* Related Blogs Section */}
@@ -389,24 +368,24 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
             Join the waitlist today and let AI-powered innovation reach you before the crowd.
           </Typography>
           <Link href="/waiting-list" passHref>
-          <Button
-            variant="contained"
-            sx={{
-              bgcolor: "white",
-              color: "#667eea",
-              px: 4,
-              py: 1.5,
-              borderRadius: 2,
-              fontWeight: 600,
-              textTransform: "none",
-              fontSize: "1rem",
-              "&:hover": {
-                bgcolor: "rgba(255,255,255,0.9)",
-              },
-            }}
-          >
-            Get Started
-          </Button>
+            <Button
+              variant="contained"
+              sx={{
+                bgcolor: "white",
+                color: "#667eea",
+                px: 4,
+                py: 1.5,
+                borderRadius: 2,
+                fontWeight: 600,
+                textTransform: "none",
+                fontSize: "1rem",
+                "&:hover": {
+                  bgcolor: "rgba(255,255,255,0.9)",
+                },
+              }}
+            >
+              Get Started
+            </Button>
           </Link>
         </Container>
       </Box>
@@ -443,13 +422,13 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
               ))}
             </Stack>
             <Stack direction="row" spacing={2}>
-              <IconButton size="small" sx={{ color: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)"}}>
+              <IconButton size="small" sx={{ color: purpleColor }}>
                 <Facebook sx={{ fontSize: 20 }} />
               </IconButton>
-              <IconButton size="small" sx={{ color: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)" }}>
+              <IconButton size="small" sx={{ color: purpleColor }}>
                 <Twitter sx={{ fontSize: 20 }} />
               </IconButton>
-              <IconButton size="small" sx={{ color: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)" }}>
+              <IconButton size="small" sx={{ color: purpleColor }}>
                 <Instagram sx={{ fontSize: 20 }} />
               </IconButton>
             </Stack>

@@ -16,7 +16,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useUser } from "../../context/AuthContext";
 import StepsHeader from "../../components/headers-navbar/StepsHeader";
 import BlogDetail from "../../components/blogs/BlogDetail";
-
+import { useSession } from "next-auth/react";
 interface Blog {
   _id: string;
   title: string;
@@ -30,12 +30,12 @@ interface Blog {
 }
 
 export default function BlogDetailPage() {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL|| "http://localhost:5000";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
   const isAdmin = user?.admin || false;
-
+ const { data: session } = useSession();
   const [blog, setBlog] = useState<Blog | null>(null);
   const [allBlogs, setAllBlogs] = useState<Blog[]>([]);
   const [relatedBlogs, setRelatedBlogs] = useState<Blog[]>([]);
@@ -90,7 +90,7 @@ export default function BlogDetailPage() {
     if (!confirm("Are you sure you want to delete this blog post?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = session?.user?.accessToken;
       const response = await fetch(`${API_BASE_URL}/api/blogs/${params.id}`, {
         method: "DELETE",
         headers: {
@@ -173,6 +173,8 @@ export default function BlogDetailPage() {
               relatedBlogs={relatedBlogs}
               purpleColor={purpleColor}
               purpleLight={purpleLight}
+              isAdmin={isAdmin}
+              onDelete={handleDelete}
             />
           </>
         ) : null}

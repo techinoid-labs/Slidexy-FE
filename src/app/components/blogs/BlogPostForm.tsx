@@ -15,7 +15,6 @@ import {
     InputLabel,
     Select,
     MenuItem,
-    Grid,
     Container,
     Paper,
 } from "@mui/material";
@@ -42,6 +41,7 @@ interface FormData {
     media: string[];
     tags: string[];
 }
+
 interface Blog {
   _id: string;
   title: string;
@@ -54,8 +54,8 @@ interface Blog {
 interface BlogPostFormProps {
     onSubmit: (data: any) => void | Promise<void>;
     onError?: (error: string) => void;
-    initialData?: Blog;   // allow pre-filling for edit mode
-    isEdit?: boolean;     // flag to indicate edit vs create
+    initialData?: Blog;
+    isEdit?: boolean;
 }
 
 const categories = [
@@ -67,7 +67,7 @@ const categories = [
     "Business Report",
 ];
 
-const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialData, isEdit }) => {
+const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialData, isEdit = false }) => {
     const [formData, setFormData] = useState<FormData>({
         title: initialData?.title || "",
         content: initialData?.content || "",
@@ -77,14 +77,13 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
         tags: [],
     });
     const { data: session } = useSession();
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL|| "http://localhost:5000";
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
-    const [uploadingImages, setUploadingImages] = useState(false);
     const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
-    const [coverImagePreview, setCoverImagePreview] = useState<string>("");
+    const [coverImagePreview, setCoverImagePreview] = useState<string>(initialData?.coverImage || "");
     const [mediaFiles, setMediaFiles] = useState<File[]>([]);
     const [tagInput, setTagInput] = useState("");
 
@@ -108,24 +107,28 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
         immediatelyRender: false,
     });
 
+    // Update editor content when initialData changes
+    useEffect(() => {
+        if (editor && initialData?.content) {
+            editor.commands.setContent(initialData.content);
+        }
+    }, [editor, initialData?.content]);
+
     const handleChange = (e: any) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
         setError(null);
     };
 
-
     const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validate file type
         if (!file.type.startsWith("image/")) {
             setError("Please upload an image file");
             return;
         }
 
-        // Validate file size (5MB limit)
         if (file.size > 5 * 1024 * 1024) {
             setError("Image size should be less than 5MB");
             return;
@@ -133,7 +136,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
 
         setCoverImageFile(file);
 
-        // Create preview
         const reader = new FileReader();
         reader.onloadend = () => {
             setCoverImagePreview(reader.result as string);
@@ -144,7 +146,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
     const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
 
-        // Validate files
         const validFiles = files.filter(file => {
             if (!file.type.startsWith("image/")) {
                 setError("Only image files are allowed");
@@ -185,7 +186,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
         setFormData(prev => ({ ...prev, tags: prev.tags.filter((_, i) => i !== index) }));
     };
 
-    // Toolbar functions
     const addBold = () => editor?.chain().focus().toggleBold().run();
     const addItalic = () => editor?.chain().focus().toggleItalic().run();
     const addUnderline = () => editor?.chain().focus().toggleUnderline().run();
@@ -242,39 +242,47 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                 formDataObj.append("tags", tag);
             });
 
-            const response = await fetch(`${API_BASE_URL}/api/blogs`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${session?.user.accessToken}`,
-                },
-                body: formDataObj,
-            });
+            // If edit mode, pass the FormData directly to parent
+            if (isEdit) {
+                await onSubmit(formDataObj);
+                setSuccess(true);
+            } else {
+                // Create mode - make API call here
+                // Get token from either session or localStorage
+                const token = session?.user?.accessToken ;
+                
+                const response = await fetch(`${API_BASE_URL}/api/blogs`, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formDataObj,
+                });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Failed to create blog post");
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to create blog post");
+                }
+
+                const data = await response.json();
+                setSuccess(true);
+
+                // Reset form
+                setFormData({ title: "", content: "", category: "", coverImage: "", media: [], tags: [] });
+                setCoverImageFile(null);
+                setCoverImagePreview("");
+                setMediaFiles([]);
+                setTagInput("");
+                if (coverImageInputRef.current) coverImageInputRef.current.value = "";
+                if (mediaInputRef.current) mediaInputRef.current.value = "";
+                editor?.commands.setContent('');
+
+                await onSubmit(data);
+                setTimeout(() => setSuccess(false), 3000);
             }
-
-            const data = await response.json();
-            setSuccess(true);
-
-            // Reset form
-            setFormData({ title: "", content: "", category: "", coverImage: "", media: [], tags: [] });
-            setCoverImageFile(null);
-            setCoverImagePreview("");
-            setMediaFiles([]);
-            setTagInput("");
-            if (coverImageInputRef.current) coverImageInputRef.current.value = "";
-            if (mediaInputRef.current) mediaInputRef.current.value = "";
-            editor?.commands.setContent('');
-
-            // Call onSubmit with the response data
-            await onSubmit(data);
-            setTimeout(() => setSuccess(false), 3000);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An error occurred";
             setError(errorMessage);
-            // Call optional onError callback
             if (onError) {
                 onError(errorMessage);
             }
@@ -284,23 +292,38 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
     };
 
     const handleReset = () => {
-        setFormData({
-            title: "",
-            content: "",
-            category: "",
-            coverImage: "",
-            media: [],
-            tags: [],
-        });
+        if (isEdit && initialData) {
+            // Reset to initial data in edit mode
+            setFormData({
+                title: initialData.title,
+                content: initialData.content,
+                category: initialData.category || "",
+                coverImage: initialData.coverImage || "",
+                media: initialData.media || [],
+                tags: [],
+            });
+            setCoverImagePreview(initialData.coverImage || "");
+            editor?.commands.setContent(initialData.content);
+        } else {
+            // Clear everything in create mode
+            setFormData({
+                title: "",
+                content: "",
+                category: "",
+                coverImage: "",
+                media: [],
+                tags: [],
+            });
+            setCoverImagePreview("");
+            editor?.commands.setContent('');
+        }
         setCoverImageFile(null);
-        setCoverImagePreview("");
         setMediaFiles([]);
         setTagInput("");
         setError(null);
         setSuccess(false);
         if (coverImageInputRef.current) coverImageInputRef.current.value = "";
         if (mediaInputRef.current) mediaInputRef.current.value = "";
-        editor?.commands.setContent('');
     };
 
     return (
@@ -323,10 +346,10 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                             variant="h4"
                             sx={{ fontWeight: 700, mb: 1, color: "text.primary" }}
                         >
-                            Create New Blog Post
+                            {isEdit ? "Edit Blog Post" : "Create New Blog Post"}
                         </Typography>
                         <Typography variant="body1" color="text.secondary">
-                            Share your insights and expertise with our community
+                            {isEdit ? "Update your blog post content" : "Share your insights and expertise with our community"}
                         </Typography>
                     </Box>
 
@@ -339,11 +362,10 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
 
                         {success && (
                             <Alert severity="success" sx={{ mb: 3 }}>
-                                Blog post created successfully!
+                                {isEdit ? "Blog post updated successfully!" : "Blog post created successfully!"}
                             </Alert>
                         )}
 
-                        {/* Title */}
                         <TextField
                             fullWidth
                             name="title"
@@ -357,7 +379,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                             variant="outlined"
                         />
 
-                        {/* Category */}
                         <FormControl fullWidth sx={{ mb: 3 }} disabled={loading}>
                             <InputLabel>Category</InputLabel>
                             <Select
@@ -376,7 +397,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                             </Select>
                         </FormControl>
 
-                        {/* Content Editor - Full Width */}
                         <Paper
                             elevation={0}
                             sx={{
@@ -423,7 +443,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                             Rich text editor with formatting support
                         </Typography>
 
-                        {/* Tags */}
                         <Box sx={{ mt: 4 }}>
                             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "text.primary" }}>
                                 Tags
@@ -456,7 +475,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                             </Typography>
                         </Box>
 
-                        {/* Cover Image - Below Editor */}
                         <Box sx={{ mt: 4 }}>
                             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "text.primary" }}>
                                 Cover Image
@@ -476,10 +494,10 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                                         variant="outlined"
                                         component="span"
                                         startIcon={<ImageIcon />}
-                                        disabled={loading || !!coverImageFile}
+                                        disabled={loading}
                                         sx={{ mb: 2 }}
                                     >
-                                        Upload Cover Image
+                                        {coverImagePreview ? "Change Cover Image" : "Upload Cover Image"}
                                     </Button>
                                 </label>
                                 {coverImagePreview && (
@@ -515,7 +533,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                             </Paper>
                         </Box>
 
-                        {/* Additional Media - Below Cover Image */}
                         <Box sx={{ mt: 4 }}>
                             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "text.primary" }}>
                                 Additional Media
@@ -587,7 +604,7 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                                 }
                                 sx={{ px: 4, minWidth: 150 }}
                             >
-                                {loading ? "Publishing..." : "Publish Blog"}
+                                {loading ? (isEdit ? "Updating..." : "Publishing...") : (isEdit ? "Update Blog" : "Publish Blog")}
                             </Button>
                         </Box>
                     </Box>

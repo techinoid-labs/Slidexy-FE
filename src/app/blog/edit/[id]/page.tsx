@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "../../../context/AuthContext";
+import { useSession } from "next-auth/react"; 
 
 interface Blog {
   _id: string;
@@ -27,6 +28,7 @@ export default function EditBlogPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
+  const { data: session } = useSession(); // Add this for token
   const isAdmin = user?.admin || false;
 
   const [blog, setBlog] = useState<Blog | null>(null);
@@ -59,8 +61,15 @@ export default function EditBlogPage() {
   };
 
   const handleSubmit = async (formData: FormData) => {
+    // Get token like in BlogPostForm
+    const token = session?.user?.accessToken;
+    if (!token) {
+      setError("Authentication required. Please log in again.");
+      router.push("/login"); // Adjust to your login route
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token");
       const response = await fetch(`${API_BASE_URL}/api/blogs/${params.id}`, {
         method: "PUT",
         headers: {
@@ -70,6 +79,11 @@ export default function EditBlogPage() {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          setError("Session expired. Please log in again.");
+          router.push("/login");
+          return;
+        }
         const data = await response.json();
         throw new Error(data.error || "Failed to update blog");
       }

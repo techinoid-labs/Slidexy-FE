@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import StepsHeader from "../components/headers-navbar/StepsHeader";
 import BlogList from "../components/blogs/BlogList";
+import { useSession } from "next-auth/react";
 import {
   Container,
   Box,
@@ -18,7 +19,7 @@ import Link from "next/link";
 import { Add as AddIcon, ChevronRight, Facebook, Twitter, Instagram } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useUser } from "../context/AuthContext";
-
+import { useParams } from "next/navigation";
 interface Blog {
   _id: string;
   title: string;
@@ -57,7 +58,7 @@ export default function BlogPage() {
   const router = useRouter();
   const { user } = useUser();
   const isAdmin = user?.admin || false;
-
+  const { data: session } = useSession(); 
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +66,7 @@ export default function BlogPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Templates");
   const [showLoadMore, setShowLoadMore] = useState(false);
-
+  const params = useParams();
   useEffect(() => {
     fetchBlogs();
   }, []);
@@ -97,26 +98,40 @@ export default function BlogPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this blog post?")) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("Failed to delete blog");
-
-      setSuccessMessage("Blog deleted successfully");
-      setBlogs(blogs.filter((blog) => blog._id !== id));
-    } catch (err: any) {
-      setError(err.message || "Failed to delete blog");
-    }
-  };
+   const handleDelete = async () => {
+      if (!confirm("Are you sure you want to delete this blog post?")) return;
+  
+      // Get token like in BlogPostForm
+      const token = session?.user?.accessToken;
+      if (!token) {
+        setError("Authentication required. Please log in again.");
+        return;
+      }
+  
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/blogs/${params.id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        if (!response.ok) {
+          if (response.status === 401) {
+            setError("Session expired. Please log in again.");
+            localStorage.removeItem("token");
+            return;
+          }
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to delete blog");
+        }
+  
+        router.push("/blog");
+      } catch (err: any) {
+        setError(err.message || "Failed to delete blog");
+      }
+    };
 
   const purpleColor = "#8E2DE2";
   const purpleGradient = "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)";

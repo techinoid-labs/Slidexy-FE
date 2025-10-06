@@ -1,3 +1,4 @@
+// src/app/blog/create/page.tsx
 "use client";
 import React, { useState } from "react";
 import StepsHeader from "../../components/headers-navbar/StepsHeader";
