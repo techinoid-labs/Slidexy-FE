@@ -28,7 +28,7 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
 export default function EditBlogPage() {
-  redirect("/");
+  // redirect("/");
 
   const params = useParams();
   const router = useRouter();
