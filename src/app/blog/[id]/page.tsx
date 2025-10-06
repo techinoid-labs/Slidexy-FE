@@ -8,15 +8,13 @@ import {
   Breadcrumbs,
   Container,
 } from "@mui/material";
-import {
-  Home as HomeIcon,
-  NavigateNext,
-} from "@mui/icons-material";
+import { Home as HomeIcon, NavigateNext } from "@mui/icons-material";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "../../context/AuthContext";
 import StepsHeader from "../../components/headers-navbar/StepsHeader";
 import BlogDetail from "../../components/blogs/BlogDetail";
 import { useSession } from "next-auth/react";
+import Header from "@/app/components/headers-navbar/Header";
 interface Blog {
   _id: string;
   title: string;
@@ -30,12 +28,13 @@ interface Blog {
 }
 
 export default function BlogDetailPage() {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
   const isAdmin = user?.admin || false;
- const { data: session } = useSession();
+  const { data: session } = useSession();
   const [blog, setBlog] = useState<Blog | null>(null);
   const [allBlogs, setAllBlogs] = useState<Blog[]>([]);
   const [relatedBlogs, setRelatedBlogs] = useState<Blog[]>([]);
@@ -109,7 +108,8 @@ export default function BlogDetailPage() {
   if (loading) {
     return (
       <>
-        <StepsHeader />
+        {/* <StepsHeader /> */}
+        <Header />
         <Box sx={{ bgcolor: "#FAFBFC", minHeight: "100vh", py: 4 }}>
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
             <CircularProgress sx={{ color: purpleColor }} />
@@ -121,7 +121,9 @@ export default function BlogDetailPage() {
 
   return (
     <>
-      <StepsHeader />
+      {/* <StepsHeader /> */}
+      <Header />
+
       <Box sx={{ bgcolor: "#FAFBFC", minHeight: "100vh" }}>
         {error ? (
           <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -132,7 +134,12 @@ export default function BlogDetailPage() {
             {/* Breadcrumbs */}
             <Container maxWidth="lg" sx={{ pt: 3, pb: 0 }}>
               <Breadcrumbs
-                separator={<NavigateNext fontSize="small" sx={{ color: "text.secondary" }} />}
+                separator={
+                  <NavigateNext
+                    fontSize="small"
+                    sx={{ color: "text.secondary" }}
+                  />
+                }
                 sx={{ mb: 0 }}
               >
                 <Box
@@ -161,7 +168,10 @@ export default function BlogDetailPage() {
                 >
                   Blog
                 </Typography>
-                <Typography variant="body2" sx={{ fontSize: "0.875rem", color: "text.primary" }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontSize: "0.875rem", color: "text.primary" }}
+                >
                   {blog.title}
                 </Typography>
               </Breadcrumbs>

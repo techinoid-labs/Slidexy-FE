@@ -12,7 +12,8 @@ import {
 } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "../../../context/AuthContext";
-import { useSession } from "next-auth/react"; 
+import { useSession } from "next-auth/react";
+import Header from "@/app/components/headers-navbar/Header";
 
 interface Blog {
   _id: string;
@@ -24,7 +25,8 @@ interface Blog {
 }
 
 export default function EditBlogPage() {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL|| "http://localhost:5000";
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
@@ -102,6 +104,7 @@ export default function EditBlogPage() {
   return (
     <>
       <StepsHeader />
+      {/* <Header /> */}
       <Container maxWidth="md" sx={{ py: 4 }}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>

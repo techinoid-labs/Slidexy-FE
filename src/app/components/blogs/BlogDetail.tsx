@@ -19,6 +19,7 @@ import {
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Footer from "../home/Footer";
 
 interface Blog {
   _id: string;
@@ -66,7 +67,14 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
     <Box sx={{ bgcolor: "#FAFBFC" }}>
       {/* Title Section */}
       <Container maxWidth="lg" sx={{ pt: 4, mb: 4 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: 2,
+          }}
+        >
           <Typography
             variant="h2"
             sx={{
@@ -128,10 +136,16 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
               }}
             />
           )}
-          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.875rem" }}>
+          <Typography
+            variant="body2"
+            sx={{ color: "text.secondary", fontSize: "0.875rem" }}
+          >
             By Slidexy Content Writing Team
           </Typography>
-          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.875rem" }}>
+          <Typography
+            variant="body2"
+            sx={{ color: "text.secondary", fontSize: "0.875rem" }}
+          >
             {formatDate(blog.createdAt)}
           </Typography>
         </Stack>
@@ -223,17 +237,17 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
             </Typography>
             <Box
               sx={{
-                display: 'grid',
+                display: "grid",
                 gridTemplateColumns: {
-                  xs: 'repeat(1, 1fr)',
-                  sm: 'repeat(2, 1fr)',
-                  md: 'repeat(3, 1fr)',
+                  xs: "repeat(1, 1fr)",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
                 },
                 gap: 3,
               }}
             >
               {relatedBlogs.slice(0, 3).map((relatedBlog) => (
-                <Box key={relatedBlog._id} sx={{ width: '100%' }}>
+                <Box key={relatedBlog._id} sx={{ width: "100%" }}>
                   <Box
                     sx={{
                       border: "1px solid #e0e0e0",
@@ -340,7 +354,8 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
       {/* CTA Section */}
       <Box
         sx={{
-          background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+          background:
+            "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
           py: 8,
           textAlign: "center",
         }}
@@ -365,7 +380,8 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
               mb: 4,
             }}
           >
-            Join the waitlist today and let AI-powered innovation reach you before the crowd.
+            Join the waitlist today and let AI-powered innovation reach you
+            before the crowd.
           </Typography>
           <Link href="/waiting-list" passHref>
             <Button
@@ -391,7 +407,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
       </Box>
 
       {/* Footer */}
-      <Box sx={{ bgcolor: "white", py: 6 }}>
+      {/* <Box sx={{ bgcolor: "white", py: 6 }}>
         <Container maxWidth="lg">
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
             <Typography
@@ -437,7 +453,8 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
             </Typography>
           </Box>
         </Container>
-      </Box>
+      </Box> */}
+      <Footer />
     </Box>
   );
 };

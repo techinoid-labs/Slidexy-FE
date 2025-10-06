@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import StepsHeader from "../components/headers-navbar/StepsHeader";
 import BlogList from "../components/blogs/BlogList";
-import { useSession } from "next-auth/react";
 import {
   Container,
   Box,
@@ -16,10 +15,18 @@ import {
   IconButton,
 } from "@mui/material";
 import Link from "next/link";
-import { Add as AddIcon, ChevronRight, Facebook, Twitter, Instagram } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
+import {
+  Add as AddIcon,
+  ChevronRight,
+  Facebook,
+  Twitter,
+  Instagram,
+} from "@mui/icons-material";
+import { redirect, useRouter } from "next/navigation";
 import { useUser } from "../context/AuthContext";
-import { useParams } from "next/navigation";
+import Header from "../components/headers-navbar/Header";
+import Footer from "../components/home/Footer";
+
 interface Blog {
   _id: string;
   title: string;
@@ -54,11 +61,13 @@ const tagTypes = [
 ];
 
 export default function BlogPage() {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL|| "http://localhost:5000";
+  // redirect("/");
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
   const router = useRouter();
   const { user } = useUser();
   const isAdmin = user?.admin || false;
-  const { data: session } = useSession(); 
+
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +75,7 @@ export default function BlogPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Templates");
   const [showLoadMore, setShowLoadMore] = useState(false);
-  const params = useParams();
+
   useEffect(() => {
     fetchBlogs();
   }, []);
@@ -98,43 +107,30 @@ export default function BlogPage() {
     }
   };
 
-   const handleDelete = async () => {
-      if (!confirm("Are you sure you want to delete this blog post?")) return;
-  
-      // Get token like in BlogPostForm
-      const token = session?.user?.accessToken;
-      if (!token) {
-        setError("Authentication required. Please log in again.");
-        return;
-      }
-  
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/blogs/${params.id}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        if (!response.ok) {
-          if (response.status === 401) {
-            setError("Session expired. Please log in again.");
-            localStorage.removeItem("token");
-            return;
-          }
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to delete blog");
-        }
-  
-        router.push("/blog");
-      } catch (err: any) {
-        setError(err.message || "Failed to delete blog");
-      }
-    };
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this blog post?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to delete blog");
+
+      setSuccessMessage("Blog deleted successfully");
+      setBlogs(blogs.filter((blog) => blog._id !== id));
+    } catch (err: any) {
+      setError(err.message || "Failed to delete blog");
+    }
+  };
 
   const purpleColor = "#8E2DE2";
-  const purpleGradient = "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)";
+  const purpleGradient =
+    "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)";
   const purpleLight = "rgba(142, 45, 226, 0.08)";
   const blackBg = "rgba(26, 26, 26, 1)";
   const lightGray = "#f5f5f5";
@@ -149,13 +145,15 @@ export default function BlogPage() {
   };
 
   const getDescription = (content?: string) => {
-    if (!content) return "Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers.";
+    if (!content)
+      return "Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers.";
     return content.length > 100 ? `${content.substring(0, 100)}...` : content;
   };
 
   return (
     <>
-      <StepsHeader />
+      {/* <StepsHeader /> */}
+      <Header />
       <Box
         sx={{
           bgcolor: "#FAFBFC",
@@ -292,9 +290,7 @@ export default function BlogPage() {
                   >
                     {formatDate(filteredBlogs[0].createdAt)}
                     {"     "}
-                    Slidexy
-                    •
-                    Content Writing Team
+                    Slidexy • Content Writing Team
                   </Typography>
                 </Box>
 
@@ -313,13 +309,20 @@ export default function BlogPage() {
                 </Typography>
 
                 {/* Subtitle + Arrow */}
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <Typography
                     variant="body2"
                     color="text.secondary"
                     sx={{ fontSize: "0.95rem", flex: 1, pr: 2 }}
                   >
-                    Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers.
+                    Turn any thought into a polished, on-brand presentation —
+                    powered by AI, styled by designers.
                   </Typography>
                   <IconButton sx={{ color: purpleColor }}>
                     <ChevronRight />
@@ -328,7 +331,6 @@ export default function BlogPage() {
               </Box>
             </Box>
           )}
-
 
           {/* Recent News & Insights Section */}
           <Box sx={{ mb: 8 }}>
@@ -349,7 +351,6 @@ export default function BlogPage() {
             </Typography>
 
             <Box sx={{ py: 3, mb: 0 }}>
-
               <Stack
                 direction="row"
                 spacing={2}
@@ -388,7 +389,9 @@ export default function BlogPage() {
             <Box sx={{ py: 6 }}>
               <Container maxWidth="lg">
                 {loading ? (
-                  <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", py: 8 }}
+                  >
                     <CircularProgress sx={{ color: purpleColor }} />
                   </Box>
                 ) : error ? (
@@ -398,11 +401,11 @@ export default function BlogPage() {
                 ) : filteredBlogs.length > 1 ? (
                   <Box
                     sx={{
-                      display: 'grid',
+                      display: "grid",
                       gridTemplateColumns: {
-                        xs: 'repeat(1, 1fr)',
-                        sm: 'repeat(2, 1fr)',
-                        md: 'repeat(3, 1fr)',
+                        xs: "repeat(1, 1fr)",
+                        sm: "repeat(2, 1fr)",
+                        md: "repeat(3, 1fr)",
                       },
                       gap: 3,
                     }}
@@ -411,7 +414,7 @@ export default function BlogPage() {
                       const currentIndex = index % tagTypes.length;
                       const tags = tagTypes[currentIndex];
                       return (
-                        <Box key={blog._id} sx={{ width: '100%' }}>
+                        <Box key={blog._id} sx={{ width: "100%" }}>
                           <Box
                             sx={{
                               border: "1px solid #e0e0e0",
@@ -515,7 +518,9 @@ export default function BlogPage() {
                 ) : null}
 
                 {showLoadMore && (
-                  <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", mt: 4 }}
+                  >
                     <Button
                       variant="outlined"
                       sx={{
@@ -568,7 +573,8 @@ export default function BlogPage() {
           {/* Waitlist Section */}
           <Box
             sx={{
-              background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+              background:
+                "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
               borderRadius: 0,
               py: 8,
               textAlign: "center",
@@ -600,8 +606,8 @@ export default function BlogPage() {
                 opacity: 0.9,
               }}
             >
-              Join the waitlist today and let AI-powered innovation reach you before the
-              crowd.
+              Join the waitlist today and let AI-powered innovation reach you
+              before the crowd.
             </Typography>
             <Link href="/waiting-list" passHref>
               <Button
@@ -627,7 +633,12 @@ export default function BlogPage() {
           {/* Categories/Tags Section */}
           <Box sx={{ mb: 8, textAlign: "center" }}>
             <Container maxWidth="lg">
-              <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                flexWrap="wrap"
+              >
                 {categories.slice(1).map((category) => (
                   <Chip
                     key={category}
@@ -646,58 +657,8 @@ export default function BlogPage() {
         </Container>
 
         {/* Footer */}
-        <Box
-          sx={{
-            bgcolor: "white",
-            py: 6,
-            borderTop: "1px solid",
-            borderColor: "grey.100",
-            mt: 8,
-          }}
-        >
-          <Container maxWidth="lg">
-            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 700,
-                  color: purpleColor,
-                }}
-              >
-                LOGO
-              </Typography>
-              <Stack direction="row" spacing={4} sx={{ color: "text.secondary" }}>
-                {["Templates", "Features", "Reports", "Product", "Blog"].map((link) => (
-                  <Typography
-                    key={link}
-                    variant="body2"
-                    sx={{
-                      cursor: "pointer",
-                      "&:hover": { textDecoration: "underline" },
-                    }}
-                  >
-                    {link}
-                  </Typography>
-                ))}
-              </Stack>
-              <Stack direction="row" spacing={2}>
-                <IconButton size="small" sx={{ color: purpleColor }}>
-                  <Facebook fontSize="small" />
-                </IconButton>
-                <IconButton size="small" sx={{ color: purpleColor }}>
-                  <Twitter fontSize="small" />
-                </IconButton>
-                <IconButton size="small" sx={{ color: purpleColor }}>
-                  <Instagram fontSize="small" />
-                </IconButton>
-              </Stack>
-              <Typography variant="caption" color="text.secondary">
-                Copyright © 2025. All Rights Reserved.
-              </Typography>
-            </Box>
-          </Container>
-        </Box>
-
+        <Footer />
+        {/* SnackBar */}
         <Snackbar
           open={!!successMessage}
           autoHideDuration={6000}

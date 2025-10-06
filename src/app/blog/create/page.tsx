@@ -3,13 +3,10 @@
 import React, { useState } from "react";
 import StepsHeader from "../../components/headers-navbar/StepsHeader";
 import BlogPostForm from "../../components/blogs/BlogPostForm";
-import {
-  Container,
-  Alert,
-  Snackbar,
-} from "@mui/material";
+import { Container, Alert, Snackbar } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useUser } from "../../context/AuthContext";
+import Header from "@/app/components/headers-navbar/Header";
 
 export default function CreateBlogPage() {
   const router = useRouter();
@@ -41,11 +38,9 @@ export default function CreateBlogPage() {
   return (
     <>
       <StepsHeader />
+      {/* <Header /> */}
       <Container maxWidth={false} disableGutters sx={{ py: 0 }}>
-        <BlogPostForm 
-          onSubmit={handleSubmit}
-          onError={handleError}
-        />
+        <BlogPostForm onSubmit={handleSubmit} onError={handleError} />
       </Container>
 
       <Snackbar
