@@ -9,7 +9,7 @@ import { useUser } from "../../context/AuthContext";
 import Header from "@/app/components/headers-navbar/Header";
 
 export default function CreateBlogPage() {
-  redirect("/");
+  // redirect("/");
 
   const router = useRouter();
   const { user } = useUser();

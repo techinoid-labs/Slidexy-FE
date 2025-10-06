@@ -12,8 +12,8 @@ export default function Footer() {
     { title: "Templates", link: "/templates" },
     { title: "Privacy", link: "/privacy-policy" },
     { title: "FAQ's", link: "/faqs" },
-    // { title: "Pricing", link: "/pricing" },
-    // { title: "Blogs", link: "/blog" },
+    { title: "Pricing", link: "/pricing" },
+    { title: "Blogs", link: "/blog" },
   ];
 
   return (
