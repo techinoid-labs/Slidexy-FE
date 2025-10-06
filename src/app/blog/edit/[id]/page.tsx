@@ -10,7 +10,7 @@ import {
   Snackbar,
   CircularProgress,
 } from "@mui/material";
-import { useParams, useRouter } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useUser } from "../../../context/AuthContext";
 import { useSession } from "next-auth/react";
 import Header from "@/app/components/headers-navbar/Header";
@@ -24,9 +24,12 @@ interface Blog {
   category?: string;
 }
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+
 export default function EditBlogPage() {
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+  redirect("/");
+
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();

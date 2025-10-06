@@ -14,7 +14,7 @@ import Image from "next/image";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function SuccessPage() {
-  // redirect("/");
+  redirect("/");
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const router = useRouter();

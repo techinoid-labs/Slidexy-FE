@@ -9,7 +9,7 @@ import {
   Container,
 } from "@mui/material";
 import { Home as HomeIcon, NavigateNext } from "@mui/icons-material";
-import { useParams, useRouter } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useUser } from "../../context/AuthContext";
 import StepsHeader from "../../components/headers-navbar/StepsHeader";
 import BlogDetail from "../../components/blogs/BlogDetail";
@@ -26,10 +26,10 @@ interface Blog {
   createdAt?: string;
   updatedAt?: string;
 }
-
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 export default function BlogDetailPage() {
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+  redirect("/");
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
