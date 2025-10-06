@@ -22,19 +22,16 @@ import LowerNavbarMobile from "../components/modify-presentation/Lower-Navbar-Mo
 import SlideEditorMobile from "./SlideEditor-NewMobile";
 import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
 import TextSettingsPanelMobile from "@/app/components/new-ui/Text-Panel";
-import ShapeSettingsPanelMobile from "@/app/components/modify-presentation/ShapePanelMobile"; // Adjust if file is ShapeSettingsPanelMobile.tsx
+import ShapeSettingsPanelMobile from "@/app/components/modify-presentation/ShapePanelMobile";
 import ThemePanelMobile from "../components/modify-presentation/ThemePalleteMobile";
-import { Button } from "@mui/material";
 import SlideShowPlayer from "@/app/components/modify-presentation/Slide-Preview";
 import { useSlideThemeContext } from "../context/ThemeContext";
 import { useSession } from "next-auth/react";
 import AuthModal from "../components/auth/AuthModal";
 import { useTemplateSlides } from "../context/TemplateSlidesContext";
 import { useUser } from "../context/AuthContext";
-import axios from "axios";
-import { SlideshowOutlined } from "@mui/icons-material";
-import { useEffect } from "react";
 import { getContrastingBackground } from "@/utils/colorUtils";
+import { getRandomSlide } from "@/utils/slideUtils";
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
@@ -52,9 +49,10 @@ const Page = () => {
     setSelectedImage,
     isMobileImageSelected,
     setIsMobileImageSelected,
-    setSelectedShapeIndex, // Ensure this is included from SlidesContext
+    setSelectedShapeIndex,
   } = useSlides();
-  const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
+  const { selectedTheme } = useSlideThemeContext();
+  const { presentationId } = useTemplateSlides();
   const dispatch = useDispatch();
   const router = useRouter();
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
@@ -65,11 +63,9 @@ const Page = () => {
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
   const [previewOpen, setPreviewOpen] = useState(false);
   const { data: session } = useSession();
-  const { presentationId } = useTemplateSlides();
-  const datapresentationId = presentationId;
-
   const { user, loading } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
+
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
     setSelectedTextId(null);
@@ -80,19 +76,7 @@ const Page = () => {
     setIsThemePanelOpen(false);
     setSelectedShapeIndex(null);
   };
-  const backgroundStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    height: "100vh",
-    background: getContrastingBackground(
-      selectedTheme?.primaryColor || "#1a1a1a"
-    ),
-    maxWidth: "100%",
-    overflow: "hidden",
-    transition: "background 0.5s ease-in-out", // smooth gamma transition
-  };
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const handleClearCanvas = () => {
     if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
 
@@ -132,7 +116,6 @@ const Page = () => {
     if (session?.user || user) {
       setShowAuthModal(false);
 
-      // Build structuredSlides (your old logic)
       const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
         const elements: StructuredSlide["elements"] = [];
 
@@ -238,7 +221,6 @@ const Page = () => {
         };
       });
 
-      // ✅ Export the transformed slides
       exportSlidesAsPPT(structuredSlides);
     } else {
       setShowAuthModal(true);
@@ -281,11 +263,6 @@ const Page = () => {
   };
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  useEffect(() => {
-    if (isTextSelected || isImageSelected || isShapeSelected) {
-      setIsThemePanelOpen(false);
-    }
-  }, [isTextSelected, isImageSelected, isShapeSelected]);
 
   return (
     <>
@@ -408,24 +385,24 @@ const Page = () => {
               </div>
               <div
                 className={`
-                ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
-                bg-white shadow-md transition-all duration-300 ease-in-out flex
-                ${
-                  !isLGScreen && showRightPanel
-                    ? "w-96"
-                    : isLGScreen
-                    ? "w-[375px]"
-                    : "w-0"
-                }
-              `}
+                  ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
+                  bg-white shadow-md transition-all duration-300 ease-in-out flex
+                  ${
+                    !isLGScreen && showRightPanel
+                      ? "w-96"
+                      : isLGScreen
+                      ? "w-[375px]"
+                      : "w-0"
+                  }
+                `}
               >
                 {!isLGScreen && (
                   <div
                     className={`
-                    absolute -left-5 top-24
-                    bg-white border-r-0 border border-gray-200 shadow-xl
-                    rounded-l-md px-2 py-2 cursor-pointer z-50
-                  `}
+                      absolute -left-5 top-24
+                      bg-white border-r-0 border border-gray-200 shadow-xl
+                      rounded-l-md px-2 py-2 cursor-pointer z-50
+                    `}
                     onClick={() => setShowRightPanel(!showRightPanel)}
                   >
                     {showRightPanel ? (
@@ -462,7 +439,7 @@ const Page = () => {
         <AuthModal
           open={showAuthModal}
           onClose={() => setShowAuthModal(false)}
-          presentationId={datapresentationId}
+          presentationId={presentationId}
         />
       )}
     </>

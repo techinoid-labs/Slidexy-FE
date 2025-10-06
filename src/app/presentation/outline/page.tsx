@@ -14,6 +14,8 @@ import StepIndicator from "@/app/components/shared/StepIndicator";
 import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
 import { getSlideDimensions } from "@/utils/slideUtils";
 import { getSlideDimensions as getMobileSlideDimensions } from "@/utils/slideUtilsmobile";
+import { KonvaComponent } from "@/app/context/SlidesContext";
+import { fontWeight } from "html2canvas/dist/types/css/property-descriptors/font-weight";
 // const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT } =
 //   getSlideDimensions();
 // API response type and map helper
@@ -43,42 +45,160 @@ function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
     images: slide.image_url ? [slide.image_url] : [],
   }));
 }
-
 function mapCardsToSlides(cards: any[]): Slide[] {
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+  const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
 
-  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT } =
-    getSlideDimensions();
+  // Pastel gradients for backgrounds
+  const gradients = [
+    ["#FDEBEB", "#FFF7F7"], // pink
+    ["#E3F2FD", "#FFFFFF"], // blue
+    ["#FFF9E6", "#FFFDF3"], // cream
+    ["#E8F5E9", "#FDFEFE"], // mint
+    ["#F3E5F5", "#FCF9FF"], // lavender
+  ];
 
-  // Font sizes
-  const bulletFontSize = isMobile ? 30 : 20;
-  const titleFontSize = isMobile ? 36 : 38;
+  const bulletSymbol = "➤"; // consistent bullet for all slides
+
+  const bulletFontSize = isMobile ? 16 : 18;
+  const titleFontSize = isMobile ? 22 : 26;
+
+  const PADDING = SLIDE_WIDTH * 0.08;
+  const TEXT_WIDTH = SLIDE_WIDTH * 0.5;
+  const IMAGE_WIDTH = SLIDE_WIDTH * 0.35;
+  const IMAGE_HEIGHT = SLIDE_HEIGHT * 0.55;
+  const FRAME_PADDING = 24;
 
   return cards.map((card, index) => {
-    const bulletElements = (card.bullets || []).map(
-      (text: string, bulletIndex: number) => ({
-        element_type: "bullet_point",
-        text,
-        konva_component: "Konva.Text",
-        properties: {
-          //shape_id: `bullet-${index}-${bulletIndex}`, // Unique shape_id
-          width:
-            SLIDE_WIDTH -
-            LEFT_PADDING -
-            (card.images?.[0] ? IMAGE_WIDTH + 20 : 20), // Adjust width based on image presence
-          fontSize: bulletFontSize,
-          fontFamily: "Inter",
-          fill: "#444",
-          fontStyle: "normal",
-          x: LEFT_PADDING,
-          y: isMobile
-            ? 100 + titleFontSize + 20 + bulletIndex * (bulletFontSize + 10) // Extra padding to avoid title overlap
-            : 80 + titleFontSize + 20 + bulletIndex * (bulletFontSize + 10),
-          zIndex: bulletIndex + 1,
-        },
-      })
+    const gradientColors = gradients[index % gradients.length];
+
+    // Background gradient
+    const background = {
+      element_type: "background",
+      konva_component: "Konva.Rect",
+      properties: {
+        x: 0,
+        y: 0,
+        width: SLIDE_WIDTH,
+        height: SLIDE_HEIGHT,
+        fillLinearGradientStartPoint: { x: 0, y: 0 },
+        fillLinearGradientEndPoint: { x: SLIDE_WIDTH, y: SLIDE_HEIGHT },
+        fillLinearGradientColorStops: [0, gradientColors[0], 1, gradientColors[1]],
+        zIndex: 0,
+      },
+    };
+
+    // Title (fixed top-left)
+    const title = {
+      text: card.title,
+      konva_component: "Konva.Text",
+      properties: {
+        shape_id: `title-${index}`,
+        fontSize: titleFontSize,
+        fontFamily: "Raleway",
+        fontWeight: "700",
+        fillLinearGradientStartPoint: { x: 0, y: 0 },
+        fillLinearGradientEndPoint: { x: TEXT_WIDTH, y: 0 },
+        fillLinearGradientColorStops: [0, "#222", 1, gradientColors[0]],
+        x: PADDING,
+        y: 50,
+        width: SLIDE_WIDTH * 0.6,
+        align: "left",
+        shadowColor: "rgba(0,0,0,0.15)",
+        shadowBlur: 6,
+        shadowOffsetX: 2,
+        shadowOffsetY: 3,
+        zIndex: 2,
+      },
+    };
+
+    // Bullet points with ➤ prefix
+    const bulletElements: any[] = (card.bullets || []).map(
+      (text: string, bulletIndex: number) => {
+        const bulletY = 120 + bulletIndex * (bulletFontSize + 28);
+
+        return {
+          element_type: "bullet_point",
+          text: `${bulletSymbol}  ${text}`,
+          konva_component: "Konva.Text",
+          properties: {
+            width: TEXT_WIDTH,
+            fontSize: bulletFontSize,
+            fontFamily: "Raleway",
+            fill: "#333",
+            fontWeight: "400",
+            lineHeight: 1.6,
+            letterSpacing: 0.3,
+            x: PADDING,
+            y: bulletY,
+            shadowColor: "rgba(0,0,0,0.08)",
+            shadowBlur: 4,
+            shadowOffsetX: 1,
+            shadowOffsetY: 2,
+            zIndex: 4,
+          },
+        };
+      }
     );
 
+    // Decorative shapes
+    const shapes: any[] = [
+      {
+        element_type: "shape",
+        konva_component: "Konva.Circle",
+        properties: {
+          x: SLIDE_WIDTH * 0.12,
+          y: SLIDE_HEIGHT * 0.88,
+          radius: 45,
+          stroke: "rgba(255,255,255,0.4)",
+          strokeWidth: 3,
+          zIndex: 1,
+        },
+      },
+      {
+        element_type: "shape",
+        konva_component: "Konva.RegularPolygon",
+        properties: {
+          x: SLIDE_WIDTH * 0.88,
+          y: SLIDE_HEIGHT * 0.25,
+          sides: 6,
+          radius: 55,
+          stroke: "rgba(255,255,255,0.3)",
+          strokeWidth: 3,
+          zIndex: 1,
+        },
+      },
+    ];
+
+    // Image position
+    const imageY = (SLIDE_HEIGHT - IMAGE_HEIGHT) / 2 + 60;
+
+    // Image background frame
+    const imageBackground = card.images?.[0]
+      ? [
+          {
+            element_type: "shape",
+            konva_component: "Konva.Rect",
+            properties: {
+              x: SLIDE_WIDTH - PADDING - IMAGE_WIDTH - FRAME_PADDING / 2,
+              y: imageY - FRAME_PADDING / 2,
+              width: IMAGE_WIDTH + FRAME_PADDING,
+              height: IMAGE_HEIGHT + FRAME_PADDING,
+              cornerRadius: 25,
+              fillLinearGradientStartPoint: { x: 0, y: 0 },
+              fillLinearGradientEndPoint: { x: IMAGE_WIDTH, y: IMAGE_HEIGHT },
+              fillLinearGradientColorStops: [0, gradientColors[0], 1, gradientColors[1]],
+              shadowColor: "rgba(0,0,0,0.15)",
+              shadowBlur: 25,
+              shadowOffsetX: 4,
+              shadowOffsetY: 4,
+              zIndex: 2,
+            },
+          },
+        ]
+      : [];
+
+    // Image element
     const imageElement = card.images?.[0]
       ? [
           {
@@ -87,11 +207,16 @@ function mapCardsToSlides(cards: any[]): Slide[] {
             properties: {
               shape_id: `image-${index}`,
               imageSrc: card.images[0],
-              x: SLIDE_WIDTH - IMAGE_WIDTH - 20, // 20px padding from right edge
-              y: (SLIDE_HEIGHT - IMAGE_HEIGHT) / 2,
+              x: SLIDE_WIDTH - PADDING - IMAGE_WIDTH,
+              y: imageY,
               width: IMAGE_WIDTH,
               height: IMAGE_HEIGHT,
-              zIndex: (card.bullets?.length || 0) + 1,
+              borderRadius: 20,
+              shadowColor: "rgba(0,0,0,0.25)",
+              shadowBlur: 20,
+              shadowOffsetX: 5,
+              shadowOffsetY: 5,
+              zIndex: 3,
             },
           },
         ]
@@ -99,32 +224,23 @@ function mapCardsToSlides(cards: any[]): Slide[] {
 
     return {
       slide_id: `slide-${index + 1}`,
-      slide_title: {
-        text: card.title,
-        konva_component: "Konva.Text",
-        properties: {
-          shape_id: `title-${index}`,
-          fontSize: titleFontSize,
-          fontFamily: "Inter",
-          fill: "#333",
-          fontWeight: "bold",
-          fontStyle: "bold",
-          x: LEFT_PADDING,
-          y: 20,
-          width:
-            SLIDE_WIDTH -
-            LEFT_PADDING -
-            (card.images?.[0] ? IMAGE_WIDTH + 20 : 20), // Constrain title width
-          wrap: "none", // Prevent wrapping to next line
-          ellipsis: true, // Add ellipsis for overflow
-        },
-      },
-      elements: [...bulletElements, ...imageElement],
+      slide_title: title,
+      elements: [
+        background,
+        ...shapes,
+        ...bulletElements,
+        ...imageBackground,
+        ...imageElement,
+      ],
       image_url: card.images?.[0] || null,
       image_caption: "",
     };
   });
 }
+
+
+
+
 
 export default function OutlinePage() {
   // const { slides }: any = useSlides();
