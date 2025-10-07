@@ -20,7 +20,6 @@ import { Typography } from "@mui/material";
 import { useSlides } from "@/app/context/SlidesContext";
 import { clearPersistedSlides } from "@/app/store/store";
 import { usePathname, useRouter } from "next/navigation";
-// import ProfileModal from "../auth/ProfileModal";
 import AuthModal from "../auth/AuthModal";
 import NavProfileHandler from "../auth/NavProfileHandler";
 export default function StepsHeader() {
@@ -30,7 +29,6 @@ export default function StepsHeader() {
   const router = useRouter();
   const { removeSlides } = useSlides();
   const pathname = usePathname();
-  const [isProfileModalOpen, setProfileModalOpen] = React.useState(false);
   const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
   const handleGoBack = () => {
     if (pathname === "/editor") {
@@ -121,13 +119,6 @@ export default function StepsHeader() {
               alignItems: "center",
             }}
           >
-            {/* <Button
-                        variant="outlined"
-                        onClick={() => setProfileModalOpen(true)}
-                        sx={{ borderRadius: "999px" , height : 40, mr: 1, width: 100}}
-                      >
-                        Profile
-                      </Button> */}
             <Button
               onClick={() => {
                 localStorage.removeItem("fileName");
@@ -153,10 +144,7 @@ export default function StepsHeader() {
             >
               Cancel
             </Button>
-            <NavProfileHandler
-              setProfileModalOpen={setProfileModalOpen}
-              setAuthModalOpen={setAuthModalOpen}
-            />
+            <NavProfileHandler setAuthModalOpen={setAuthModalOpen} />
           </Box>
         </Toolbar>
       </AppBar>
@@ -164,10 +152,6 @@ export default function StepsHeader() {
         open={isAuthModalOpen}
         onClose={() => setAuthModalOpen(false)}
       />
-      {/* <ProfileModal
-        open={isProfileModalOpen}
-        onClose={() => setProfileModalOpen(false)}
-      /> */}
     </>
   );
 }

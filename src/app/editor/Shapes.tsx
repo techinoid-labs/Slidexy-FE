@@ -225,7 +225,6 @@ const Shapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
 
   const handleShapeClick = (shape: any) => {
     const elementIndex = slides[selectedSlideIndex].elements.length;
-    console.log("CLISKED");
     const newShape = {
       konva_component: shape.konva_component,
       element_type: "shape",

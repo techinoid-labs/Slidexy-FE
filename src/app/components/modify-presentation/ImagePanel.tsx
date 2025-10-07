@@ -51,7 +51,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [isOpacityOpen, setIsOpacityOpen] = useState(false);
   const [isShadowOpen, setIsShadowOpen] = useState(false);
-  const [isRadiusOpen, setIsRadiusOpen ] = useState(false);
+  const [isRadiusOpen, setIsRadiusOpen] = useState(false);
   const [opacity, setOpacity] = useState<number>(
     selectedImage?.properties?.opacity ?? 1
   );
@@ -112,9 +112,8 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
         return;
 
       const updatedSlides = structuredClone(slides);
-      const element = updatedSlides[selectedSlideIndex].elements[
-        selectedImageIndex
-      ];
+      const element =
+        updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
 
       if (!isNaN(imageWidth)) {
         element.properties.width = imageWidth;
@@ -142,17 +141,16 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     const updatedSlides = structuredClone(slides);
     const target =
       updatedSlides[selectedSlideIndex].elements[selectedImageIndex].properties;
-    const element = updatedSlides[selectedSlideIndex].elements[
-      selectedImageIndex
-    ];
+    const element =
+      updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
     if (target) {
       Object.entries(props).forEach(([key, value]) => {
         target[key] = value;
-        console.log(
-          `[ImageSettingsPanel] Updated ${key} to ${JSON.stringify(
-            value
-          )} for image at slide ${selectedSlideIndex}, index ${selectedImageIndex}`
-        );
+        // console.log(
+        //   `[ImageSettingsPanel] Updated ${key} to ${JSON.stringify(
+        //     value
+        //   )} for image at slide ${selectedSlideIndex}, index ${selectedImageIndex}`
+        // );
       });
       setSlides(updatedSlides);
       setSelectedImage({
@@ -480,7 +478,9 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
               </Typography>
               <Slider
                 value={shadow.offsetX}
-                onChange={(e, val) => handleShadowChange("offsetX", val as number)}
+                onChange={(e, val) =>
+                  handleShadowChange("offsetX", val as number)
+                }
                 min={-50}
                 max={50}
                 sx={{ mb: 2 }}
@@ -493,7 +493,9 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
               </Typography>
               <Slider
                 value={shadow.offsetY}
-                onChange={(e, val) => handleShadowChange("offsetY", val as number)}
+                onChange={(e, val) =>
+                  handleShadowChange("offsetY", val as number)
+                }
                 min={-50}
                 max={50}
                 sx={{ mb: 2 }}
@@ -617,12 +619,20 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       {/* Actions Section */}
       <Divider sx={{ my: 2 }} />
       <Box sx={{ px: 3, mb: 2 }}>
-        <Typography sx={{ fontWeight: 500, fontSize: 14, color: "#000", mb: 1 }}>
+        <Typography
+          sx={{ fontWeight: 500, fontSize: 14, color: "#000", mb: 1 }}
+        >
           Actions
         </Typography>
         <Box sx={{ display: "flex", gap: 4, mb: 1 }}>
           <Button
-            sx={{ fontColor: "#1a1a1a", height: 47, width: 150, fontSize: 14, fontWeight: 500 }}
+            sx={{
+              fontColor: "#1a1a1a",
+              height: 47,
+              width: 150,
+              fontSize: 14,
+              fontWeight: 500,
+            }}
             variant="outlined"
             size="small"
             onClick={handleDuplicateImage}
@@ -630,7 +640,13 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
             Duplicate
           </Button>
           <Button
-            sx={{ fontColor: "#1a1a1a", height: 47, width: 150, fontSize: 14, fontWeight: 500 }}
+            sx={{
+              fontColor: "#1a1a1a",
+              height: 47,
+              width: 150,
+              fontSize: 14,
+              fontWeight: 500,
+            }}
             variant="outlined"
             size="small"
             color="error"
@@ -653,13 +669,21 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                 Processing...
               </>
             ) : (
-              <Typography sx={{ whiteSpace: "nowrap", fontSize: 14, fontWeight: 500 }}>
+              <Typography
+                sx={{ whiteSpace: "nowrap", fontSize: 14, fontWeight: 500 }}
+              >
                 BG Remover
               </Typography>
             )}
           </Button>
           <Button
-            sx={{ fontColor: "#1a1a1a", height: 47, width: 150, fontSize: 14, fontWeight: 500 }}
+            sx={{
+              fontColor: "#1a1a1a",
+              height: 47,
+              width: 150,
+              fontSize: 14,
+              fontWeight: 500,
+            }}
             variant="outlined"
             size="small"
             onClick={() => setIsCropModalOpen(true)}
@@ -674,10 +698,10 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       <Box sx={{ px: 3, mb: 2, display: "flex", gap: 2 }}>
         <Button
           onClick={() => {
-            console.log(
-              "Forward button clicked with selectedImageIndex:",
-              selectedImageIndex
-            );
+            // console.log(
+            //   "Forward button clicked with selectedImageIndex:",
+            //   selectedImageIndex
+            // );
             if (selectedImageIndex !== null) {
               bringElementForward(selectedImageIndex);
             }
@@ -721,10 +745,10 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
         </Button>
         <Button
           onClick={() => {
-            console.log(
-              "Backward button clicked with selectedImageIndex:",
-              selectedImageIndex
-            );
+            // console.log(
+            //   "Backward button clicked with selectedImageIndex:",
+            //   selectedImageIndex
+            // );
             if (selectedImageIndex !== null) {
               sendElementBackward(selectedImageIndex);
             }

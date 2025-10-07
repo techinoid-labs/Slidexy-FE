@@ -31,7 +31,7 @@ interface TemplatePanelProps {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-console.log(API_BASE_URL);
+// console.log(API_BASE_URL);
 
 const MobileTemplatePanel = ({
   sidebarHeight = "100vh",
@@ -43,7 +43,7 @@ const MobileTemplatePanel = ({
   const [error, setError] = useState("");
   const [imgError, setImgError] = useState(false);
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
-  console.log({ themes });
+  // console.log({ themes });
   const themeImageUrls = [
     "/theme-1.jpeg",
     "/theme-2.jpeg",
@@ -163,7 +163,7 @@ const MobileTemplatePanel = ({
       if (!res.ok) throw new Error("Failed to fetch themes");
 
       const data = await res.json();
-      console.log("API Response Themes:", data.themes);
+      // console.log("API Response Themes:", data.themes);
 
       const cleanedThemes = (data.themes || []).map(
         (theme: any, index: number) => {
@@ -180,7 +180,7 @@ const MobileTemplatePanel = ({
       const newThemes =
         cleanedThemes.length > 0 ? cleanedThemes : fallbackThemes;
 
-      console.log("Cleaned Themes:", newThemes);
+      // console.log("Cleaned Themes:", newThemes);
       setThemes(newThemes);
 
       if (newThemes.length > 0) {
@@ -203,8 +203,8 @@ const MobileTemplatePanel = ({
     <Box
       sx={{
         position: "fixed",
-       left: "8%",
-         width: window.innerWidth * 0.84,
+        left: "8%",
+        width: window.innerWidth * 0.84,
         height: window.innerHeight * 0.5,
         //right: "50%",
         bottom: 0,
@@ -214,7 +214,7 @@ const MobileTemplatePanel = ({
         boxShadow: 3,
         display: "flex",
         flexDirection: "column",
-        align: 'center',
+        align: "center",
         paddingTop: "48px",
         paddingBottom: "20px",
         borderTopLeftRadius: "30px",
@@ -298,12 +298,12 @@ const MobileTemplatePanel = ({
             textAlign: "center",
             py: 0.5,
             fontSize: 12,
-            maxWidth : "100px",
+            maxWidth: "100px",
           }}
         >
           From Slide AI
         </Box>
-        <Box sx={{ display: "flex", px: 1.5, mt: 0, height: "30px"}} />
+        <Box sx={{ display: "flex", px: 1.5, mt: 0, height: "30px" }} />
         <Box
           sx={{
             flex: 1,
@@ -324,7 +324,17 @@ const MobileTemplatePanel = ({
       <Divider sx={{ my: 2 }} />
 
       {/* Theme Cards */}
-      <Box sx={{ flex: 1, overflowY: "auto", px: 3, pb: 3, gap: 20, flexDirection: "row", flexGrow: "row" }}>
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          px: 3,
+          pb: 3,
+          gap: 20,
+          flexDirection: "row",
+          flexGrow: "row",
+        }}
+      >
         {themes.length > 0 ? (
           <>
             <Box

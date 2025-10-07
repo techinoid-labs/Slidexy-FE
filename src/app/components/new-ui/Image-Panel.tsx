@@ -151,7 +151,7 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
     if (target) {
       Object.entries(props).forEach(([key, value]) => {
         target[key] = value;
-        console.log(`[ImageSettingsPanelMobile] Updated ${key} to ${JSON.stringify(value)} for image at slide ${selectedSlideIndex}, index ${selectedImageIndex}`);
+        // console.log(`[ImageSettingsPanelMobile] Updated ${key} to ${JSON.stringify(value)} for image at slide ${selectedSlideIndex}, index ${selectedImageIndex}`);
       });
 
       setSlides(updatedSlides);

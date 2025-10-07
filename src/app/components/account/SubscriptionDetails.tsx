@@ -29,7 +29,7 @@ const SubscriptionDetails: React.FC = () => {
   const [cancelLoading, setCancelLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  console.log(user);
+  // console.log(user);
 
   useEffect(() => {
     refreshUser();

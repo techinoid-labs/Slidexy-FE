@@ -19,7 +19,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation"; // ✅ active route
 import { Typography } from "@mui/material";
 import AuthModal from "../auth/AuthModal";
-// import ProfileModal from "../auth/ProfileModal";
 import NavProfileHandler from "../auth/NavProfileHandler";
 import { useUser } from "@/app/context/AuthContext";
 export default function Header() {
@@ -48,7 +47,6 @@ export default function Header() {
     { label: "Blogs", hasDropdown: false, link: "/blog" },
   ];
   const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
-  const [isProfileModalOpen, setProfileModalOpen] = React.useState(false);
   return (
     <>
       <AppBar
@@ -114,9 +112,9 @@ export default function Header() {
                           item.hasDropdown ? <KeyboardArrowDown /> : null
                         }
                         sx={{
-                          color: isActive ? "text.primary" : "text.secondary", // ✅ active color
+                          color: isActive ? "text.primary" : "text.secondary",
                           fontSize: "16px",
-                          fontWeight: isActive ? 500 : 400, // ✅ bold active
+                          fontWeight: isActive ? 500 : 400,
                           letterSpacing: 1,
                           px: 3,
                           mt: 0.5,
@@ -163,10 +161,7 @@ export default function Header() {
                     </Button>
                   </Link> */}
 
-                  <NavProfileHandler
-                    setProfileModalOpen={setProfileModalOpen}
-                    setAuthModalOpen={setAuthModalOpen}
-                  />
+                  <NavProfileHandler setAuthModalOpen={setAuthModalOpen} />
 
                   {!isAcountsPage && !user && (
                     <Link href="/presentation/create" passHref>
@@ -255,22 +250,8 @@ export default function Header() {
                         <NavProfileHandler
                           // size={20}
                           showMail={true} //For showing email on mobile view
-                          setProfileModalOpen={setProfileModalOpen}
                           setAuthModalOpen={setAuthModalOpen}
                         />
-                        {/* 
-                        {user && (
-                          <Typography
-                            onClick={() => {
-                              // handleMenuClose();
-                              // setProfileModalOpen(true);
-                            }}
-                            fontSize={12}
-                            className="truncate max-w-36"
-                          >
-                            {user?.email || "User"}
-                          </Typography>
-                        )} */}
                       </div>
                     </MenuItem>
                   </Menu>
@@ -285,10 +266,6 @@ export default function Header() {
         open={isAuthModalOpen}
         onClose={() => setAuthModalOpen(false)}
       />
-      {/* <ProfileModal
-        open={isProfileModalOpen}
-        onClose={() => setProfileModalOpen(false)}
-      /> */}
     </>
   );
 }

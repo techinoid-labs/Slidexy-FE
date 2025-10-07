@@ -33,7 +33,7 @@ const SideNavBar = ({
 }: SideNavBarProps) => {
   const [selectedIdx, setSelectedIdx] = React.useState(0);
 
-  console.log(selectedIdx);
+  // console.log(selectedIdx);
   const [openPanel, setOpenPanel] = React.useState<PanelType>(null);
   const { undo, redo, canUndo, canRedo } = useSlides();
   const sidebarHeight = "88.5vh";

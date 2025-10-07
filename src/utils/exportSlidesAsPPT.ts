@@ -114,10 +114,10 @@ export async function exportSlidesAsPPT(structuredSlides: StructuredSlide[]) {
     if (title?.text) {
       const props = title.properties || {};
 
-      console.log(defaultColor || props.fill, {
-        defaultColor,
-        fill: props.fill,
-      });
+      // console.log(defaultColor || props.fill, {
+      //   defaultColor,
+      //   fill: props.fill,
+      // });
 
       slide.addText(title.text, {
         x: 0.5,

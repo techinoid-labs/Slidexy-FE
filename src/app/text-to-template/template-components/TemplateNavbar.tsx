@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 import { useSession } from "next-auth/react";
 import { useUser } from "@/app/context/AuthContext";
-// import ProfileModal from "@/app/components/auth/ProfileModal";
 import NavProfileHandler from "@/app/components/auth/NavProfileHandler";
 import AuthModal from "@/app/components/auth/AuthModal";
 import { exportPresentationToPdf } from "../pdfExportTemplate";
@@ -34,7 +33,6 @@ const TemplateNavBar: React.FC<{
     null
   );
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [isExportingPPTX, setIsExportingPPTX] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -246,10 +244,7 @@ const TemplateNavBar: React.FC<{
                 </Button>
               </>
             )}
-            <NavProfileHandler
-              setProfileModalOpen={setProfileModalOpen}
-              setAuthModalOpen={setAuthModalOpen}
-            />{" "}
+            <NavProfileHandler setAuthModalOpen={setAuthModalOpen} />{" "}
           </Box>
 
           <Menu
@@ -310,17 +305,6 @@ const TemplateNavBar: React.FC<{
           </Button>
         </Box>
       )}
-
-      {/* <ProfileModal
-        open={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-      />
-      {showAuthModal && (
-        <AuthModal
-          onClose={() => setShowAuthModal(false)}
-          presentationId={presentationId}
-        />
-      )} */}
       <AuthModal
         open={isAuthModalOpen}
         presentationId={presentationId}

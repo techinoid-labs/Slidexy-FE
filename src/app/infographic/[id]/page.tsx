@@ -32,7 +32,9 @@ export default function InfographicPage() {
   const BASE_HEIGHT_PORTRAIT = 600;
 
   const [scale, setScale] = useState(1);
-  const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
+  const [orientation, setOrientation] = useState<"landscape" | "portrait">(
+    "landscape"
+  );
   const [stageWidth, setStageWidth] = useState(BASE_WIDTH);
   const [stageHeight, setStageHeight] = useState(BASE_HEIGHT_LANDSCAPE);
 
@@ -88,7 +90,7 @@ export default function InfographicPage() {
     if (!id) return;
     const fetchData = async () => {
       try {
-        console.log("Fetching infographic with ID:", id);
+        // console.log("Fetching infographic with ID:", id);
         const res = await fetch(`${API_BASE_URL}/api/infographic/${id}`);
         const data = await res.json();
         setInfographicData(data);
@@ -114,7 +116,9 @@ export default function InfographicPage() {
     const canvasWidth = stageCanvas.width;
     const canvasHeight = stageCanvas.height;
 
-    const htmlOverlay = infographicRef.querySelector("div[aria-label^='Infographic']");
+    const htmlOverlay = infographicRef.querySelector(
+      "div[aria-label^='Infographic']"
+    );
     if (!htmlOverlay || !(htmlOverlay instanceof HTMLElement)) {
       return stageCanvas;
     }
@@ -151,13 +155,18 @@ export default function InfographicPage() {
     if (!infographicRef.current || !stageRef.current) return;
 
     try {
-      const canvas = await captureStageWithHtml(stageRef, infographicRef.current);
+      const canvas = await captureStageWithHtml(
+        stageRef,
+        infographicRef.current
+      );
       if (!canvas) return;
 
       const link = document.createElement("a");
       link.download = `${infographicData.infographic.title}.${format}`;
       link.href =
-        format === "png" ? canvas.toDataURL("image/png") : canvas.toDataURL("image/jpeg", 1);
+        format === "png"
+          ? canvas.toDataURL("image/png")
+          : canvas.toDataURL("image/jpeg", 1);
       link.click();
     } catch (error) {
       console.error("Download failed:", error);
@@ -166,7 +175,14 @@ export default function InfographicPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
         <Box sx={{ textAlign: "center" }}>
           <div className="text-gray-600 text-lg">Loading infographic...</div>
         </Box>
@@ -176,7 +192,14 @@ export default function InfographicPage() {
 
   if (!id || !infographicData) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
         <div className="text-red-500 text-lg">Failed to load infographic.</div>
       </Box>
     );
@@ -216,7 +239,9 @@ export default function InfographicPage() {
         }}
       >
         {/* Header Section */}
-        <Box sx={{ textAlign: "center", mb: { xs: 4, md: 8 }, maxWidth: "900px" }}>
+        <Box
+          sx={{ textAlign: "center", mb: { xs: 4, md: 8 }, maxWidth: "900px" }}
+        >
           <h1
             style={{
               fontSize: isMobile ? "2rem" : "3rem",
@@ -269,10 +294,10 @@ export default function InfographicPage() {
               height={stageHeight}
               scaleX={scale}
               scaleY={scale}
-              style={{ 
-                width: "100%", 
+              style={{
+                width: "100%",
                 height: "100%",
-                display: "block"
+                display: "block",
               }}
             >
               <Layer>
@@ -365,7 +390,9 @@ export default function InfographicPage() {
               icon={<InfoOutlinedIcon fontSize="small" />}
               label={
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <span style={{ fontWeight: 500, fontSize: "0.875rem" }}>Type</span>
+                  <span style={{ fontWeight: 500, fontSize: "0.875rem" }}>
+                    Type
+                  </span>
                   <span style={{ fontWeight: 700, fontSize: "0.875rem" }}>
                     {infographicData.infographic.type}
                   </span>
@@ -390,16 +417,14 @@ export default function InfographicPage() {
             />
           </Tooltip>
 
-          <Tooltip
-            title="Source: Slidexy Generated"
-            arrow
-            placement="top"
-          >
+          <Tooltip title="Source: Slidexy Generated" arrow placement="top">
             <Chip
               icon={<InfoOutlinedIcon fontSize="small" />}
               label={
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <span style={{ fontWeight: 500, fontSize: "0.875rem" }}>Source</span>
+                  <span style={{ fontWeight: 500, fontSize: "0.875rem" }}>
+                    Source
+                  </span>
                   <span style={{ fontWeight: 700, fontSize: "0.875rem" }}>
                     Slidexy Generated
                   </span>
@@ -433,7 +458,9 @@ export default function InfographicPage() {
               icon={<InfoOutlinedIcon fontSize="small" />}
               label={
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <span style={{ fontWeight: 500, fontSize: "0.875rem" }}>Generated</span>
+                  <span style={{ fontWeight: 500, fontSize: "0.875rem" }}>
+                    Generated
+                  </span>
                   <span style={{ fontWeight: 700, fontSize: "0.875rem" }}>
                     {formattedGeneratedDate}
                   </span>

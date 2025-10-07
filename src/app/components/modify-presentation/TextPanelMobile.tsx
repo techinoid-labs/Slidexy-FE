@@ -52,8 +52,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
   const elementIndex = parsed?.[2]
     ? parseInt(parsed[2], 10)
     : selectedShapeIndex !== null
-      ? selectedShapeIndex
-      : null;
+    ? selectedShapeIndex
+    : null;
 
   let textObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex]) {
@@ -84,20 +84,20 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
 
   const updateTextProperty = (prop: string, value: any) => {
     if (!textObj || slideIndex === -1) return;
-    console.log("[TextPanelMobile] updateTextProperty called:", { prop, value, selectedTextId, slideIndex });
+    // console.log("[TextPanelMobile] updateTextProperty called:", { prop, value, selectedTextId, slideIndex });
 
     const updatedSlides = structuredClone(slides);
     const target: any = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title.properties
       : elementIndex !== null
-        ? updatedSlides[slideIndex].elements[elementIndex].properties
-        : null;
+      ? updatedSlides[slideIndex].elements[elementIndex].properties
+      : null;
 
-    console.log("[TextPanelMobile] Target found:", { target, isTitle: selectedTextId?.startsWith("title") });
+    // console.log("[TextPanelMobile] Target found:", { target, isTitle: selectedTextId?.startsWith("title") });
 
     if (target) {
       target[prop] = value;
-      console.log("[TextPanelMobile] Updated target:", target);
+      // console.log("[TextPanelMobile] Updated target:", target);
 
       // Alignment fix: adjust x when align changes
       if (prop === "align") {
@@ -109,11 +109,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
           target.width = 220; // or any reasonable default
         }
       }
-
-
     }
 
-    console.log("[TextPanelMobile] Dispatching updated slides:", updatedSlides[slideIndex]);
+    // console.log("[TextPanelMobile] Dispatching updated slides:", updatedSlides[slideIndex]);
     setSlides(updatedSlides);
   };
 
@@ -125,23 +123,25 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     let target = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title
       : elementIndex !== null
-        ? updatedSlides[slideIndex].elements[elementIndex]
-        : null;
+      ? updatedSlides[slideIndex].elements[elementIndex]
+      : null;
 
     if (!target) return;
 
-    const lines = (target.text || "").split("\n").map(line => line.trim());
+    const lines = (target.text || "").split("\n").map((line) => line.trim());
     let newText = "";
 
     // Handle empty text
     if (!lines.join("").trim()) {
       newText = "• [Click to edit]";
-    } else if (lines.every(line => line.startsWith(bulletPrefix))) {
+    } else if (lines.every((line) => line.startsWith(bulletPrefix))) {
       // Remove bullets from all lines
-      newText = lines.map(line => line.substring(bulletPrefix.length).trim()).join("\n");
+      newText = lines
+        .map((line) => line.substring(bulletPrefix.length).trim())
+        .join("\n");
     } else {
       // Add bullets to all lines
-      newText = lines.map(line => bulletPrefix + line).join("\n");
+      newText = lines.map((line) => bulletPrefix + line).join("\n");
     }
 
     target.text = newText;
@@ -161,17 +161,23 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     let target = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title
       : elementIndex !== null
-        ? updatedSlides[slideIndex].elements[elementIndex]
-        : null;
+      ? updatedSlides[slideIndex].elements[elementIndex]
+      : null;
 
     if (!target) return;
 
-    const lines = (target.text || "").split("\n").map(line => line.trim());
+    const lines = (target.text || "").split("\n").map((line) => line.trim());
     let newText = lines.join("\n"); // Default to original text
 
-    if (lines.some(line => line.startsWith(bulletPrefix))) {
+    if (lines.some((line) => line.startsWith(bulletPrefix))) {
       // Remove bullets from all lines
-      newText = lines.map(line => line.startsWith(bulletPrefix) ? line.substring(bulletPrefix.length).trim() : line).join("\n");
+      newText = lines
+        .map((line) =>
+          line.startsWith(bulletPrefix)
+            ? line.substring(bulletPrefix.length).trim()
+            : line
+        )
+        .join("\n");
     }
 
     target.text = newText;
@@ -199,8 +205,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     const el = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title
       : elementIndex !== null
-        ? updatedSlides[slideIndex].elements[elementIndex]
-        : null;
+      ? updatedSlides[slideIndex].elements[elementIndex]
+      : null;
 
     if (!el) return;
     el.properties.fill = color;
@@ -217,7 +223,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
       toggleBulletPoint();
     }
     setIsBulleted(!isBulleted);
-  }
+  };
   return (
     <Box
       sx={{
@@ -306,11 +312,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
           }}
         >
           {weightOptions.map((opt) => (
-            <MenuItem
-              key={opt.value}
-              value={opt.value}
-              sx={{ fontSize: 14 }}
-            >
+            <MenuItem key={opt.value} value={opt.value} sx={{ fontSize: 14 }}>
               {opt.label}
             </MenuItem>
           ))}

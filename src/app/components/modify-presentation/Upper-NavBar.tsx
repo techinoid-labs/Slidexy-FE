@@ -24,8 +24,6 @@ import { useRouter } from "next/navigation";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useUser } from "@/app/context/AuthContext";
-// import ProfileModal from "../auth/ProfileModal";
-import AuthModal from "../auth/AuthModal";
 import NavProfileHandler from "../auth/NavProfileHandler";
 
 // helper: extract readable name from email
@@ -58,7 +56,6 @@ const UpperNavBar: React.FC<{
 }) => {
   const [mobileMenuAnchor, setMobileMenuAnchor] =
     React.useState<null | HTMLElement>(null);
-  const [isProfileModalOpen, setProfileModalOpen] = React.useState(false);
   const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
 
   const { user } = useUser();
@@ -317,10 +314,7 @@ const UpperNavBar: React.FC<{
 
             {/* Profile Button */}
             {!isMobile ? (
-              <NavProfileHandler
-                setProfileModalOpen={setProfileModalOpen}
-                setAuthModalOpen={setShowAuthModal}
-              />
+              <NavProfileHandler setAuthModalOpen={setShowAuthModal} />
             ) : null}
 
             {/* Mobile Hamburger for extra actions */}
@@ -359,7 +353,6 @@ const UpperNavBar: React.FC<{
           <MenuItem>
             <NavProfileHandler
               showMail={true}
-              setProfileModalOpen={setProfileModalOpen}
               setAuthModalOpen={setShowAuthModal}
             />
           </MenuItem>

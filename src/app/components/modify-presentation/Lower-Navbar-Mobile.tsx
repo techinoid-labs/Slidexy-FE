@@ -24,7 +24,7 @@ const navItems = [
   { label: "Themes", icon: "/images/template-icon.svg" },
   { label: "Text", icon: "/images/text-icon.svg" },
   { label: "Images", icon: "/images/picture-icon.svg" },
-  { label: "Shapes", icon: "/images/nav-icon.svg" }
+  { label: "Shapes", icon: "/images/nav-icon.svg" },
 ];
 
 const SideNavBar = ({
@@ -33,7 +33,7 @@ const SideNavBar = ({
 }: SideNavBarProps) => {
   const [selectedIdx, setSelectedIdx] = React.useState(0);
 
-  console.log(selectedIdx);
+  // console.log(selectedIdx);
   const [openPanel, setOpenPanel] = React.useState<PanelType>(null);
   const sidebarHeight = "88.5vh";
   return (
@@ -67,12 +67,7 @@ const SideNavBar = ({
           }}
         >
           {navItems.map((item, idx) => (
-            <Tooltip
-              key={item.label}
-              title={item.label}
-              placement="top"
-              arrow
-            >
+            <Tooltip key={item.label} title={item.label} placement="top" arrow>
               <IconButton
                 onClick={() => {
                   setSelectedIdx(idx);

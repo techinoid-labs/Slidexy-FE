@@ -22,12 +22,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import EmailIcon from "@mui/icons-material/Email";
 
-const NavProfileHandler = ({
-  size,
-  setProfileModalOpen,
-  setAuthModalOpen,
-  showMail,
-}: any) => {
+const NavProfileHandler = ({ size, setAuthModalOpen, showMail }: any) => {
   const { user } = useUser();
   const router = useRouter();
   const theme = useTheme();

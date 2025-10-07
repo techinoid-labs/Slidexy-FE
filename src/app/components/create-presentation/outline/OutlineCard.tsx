@@ -738,7 +738,7 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                               cursor: editable ? "pointer" : "default",
                             }}
                             onClick={() => {
-                              console.log("CLICKED");
+                              //
                               if (editable) props.onBulletsEditStart?.(i);
                             }}
                           >
@@ -770,7 +770,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                               cursor: editable ? "pointer" : "default",
                             }}
                             onClick={() => {
-                              console.log("CLICKED");
                               if (editable) props.onBulletsEditStart?.(i);
                             }}
                           >
@@ -800,7 +799,6 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                               cursor: editable ? "pointer" : "default",
                             }}
                             onClick={() => {
-                              console.log("CLICKED");
                               if (editable) props.onBulletsEditStart?.(i);
                             }}
                           >
@@ -1098,9 +1096,9 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
                     if (imageList.length > 0) {
                       await handleRegenerateImage(0, e);
                     } else {
-                      console.log(
-                        "No images to regenerate, using fallback images"
-                      );
+                      // console.log(
+                      //   "No images to regenerate, using fallback images"
+                      // );
                       const originalImage = imageList[0] || SAMPLE_IMAGES[0];
                       setSuggestedImages({
                         imageIndex: 0,

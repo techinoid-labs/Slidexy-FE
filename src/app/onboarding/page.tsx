@@ -35,9 +35,9 @@ export default function OnboardingForm() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const onSubmit = async (data: FormValues) => {
-    console.log("Submitted data:", data);
+    // console.log("Submitted data:", data);
     setOnBoarding(data);
-    console.log("OnBoarding Form Details:", data);
+    // console.log("OnBoarding Form Details:", data);
 
     toast.success("Form submitted successfully!", {
       position: "top-right",

@@ -370,12 +370,12 @@ export default function PresentationMaker({
       if (!res.ok)
         throw new Error(data.error || "Failed to generate infographic");
 
-      console.log("Infographic response:", data);
+      // console.log("Infographic response:", data);
       const infographicId = data.infographic._id;
-      console.log("Extracted Infographic ID:", infographicId);
+      // console.log("Extracted Infographic ID:", infographicId);
       if (infographicId) {
         setInfographicId(infographicId);
-        console.log("Infographic ID saved:", infographicId);
+        // console.log("Infographic ID saved:", infographicId);
         router.push(`/infographic/${infographicId}`);
       }
 
@@ -428,10 +428,10 @@ export default function PresentationMaker({
         throw new Error(data.error || "Failed to generate template");
       }
 
-      console.log("Data:", data);
-      console.log("Mongo _id:", data._id); // MongoDB ObjectId
-      console.log("Slides array:", data.slides);
-      console.log("UUID:", data.presentation_id); // UUID
+      // console.log("Data:", data);
+      // console.log("Mongo _id:", data._id); // MongoDB ObjectId
+      // console.log("Slides array:", data.slides);
+      // console.log("UUID:", data.presentation_id); // UUID
 
       setProgress(100);
       setSlideTemplates(data.slides);
