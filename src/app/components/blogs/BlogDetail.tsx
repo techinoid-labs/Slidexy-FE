@@ -1,3 +1,4 @@
+// src/components/blogs/BlogDetail.tsx
 "use client";
 import React from "react";
 import {
@@ -8,6 +9,7 @@ import {
   IconButton,
   Stack,
   Button,
+  Grid,
 } from "@mui/material";
 import {
   Facebook,
@@ -26,8 +28,10 @@ interface Blog {
   title: string;
   content: string;
   coverImage?: string;
+  media?: string[];
   category?: string;
-  author: string;
+  tags?: string[];
+  author?: { name?: string; _id?: string };
   createdAt?: string;
 }
 
@@ -65,7 +69,6 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
 
   return (
     <Box sx={{ bgcolor: "#FAFBFC" }}>
-      {/* Title Section */}
       <Container maxWidth="lg" sx={{ pt: 4, mb: 4 }}>
         <Box
           sx={{
@@ -88,7 +91,6 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
             {blog.title}
           </Typography>
 
-          {/* Admin Actions */}
           {isAdmin && (
             <Stack direction="row" spacing={1} sx={{ ml: 2 }}>
               <IconButton
@@ -121,7 +123,6 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
           )}
         </Box>
 
-        {/* Meta Info */}
         <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 2 }}>
           {blog.category && (
             <Chip
@@ -140,7 +141,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
             variant="body2"
             sx={{ color: "text.secondary", fontSize: "0.875rem" }}
           >
-            By Slidexy Content Writing Team
+            By {blog.author?.name || "Slidexy Content Writing Team"}
           </Typography>
           <Typography
             variant="body2"
@@ -149,9 +150,26 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
             {formatDate(blog.createdAt)}
           </Typography>
         </Stack>
+
+        {blog.tags && blog.tags.length > 0 && (
+          <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap">
+            {blog.tags.map((tag) => (
+              <Chip
+                key={tag}
+                label={tag}
+                size="small"
+                sx={{
+                  bgcolor: purpleLight,
+                  color: purpleColor,
+                  fontWeight: 500,
+                  fontSize: "0.75rem",
+                }}
+              />
+            ))}
+          </Stack>
+        )}
       </Container>
 
-      {/* Cover Image */}
       <Container maxWidth="lg" sx={{ mb: 6 }}>
         <Box
           sx={{
@@ -191,7 +209,6 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
         </Box>
       </Container>
 
-      {/* Article Content */}
       <Container maxWidth="md" sx={{ mb: 8 }}>
         <Box
           sx={{
@@ -220,7 +237,39 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
         />
       </Container>
 
-      {/* Related Blogs Section */}
+      {blog.media && blog.media.length > 0 && (
+        <Container maxWidth="lg" sx={{ mb: 8 }}>
+          <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+            Media Gallery
+          </Typography>
+          <Grid container spacing={3}>
+            {blog.media.map((img, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: 250,
+                    borderRadius: 3,
+                    overflow: "hidden",
+                    bgcolor: "#f5f5f5",
+                  }}
+                >
+                  <img
+                    src={img}
+                    alt={`Media ${index + 1}`}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      )}
+
       {relatedBlogs.length > 0 && (
         <Box sx={{ bgcolor: "white", py: 8 }}>
           <Container maxWidth="lg">
@@ -351,7 +400,6 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
         </Box>
       )}
 
-      {/* CTA Section */}
       <Box
         sx={{
           background:
@@ -406,54 +454,6 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
         </Container>
       </Box>
 
-      {/* Footer */}
-      {/* <Box sx={{ bgcolor: "white", py: 6 }}>
-        <Container maxWidth="lg">
-          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 700,
-                fontSize: "2rem",
-                background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              LOGO
-            </Typography>
-            <Stack direction="row" spacing={4} sx={{ color: "text.secondary" }}>
-              {["Templates", "Features", "Reports", "Product", "Blog"].map((link) => (
-                <Typography
-                  key={link}
-                  variant="body2"
-                  sx={{
-                    cursor: "pointer",
-                    fontSize: "0.875rem",
-                    "&:hover": { color: purpleColor },
-                  }}
-                >
-                  {link}
-                </Typography>
-              ))}
-            </Stack>
-            <Stack direction="row" spacing={2}>
-              <IconButton size="small" sx={{ color: purpleColor }}>
-                <Facebook sx={{ fontSize: 20 }} />
-              </IconButton>
-              <IconButton size="small" sx={{ color: purpleColor }}>
-                <Twitter sx={{ fontSize: 20 }} />
-              </IconButton>
-              <IconButton size="small" sx={{ color: purpleColor }}>
-                <Instagram sx={{ fontSize: 20 }} />
-              </IconButton>
-            </Stack>
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
-              Copyright © 2025. All Rights Reserved.
-            </Typography>
-          </Box>
-        </Container>
-      </Box> */}
       <Footer />
     </Box>
   );

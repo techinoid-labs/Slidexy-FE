@@ -7,6 +7,7 @@ import {
   Typography,
   Breadcrumbs,
   Container,
+  Grid,
 } from "@mui/material";
 import { Home as HomeIcon, NavigateNext } from "@mui/icons-material";
 import { useParams, useRouter } from "next/navigation";
@@ -15,6 +16,7 @@ import StepsHeader from "../../components/headers-navbar/StepsHeader";
 import BlogDetail from "../../components/blogs/BlogDetail";
 import { useSession } from "next-auth/react";
 import Header from "@/app/components/headers-navbar/Header";
+
 interface Blog {
   _id: string;
   title: string;
@@ -22,7 +24,8 @@ interface Blog {
   coverImage?: string;
   media?: string[];
   category?: string;
-  author: string;
+  tags?: string[];
+  author?: { name?: string; _id?: string };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -108,7 +111,6 @@ export default function BlogDetailPage() {
   if (loading) {
     return (
       <>
-        {/* <StepsHeader /> */}
         <Header />
         <Box sx={{ bgcolor: "#FAFBFC", minHeight: "100vh", py: 4 }}>
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
@@ -121,7 +123,6 @@ export default function BlogDetailPage() {
 
   return (
     <>
-      {/* <StepsHeader /> */}
       <Header />
 
       <Box sx={{ bgcolor: "#FAFBFC", minHeight: "100vh" }}>
@@ -131,7 +132,6 @@ export default function BlogDetailPage() {
           </Container>
         ) : blog ? (
           <>
-            {/* Breadcrumbs */}
             <Container maxWidth="lg" sx={{ pt: 3, pb: 0 }}>
               <Breadcrumbs
                 separator={
@@ -177,7 +177,6 @@ export default function BlogDetailPage() {
               </Breadcrumbs>
             </Container>
 
-            {/* Blog Detail Component */}
             <BlogDetail
               blog={blog}
               relatedBlogs={relatedBlogs}

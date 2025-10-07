@@ -45,7 +45,7 @@ export default function Header() {
     { label: "Privacy", hasDropdown: false, link: "/privacy-policy" },
     { label: "FAQ's", hasDropdown: false, link: "/faqs" },
     { label: "Pricing", hasDropdown: false, link: "/pricing" },
-    // { label: "Blogs", hasDropdown: false, link: "/blog" },
+    { label: "Blogs", hasDropdown: false, link: "/blog" },
   ];
   const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
   const [isProfileModalOpen, setProfileModalOpen] = React.useState(false);
