@@ -9,7 +9,6 @@ import {
   IconButton,
   Stack,
   Button,
-  Grid,
 } from "@mui/material";
 import {
   Facebook,
@@ -242,31 +241,40 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
           <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
             Media Gallery
           </Typography>
-          <Grid container spacing={3}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "repeat(1, 1fr)",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(3, 1fr)",
+              },
+              gap: 3,
+            }}
+          >
             {blog.media.map((img, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Box
-                  sx={{
+              <Box
+                key={index}
+                sx={{
+                  width: "100%",
+                  height: 250,
+                  borderRadius: 3,
+                  overflow: "hidden",
+                  bgcolor: "#f5f5f5",
+                }}
+              >
+                <img
+                  src={img}
+                  alt={`Media ${index + 1}`}
+                  style={{
                     width: "100%",
-                    height: 250,
-                    borderRadius: 3,
-                    overflow: "hidden",
-                    bgcolor: "#f5f5f5",
+                    height: "100%",
+                    objectFit: "cover",
                   }}
-                >
-                  <img
-                    src={img}
-                    alt={`Media ${index + 1}`}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </Box>
-              </Grid>
+                />
+              </Box>
             ))}
-          </Grid>
+          </Box>
         </Container>
       )}
 
