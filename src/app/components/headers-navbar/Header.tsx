@@ -168,7 +168,7 @@ export default function Header() {
                     setAuthModalOpen={setAuthModalOpen}
                   />
 
-                  {!isAcountsPage && (
+                  {!isAcountsPage && !user && (
                     <Link href="/presentation/create" passHref>
                       <Button
                         variant="contained"
