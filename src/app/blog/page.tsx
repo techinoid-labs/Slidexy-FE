@@ -22,8 +22,9 @@ import {
   Twitter,
   Instagram,
 } from "@mui/icons-material";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useUser } from "../context/AuthContext";
+import { useSession } from "next-auth/react";
 import Header from "../components/headers-navbar/Header";
 import Footer from "../components/home/Footer";
 
@@ -34,54 +35,39 @@ interface Blog {
   coverImage?: string;
   media?: string[];
   category?: string;
+  tags?: string[];
   author?: { name?: string; _id?: string };
   createdAt?: string;
 }
 
-const categories = [
-  "All Templates",
-  "Educational",
-  "Project Proposal",
-  "Brand Awareness",
-  "Client Proposal",
-  "Financial Analysis",
-  "Business Report",
-];
 const darkBg = "rgba(26, 26, 26, 1)";
 const lightBg = "white";
 const textColor = "rgba(26, 26, 26, 1)";
 
-const tagTypes = [
-  { type: "Target Audience", value: "Gen Z & Millennials" },
-  { type: "Strategy", value: "Content Marketing Strategy" },
-  { type: "Category", value: "Creative Brand Awareness" },
-  { type: "Category", value: "Fun Brand Awareness Ideas" },
-  { type: "Strategy", value: "Content Marketing Game Plan" },
-  { type: "Target Audience", value: "Gen Z and Millennials" },
-];
-
 export default function BlogPage() {
-  // redirect("/");
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
   const router = useRouter();
   const { user } = useUser();
+  const { data: session } = useSession();
   const isAdmin = user?.admin || false;
 
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All Templates");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [showLoadMore, setShowLoadMore] = useState(false);
 
   useEffect(() => {
     fetchBlogs();
+    fetchCategories();
   }, []);
 
   useEffect(() => {
-    if (selectedCategory === "All Templates") {
+    if (selectedCategory === "All") {
       setFilteredBlogs(blogs);
     } else {
       setFilteredBlogs(
@@ -107,11 +93,23 @@ export default function BlogPage() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/blogs/categories/list`);
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch categories");
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this blog post?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = session?.user?.accessToken;
       const response = await fetch(`${API_BASE_URL}/api/blogs/${id}`, {
         method: "DELETE",
         headers: {
@@ -150,9 +148,10 @@ export default function BlogPage() {
     return content.length > 100 ? `${content.substring(0, 100)}...` : content;
   };
 
+  const allCategories = ["All", ...categories];
+
   return (
     <>
-      {/* <StepsHeader /> */}
       <Header />
       <Box
         sx={{
@@ -163,7 +162,6 @@ export default function BlogPage() {
         }}
       >
         <Container maxWidth="lg">
-          {/* Hero Section with Featured Blog */}
           <Box
             sx={{
               textAlign: "center",
@@ -245,7 +243,6 @@ export default function BlogPage() {
               }}
               onClick={() => router.push(`/blog/${filteredBlogs[0]._id}`)}
             >
-              {/* Top Image */}
               {filteredBlogs[0].coverImage && (
                 <Box
                   sx={{
@@ -266,9 +263,7 @@ export default function BlogPage() {
                 </Box>
               )}
 
-              {/* Content Section */}
               <Box sx={{ p: 3 }}>
-                {/* Category + Author + Date */}
                 <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                   {filteredBlogs[0].category && (
                     <Chip
@@ -290,11 +285,10 @@ export default function BlogPage() {
                   >
                     {formatDate(filteredBlogs[0].createdAt)}
                     {"     "}
-                    Slidexy • Content Writing Team
+                    {filteredBlogs[0].author?.name || 'Slidexy'} • Content Writing Team
                   </Typography>
                 </Box>
 
-                {/* Title */}
                 <Typography
                   variant="h5"
                   sx={{
@@ -308,7 +302,6 @@ export default function BlogPage() {
                   {filteredBlogs[0].title}
                 </Typography>
 
-                {/* Subtitle + Arrow */}
                 <Box
                   sx={{
                     display: "flex",
@@ -321,8 +314,7 @@ export default function BlogPage() {
                     color="text.secondary"
                     sx={{ fontSize: "0.95rem", flex: 1, pr: 2 }}
                   >
-                    Turn any thought into a polished, on-brand presentation —
-                    powered by AI, styled by designers.
+                    {getDescription(filteredBlogs[0].content)}
                   </Typography>
                   <IconButton sx={{ color: purpleColor }}>
                     <ChevronRight />
@@ -332,7 +324,6 @@ export default function BlogPage() {
             </Box>
           )}
 
-          {/* Recent News & Insights Section */}
           <Box sx={{ mb: 8 }}>
             <Typography
               variant="h2"
@@ -355,13 +346,13 @@ export default function BlogPage() {
                 direction="row"
                 spacing={2}
                 sx={{
-                  flexWrap: "nowrap", // keeps them in a single line
-                  overflowX: "auto", // scroll horizontally if needed
+                  flexWrap: "nowrap",
+                  overflowX: "auto",
                   justifyContent: "flex-start",
-                  "&::-webkit-scrollbar": { display: "none" }, // hide scrollbar (optional)
+                  "&::-webkit-scrollbar": { display: "none" },
                 }}
               >
-                {categories.map((category) => (
+                {allCategories.map((category) => (
                   <Chip
                     key={category}
                     label={category}
@@ -372,7 +363,7 @@ export default function BlogPage() {
                       px: 2,
                       py: 1,
                       borderRadius: "20px",
-                      flexShrink: 0, // prevents shrinking
+                      flexShrink: 0,
                       background:
                         selectedCategory === category ? darkBg : lightBg,
                       color:
@@ -385,7 +376,6 @@ export default function BlogPage() {
               </Stack>
             </Box>
 
-            {/* Cards Grid Section */}
             <Box sx={{ py: 6 }}>
               <Container maxWidth="lg">
                 {loading ? (
@@ -410,110 +400,104 @@ export default function BlogPage() {
                       gap: 3,
                     }}
                   >
-                    {filteredBlogs.slice(1, 7).map((blog, index) => {
-                      const currentIndex = index % tagTypes.length;
-                      const tags = tagTypes[currentIndex];
-                      return (
-                        <Box key={blog._id} sx={{ width: "100%" }}>
-                          <Box
-                            sx={{
-                              border: "1px solid #e0e0e0",
-                              borderRadius: 3,
-                              overflow: "hidden",
-                              backgroundColor: "white",
-                              transition: "all 0.3s ease",
-                              cursor: "pointer",
-                              "&:hover": {
-                                transform: "translateY(-4px)",
-                                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                              },
-                            }}
-                            onClick={() => router.push(`/blog/${blog._id}`)}
-                          >
-                            {/* Image Section */}
-                            {blog.coverImage ? (
-                              <Box sx={{ position: "relative", height: 200 }}>
-                                <img
-                                  src={blog.coverImage}
-                                  alt={blog.title}
-                                  style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                  }}
-                                />
-                              </Box>
-                            ) : (
+                    {filteredBlogs.slice(1, 7).map((blog) => (
+                      <Box key={blog._id} sx={{ width: "100%" }}>
+                        <Box
+                          sx={{
+                            border: "1px solid #e0e0e0",
+                            borderRadius: 3,
+                            overflow: "hidden",
+                            backgroundColor: "white",
+                            transition: "all 0.3s ease",
+                            cursor: "pointer",
+                            "&:hover": {
+                              transform: "translateY(-4px)",
+                              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                            },
+                          }}
+                          onClick={() => router.push(`/blog/${blog._id}`)}
+                        >
+                          {blog.coverImage ? (
+                            <Box sx={{ position: "relative", height: 200 }}>
+                              <img
+                                src={blog.coverImage}
+                                alt={blog.title}
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            </Box>
+                          ) : (
+                            <Box
+                              sx={{
+                                height: 280,
+                                bgcolor: blackBg,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "white",
+                              }}
+                            >
+                              <Typography variant="h6">No Image</Typography>
+                            </Box>
+                          )}
+
+                          <Box sx={{ p: 3, bgcolor: "white" }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                mb: 1.5,
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: purpleColor,
+                                  fontWeight: 500,
+                                  fontSize: "0.875rem",
+                                }}
+                              >
+                                {blog.category || "General"}
+                              </Typography>
                               <Box
                                 sx={{
-                                  height: 280,
-                                  bgcolor: blackBg,
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: "50%",
+                                  bgcolor: purpleLight,
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
-                                  color: "white",
                                 }}
                               >
-                                <Typography variant="h6">No Image</Typography>
-                              </Box>
-                            )}
-
-                            {/* Tags Section - Bottom Card */}
-                            <Box sx={{ p: 3, bgcolor: "white" }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  mb: 1.5,
-                                }}
-                              >
-                                <Typography
-                                  variant="body2"
+                                <ChevronRight
                                   sx={{
                                     color: purpleColor,
-                                    fontWeight: 500,
-                                    fontSize: "0.875rem",
+                                    fontSize: 20,
+                                    transform: "rotate(-45deg)",
                                   }}
-                                >
-                                  {tags.type}
-                                </Typography>
-                                <Box
-                                  sx={{
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: "50%",
-                                    bgcolor: purpleLight,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <ChevronRight
-                                    sx={{
-                                      color: purpleColor,
-                                      fontSize: 20,
-                                      transform: "rotate(-45deg)",
-                                    }}
-                                  />
-                                </Box>
+                                />
                               </Box>
-                              <Typography
-                                variant="h6"
-                                sx={{
-                                  color: textColor,
-                                  fontWeight: 600,
-                                  fontSize: "1.125rem",
-                                  lineHeight: 1.3,
-                                }}
-                              >
-                                {tags.value}
-                              </Typography>
                             </Box>
+                            <Typography
+                              variant="h6"
+                              sx={{
+                                color: textColor,
+                                fontWeight: 600,
+                                fontSize: "1.125rem",
+                                lineHeight: 1.3,
+                              }}
+                            >
+                              {blog.title}
+                            </Typography>
                           </Box>
                         </Box>
-                      );
-                    })}
+                      </Box>
+                    ))}
                   </Box>
                 ) : null}
 
@@ -544,7 +528,6 @@ export default function BlogPage() {
             </Box>
           </Box>
 
-          {/* Related Blogs Section on Light Gray */}
           {filteredBlogs.length > 7 && (
             <Box sx={{ mb: 8, backgroundColor: lightGray, py: 6 }}>
               <Container maxWidth="lg">
@@ -570,7 +553,6 @@ export default function BlogPage() {
             </Box>
           )}
 
-          {/* Waitlist Section */}
           <Box
             sx={{
               background:
@@ -621,7 +603,6 @@ export default function BlogPage() {
                   textTransform: "none",
                   fontWeight: 600,
                   whiteSpace: "nowrap",
-
                   mt: { xs: 0, md: -10 },
                 }}
               >
@@ -630,7 +611,6 @@ export default function BlogPage() {
             </Link>
           </Box>
 
-          {/* Categories/Tags Section */}
           <Box sx={{ mb: 8, textAlign: "center" }}>
             <Container maxWidth="lg">
               <Stack
@@ -639,7 +619,7 @@ export default function BlogPage() {
                 justifyContent="center"
                 flexWrap="wrap"
               >
-                {categories.slice(1).map((category) => (
+                {categories.map((category) => (
                   <Chip
                     key={category}
                     label={category}
@@ -656,9 +636,7 @@ export default function BlogPage() {
           </Box>
         </Container>
 
-        {/* Footer */}
         <Footer />
-        {/* SnackBar */}
         <Snackbar
           open={!!successMessage}
           autoHideDuration={6000}

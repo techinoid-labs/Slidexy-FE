@@ -28,9 +28,12 @@ import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import CodeIcon from "@mui/icons-material/Code";
 import LinkIcon from "@mui/icons-material/Link";
+import TitleIcon from "@mui/icons-material/Title";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
+import ImageExtension from '@tiptap/extension-image';
 import { useSession } from "next-auth/react";
 
 interface FormData {
@@ -49,6 +52,7 @@ interface Blog {
   coverImage?: string;
   media?: string[];
   category?: string;
+  tags?: string[];
 }
 
 interface BlogPostFormProps {
@@ -74,7 +78,7 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
         category: initialData?.category || "",
         coverImage: initialData?.coverImage || "",
         media: initialData?.media || [],
-        tags: [],
+        tags: initialData?.tags || [],
     });
     const { data: session } = useSession();
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
@@ -89,11 +93,16 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
 
     const coverImageInputRef = useRef<HTMLInputElement>(null);
     const mediaInputRef = useRef<HTMLInputElement>(null);
+    const inlineImageInputRef = useRef<HTMLInputElement>(null);
 
     const editor = useEditor({
         extensions: [
             StarterKit,
             Underline,
+            ImageExtension.configure({
+                inline: true,
+                allowBase64: true,
+            }),
         ],
         content: formData.content,
         onUpdate: ({ editor }) => {
@@ -107,7 +116,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
         immediatelyRender: false,
     });
 
-    // Update editor content when initialData changes
     useEffect(() => {
         if (editor && initialData?.content) {
             editor.commands.setContent(initialData.content);
@@ -161,6 +169,33 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
         setMediaFiles((prev) => [...prev, ...validFiles]);
     };
 
+    const handleInlineImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+            setError("Please upload an image file");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            setError("Image size should be less than 5MB");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64Image = reader.result as string;
+            editor?.chain().focus().setImage({ src: base64Image, alt: file.name }).run();
+        };
+        reader.readAsDataURL(file);
+
+        // Reset input
+        if (inlineImageInputRef.current) {
+            inlineImageInputRef.current.value = "";
+        }
+    };
+
     const handleRemoveMedia = (index: number) => {
         setMediaFiles((prev) => prev.filter((_, i) => i !== index));
     };
@@ -189,6 +224,9 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
     const addBold = () => editor?.chain().focus().toggleBold().run();
     const addItalic = () => editor?.chain().focus().toggleItalic().run();
     const addUnderline = () => editor?.chain().focus().toggleUnderline().run();
+    const addHeading1 = () => editor?.chain().focus().toggleHeading({ level: 1 }).run();
+    const addHeading2 = () => editor?.chain().focus().toggleHeading({ level: 2 }).run();
+    const addHeading3 = () => editor?.chain().focus().toggleHeading({ level: 3 }).run();
     const addBulletList = () => editor?.chain().focus().toggleBulletList().run();
     const addOrderedList = () => editor?.chain().focus().toggleOrderedList().run();
     const addCodeBlock = () => editor?.chain().focus().toggleCodeBlock().run();
@@ -196,6 +234,12 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
         const url = window.prompt('URL');
         if (url) {
             editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+        }
+    };
+    const addImageUrl = () => {
+        const url = window.prompt('Image URL');
+        if (url) {
+            editor?.chain().focus().setImage({ src: url }).run();
         }
     };
 
@@ -242,13 +286,10 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                 formDataObj.append("tags", tag);
             });
 
-            // If edit mode, pass the FormData directly to parent
             if (isEdit) {
                 await onSubmit(formDataObj);
                 setSuccess(true);
             } else {
-                // Create mode - make API call here
-                // Get token from either session or localStorage
                 const token = session?.user?.accessToken ;
                 
                 const response = await fetch(`${API_BASE_URL}/api/blogs`, {
@@ -267,7 +308,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                 const data = await response.json();
                 setSuccess(true);
 
-                // Reset form
                 setFormData({ title: "", content: "", category: "", coverImage: "", media: [], tags: [] });
                 setCoverImageFile(null);
                 setCoverImagePreview("");
@@ -293,19 +333,17 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
 
     const handleReset = () => {
         if (isEdit && initialData) {
-            // Reset to initial data in edit mode
             setFormData({
                 title: initialData.title,
                 content: initialData.content,
                 category: initialData.category || "",
                 coverImage: initialData.coverImage || "",
                 media: initialData.media || [],
-                tags: [],
+                tags: initialData.tags || [],
             });
             setCoverImagePreview(initialData.coverImage || "");
             editor?.commands.setContent(initialData.content);
         } else {
-            // Clear everything in create mode
             setFormData({
                 title: "",
                 content: "",
@@ -419,6 +457,23 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                                         <FormatUnderlinedIcon fontSize="small" />
                                     </IconButton>
                                     <Divider orientation="vertical" flexItem sx={{ mx: 0.5, my: 0.5 }} />
+                                    <IconButton size="small" onClick={addHeading1} title="Heading 1" disabled={!editor || loading}>
+                                        <TitleIcon fontSize="small" />
+                                    </IconButton>
+                                    <IconButton size="small" onClick={addHeading2} title="Heading 2" disabled={!editor || loading}>
+                                        <TitleIcon fontSize="small" sx={{ fontSize: '1rem' }} />
+                                    </IconButton>
+                                    <IconButton size="small" onClick={addHeading3} title="Heading 3" disabled={!editor || loading}>
+                                        <TitleIcon fontSize="small" sx={{ fontSize: '0.875rem' }} />
+                                    </IconButton>
+                                    <Divider orientation="vertical" flexItem sx={{ mx: 0.5, my: 0.5 }} />
+                                    <IconButton size="small" onClick={() => inlineImageInputRef.current?.click()} title="Upload Image" disabled={!editor || loading}>
+                                        <PhotoCameraIcon fontSize="small" />
+                                    </IconButton>
+                                    <IconButton size="small" onClick={addImageUrl} title="Insert Image URL" disabled={!editor || loading}>
+                                        <ImageIcon fontSize="small" />
+                                    </IconButton>
+                                    <Divider orientation="vertical" flexItem sx={{ mx: 0.5, my: 0.5 }} />
                                     <IconButton size="small" onClick={addBulletList} title="Bullet List" disabled={!editor || loading}>
                                         <FormatListBulletedIcon fontSize="small" />
                                     </IconButton>
@@ -435,12 +490,20 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                                 </Stack>
                             </Box>
 
+                            <input
+                                ref={inlineImageInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleInlineImageUpload}
+                                style={{ display: "none" }}
+                            />
+
                             <Box sx={{ minHeight: '500px', p: 3 }}>
                                 <EditorContent editor={editor} />
                             </Box>
                         </Paper>
                         <Typography variant="caption" color="text.secondary">
-                            Rich text editor with formatting support
+                            Rich text editor with formatting support. Use the heading buttons for H1, H2, H3. Multiple paragraphs are supported by pressing Enter. Use the upload button to insert local images (as base64) or URL for remote images.
                         </Typography>
 
                         <Box sx={{ mt: 4 }}>
@@ -535,7 +598,7 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
 
                         <Box sx={{ mt: 4 }}>
                             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "text.primary" }}>
-                                Additional Media
+                                Additional Media (Gallery)
                             </Typography>
                             <Paper elevation={0} sx={{ p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2, height: "fit-content" }}>
                                 <input
@@ -575,7 +638,7 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onError, initialD
                                     </Stack>
                                 )}
                                 <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
-                                    Up to 5 images, max 5MB each
+                                    Up to 10 images, max 5MB each. These will appear in a gallery below the content.
                                 </Typography>
                             </Paper>
                         </Box>

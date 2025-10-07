@@ -1,6 +1,6 @@
 // src/app/blog/create/page.tsx
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import StepsHeader from "../../components/headers-navbar/StepsHeader";
 import BlogPostForm from "../../components/blogs/BlogPostForm";
 import { Container, Alert, Snackbar } from "@mui/material";
@@ -18,11 +18,12 @@ export default function CreateBlogPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isAdmin) {
       router.push("/blog");
     }
   }, [isAdmin, router]);
+
   const handleSubmit = async (data: any) => {
     setSuccessMessage("Blog created successfully!");
     setTimeout(() => {
@@ -30,7 +31,6 @@ export default function CreateBlogPage() {
     }, 1500);
   };
 
-  // Add error handler
   const handleError = (errorMessage: string) => {
     setError(errorMessage);
   };
@@ -40,7 +40,7 @@ export default function CreateBlogPage() {
   return (
     <>
       <StepsHeader />
-      {/* <Header /> */}
+      <Header />
       <Container maxWidth={false} disableGutters sx={{ py: 0 }}>
         <BlogPostForm onSubmit={handleSubmit} onError={handleError} />
       </Container>

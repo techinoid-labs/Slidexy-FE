@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Stage, Layer } from "react-konva";
 import { Html } from "react-konva-utils";
 import DOMPurify from "dompurify";
@@ -7,22 +7,17 @@ import { useTemplateSlides } from "../../context/TemplateSlidesContext";
 import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
 import StepIndicator from "@/app/components/shared/StepsIndicatorInfographics";
 import Box from "@mui/material/Box";
-import { Button } from "@mui/material";
-import { toPng, toJpeg } from "html-to-image";
-import { useRef } from "react";
-import RecordRTC from "recordrtc";
-import domtoimage from 'dom-to-image';
+import { Button, Chip, Tooltip } from "@mui/material";
 import html2canvas from "html2canvas";
 import DownloadIcon from "@mui/icons-material/Download";
 import { useParams } from "next/navigation";
-import { Alert, useMediaQuery, useTheme } from "@mui/material";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile } from "@ffmpeg/util";
-const ffmpeg = new FFmpeg();
+import { useMediaQuery, useTheme } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+
 export default function InfographicPage() {
-  const [converting, setConverting] = useState(false);
   const stageRef = useRef<any>(null);
-  const infographicRef = useRef<HTMLDivElement>(null);
+  const infographicRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const { id } = useParams();
   const { infographicId, setInfographicId } = useTemplateSlides();
   const [loading, setLoading] = useState(true);
@@ -30,9 +25,65 @@ export default function InfographicPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const canvas = stageRef.current?.content?.querySelector("canvas") as HTMLCanvasElement;
-  const stageWidth = infographicRef.current?.offsetWidth || 1200;
-  const stageHeight = infographicRef.current?.offsetHeight || 600;
+
+  // Base dimensions for infographic
+  const BASE_WIDTH = 1200;
+  const BASE_HEIGHT_LANDSCAPE = 600;
+  const BASE_HEIGHT_PORTRAIT = 600;
+
+  const [scale, setScale] = useState(1);
+  const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
+  const [stageWidth, setStageWidth] = useState(BASE_WIDTH);
+  const [stageHeight, setStageHeight] = useState(BASE_HEIGHT_LANDSCAPE);
+
+  // Detect orientation
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isLandscape = window.innerWidth > window.innerHeight;
+      setOrientation(isLandscape ? "landscape" : "portrait");
+    };
+
+    checkOrientation();
+    window.addEventListener("resize", checkOrientation);
+    window.addEventListener("orientationchange", checkOrientation);
+
+    return () => {
+      window.removeEventListener("resize", checkOrientation);
+      window.removeEventListener("orientationchange", checkOrientation);
+    };
+  }, []);
+
+  // Update stage dimensions based on orientation
+  useEffect(() => {
+    if (orientation === "landscape") {
+      setStageWidth(BASE_WIDTH);
+      setStageHeight(BASE_HEIGHT_LANDSCAPE);
+    } else {
+      setStageWidth(BASE_WIDTH);
+      setStageHeight(BASE_HEIGHT_PORTRAIT);
+    }
+  }, [orientation]);
+
+  // Handle responsive scaling
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobileView = window.innerWidth < 600;
+      if (isMobileView) {
+        const mobileWidth = window.innerWidth - 32;
+        setScale(mobileWidth / stageWidth);
+      } else if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const calculatedScale = Math.min(containerWidth / stageWidth, 1);
+        setScale(calculatedScale);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [stageWidth]);
+
+  // Fetch infographic data
   useEffect(() => {
     if (!id) return;
     const fetchData = async () => {
@@ -53,71 +104,48 @@ export default function InfographicPage() {
     fetchData();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen text-gray-600">
-        Loading infographic...
-      </div>
-    );
-  }
+  const captureStageWithHtml = async (
+    stageRef: { current: { toCanvas: () => HTMLCanvasElement } } | null,
+    infographicRef: HTMLDivElement | null
+  ): Promise<HTMLCanvasElement | null> => {
+    if (!stageRef?.current || !infographicRef) return null;
 
-  if (!id) {
-    return (
-      <div className="flex justify-center items-center min-h-screen text-red-500">
-        Failed to load infographic.
-      </div>
-    );
-  }
- const captureStageWithHtml = async (
-  stageRef: { current: { toCanvas: () => HTMLCanvasElement } } | null,
-  infographicRef: HTMLDivElement | null
-): Promise<HTMLCanvasElement | null> => {
-  if (!stageRef?.current || !infographicRef) return null;
+    const stageCanvas = stageRef.current.toCanvas();
+    const canvasWidth = stageCanvas.width;
+    const canvasHeight = stageCanvas.height;
 
-  // Get the canvas from the stage
-  const stageCanvas = stageRef.current.toCanvas();
-  const stageWidth = stageCanvas.width;
-  const stageHeight = stageCanvas.height;
+    const htmlOverlay = infographicRef.querySelector("div[aria-label^='Infographic']");
+    if (!htmlOverlay || !(htmlOverlay instanceof HTMLElement)) {
+      return stageCanvas;
+    }
 
-  // Find the HTML overlay element
-  const htmlOverlay = infographicRef.querySelector("div[aria-label^='Infographic']");
-  if (!htmlOverlay || !(htmlOverlay instanceof HTMLElement)) {
-    // If not found or not an HTMLElement, just return the stage canvas
-    return stageCanvas;
-  }
+    const overlayRect = htmlOverlay.getBoundingClientRect();
+    const parentRect = infographicRef.getBoundingClientRect();
+    const offsetX = overlayRect.left - parentRect.left;
+    const offsetY = overlayRect.top - parentRect.top;
 
-  // Calculate offsets
-  const overlayRect = htmlOverlay.getBoundingClientRect();
-  const parentRect = infographicRef.getBoundingClientRect();
-  const offsetX = overlayRect.left - parentRect.left;
-  const offsetY = overlayRect.top - parentRect.top;
+    const htmlCanvas = await html2canvas(htmlOverlay, {
+      backgroundColor: null,
+      scale: window.devicePixelRatio || 2,
+      useCORS: true,
+      width: canvasWidth,
+      height: canvasHeight,
+      x: offsetX,
+      y: offsetY,
+    });
 
-  // Render HTML overlay to canvas
-  const htmlCanvas = await html2canvas(htmlOverlay, {
-    backgroundColor: null,
-    scale: window.devicePixelRatio || 2,
-    useCORS: true,
-    width: stageWidth,
-    height: stageHeight,
-    x: offsetX,
-    y: offsetY,
-  });
+    const finalCanvas = document.createElement("canvas");
+    finalCanvas.width = canvasWidth;
+    finalCanvas.height = canvasHeight;
 
-  // Create final canvas and draw both layers
-  const finalCanvas = document.createElement("canvas");
-  finalCanvas.width = stageWidth;
-  finalCanvas.height = stageHeight;
+    const ctx = finalCanvas.getContext("2d");
+    if (!ctx) return null;
 
-  const ctx = finalCanvas.getContext("2d");
-  if (!ctx) return null;
+    ctx.drawImage(stageCanvas, 0, 0);
+    ctx.drawImage(htmlCanvas, 0, 0, canvasWidth, canvasHeight);
 
-  ctx.drawImage(stageCanvas, 0, 0);
-  ctx.drawImage(htmlCanvas, 0, 0, stageWidth, stageHeight);
-
-  return finalCanvas;
-};
-
-
+    return finalCanvas;
+  };
 
   const handleDownload = async (format: "png" | "jpg") => {
     if (!infographicRef.current || !stageRef.current) return;
@@ -128,95 +156,175 @@ export default function InfographicPage() {
 
       const link = document.createElement("a");
       link.download = `${infographicData.infographic.title}.${format}`;
-      link.href = format === "png"
-        ? canvas.toDataURL("image/png")
-        : canvas.toDataURL("image/jpeg", 1);
+      link.href =
+        format === "png" ? canvas.toDataURL("image/png") : canvas.toDataURL("image/jpeg", 1);
       link.click();
     } catch (error) {
       console.error("Download failed:", error);
     }
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <Box sx={{ textAlign: "center" }}>
+          <div className="text-gray-600 text-lg">Loading infographic...</div>
+        </Box>
+      </Box>
+    );
+  }
 
+  if (!id || !infographicData) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <div className="text-red-500 text-lg">Failed to load infographic.</div>
+      </Box>
+    );
+  }
 
   const sanitizedHtml = DOMPurify.sanitize(infographicData.infographic.html);
+
+  // Calculate actual display dimensions
+  const displayWidth = stageWidth * scale;
+  const displayHeight = stageHeight * scale;
+
+  // Format generated date
+  const formattedGeneratedDate = (() => {
+    const date = new Date(infographicData.meta?.generatedAt);
+    return isNaN(date.getTime())
+      ? new Date().toLocaleString()
+      : date.toLocaleString();
+  })();
 
   return (
     <Box sx={{ backgroundColor: "#FFFFFF", minHeight: "100vh" }}>
       <StepsHeader />
-      {/* <Alert
-        severity="info"
-        className="flex items-center w-full justify-center"
-        sx={{
-          borderRadius: 0,
-          textAlign: "center",
-          fontSize: { xs: "12px", md: "14px" },
-          py: { xs: 0.5, md: 1 },
-          backgroundColor: "#F0F4FF",
-          color: "#333",
-          mt: isMobile ? 8 : 0,
-        }}
-      >
-        This feature is still under development. We’re actively improving it to
-        provide more accurate and reliable output.
-      </Alert> */}
-      <Box sx={{ mt: 4 }}>
+
+      <Box sx={{ mt: { xs: 10, md: 4 } }}>
         <StepIndicator activeStep={1} />
       </Box>
 
-      <div className="flex flex-col items-center min-h-screen bg-white p-20 ">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          minHeight: "100vh",
+          backgroundColor: "white",
+          px: { xs: 2, sm: 3, md: 4, lg: 6 },
+          py: { xs: 4, md: 8 },
+        }}
+      >
         {/* Header Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">
+        <Box sx={{ textAlign: "center", mb: { xs: 4, md: 8 }, maxWidth: "900px" }}>
+          <h1
+            style={{
+              fontSize: isMobile ? "2rem" : "3rem",
+              fontWeight: 800,
+              color: "#111827",
+              marginBottom: "0.75rem",
+            }}
+          >
             {infographicData.infographic.title}
           </h1>
-          <p className="text-lg text-gray-600 mt-3 italic">
+          <p
+            style={{
+              fontSize: isMobile ? "1rem" : "1.125rem",
+              color: "#6B7280",
+              fontStyle: "italic",
+            }}
+          >
             {infographicData.infographic.subtitle}
           </p>
-        </div>
-        {/* <div className="mb-100 px-6 py-10 bg-white border border-purple-200 rounded-xl shadow-md text-purple-700 font-semibold text-base">
-          Infographic Type: <span className="ml-2 text-purple-900">{infographicData.infographic.type}</span>
-        </div> */}
-        <div className="mt-10 text-center mb-6">
-        </div>
+        </Box>
 
-        {/* Infographic Renderer */}
-        <div
-          ref={infographicRef}
-          className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-[1200px] w-full border border-gray-100 mt-100 p-6 space-y-60"
+        {/* Infographic Container */}
+        <Box
+          ref={containerRef}
+          sx={{
+            width: "100%",
+            maxWidth: `${stageWidth}px`,
+            mx: "auto",
+            mb: 4,
+          }}
         >
-          <Stage ref={stageRef} width={stageWidth} height={stageHeight}>
-            <Layer>
-              <Html
-                divProps={{
-                  style: {
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: "1200px",
-                    height: "600px",
-                    maxWidth: "100%",
-                    maxHeight: "600px",
-                    boxSizing: "border-box",
-                    overflow: "hidden",
-                  },
-                }}
-              >
-                <div
-                  dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-                  aria-label={`Infographic: ${infographicData.infographic.title}`}
-                />
-              </Html>
-            </Layer>
-          </Stage>
-        </div>
-        <Box sx={{ mt: 4, display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+          <Box
+            ref={infographicRef}
+            sx={{
+              border: "1px solid #E5E7EB",
+              borderRadius: 2,
+              backgroundColor: "#ffffff",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+              overflow: "hidden",
+              width: `${displayWidth}px`,
+              height: `${displayHeight}px`,
+              minWidth: 0,
+              transition: "all 0.3s ease",
+              mx: "auto",
+            }}
+          >
+            <Stage
+              ref={stageRef}
+              width={stageWidth}
+              height={stageHeight}
+              scaleX={scale}
+              scaleY={scale}
+              style={{ 
+                width: "100%", 
+                height: "100%",
+                display: "block"
+              }}
+            >
+              <Layer>
+                <Html
+                  divProps={{
+                    style: {
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: `${stageWidth}px`,
+                      height: `${stageHeight}px`,
+                      overflow: "hidden",
+                      pointerEvents: "none",
+                    },
+                  }}
+                >
+                  <div
+                    dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+                    aria-label={`Infographic: ${infographicData.infographic.title}`}
+                    style={{
+                      width: `${stageWidth}px`,
+                      height: `${stageHeight}px`,
+                      transformOrigin: "top left",
+                      pointerEvents: "auto",
+                    }}
+                  />
+                </Html>
+              </Layer>
+            </Stage>
+          </Box>
+        </Box>
+
+        {/* Download Buttons */}
+        <Box
+          sx={{
+            mt: 4,
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
           <Button
             variant="contained"
             color="primary"
             startIcon={<DownloadIcon />}
             onClick={() => handleDownload("png")}
+            sx={{
+              px: { xs: 2, md: 3 },
+              py: 1.5,
+              fontSize: { xs: "0.875rem", md: "1rem" },
+            }}
           >
             Download PNG
           </Button>
@@ -226,138 +334,131 @@ export default function InfographicPage() {
             color="secondary"
             startIcon={<DownloadIcon />}
             onClick={() => handleDownload("jpg")}
+            sx={{
+              px: { xs: 2, md: 3 },
+              py: 1.5,
+              fontSize: { xs: "0.875rem", md: "1rem" },
+            }}
           >
             Download JPG
           </Button>
         </Box>
 
-        {/* Add progress indicator */}
-        {converting && (
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <div style={{
-              display: 'inline-block',
-              padding: '8px 16px',
-              backgroundColor: '#e3f2fd',
-              borderRadius: '8px',
-              color: '#1976d2',
-              fontWeight: 'bold'
-            }}>
-              🎬 Recording in progress... Please keep the infographic visible!
-            </div>
-          </Box>
-        )}
-
-        {/* Extra Metadata Row */}
+        {/* Enhanced Metadata Section */}
         <Box
           sx={{
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "center",
-            gap: 3,
-            mt: 6,
-            mb: 10,
+            gap: { xs: 1.5, md: 2.5 },
+            mt: { xs: 4, md: 6 },
+            mb: { xs: 6, md: 10 },
+            alignItems: "center",
           }}
         >
-          {/* Infographic Type */}
-          <Box
-            component="button"
-            onClick={() => alert(`Infographic Type: ${infographicData.infographic.type}`)}
-            sx={{
-              px: 3,
-              py: 2,
-              bgcolor: "white",
-              border: "2px solid rgba(142, 45, 226, 1)",
-              borderRadius: "16px",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-              fontWeight: 600,
-              fontSize: "1rem",
-              color: "rgba(142, 45, 226, 1)",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              "&:hover": {
-                backgroundColor: "rgba(142, 45, 226, 0.05)",
-                transform: "translateY(-2px)",
-              },
-            }}
+          <Tooltip
+            title={`Infographic Type: ${infographicData.infographic.type}`}
+            arrow
+            placement="top"
           >
-            <Box component="span" sx={{ color: "grey.600", fontWeight: 600 }}>
-              Type:
-            </Box>{" "}
-            <Box component="span" sx={{ ml: 1, fontWeight: 700, color: "rgba(142, 45, 226, 1)" }}>
-              {infographicData.infographic.type}
-            </Box>
-          </Box>
+            <Chip
+              icon={<InfoOutlinedIcon fontSize="small" />}
+              label={
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <span style={{ fontWeight: 500, fontSize: "0.875rem" }}>Type</span>
+                  <span style={{ fontWeight: 700, fontSize: "0.875rem" }}>
+                    {infographicData.infographic.type}
+                  </span>
+                </Box>
+              }
+              sx={{
+                backgroundColor: "rgba(142, 45, 226, 0.08)",
+                border: "1px solid rgba(142, 45, 226, 0.2)",
+                color: "rgba(142, 45, 226, 1)",
+                fontWeight: 600,
+                height: "auto",
+                py: 0.75,
+                px: { xs: 1.5, md: 2 },
+                "& .MuiChip-icon": {
+                  color: "rgba(142, 45, 226, 0.6)",
+                },
+                "&:hover": {
+                  backgroundColor: "rgba(142, 45, 226, 0.12)",
+                  boxShadow: "0 2px 8px rgba(142, 45, 226, 0.15)",
+                },
+              }}
+            />
+          </Tooltip>
 
-          {/* Source */}
-          <Box
-            component="button"
-            onClick={() => alert("Source: Slidexy Generated")}
-            sx={{
-              px: 3,
-              py: 2,
-              bgcolor: "white",
-              border: "2px solid rgba(142, 45, 226, 1)",
-              borderRadius: "16px",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-              fontWeight: 600,
-              fontSize: "1rem",
-              color: "rgba(142, 45, 226, 1)",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              "&:hover": {
-                backgroundColor: "rgba(142, 45, 226, 0.05)",
-                transform: "translateY(-2px)",
-              },
-            }}
+          <Tooltip
+            title="Source: Slidexy Generated"
+            arrow
+            placement="top"
           >
-            <Box component="span" sx={{ color: "grey.600", fontWeight: 600 }}>
-              Source:
-            </Box>{" "}
-            <Box component="span" sx={{ ml: 1, fontWeight: 700, color: "rgba(142, 45, 226, 1)" }}>
-              Slidexy Generated
-            </Box>
-          </Box>
+            <Chip
+              icon={<InfoOutlinedIcon fontSize="small" />}
+              label={
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <span style={{ fontWeight: 500, fontSize: "0.875rem" }}>Source</span>
+                  <span style={{ fontWeight: 700, fontSize: "0.875rem" }}>
+                    Slidexy Generated
+                  </span>
+                </Box>
+              }
+              sx={{
+                backgroundColor: "rgba(142, 45, 226, 0.08)",
+                border: "1px solid rgba(142, 45, 226, 0.2)",
+                color: "rgba(142, 45, 226, 1)",
+                fontWeight: 600,
+                height: "auto",
+                py: 0.75,
+                px: { xs: 1.5, md: 2 },
+                "& .MuiChip-icon": {
+                  color: "rgba(142, 45, 226, 0.6)",
+                },
+                "&:hover": {
+                  backgroundColor: "rgba(142, 45, 226, 0.12)",
+                  boxShadow: "0 2px 8px rgba(142, 45, 226, 0.15)",
+                },
+              }}
+            />
+          </Tooltip>
 
-          {/* Generated Date */}
-          <Box
-            component="button"
-            onClick={() => alert("Generated date clicked")}
-            sx={{
-              px: 3,
-              py: 2,
-              bgcolor: "white",
-              border: "2px solid rgba(142, 45, 226, 1)",
-              borderRadius: "16px",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-              fontWeight: 600,
-              fontSize: "1rem",
-              color: "rgba(142, 45, 226, 1)",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              "&:hover": {
-                backgroundColor: "rgba(142, 45, 226, 0.05)",
-                transform: "translateY(-2px)",
-              },
-            }}
+          <Tooltip
+            title={`Generated: ${formattedGeneratedDate}`}
+            arrow
+            placement="top"
           >
-            <Box component="span" sx={{ color: "grey.600", fontWeight: 600 }}>
-              Generated:
-            </Box>{" "}
-            <Box component="span" sx={{ ml: 1, fontWeight: 700, color: "rgba(142, 45, 226, 1)" }}>
-              {(() => {
-                const date = new Date(infographicData.meta?.generatedAt);
-                return isNaN(date.getTime())
-                  ? new Date().toLocaleString()
-                  : date.toLocaleString();
-              })()}
-            </Box>
-          </Box>
+            <Chip
+              icon={<InfoOutlinedIcon fontSize="small" />}
+              label={
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <span style={{ fontWeight: 500, fontSize: "0.875rem" }}>Generated</span>
+                  <span style={{ fontWeight: 700, fontSize: "0.875rem" }}>
+                    {formattedGeneratedDate}
+                  </span>
+                </Box>
+              }
+              sx={{
+                backgroundColor: "rgba(142, 45, 226, 0.08)",
+                border: "1px solid rgba(142, 45, 226, 0.2)",
+                color: "rgba(142, 45, 226, 1)",
+                fontWeight: 600,
+                height: "auto",
+                py: 0.75,
+                px: { xs: 1.5, md: 2 },
+                "& .MuiChip-icon": {
+                  color: "rgba(142, 45, 226, 0.6)",
+                },
+                "&:hover": {
+                  backgroundColor: "rgba(142, 45, 226, 0.12)",
+                  boxShadow: "0 2px 8px rgba(142, 45, 226, 0.15)",
+                },
+              }}
+            />
+          </Tooltip>
         </Box>
-
-
-
-
-      </div>
+      </Box>
     </Box>
   );
 }

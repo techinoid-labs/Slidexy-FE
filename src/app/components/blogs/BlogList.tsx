@@ -12,6 +12,7 @@ import {
   MenuItem,
   Container,
   Link,
+  Stack,
 } from "@mui/material";
 import {
   MoreVert as MoreVertIcon,
@@ -27,6 +28,7 @@ interface Blog {
   content: string;
   coverImage?: string;
   category?: string;
+  tags?: string[];
   author?: { name?: string; _id?: string };
   createdAt?: string;
 }
@@ -250,6 +252,25 @@ const BlogList: React.FC<BlogListProps> = ({
                       borderColor: chipBorder,
                     }}
                   />
+                )}
+
+                {blog.tags && blog.tags.length > 0 && (
+                  <Stack direction="row" spacing={1} sx={{ mb: 1 }} flexWrap="wrap">
+                    {blog.tags.slice(0, 2).map((tag) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          bgcolor: "transparent",
+                          color: chipColor,
+                          borderColor: chipBorder,
+                          fontSize: "0.7rem",
+                        }}
+                      />
+                    ))}
+                  </Stack>
                 )}
 
                 <Typography

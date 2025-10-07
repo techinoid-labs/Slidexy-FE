@@ -22,6 +22,8 @@ interface Blog {
   coverImage?: string;
   media?: string[];
   category?: string;
+  tags?: string[];
+  author?: { name?: string; _id?: string };
 }
 
 const API_BASE_URL =
@@ -33,7 +35,7 @@ export default function EditBlogPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
-  const { data: session } = useSession(); // Add this for token
+  const { data: session } = useSession();
   const isAdmin = user?.admin || false;
 
   const [blog, setBlog] = useState<Blog | null>(null);
@@ -66,11 +68,10 @@ export default function EditBlogPage() {
   };
 
   const handleSubmit = async (formData: FormData) => {
-    // Get token like in BlogPostForm
     const token = session?.user?.accessToken;
     if (!token) {
       setError("Authentication required. Please log in again.");
-      router.push("/login"); // Adjust to your login route
+      router.push("/login");
       return;
     }
 
@@ -107,7 +108,7 @@ export default function EditBlogPage() {
   return (
     <>
       <StepsHeader />
-      {/* <Header /> */}
+      <Header />
       <Container maxWidth="md" sx={{ py: 4 }}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
