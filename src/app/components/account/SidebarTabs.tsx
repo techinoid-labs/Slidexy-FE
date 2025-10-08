@@ -2,13 +2,14 @@
 import React from "react";
 import {
   Box,
+  Divider,
   List,
   ListItemButton,
   ListItemText,
   Typography,
 } from "@mui/material";
 
-export type TabKey = "subscriptions" | "profile" | "billing";
+export type TabKey = "account" | "subscriptions" | "profile" | "billing";
 
 interface SidebarTabsProps {
   selected: TabKey;
@@ -17,6 +18,7 @@ interface SidebarTabsProps {
 
 const SidebarTabs: React.FC<SidebarTabsProps> = ({ selected, onSelect }) => {
   const tabs: { key: TabKey; label: string }[] = [
+    { key: "account", label: "Account Details" },
     { key: "subscriptions", label: "Subscriptions" },
   ];
 
@@ -24,6 +26,7 @@ const SidebarTabs: React.FC<SidebarTabsProps> = ({ selected, onSelect }) => {
     <Box
       sx={{
         width: 260,
+        minHeight: "86vh",
         flexShrink: 0,
         bgcolor: "white",
         borderRight: "1px solid #eee",
@@ -35,6 +38,8 @@ const SidebarTabs: React.FC<SidebarTabsProps> = ({ selected, onSelect }) => {
           Account Settings
         </Typography>
       </Box>
+
+      <Divider sx={{ mb: 2 }} />
 
       {/* Tabs */}
       <Box sx={{ px: 2 }}>

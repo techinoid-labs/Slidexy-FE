@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { useUser } from "@/app/context/AuthContext";
+import { CircularProgress } from "@mui/material";
 
 const FE_URL = process.env.NEXT_PUBLIC_FE_BASE_URL;
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -69,7 +70,23 @@ const SubscriptionDetails: React.FC = () => {
   };
 
   if (loading) {
-    return <Typography>Loading subscription...</Typography>;
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "60vh",
+          gap: 2,
+        }}
+      >
+        <CircularProgress size={42} thickness={4} sx={{ color: "#5b21b6" }} />
+        <Typography variant="body1" sx={{ color: "text.secondary" }}>
+          Loading your subscription details...
+        </Typography>
+      </Box>
+    );
   }
 
   if (!user) {
