@@ -44,7 +44,7 @@ const NavProfileHandler = ({ size, setAuthModalOpen, showMail }: any) => {
 
   const handleLogout = () => {
     handleClose();
-    signOut();
+    signOut({ callbackUrl: "/" });
   };
 
   return (

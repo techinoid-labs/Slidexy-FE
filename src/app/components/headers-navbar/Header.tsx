@@ -41,8 +41,8 @@ export default function Header() {
   const navigationItems = [
     { label: "Home", hasDropdown: false, link: "/" },
     { label: "Templates", hasDropdown: false, link: "/templates" },
-    { label: "Privacy", hasDropdown: false, link: "/privacy-policy" },
-    { label: "FAQ's", hasDropdown: false, link: "/faqs" },
+    // { label: "Privacy", hasDropdown: false, link: "/privacy-policy" },
+    // { label: "FAQ's", hasDropdown: false, link: "/faqs" },
     { label: "Pricing", hasDropdown: false, link: "/pricing" },
     { label: "Blogs", hasDropdown: false, link: "/blog" },
   ];

@@ -11,7 +11,7 @@ import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 
 const AccountPage = () => {
-  const [selectedTab, setSelectedTab] = useState<TabKey>("account");
+  const [selectedTab, setSelectedTab] = useState<TabKey>("subscriptions");
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session } = useSession();
 

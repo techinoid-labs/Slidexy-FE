@@ -18,7 +18,7 @@ interface SidebarTabsProps {
 
 const SidebarTabs: React.FC<SidebarTabsProps> = ({ selected, onSelect }) => {
   const tabs: { key: TabKey; label: string }[] = [
-    { key: "account", label: "Account Details" },
+    // { key: "account", label: "Account Details" },
     { key: "subscriptions", label: "Subscriptions" },
   ];
 
