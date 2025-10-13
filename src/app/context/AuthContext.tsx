@@ -4,6 +4,26 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 
+type Discount = {
+  amountOff?: number | null;
+  percentOff?: number | null;
+  couponId?: string | null;
+};
+
+type Invoice = {
+  id: string;
+  amountPaid: number;
+  currency: string;
+  date: string;
+  discount?: Discount | null;
+  hostedInvoiceUrl?: string | null;
+};
+
+type Billing = {
+  latestInvoice?: Invoice | null;
+  discountedPrice?: number | null;
+};
+
 type PlanConfig = {
   decksPerDay: number;
   imageDecks: number;
@@ -13,12 +33,6 @@ type PlanConfig = {
     aiAgent: boolean;
     presentationAgent: boolean;
   };
-};
-
-type PlanConfigMap = {
-  weekly: PlanConfig;
-  monthly: PlanConfig;
-  yearly: PlanConfig;
 };
 
 type PricingPlan = {
@@ -82,10 +96,9 @@ type User = {
   currentPresentationId?: string | null;
   pricingPlan?: PricingPlan | null;
   subscription?: Subscription | null;
-
-  // 🔹 new structured fields
   trial: TrialInfo;
   subscriptionUsage: SubscriptionUsage;
+  billing?: Billing | null;
 } | null;
 
 type UserContextType = {

@@ -20,8 +20,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     initStore().then(() => setStoreReady(true));
   }, []);
 
-  // if (!storeReady) return <div>Loading...</div>;
-
   if (!storeReady) {
     return (
       <Box

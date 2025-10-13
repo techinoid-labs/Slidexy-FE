@@ -12,13 +12,15 @@ import { useEffect, useState } from "react";
 import { usePricingPlans } from "@/hooks/usePricingPlans";
 import { useUser } from "@/app/context/AuthContext";
 import AuthModal from "../auth/AuthModal";
+import { useRouter } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function PricingSection() {
   const { plans, loading, error } = usePricingPlans();
   const { user } = useUser();
-
+  const router = useRouter();
+  // console.log({ plans });
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
 
   const handleCheckout = async (pricePlan: string) => {
@@ -152,7 +154,7 @@ export default function PricingSection() {
             {error && <Alert severity="error">{error}</Alert>}
             {plans.length &&
               plans
-                .filter((plan) => plan.isActive)
+                // .filter((plan) => plan.isActive)
                 ?.map((plan) => {
                   const styleMap: Record<
                     string,
@@ -279,12 +281,12 @@ export default function PricingSection() {
                             setAuthModalOpen(true);
                             return;
                           }
-                          handleCheckout(plan.name);
+                          // handleCheckout(plan.name);
+                          router.push(`/pricing/${plan._id}`);
                         }}
                       >
                         Get Started
                       </Button>
-
                       {/* Features */}
                       <Box sx={{ width: "100%" }}>
                         {plan.features.map((feature, i) => (
