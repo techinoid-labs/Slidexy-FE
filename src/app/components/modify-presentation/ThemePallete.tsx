@@ -526,7 +526,7 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
       </Box>
       <Divider />
       {/* Presentation Layout */}
-      <Box sx={{ px: 3, py: 2 }}>
+      {/* <Box sx={{ px: 3, py: 2 }}>
         <Typography sx={{ fontWeight: 500, fontSize: 16, mb: 1 }}>
           Presentation Layout
         </Typography>
@@ -575,8 +575,8 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
             Disable Layout
           </Button>
         </Box>
-      </Box>
-      <Divider />
+      </Box> */}
+      {/* <Divider /> */}
       {/* Custom Background Color Section */}
       <Box display="flex" sx={{ px: 3, py: 2 }}>
         <Typography sx={{ fontWeight: 300, fontSize: 16, mb: 1 }}>
