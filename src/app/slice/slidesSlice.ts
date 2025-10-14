@@ -1,3 +1,4 @@
+// slice/slidesSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface KonvaTextProperties {
@@ -23,6 +24,7 @@ interface KonvaTextProperties {
   opacity?: number;
   shadow?: { offsetX: number; offsetY: number; blur: number; color: string };
   borderRadius?: number;
+  rotation?: number;
 }
 
 interface KonvaImageProperties {
@@ -39,6 +41,9 @@ interface KonvaImageProperties {
   borderRadius?: number;
   zIndex?: number;
   isBackground?: boolean;
+  rotation?: number;
+  stroke?: string;
+  strokeWidth?: number;
 }
 
 interface KonvaShapeProperties {
@@ -62,6 +67,24 @@ interface KonvaShapeProperties {
   borderRadius?: number;
   zIndex?: number;
   points?: number[];
+  data?: string; // For Path
+}
+
+interface GroupProperties extends KonvaShapeProperties {
+  elements?: KonvaComponent[]; // New: Sub-elements in group
+}
+
+export interface KonvaComponent {
+  id?: string;
+  konva_component: string;
+  element_id?: string;
+  element_type?: string;
+  type?: string;
+  shape_id?: string;
+  properties: KonvaTextProperties | KonvaImageProperties | KonvaShapeProperties | GroupProperties;
+  text?: string;
+  useThemeColor?: boolean;
+  elements?: KonvaComponent[]; // New: For groups
 }
 
 interface Block {
@@ -70,31 +93,22 @@ interface Block {
   height: number;
 }
 
-// Updated KonvaComponent interface with shape_id at the top level
-export interface KonvaComponent {
-  id?: string;
-  konva_component: string;
-  element_id?: string;
-  element_type?: string;
-  type?: string;
-  shape_id?: string; // Added shape_id at the component level
-  properties: KonvaTextProperties | KonvaImageProperties | KonvaShapeProperties;
-  text?: string;
-  useThemeColor?: boolean;
-}
-
 export interface Slide {
   titleBlock?: Block;
   textBlock?: Block;
   imageBlock?: Block;
   [x: string]: any;
   slide_id: string;
+  layout_type?: string;
+  visual_suggestion?: string;
+  knowledge?: { theme?: string };
+  art_style?: string;
+  art_palette?: string[];
   slide_title: KonvaComponent;
   elements: KonvaComponent[];
   image_url: string | null;
   image_caption: string;
   _initialState?: Slide;
-  
 }
 
 interface SlidesState {
@@ -128,7 +142,7 @@ const slidesSlice = createSlice({
     updateShapeElement: (state, action: PayloadAction<{ 
       slideIndex: number; 
       shapeId: string; 
-      updatedProperties: Partial<KonvaShapeProperties> 
+      updatedProperties: Partial<KonvaShapeProperties | GroupProperties> 
     }>) => {
       const { slideIndex, shapeId, updatedProperties } = action.payload;
       if (!state.slides[slideIndex]) return;
@@ -164,7 +178,6 @@ export const {
   removeShapeElement
 } = slidesSlice.actions;
 
-// Export the types for use in other files
 export type { KonvaTextProperties, KonvaImageProperties, KonvaShapeProperties };
 
 export default slidesSlice.reducer;

@@ -1,3 +1,4 @@
+// Updated OutlinePage Component - Simplified mapCardsToSlides (no design logic)
 "use client";
 import React, { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
@@ -16,8 +17,7 @@ import { getSlideDimensions } from "@/utils/slideUtils";
 import { getSlideDimensions as getMobileSlideDimensions } from "@/utils/slideUtilsmobile";
 import { KonvaComponent } from "@/app/context/SlidesContext";
 import { fontWeight } from "html2canvas/dist/types/css/property-descriptors/font-weight";
-// const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, IMAGE_WIDTH, IMAGE_HEIGHT } =
-//   getSlideDimensions();
+
 // API response type and map helper
 export interface SlideApiResponse {
   slide_id: string;
@@ -45,396 +45,92 @@ function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
     images: slide.image_url ? [slide.image_url] : [],
   }));
 }
-function mapCardsToSlides(cards: any[]): Slide[] {
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
-  const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
 
-  // Pastel gradients for backgrounds
-  const gradients = [
-    ["#FDEBEB", "#FFF7F7"], // pink
-    ["#E3F2FD", "#FFFFFF"], // blue
-    ["#FFF9E6", "#FFFDF3"], // cream
-    ["#E8F5E9", "#FDFEFE"], // mint
-    ["#F3E5F5", "#FCF9FF"], // lavender
-  ];
+// Simplified mapCardsToSlides - Basic structure only, no design/gradients/shapes
+// Design handled in editor via templates
+// function mapCardsToSlides(cards: any[]): Slide[] {
+//   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+//   const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
 
-  const bulletSymbol = "➤"; // consistent bullet for all slides
+//   const bulletFontSize = isMobile ? 16 : 18;
+//   const titleFontSize = isMobile ? 22 : 26;
 
-  const bulletFontSize = isMobile ? 16 : 18;
-  const titleFontSize = isMobile ? 22 : 26;
+//   const PADDING = SLIDE_WIDTH * 0.08;
+//   const TEXT_WIDTH = SLIDE_WIDTH * 0.5;
 
-  const PADDING = SLIDE_WIDTH * 0.08;
-  const TEXT_WIDTH = SLIDE_WIDTH * 0.5;
-  const IMAGE_WIDTH = SLIDE_WIDTH * 0.35;
-  const IMAGE_HEIGHT = SLIDE_HEIGHT * 0.55;
-  const FRAME_PADDING = 24;
+//   return cards.map((card, index) => {
+//     const title = {
+//       text: card.title,
+//       konva_component: "Konva.Text",
+//       properties: {
+//         shape_id: `title-${index}`,
+//         fontSize: titleFontSize,
+//         fontFamily: "Raleway",
+//         fontWeight: "700",
+//         fill: "#1a1a1a",
+//         x: PADDING,
+//         y: 50,
+//         width: TEXT_WIDTH,
+//         align: "left",
+//         zIndex: 2,
+//       },
+//     };
 
-  return cards.map((card, index) => {
-    const gradientColors = gradients[index % gradients.length];
+//     // Bullet points - basic only
+//     const bulletElements: any[] = (card.bullets || []).map(
+//       (text: string, bulletIndex: number) => {
+//         const bulletY = 120 + bulletIndex * (bulletFontSize + 24);
 
-    // Background gradient
-    const background = {
-      element_type: "background",
-      konva_component: "Konva.Rect",
-      properties: {
-        x: 0,
-        y: 0,
-        width: SLIDE_WIDTH,
-        height: SLIDE_HEIGHT,
-        fillLinearGradientStartPoint: { x: 0, y: 0 },
-        fillLinearGradientEndPoint: { x: SLIDE_WIDTH, y: SLIDE_HEIGHT },
-        fillLinearGradientColorStops: [0, gradientColors[0], 1, gradientColors[1]],
-        zIndex: 0,
-      },
-    };
+//         return {
+//           element_type: "bullet_point",
+//           text: `• ${text}`,
+//           konva_component: "Konva.Text",
+//           properties: {
+//             width: TEXT_WIDTH,
+//             fontSize: bulletFontSize,
+//             fontFamily: "Raleway",
+//             fill: "#333333",
+//             fontWeight: "400",
+//             lineHeight: 1.6,
+//             x: PADDING,
+//             y: bulletY,
+//             zIndex: 4,
+//           },
+//         };
+//       }
+//     );
 
-    // Title (fixed top-left)
-    const title = {
-      text: card.title,
-      konva_component: "Konva.Text",
-      properties: {
-        shape_id: `title-${index}`,
-        fontSize: titleFontSize,
-        fontFamily: "Raleway",
-        fontWeight: "700",
-        fillLinearGradientStartPoint: { x: 0, y: 0 },
-        fillLinearGradientEndPoint: { x: TEXT_WIDTH, y: 0 },
-        fillLinearGradientColorStops: [0, "#222", 1, gradientColors[0]],
-        x: PADDING,
-        y: 50,
-        width: SLIDE_WIDTH * 0.6,
-        align: "left",
-        shadowColor: "rgba(0,0,0,0.15)",
-        shadowBlur: 6,
-        shadowOffsetX: 2,
-        shadowOffsetY: 3,
-        zIndex: 2,
-      },
-    };
+//     // Basic image element - no frame/overlay/shadows (handled in templates)
+//     const imageElement = card.images?.[0]
+//       ? [
+//           {
+//             element_type: "image",
+//             konva_component: "Konva.Image",
+//             properties: {
+//               image_id: `image-${index}`,
+//               imageSrc: card.images[0],
+//               x: SLIDE_WIDTH - PADDING - 400, // Basic right-aligned
+//               y: (SLIDE_HEIGHT - 300) / 2,
+//               width: 400,
+//               height: 300,
+//               zIndex: 3,
+//             },
+//           },
+//         ]
+//       : [];
 
-    // Bullet points with ➤ prefix
-    const bulletElements: any[] = (card.bullets || []).map(
-      (text: string, bulletIndex: number) => {
-        const bulletY = 120 + bulletIndex * (bulletFontSize + 28);
-
-        return {
-          element_type: "bullet_point",
-          text: `${bulletSymbol}  ${text}`,
-          konva_component: "Konva.Text",
-          properties: {
-            width: TEXT_WIDTH,
-            fontSize: bulletFontSize,
-            fontFamily: "Raleway",
-            fill: "#333",
-            fontWeight: "400",
-            lineHeight: 1.6,
-            letterSpacing: 0.3,
-            x: PADDING,
-            y: bulletY,
-            shadowColor: "rgba(0,0,0,0.08)",
-            shadowBlur: 4,
-            shadowOffsetX: 1,
-            shadowOffsetY: 2,
-            zIndex: 4,
-          },
-        };
-      }
-    );
-
-    // Decorative shapes
-    const shapes: any[] = [
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        properties: {
-          x: SLIDE_WIDTH * 0.12,
-          y: SLIDE_HEIGHT * 0.88,
-          radius: 45,
-          stroke: "rgba(255,255,255,0.4)",
-          strokeWidth: 3,
-          zIndex: 1,
-        },
-      },
-      {
-        element_type: "shape",
-        konva_component: "Konva.RegularPolygon",
-        properties: {
-          x: SLIDE_WIDTH * 0.88,
-          y: SLIDE_HEIGHT * 0.25,
-          sides: 6,
-          radius: 55,
-          stroke: "rgba(255,255,255,0.3)",
-          strokeWidth: 3,
-          zIndex: 1,
-        },
-      },
-    ];
-
-    // Image position
-    const imageY = (SLIDE_HEIGHT - IMAGE_HEIGHT) / 2 + 60;
-
-    // Image background frame
-    const imageBackground = card.images?.[0]
-      ? [
-          {
-            element_type: "shape",
-            konva_component: "Konva.Rect",
-            properties: {
-              x: SLIDE_WIDTH - PADDING - IMAGE_WIDTH - FRAME_PADDING / 2,
-              y: imageY - FRAME_PADDING / 2,
-              width: IMAGE_WIDTH + FRAME_PADDING,
-              height: IMAGE_HEIGHT + FRAME_PADDING,
-              cornerRadius: 25,
-              fillLinearGradientStartPoint: { x: 0, y: 0 },
-              fillLinearGradientEndPoint: { x: IMAGE_WIDTH, y: IMAGE_HEIGHT },
-              fillLinearGradientColorStops: [0, gradientColors[0], 1, gradientColors[1]],
-              shadowColor: "rgba(0,0,0,0.15)",
-              shadowBlur: 25,
-              shadowOffsetX: 4,
-              shadowOffsetY: 4,
-              zIndex: 2,
-            },
-          },
-        ]
-      : [];
-
-    // Image element
-    const imageElement = card.images?.[0]
-      ? [
-          {
-            element_type: "image",
-            konva_component: "Konva.Image",
-            properties: {
-              shape_id: `image-${index}`,
-              imageSrc: card.images[0],
-              x: SLIDE_WIDTH - PADDING - IMAGE_WIDTH,
-              y: imageY,
-              width: IMAGE_WIDTH,
-              height: IMAGE_HEIGHT,
-              borderRadius: 20,
-              shadowColor: "rgba(0,0,0,0.25)",
-              shadowBlur: 20,
-              shadowOffsetX: 5,
-              shadowOffsetY: 5,
-              zIndex: 3,
-            },
-          },
-        ]
-      : [];
-
-    return {
-      slide_id: `slide-${index + 1}`,
-      slide_title: title,
-      elements: [
-        background,
-        ...shapes,
-        ...bulletElements,
-        ...imageBackground,
-        ...imageElement,
-      ],
-      image_url: card.images?.[0] || null,
-      image_caption: "",
-    };
-  });
-}
-
-
-
-
+//     return {
+//       slide_id: `slide-${index + 1}`,
+//       layout_type: "content-right-image", // Default layout, overridden in editor
+//       slide_title: title,
+//       elements: [...bulletElements, ...imageElement],
+//       image_url: card.images?.[0] || null,
+//       image_caption: "",
+//     };
+//   });
+// }
 
 export default function OutlinePage() {
-  // const { slides }: any = useSlides();
-  // const slidesState = slides;
-  // const isInfographicMode = false;
-  // const dispatch = useDispatch();
-  // const router = useRouter();
-  // const [imageSuggestionsBox, setImageSuggestionsBox] = React.useState<{
-  //   slideIndex: number;
-  //   imageIndex: number;
-  //   x: number;
-  //   y: number;
-  //   suggestions: string[];
-  // } | null>(null);
-
-  // const [cards, setCards] = useState(() =>
-  //   slides && slides.length > 0 ? mapApiSlidesToCards(slides) : []
-  // );
-  // const [editingIdx, setEditingIdx] = useState<number | null>(null);
-  // const [editingTitle, setEditingTitle] = useState<string>("");
-  // const [editingBulletsIdx, setEditingBulletsIdx] = useState<number | null>(
-  //   null
-  // );
-  // const [editingBulletsValue, setEditingBulletsValue] = useState<string>("");
-  // const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
-  // const [editMenuAnchor, setEditMenuAnchor] = useState<null | HTMLElement>(
-  //   null
-  // );
-  // const [editMenuCardIdx, setEditMenuCardIdx] = useState<number | null>(null);
-  // const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  // const handleBulletsEditStart = (idx: number, bullets?: string[]) => {
-  //   setEditingBulletsIdx(idx);
-  //   setEditingBulletsValue((bullets || []).join("\n"));
-  // };
-  // const handleBulletsEditChange = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-  //   setEditingBulletsValue(e.target.value);
-  // const handleBulletsEditSave = (idx: number) => {
-  //   if (!editingBulletsValue.trim()) {
-  //     setEditingBulletsIdx(null);
-  //     setEditingBulletsValue("");
-  //     return;
-  //   }
-  //   setCards((prev) => {
-  //     const newCards = prev.map((c, i) =>
-  //       i !== idx
-  //         ? c
-  //         : {
-  //             ...c,
-  //             bullets: editingBulletsValue
-  //               .split(/\r?\n/)
-  //               .filter((l) => l.trim() !== ""),
-  //             images: "images" in c ? c.images ?? [] : [],
-  //           }
-  //     );
-  //     // Dispatch updated slides to Redux store
-  //     const mappedSlides = mapCardsToSlides(newCards);
-  //     setTimeout(() => {
-  //       dispatch(setSlides(mappedSlides));
-  //     }, 100);
-
-  //     return newCards;
-  //   });
-  //   setEditingBulletsIdx(null);
-  //   setEditingBulletsValue("");
-  // };
-  // const handleBulletsEditCancel = () => {
-  //   setEditingBulletsIdx(null);
-  //   setEditingBulletsValue("");
-  // };
-
-  // const onDragEnd = (result: any) => {
-  //   if (!result.destination) return;
-  //   const arr = Array.from(cards);
-  //   const [removed] = arr.splice(result.source.index, 1);
-  //   arr.splice(result.destination.index, 0, removed);
-  //   setCards(arr);
-  //   setExpandedIdx(null);
-  //   // Dispatch updated slides to Redux store
-  //   const mappedSlides = mapCardsToSlides(arr);
-  //   dispatch(setSlides(mappedSlides));
-  // };
-
-  // const handleDelete = (idx: number) => {
-  //   setCards((prev) => {
-  //     const newCards = prev.filter((_, i) => i !== idx);
-  //     // Dispatch updated slides to Redux store
-  //     const mappedSlides = mapCardsToSlides(newCards);
-  //     dispatch(setSlides(mappedSlides));
-  //     return newCards;
-  //   });
-  //   if (expandedIdx === idx) setExpandedIdx(null);
-  // };
-
-  // const handleRegenerate = () => {
-  //   setCards([]);
-  //   setExpandedIdx(null);
-  //   // Dispatch empty slides to Redux store
-  //   dispatch(setSlides([]));
-  // };
-
-  // const handleCardClick = (idx: number) => {
-  //   if (editingIdx !== null) return;
-  //   setExpandedIdx(expandedIdx === idx ? null : idx);
-  // };
-
-  // const handleTitleEditStart = (idx: number, currentTitle: string) => {
-  //   setEditingIdx(idx);
-  //   setEditingTitle(currentTitle);
-  // };
-  // const handleTitleEditChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-  //   setEditingTitle(e.target.value);
-  // const handleTitleEditSave = (idx: number) => {
-  //   setCards((prev) => {
-  //     const newCards = prev.map((c, i) =>
-  //       i === idx ? { ...c, title: editingTitle } : c
-  //     );
-  //     // Dispatch updated slides to Redux store
-  //     const mappedSlides = mapCardsToSlides(newCards);
-  //     setTimeout(() => {
-  //       dispatch(setSlides(mappedSlides));
-  //     }, 100);
-
-  //     return newCards;
-  //   });
-  //   setEditingIdx(null);
-  //   setEditingTitle("");
-  // };
-  // const handleTitleEditCancel = () => {
-  //   setEditingIdx(null);
-  //   setEditingTitle("");
-  // };
-
-  // const handleEditClick = (e: React.MouseEvent<HTMLElement>, idx: number) => {
-  //   e.stopPropagation();
-  //   setEditMenuAnchor(e.currentTarget);
-  //   setEditMenuCardIdx(idx);
-  // };
-  // const handleEditMenuClose = () => {
-  //   setEditMenuAnchor(null);
-  //   setEditMenuCardIdx(null);
-  // };
-  // const handleEditMenuAction = (key: string) => {
-  //   handleEditMenuClose();
-  // };
-
-  // const handleContinue = () => {
-  //   const mapped = mapCardsToSlides(cards);
-  //   dispatch(setSlides(mapped));
-  //   console.log("[OutlinePage] Slides sent to Redux:", mapped);
-  //   router.push("/editor");
-  // };
-
-  // const handleUpdateSlide = (
-  //   slideIndex: number,
-  //   updated: Partial<{
-  //     title: string;
-  //     bullets: string[];
-  //     bulletFormat?: "bullets" | "paragraphs" | "list" | null;
-  //     image_url?: string;
-  //   }>
-  // ) => {
-  //   setCards((prev) => {
-  //     const newCards = prev.map((card, i) =>
-  //       i === slideIndex ? { ...card, ...updated } : card
-  //     );
-  //     // Dispatch updated slides to Redux store
-  //     const mappedSlides = mapCardsToSlides(newCards);
-  //     setTimeout(() => {
-  //       dispatch(setSlides(mappedSlides));
-  //     }, 100);
-
-  //     return newCards;
-  //   });
-  //   if (updated.image_url) {
-  //     setPreviewImage(updated.image_url);
-  //   }
-  // };
-
-  // const handleUpdateSlideImages = (slideIndex: number, newImages: string[]) => {
-  //   setCards((prev) => {
-  //     const newCards = prev.map((card, i) =>
-  //       i === slideIndex ? { ...card, images: [...newImages] } : card
-  //     );
-  //     // Dispatch updated slides to Redux store
-  //     const mappedSlides = mapCardsToSlides(newCards);
-  //     setTimeout(() => {
-  //       dispatch(setSlides(mappedSlides));
-  //     }, 100);
-
-  //     return newCards;
-  //   });
-  // };
-
   const { slides }: any = useSlides();
   const slidesState = slides;
   const isInfographicMode = false;
@@ -467,10 +163,10 @@ export default function OutlinePage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // ✅ Keep Redux in sync AFTER cards change
-  React.useEffect(() => {
-    const mappedSlides = mapCardsToSlides(cards);
-    dispatch(setSlides(mappedSlides));
-  }, [cards, dispatch]);
+  // React.useEffect(() => {
+  //  // const mappedSlides = mapCardsToSlides(cards);
+  //   dispatch(setSlides(mappedSlides));
+  // }, [cards, dispatch]);
 
   // -------------------- Bullets editing --------------------
   const handleBulletsEditStart = (idx: number, bullets?: string[]) => {
@@ -567,9 +263,9 @@ export default function OutlinePage() {
 
   // -------------------- Continue --------------------
   const handleContinue = () => {
-    const mapped = mapCardsToSlides(cards);
-    dispatch(setSlides(mapped));
-    console.log("[OutlinePage] Slides sent to Redux:", mapped);
+    //const mapped = mapCardsToSlides(cards);
+    //dispatch(setSlides(mapped));
+    //console.log("[OutlinePage] Slides sent to Redux:", mapped);
     router.push("/editor");
   };
 
@@ -881,8 +577,8 @@ export default function OutlinePage() {
                       : card
                   );
                   // Dispatch updated slides to Redux store
-                  const mappedSlides = mapCardsToSlides(newCards);
-                  dispatch(setSlides(mappedSlides));
+                  //const mappedSlides = mapCardsToSlides(newCards);
+                  //dispatch(setSlides(mappedSlides));
                   return newCards;
                 });
                 setImageSuggestionsBox(null);
