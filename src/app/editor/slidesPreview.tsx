@@ -161,11 +161,16 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                   maxWidth: "100%",
                 }}
               >
-                {slide.elements.length > 0
-                  ? (slide.elements[0].text || "").trim()
-                  : "Add description"}
+                {/* Find the first bullet_point or text element */}
+                {(() => {
+                  const firstBullet = slide.elements.find((el: any) =>
+                    el.element_type === "bullet_point" || el.element_type === "text"
+                  );
+                  return firstBullet
+                    ? firstBullet.text // Strip bullet symbol for cleaner preview (optional)
+                    : "Add description";
+                })()}
               </Typography>
-
               {slides.length > 1 && (
                 <Tooltip title="">
                   <IconButton

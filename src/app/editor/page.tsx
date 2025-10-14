@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import SideNavBar from "../components/modify-presentation/Side-NavBar";
 import UpperNavBar from "../components/modify-presentation/Upper-NavBar";
 import ThemePanel from "../components/modify-presentation/ThemePallete";
@@ -65,6 +65,8 @@ const Page = () => {
   const { data: session } = useSession();
   const { user, loading } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  // FIXED: State to track if there was a selection before deselect
+  const [hadSelection, setHadSelection] = useState(false);
 
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
@@ -116,10 +118,18 @@ const Page = () => {
     if (session?.user || user) {
       setShowAuthModal(false);
 
+      // FIXED: Enhanced structuring for PPT export to include gradients and backgrounds properly
       const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
         const elements: StructuredSlide["elements"] = [];
 
+        // FIXED: Handle background gradient explicitly
+        const background = slide.elements.find((el: any) => el.element_type === "background");
+        // Do not push a "background" element_type, just extract properties for later use
+        // If needed, pass background info via a separate property below
+
         slide.elements?.forEach((el: any) => {
+          if (el.element_type === "background") return; // Already handled
+
           const { element_type, text, properties = {}, konva_component } = el;
           const {
             x = 0,
@@ -134,6 +144,17 @@ const Page = () => {
             fontStyle,
             fontWeight,
             imageSrc,
+            // FIXED: Include shape-specific props for better export
+            stroke,
+            strokeWidth,
+            radius,
+            radiusX,
+            radiusY,
+            innerRadius,
+            outerRadius,
+            angle,
+            points,
+            sides,
           } = properties;
 
           const xIn = x / 100;
@@ -195,6 +216,16 @@ const Page = () => {
                 w: wIn,
                 h: hIn,
                 fill: fill.replace("#", "") || "cccccc",
+                stroke: stroke ? stroke.replace("#", "") : undefined,
+                strokeWidth,
+                radius,
+                radiusX,
+                radiusY,
+                innerRadius,
+                outerRadius,
+                angle,
+                points,
+                sides,
               },
             });
           }
@@ -218,6 +249,8 @@ const Page = () => {
             : undefined,
           elements,
           image_url: slide.image_url,
+          // FIXED: Pass theme/gradient info for slide background
+          backgroundGradient: background?.properties?.gradientColors || [],
         };
       });
 
@@ -261,6 +294,46 @@ const Page = () => {
   const handleCloseThemePanel = () => {
     setIsThemePanelOpen(false);
   };
+
+const handleDeselect = () => {
+  setSelectedTextId(null);
+  setSelectedImageIndex(null);
+  setSelectedImage(null);
+  setSelectedShapeIndex(null);
+  setIsMobileTextSelected(false);
+  setIsMobileImageSelected(false);
+  
+  if (isMobile) {
+    setIsThemePanelOpen(true);
+  } else {
+    setShowRightPanel(true); // IMPORTANT: Add this line
+  }
+};
+
+// In your SlideEditor section, modify the onDeselect handling:
+<SlideEditor 
+  slides={slides} 
+  stageRefs={stageRefs} 
+  onDeselect={handleDeselect}
+  slideCount={slides.length}
+/>
+
+// The right panel will automatically show ThemePanel when nothing is selected
+// because of this condition in your JSX:
+{!isTextSelected && !isImageSelected && !isShapeSelected && (
+  <ThemePanel parsedSlides={slides} resetAll={resetAll} />
+)}
+
+  // FIXED: Track previous selection to open theme only after deselect
+  useEffect(() => {
+    const hasSelection = !!selectedTextId || selectedImageIndex !== null || selectedShapeIndex !== null;
+    if (hasSelection) {
+      setHadSelection(true);
+    } else if (hadSelection && isMobile) {
+      setIsThemePanelOpen(true);
+      setHadSelection(false);
+    }
+  }, [selectedTextId, selectedImageIndex, selectedShapeIndex]);
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -316,7 +389,7 @@ const Page = () => {
                 showTemplatePanel={showTemplatePanel}
                 setShowTemplatePanel={setShowTemplatePanel}
               />
-              <SlideEditorMobile slides={slides} stageRefs={stageRefs} />
+              <SlideEditorMobile slides={slides} stageRefs={stageRefs} onDeselect={handleDeselect} />
               <SlideShowPlayer
                 slides={slides}
                 theme={selectedTheme}
@@ -375,7 +448,7 @@ const Page = () => {
                 className="flex-1 overflow-auto z-0"
                 style={{ marginTop: 12 }}
               >
-                <SlideEditor slides={slides} stageRefs={stageRefs} />
+                <SlideEditor slides={slides} stageRefs={stageRefs} onDeselect={handleDeselect} slideCount={slides.length} />
                 <SlideShowPlayer
                   slides={slides}
                   theme={selectedTheme}

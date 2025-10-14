@@ -14,7 +14,25 @@ import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { ChromePicker } from "react-color";
 import Popover from "@mui/material/Popover";
 import { useSlides } from "@/app/context/SlidesContext";
+import { getSlideDimensions } from "../../../utils/slideUtils";
 
+const getDynamicConstants = () => {
+  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
+  const IMAGE_WIDTH = 400;
+  const IMAGE_PADDING = 40;
+  const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
+  const textMaxHeight = SLIDE_HEIGHT;
+
+  return {
+    SLIDE_WIDTH,
+    SLIDE_HEIGHT,
+    LEFT_PADDING,
+    IMAGE_WIDTH,
+    IMAGE_PADDING,
+    textMaxWidth,
+    textMaxHeight,
+  };
+};
 // Custom hook to manage layout selection
 const layouts = [-1, 0, 1, 2, 3, 4, 5] as const;
 type LayoutType = typeof layouts[number];
@@ -23,10 +41,20 @@ const useLayoutControl = (
   initialLayout: number | null,
   setSlides: (slides: any) => void,
   slides: any[],
-  setLayoutRefreshKey: React.Dispatch<React.SetStateAction<number>>
+  setLayoutRefreshKey: React.Dispatch<React.SetStateAction<number>>,
+  selectedSlideIndex: number
 ) => {
   const { setSelectedLayout } = useSlideThemeContext();
   const userTriggeredLayoutChange = useRef(false);
+  const layoutMap: Record<LayoutType, string> = {
+    [-1]: "",
+    [0]: "content-right-image",
+    [1]: "content-left-image",
+    [2]: "cover-hero",
+    [3]: "split-content",
+    [4]: "conclusion",
+    [5]: "content-right-image",
+  };
   const applyLayout = (layoutIndex: LayoutType) => {
     userTriggeredLayoutChange.current = true;
     setSelectedLayout(layoutIndex);
@@ -39,11 +67,10 @@ const useLayoutControl = (
     }
   };
 
-
-  return { applyLayout, userTriggeredLayoutChange };
+  return { applyLayout, userTriggeredLayoutChange, layoutMap };
 };
 
-// PaletteStack: renders a stack of overlapping color circles
+// FIXED: PaletteStack with better visibility and hover
 interface PaletteStackProps {
   colors: string[];
   size?: number;
@@ -73,12 +100,16 @@ const PaletteStack: React.FC<PaletteStackProps> = ({
             height: size,
             borderRadius: "50%",
             bgcolor: color,
-            border: "none",
-            boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)",
+            border: "2px solid white",  // FIXED: Better visibility
+            boxShadow: "0 2px 8px 0 rgba(0,0,0,0.15)",  // FIXED: Better shadow
             position: "absolute",
             left: i * overlap,
             zIndex: colors.length - i,
             transition: "transform 0.15s, box-shadow 0.15s",
+            "&:hover": {
+              transform: "scale(1.1)",  // FIXED: Hover effect
+              boxShadow: "0 4px 12px 0 rgba(0,0,0,0.25)",
+            },
           }}
         />
       ))}
@@ -86,114 +117,42 @@ const PaletteStack: React.FC<PaletteStackProps> = ({
   );
 };
 
-// Sample palettes (six predefined)
+// Enhanced palettes with high contrast (updated for better contrast)
 const palettes = [
-  ["#fff", "black", "black", "black"],
-  ["#E09B4B", "#F5D7A1", "#F9EEDB", "#3C2B1C"],
-  ["#B6D44A", "#1B5E20", "#3DE1C1", "#00695C"],
-  ["#7B4AE2", "#B39DDB", "#E1BEE7", "#9575CD"],
-  ["#F5F5F5", "#0288D1", "#B3E5FC", "#0277BD"],
-  ["#FFF3E0", "#F57C00", "#FFCC80", "#EF6C00"],
+  ["#ffffff", "#000000", "#333333", "#666666"], // High contrast black on white
+  ["#FFF7F7", "#D32F2F", "#FFCDD2", "#B71C1C"], // Red theme with contrast
+  ["#E8F5E8", "#2E7D32", "#C8E6C9", "#2E7D32"], // Green theme - FIXED: Use darker green for primary
+  ["#F3E5F5", "#7B1FA2", "#E1BEE7", "#4A148C"], // Purple theme
+  ["#E3F2FD", "#0D47A1", "#BBDEFB", "#0D47A1"], // Blue theme - FIXED: Use darker blue for primary
+  ["#FFF8E1", "#BF360C", "#FFE0B2", "#E65100"], // Orange theme - FIXED: Use darker orange for primary
 ];
 
-// Updated layout rules with specified layouts
-const layoutRules: Record<
-  number,
-  (el: any, idx: number, type: string | undefined) => { x: number; y: number }
-> = {
-  0: (el, idx, type) => {
-    if (type === "image") return { x: 560, y: 100 };
-    if (type === "title") return { x: 50, y: 90 };
-    if (type === "text") return { x: 50, y: 95 + idx * 30 };
-    else {
-      return { x: 50, y: 95 + idx * 30 };
-    }
-  },
-  1: (el, idx, type) => {
-    if (type === "image") return { x: 60, y: 100 };
-    if (type === "title") return { x: 450, y: 90 };
-    if (type === "text") return { x: 450, y: 95 + idx * 30 };
-    else {
-      return { x: 450, y: 95 + idx * 30 };
-    }
-  },
-  2: (el, idx, type) => {
-    if (type === "image") return { x: 227, y: 130 };
-    if (type === "title") return { x: 50, y: 50 };
-    if (type === "text") return { x: 350, y: 220 + idx * 30 };
-    else {
-      return { x: 50, y: 310 + idx * 30 };
-    }
-  },
-  3: (el, idx, type) => {
-    if (type === "image") return { x: 250, y: 310 };
-    if (type === "title") return { x: 50, y: 50 };
-    if (type === "text") return { x: 350, y: -30 + idx * 30 };
-    else {
-      return { x: 50, y: 70 + idx * 30 };
-    }
-  },
-  4: (el, idx, type) => {
-    if (type === "image") return { x: 50, y: 120 };
-    if (type === "title") return { x: 50, y: 50 };
-    if (type === "text") return { x: 400, y: 100 + idx * 30 };
-    return { x: 400, y: 100 + idx * 30 };
-  },
-  5: (el, idx, type) => {
-    if (type === "image") return { x: 250, y: 50 };
-    if (type === "title") return { x: 50, y: 250 };
-    if (type === "text") return { x: 500, y: 100 + idx * 30 };
-    else {
-      return { x: 50, y: 255 + idx * 30 };
-    }
-  },
-};
+// FIXED: Improved contrast calculation
+const getContrastingTextColor = (bgColor: string, preferredText: string): string => {
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.replace('#', ''));
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  };
 
-const layoutStyles: Record<
-  number,
-  {
-    title: { fontSize: number; fontWeight: number };
-    text: { fontSize: number };
-    bullet: { fontSize: number };
-    image: { width: number; height: number };
-  }
-> = {
-  0: {
-    title: { fontSize: 30, fontWeight: 700 },
-    text: { fontSize: 24 },
-    bullet: { fontSize: 18 },
-    image: { width: 300, height: 350 },
-  },
-  1: {
-    title: { fontSize: 30, fontWeight: 700 },
-    text: { fontSize: 24 },
-    bullet: { fontSize: 18 },
-    image: { width: 300, height: 350 },
-  },
-  2: {
-    title: { fontSize: 30, fontWeight: 700 },
-    text: { fontSize: 24 },
-    bullet: { fontSize: 18 },
-    image: { width: 500, height: 200 },
-  },
-  3: {
-    title: { fontSize: 30, fontWeight: 700 },
-    text: { fontSize: 24 },
-    bullet: { fontSize: 18 },
-    image: { width: 500, height: 200 },
-  },
-  4: {
-    title: { fontSize: 30, fontWeight: 700 },
-    text: { fontSize: 24 },
-    bullet: { fontSize: 18 },
-    image: { width: 300, height: 350 },
-  },
-  5: {
-    title: { fontSize: 30, fontWeight: 700 },
-    text: { fontSize: 24 },
-    bullet: { fontSize: 18 },
-    image: { width: 500, height: 200 },
-  },
+  const getLuminance = (hex: string): number => {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return 1;
+    const [r, g, b] = [rgb.r / 255, rgb.g / 255, rgb.b / 255].map(c =>
+      c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+    );
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+
+  const bgLum = getLuminance(bgColor || '#ffffff');
+  const textLum = getLuminance(preferredText || '#000000');
+  const contrast = (Math.max(bgLum, textLum) + 0.05) / (Math.min(bgLum, textLum) + 0.05);
+
+  // Return contrasting color if needed
+  return contrast >= 4.5 ? preferredText : (bgLum > 0.5 ? '#1a1a1a' : '#ffffff');
 };
 
 // Helper to map palette to theme object
@@ -204,6 +163,7 @@ const paletteToTheme = (palette: string[]) => ({
   backgroundColor: palette[0],
   titleColor: palette[1], // Use primaryColor for titles
   image_url: "",
+  artPalette: [palette[1], palette[3] || palette[1], palette[1], palette[0], palette[0]],
 });
 
 const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
@@ -211,11 +171,12 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
     useSlideThemeContext();
   const { slides, setSlides, selectedSlideIndex } = useSlides();
   const [layoutRefreshKey, setLayoutRefreshKey] = useState(0);
-  const { applyLayout, userTriggeredLayoutChange } = useLayoutControl(
+  const { applyLayout, userTriggeredLayoutChange, layoutMap } = useLayoutControl(
     selectedLayout,
     setSlides,
     slides,
-    setLayoutRefreshKey
+    setLayoutRefreshKey,
+    selectedSlideIndex
   );
 
   const [lastAppliedLayout, setLastAppliedLayout] = useState<number | null>(null);
@@ -242,12 +203,24 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
     setQuotaError(false);
   };
 
+  // FIXED: Palette application
   const handlePaletteClick = (palette: string[]) => {
     const theme = paletteToTheme(palette);
+    // FIXED: Calculate contrasting text color
+    const contrastText = getContrastingTextColor(palette[0], palette[1]);
     const updatedTheme = {
       ...theme,
+      primaryColor: contrastText,
+      titleColor: contrastText,
       image_url: backgroundStateRef.current.mode === "image" ? backgroundStateRef.current.value : "",
       backgroundColor: backgroundStateRef.current.mode === "color" ? palette[0] : "",
+      artPalette: [
+        palette[1],
+        palette[3] || palette[1],
+        palette[1],
+        backgroundStateRef.current.mode === "color" ? palette[0] : (selectedTheme?.artPalette?.[3] || palette[0]),  // FIXED: Sync with current bg
+        backgroundStateRef.current.mode === "color" ? palette[0] : (selectedTheme?.artPalette?.[4] || palette[0])   // FIXED: Sync background
+      ],
     };
     setSelectedTheme(updatedTheme);
     if (backgroundStateRef.current.mode === "color") {
@@ -267,47 +240,22 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
         setQuotaError(true);
       }
     }
-    const updatedSlides = slides.map((slide) => ({
-      ...slide,
-      slide_title: {
-        ...slide.slide_title,
-        useThemeColor: true,
-        properties: {
-          ...slide.slide_title.properties,
-          color: slide.slide_title.properties?.color || palette[1],
-        },
-
-      },
-      elements: slide.elements.map((el) => {
-        if (
-          el.element_type === "text" ||
-          (el.element_type === "bullet_point" && el.useThemeColor !== false)
-        ) {
-          return {
-            ...el,
-            useThemeColor: true,
-            properties: {
-              ...el.properties,
-              color: palette[1], // Apply primaryColor to text and bullet points
-            },
-          };
-        }
-        return el;
-      }),
-    }));
-    setSlides(updatedSlides);
   };
 
   const handleBackgroundColorChange = (color: string) => {
+    const contrastText = getContrastingTextColor(color, selectedTheme?.primaryColor || '#000000');
     backgroundStateRef.current = { mode: "color", value: color };
     const updatedTheme = {
       ...selectedTheme,
       backgroundColor: color,
+      primaryColor: contrastText,
+      titleColor: contrastText,
       image_url: "",
       font: selectedTheme?.font ?? "Inter",
-      primaryColor: selectedTheme?.primaryColor,
       secondaryColor: selectedTheme?.secondaryColor,
-      titleColor: selectedTheme?.titleColor ?? "black",
+      artPalette: selectedTheme?.artPalette?.map((c, i) =>
+        i === 4 ? color : c  // FIXED: Update artPalette[4] to match new background
+      ) || selectedTheme?.artPalette,
     };
     setSelectedTheme(updatedTheme);
     setBackgroundMode("color");
@@ -339,6 +287,7 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
           primaryColor: selectedTheme?.primaryColor,
           secondaryColor: selectedTheme?.secondaryColor,
           titleColor: selectedTheme?.titleColor ?? "black",
+          artPalette: selectedTheme?.artPalette,
         };
         setSelectedTheme(updatedTheme);
         setImageUrl(image);
@@ -375,6 +324,7 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
       primaryColor: selectedTheme?.primaryColor,
       secondaryColor: selectedTheme?.secondaryColor,
       titleColor: selectedTheme?.titleColor ?? "black",
+      artPalette: selectedTheme?.artPalette,
     };
     setSelectedTheme(updatedTheme);
     setBackgroundMode(newMode);
@@ -397,9 +347,18 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
 
   const handleReset = () => {
     backgroundStateRef.current = { mode: "color", value: "#fff" };
-    setSelectedTheme(DEFAULT_THEME);
+    const defaultPal = palettes[0];
+    const defaultThemeBase = paletteToTheme(defaultPal);
+    const contrastText = getContrastingTextColor(defaultPal[0], defaultPal[1]);
+    const updatedDefaultTheme = {
+      ...defaultThemeBase,
+      primaryColor: contrastText,
+      titleColor: contrastText,
+      artPalette: [defaultPal[1], defaultPal[3] || defaultPal[1], defaultPal[1], defaultPal[0], defaultPal[0]],
+    };
+    setSelectedTheme(updatedDefaultTheme);
     try {
-      localStorage.setItem("slidesTheme", JSON.stringify(DEFAULT_THEME));
+      localStorage.setItem("slidesTheme", JSON.stringify(updatedDefaultTheme));
       localStorage.setItem("backgroundMode", "color");
       localStorage.setItem("backgroundValue", "#fff");
     } catch (e) {
@@ -412,166 +371,89 @@ const ThemePanel = ({ parsedSlides = [], resetAll }: any) => {
     setBackgroundMode("color");
     setImageUrl("");
     setLastAppliedLayout(DEFAULT_LAYOUT);
-    const updatedSlides = slides.map((slide) => ({
-      ...slide,
-      slide_title: {
-        ...slide.slide_title,
-        useThemeColor: true,
-        properties: {
-          ...slide.slide_title.properties,
-          color: DEFAULT_THEME.titleColor,
-        },
-      },
-      elements: slide.elements.map((el) => {
-        if (
-          el.element_type === "text" ||
-          (el.element_type === "bullet_point" && el.useThemeColor !== false)
-        ) {
-          return {
-            ...el,
-            useThemeColor: true,
-            properties: {
-              ...el.properties,
-              color: DEFAULT_THEME.primaryColor,
-            },
-          };
-        }
-        return el;
-      }),
-    }));
-    setSlides(updatedSlides);
   };
 
   useEffect(() => {
-  const savedTheme = localStorage.getItem("slidesTheme");
-  const savedBackgroundMode = localStorage.getItem("backgroundMode");
-  const savedBackgroundValue = localStorage.getItem("backgroundValue");
-  const savedLayout = localStorage.getItem("selectedLayout");
+    const savedTheme = localStorage.getItem("slidesTheme");
+    const savedBackgroundMode = localStorage.getItem("backgroundMode");
+    const savedBackgroundValue = localStorage.getItem("backgroundValue");
+    const savedLayout = localStorage.getItem("selectedLayout");
 
-  // restore theme
-  if (savedTheme && savedBackgroundMode && savedBackgroundValue) {
-    try {
-      const parsed = JSON.parse(savedTheme);
-      backgroundStateRef.current = {
-        mode: savedBackgroundMode as "color" | "image",
-        value: savedBackgroundValue,
-      };
-      setSelectedTheme({
-        ...parsed,
-        backgroundColor: savedBackgroundMode === "color" ? savedBackgroundValue : "",
-        image_url: savedBackgroundMode === "image" ? savedBackgroundValue : parsed.image_url || "",
-        titleColor: parsed.titleColor || "black",
-      });
-      setBackgroundMode(savedBackgroundMode as "color" | "image");
-      if (savedBackgroundMode === "image") {
-        setImageUrl(savedBackgroundValue);
+    // restore theme
+    if (savedTheme && savedBackgroundMode && savedBackgroundValue) {
+      try {
+        const parsed = JSON.parse(savedTheme);
+        backgroundStateRef.current = {
+          mode: savedBackgroundMode as "color" | "image",
+          value: savedBackgroundValue,
+        };
+        setSelectedTheme({
+          ...parsed,
+          backgroundColor: savedBackgroundMode === "color" ? savedBackgroundValue : "",
+          image_url: savedBackgroundMode === "image" ? savedBackgroundValue : parsed.image_url || "",
+          titleColor: parsed.titleColor || "black",
+          artPalette: parsed.artPalette,
+        });
+        setBackgroundMode(savedBackgroundMode as "color" | "image");
+        if (savedBackgroundMode === "image") {
+          setImageUrl(savedBackgroundValue);
+        }
+      } catch (e) {
+        console.error("Failed to parse saved theme", e);
+        backgroundStateRef.current = { mode: "color", value: "#fff" };
+        setSelectedTheme(DEFAULT_THEME);
+        setBackgroundMode("color");
+        setImageUrl("");
       }
-    } catch (e) {
-      console.error("Failed to parse saved theme", e);
+    } else {
       backgroundStateRef.current = { mode: "color", value: "#fff" };
       setSelectedTheme(DEFAULT_THEME);
       setBackgroundMode("color");
       setImageUrl("");
     }
-  } else {
-    backgroundStateRef.current = { mode: "color", value: "#fff" };
-    setSelectedTheme(DEFAULT_THEME);
-    setBackgroundMode("color");
-    setImageUrl("");
-  }
 
-if (savedLayout !== null) {
-  const parsedLayout = Number(savedLayout);
+    if (savedLayout !== null) {
+      const parsedLayout = Number(savedLayout);
 
-  if (layouts.includes(parsedLayout as LayoutType)) {
-    setSelectedLayout(parsedLayout as LayoutType);
-    setLastAppliedLayout(parsedLayout);
-  } else {
-    setSelectedLayout(DEFAULT_LAYOUT);
-    setLastAppliedLayout(DEFAULT_LAYOUT);
-  }
-} else {
-  setSelectedLayout(DEFAULT_LAYOUT);
-  setLastAppliedLayout(DEFAULT_LAYOUT);
-}
+      if (layouts.includes(parsedLayout as LayoutType)) {
+        setSelectedLayout(parsedLayout as LayoutType);
+        setLastAppliedLayout(parsedLayout);
+      } else {
+        setSelectedLayout(DEFAULT_LAYOUT);
+        setLastAppliedLayout(DEFAULT_LAYOUT);
+      }
+    } else {
+      setSelectedLayout(DEFAULT_LAYOUT);
+      setLastAppliedLayout(DEFAULT_LAYOUT);
+    }
 
-}, []);
+  }, []);
 
 
- useEffect(() => {
-  if (!userTriggeredLayoutChange.current) return;
-  if (selectedLayout == null || selectedLayout === -1) return;
+  // UPDATED: Layout application - Set layout_type and let template handle
+  useEffect(() => {
+    if (!userTriggeredLayoutChange.current) return;
 
-  const rule = layoutRules[selectedLayout];
-  const style = layoutStyles[selectedLayout];
-  if (!rule || !style) return;
+    const layoutType = layoutMap[selectedLayout];
+    if (layoutType && selectedSlideIndex >= 0 && selectedSlideIndex < slides.length) {
+      const updatedSlides = structuredClone(slides);
+      updatedSlides[selectedSlideIndex] = {
+        ...updatedSlides[selectedSlideIndex],
+        layout_type: layoutType,
+      };
+      setSlides(updatedSlides);
+    }
 
-  const updatedSlides = structuredClone(slides);
-  const currentSlide = updatedSlides[selectedSlideIndex];
-
-  if (!currentSlide) return;
-
-  const newSlide = structuredClone(currentSlide);
-  const titleEl = { ...newSlide.slide_title, element_type: "title" };
-  const bulletEls = newSlide.elements.filter((el) => el.element_type === "bullet_point");
-  const textEls = newSlide.elements.filter((el) => el.element_type === "text");
-  const imageEls = newSlide.elements.filter((el) => el.element_type === "image");
-
-  const textElements = [titleEl, ...bulletEls, ...textEls];
-
-  textElements.forEach((el, idx) => {
-    const { x, y } = rule(el, idx, el.element_type);
-    el.properties = {
-      ...el.properties,
-      x,
-      y,
-      ...(el.element_type === "title" && {
-        fontSize: style.title.fontSize,
-        fontWeight: style.title.fontWeight,
-        color: selectedTheme?.titleColor || "black",
-      }),
-      ...(el.element_type === "text" && {
-        fontSize: style.text.fontSize,
-        color: selectedTheme?.primaryColor || "black",
-      }),
-      ...(el.element_type === "bullet_point" && {
-        fontSize: style.bullet.fontSize,
-        color: selectedTheme?.primaryColor || "black",
-      }),
-    };
-  });
-
-  imageEls.forEach((el, idx) => {
-    const { x, y } = rule(el, idx, "image");
-    el.properties = {
-      ...el.properties,
-      x,
-      y,
-      width: style.image.width,
-      height: style.image.height,
-    };
-  });
-
-  newSlide.slide_title = titleEl;
-  newSlide.elements = [
-    ...textElements.filter((el) => el.element_type !== "title"),
-    ...imageEls,
-  ];
-
-  updatedSlides[selectedSlideIndex] = newSlide;
-
-  setSlides(updatedSlides);
-  setLastAppliedLayout(selectedLayout);
-  userTriggeredLayoutChange.current = false;
-}, [selectedLayout, layoutRefreshKey, slides, setSlides, selectedTheme, selectedSlideIndex]);
+    userTriggeredLayoutChange.current = false;
+  }, [selectedLayout, layoutRefreshKey, slides, setSlides, selectedSlideIndex]);
   const allPalettes = palettes;
+  // FIXED: Updated matching to use contrasted color
   const selectedPaletteIdx = allPalettes.findIndex(
     (p) =>
       selectedTheme &&
       p[0] === selectedTheme.backgroundColor &&
-      p[1] === selectedTheme.primaryColor &&
-      p[2] === selectedTheme.secondaryColor &&
-      p[1] === selectedTheme.titleColor
+      getContrastingTextColor(p[0], p[1]) === selectedTheme.primaryColor &&
+      p[2] === selectedTheme.secondaryColor
   );
 
   return (
@@ -616,6 +498,7 @@ if (savedLayout !== null) {
         >
           Theme Palette
         </Typography>
+        {/* FIXED: Render palettes with better selection indication */}
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
           {allPalettes.map((palette, i) => (
             <Box
@@ -623,10 +506,17 @@ if (savedLayout !== null) {
               onClick={() => handlePaletteClick(palette)}
               sx={{
                 cursor: "pointer",
-                p: 1,
+                p: 1.5,  // FIXED: Better padding
                 borderRadius: 2,
+                border: selectedPaletteIdx === i
+                  ? "2px solid #7B4AE2"  // FIXED: Show selected state
+                  : "2px solid transparent",
                 bgcolor: selectedPaletteIdx === i ? "#F5F5F5" : "transparent",
-                "&:hover": { bgcolor: "#F5F5F5" },
+                "&:hover": {
+                  bgcolor: "#F5F5F5",
+                  borderColor: selectedPaletteIdx === i ? "#7B4AE2" : "#E0E0E0",
+                },
+                transition: "all 0.2s ease",
               }}
             >
               <PaletteStack colors={palette} />
@@ -642,26 +532,6 @@ if (savedLayout !== null) {
         </Typography>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-          {/* <button
-            onClick={() => applyLayout(-1 as LayoutType)}
-            className={`w-[150px] h-[85px] p-0 overflow-hidden mb-2 rounded-sm
-              ${selectedLayout === -1
-                ? "shadow-[0_0_0_2px_#7B4AE2]"
-                : "shadow-[0_0_0_1px_#ECECEC]"
-              }`}
-          >
-            <Typography
-              sx={{
-                fontSize: 14,
-                fontWeight: 500,
-                textAlign: "center",
-                pt: 3,
-                mb: 5,                
-              }}
-            >
-              Disable Layout
-            </Typography>
-          </button> */}
           {[...Array(6)].map((_, i) => (
             <button
               key={i}

@@ -1,3 +1,4 @@
+// context/ThemeContext.tsx
 "use client";
 import React, { createContext, useContext, useState } from "react";
 // ThemeContext.tsx
@@ -8,18 +9,18 @@ export interface Theme {
   backgroundColor: string;
   image_url: string | undefined;
   titleColor?: string;
+  artPalette?: string[];
 }
 
-type LayoutType = -1| 0 | 1 | 2 | 3 | 4 | 5 ;
+type LayoutType = -1 | 0 | 1 | 2 | 3 | 4 | 5;
 
 interface ThemeContextType {
-  selectedTheme: Theme | null ;
+  selectedTheme: Theme | null;
   setSelectedTheme: React.Dispatch<React.SetStateAction<Theme | null>>;
   selectedLayout: LayoutType;
   setSelectedLayout: React.Dispatch<React.SetStateAction<LayoutType>>;
   setPrimaryColor: (color: string) => void;
 }
-
 
 const ThemeContext = createContext<ThemeContextType>({
   selectedTheme: null,

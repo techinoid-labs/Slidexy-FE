@@ -278,7 +278,6 @@ export const getRandomSlide = () => {
       },
     },
     elements: [],
-    image_url: null,
   };
 };
 
