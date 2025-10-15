@@ -8,6 +8,7 @@ import {
   Typography,
   InputAdornment,
   Avatar,
+  LinearProgress,
 } from "@mui/material";
 import Image from "next/image";
 import InputModeSelector from "./InputModeSelector";
@@ -31,8 +32,8 @@ const getProgressMessage = (progress: number) => {
   if (progress < 8) return "Initializing...";
   if (progress < 17) return "Analyzing data...";
   if (progress < 24) return "Thinking...";
-  if (progress < 43) return "Generating text ...";
-  if (progress < 76) return "Generating images...";
+  if (progress < 43) return " text ...";
+  if (progress < 76) return " images...";
   return "Finalizing...";
 };
 
@@ -51,6 +52,8 @@ export default function PresentationMaker({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentMessage, setCurrentMessage] = useState("");
+  const [currentDetail, setCurrentDetail] = useState("");
   const { setSlides, slides } = useSlides();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -146,89 +149,14 @@ export default function PresentationMaker({
   const showYoutubeError =
     inputMode === "Youtube" && inputValue && !isValidYoutubeUrl(inputValue);
 
-  //No Streaming submit
-  // const handleSubmit = async () => {
-  //   setLoading(true);
-  //   setError("");
-  //   setProgress(0);
-
-  //   let interval: NodeJS.Timeout | null = null;
-
-  //   // Progress animation
-  //   interval = setInterval(() => {
-  //     setProgress((prev) => {
-  //       if (prev >= 95) return prev;
-  //       return prev + Math.random() * 0.8;
-  //     });
-  //   }, 200);
-
-  //   // Validate website URL
-  //   if (inputMode === "Website") {
-  //     try {
-  //       const url = new URL(inputValue);
-  //       if (!["http:", "https:"].includes(url.protocol)) throw new Error();
-  //     } catch {
-  //       setError("Please enter a valid website URL.");
-  //       setLoading(false);
-  //       if (interval) clearInterval(interval);
-  //       return;
-  //     }
-  //   }
-
-  //   // Build payload
-  //   const base =
-  //     inputMode === "Youtube"
-  //       ? { source: "youtube", inputUrl: inputValue }
-  //       : inputMode === "Website"
-  //       ? { source: "website", inputWebsiteUrl: inputValue }
-  //       : { source: "text", textContent: inputValue };
-
-  //   const promptMeta = { goal, tone, audience };
-  //   const payload = {
-  //     ...base,
-  //     meta: promptMeta,
-  //     slideCount: slideCount === "" ? 3 : slideCount,
-  //   };
-
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/generate-slides`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(payload),
-  //     });
-
-  //     let data: any;
-  //     try {
-  //       data = await res.json(); // ✅ parse once
-  //     } catch {
-  //       throw new Error("Invalid JSON response");
-  //     }
-
-  //     if (!res.ok) {
-  //       throw new Error(data.error || "Failed to generate slides");
-  //     }
-
-  //     // ✅ stop animation before navigation
-  //     if (interval) clearInterval(interval);
-
-  //     setProgress(100);
-  //     setSlides(data.slides);
-
-  //     router.push(`/presentation/outline`);
-  //   } catch (err: any) {
-  //     setError(err.message || "Something went wrong");
-  //     if (interval) clearInterval(interval);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   //Streaming submit
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
     setProgress(1);
     setSlides([]);
+    setCurrentMessage("");
+    setCurrentDetail("");
 
     // Validate website URL
     if (inputMode === "Website") {
@@ -309,6 +237,14 @@ export default function PresentationMaker({
               setProgress(event.percent);
             }
 
+            if (event.message !== undefined) {
+              setCurrentMessage(event.message);
+            }
+
+            if (event.detail !== undefined) {
+              setCurrentDetail(event.detail);
+            }
+
             if (event.error) {
               setError(event.error);
               setLoading(false);
@@ -317,6 +253,8 @@ export default function PresentationMaker({
 
             if (event.complete) {
               setProgress(100);
+              setCurrentMessage(event.message || "✅ Presentation successfully created!");
+              setCurrentDetail(event.detail || "All slides and visuals are ready for viewing");
 
               if (event.slides) {
                 setSlides(event.slides);
@@ -607,22 +545,100 @@ export default function PresentationMaker({
           Please enter a valid YouTube URL.
         </Typography>
       )}
+
+
+      {loading && (
+        <Box sx={{
+          mb: { xs: 2, md: 4 },
+          p: { xs: 2, sm: 3, md: 5 },
+          height: { xs: 'auto', sm: 250, md: 270 },
+          borderRadius: 3,
+          bgcolor: "white",
+          boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
+          border: "1px solid #f0f0f0"
+        }}>
+          <Box sx={{ 
+            display: "flex", 
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: { xs: 1, sm: 0 },
+            mb: 1.5 
+          }}>
+            <Box sx={{
+              width: 15,
+              height: 15,
+              borderRadius: "50%",
+              bgcolor: "#8E2DE2",
+              mr: { xs: 0, sm: 2 },
+              mb: { xs: 1, sm: 0 },
+              animation: "pulse 1.5s ease-in-out infinite"
+            }} />
+            <Typography
+              variant="h6"
+              sx={{ 
+                fontWeight: 600, 
+                color: "#8E2DE2", 
+                flexGrow: 1,
+                fontSize: { xs: '1.25rem', md: '1.5rem' }
+              }}
+            >
+              {currentMessage}
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ 
+                mt: { xs: 0.5, sm: 0 },
+                minWidth: { sm: '50px' },
+                textAlign: { xs: 'right', sm: 'left' }
+              }}
+            >
+              {Math.round(progress)}%
+            </Typography>
+          </Box>
+          <Typography 
+            variant="body1" 
+            color="text.secondary" 
+            sx={{ 
+              mb: 2, 
+              lineHeight: 1.6,
+              wordBreak: 'break-word'
+            }}
+          >
+            {currentDetail}
+          </Typography>
+          {/* <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{
+              height: 6,
+              borderRadius: 5,
+              bgcolor: "grey.200",
+              "& .MuiLinearProgress-bar": {
+                borderRadius: 5,
+                background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+                boxShadow: "0 2px 10px rgba(142, 45, 226, 0.3)",
+              },
+            }}
+          /> */}
+        </Box>
+      )}
       <Button
         fullWidth
         onClick={
           inputMode === "Template"
             ? handleTemplateSubmit
             : inputMode === "TextToInfographics"
-            ? handleInfographicSubmit
-            : handleSubmit
+              ? handleInfographicSubmit
+              : handleSubmit
         }
         disabled={
           loading ||
           (inputMode === "Template"
             ? !templatePrompt.trim()
             : inputMode === "TextToInfographics"
-            ? !inputValue.trim()
-            : !inputValue.trim() || Boolean(showYoutubeError))
+              ? !inputValue.trim()
+              : !inputValue.trim() || Boolean(showYoutubeError))
         }
         sx={{
           position: "relative",
@@ -635,15 +651,14 @@ export default function PresentationMaker({
           fontWeight: 600,
           mb: 4,
           height: { xs: 57, md: 70 },
-          border: `2px solid ${
-            inputMode === "Template"
+          border: `2px solid ${inputMode === "Template"
               ? !templatePrompt.trim()
                 ? "grey"
                 : "#8E2DE2"
               : !inputValue.trim() || Boolean(showYoutubeError)
-              ? "grey"
-              : "#8E2DE2"
-          }`,
+                ? "grey"
+                : "#8E2DE2"
+            }`,
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
@@ -653,8 +668,8 @@ export default function PresentationMaker({
                 ? 0.7
                 : 1
               : !inputValue.trim() || Boolean(showYoutubeError)
-              ? 0.7
-              : 1,
+                ? 0.7
+                : 1,
           "&:hover": { backgroundColor: "#f3eaff" },
           "&::before": {
             content: '""',
@@ -678,22 +693,22 @@ export default function PresentationMaker({
             color: loading
               ? "#fff"
               : inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "grey"
-                : "#8E2DE2"
-              : !inputValue.trim() || Boolean(showYoutubeError)
-              ? "grey"
-              : "#8E2DE2",
+                ? !templatePrompt.trim()
+                  ? "grey"
+                  : "#8E2DE2"
+                : !inputValue.trim() || Boolean(showYoutubeError)
+                  ? "grey"
+                  : "#8E2DE2",
             textShadow: loading ? `0 0 10px #8E2DE2, 0 0 5px #4A00E0` : "none",
             transition: "color 0.6s ease, text-shadow 0.6s ease",
             fontWeight: 600,
           }}
         >
           {loading
-            ? `${getProgressMessage(progress)} ${Math.round(progress)}%`
+            ? `Generating... ${Math.round(progress)}%`
             : inputMode === "Template"
-            ? "Generate Template"
-            : "Generate Outlines"}
+              ? "Generate Template"
+              : "Generate Outlines"}
         </span>
 
         <Box
@@ -705,12 +720,12 @@ export default function PresentationMaker({
             background: loading
               ? "linear-gradient(90deg, #ffffff 0%, #f5f0ff 100%)"
               : inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-                : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
-              : !inputValue.trim() || Boolean(showYoutubeError)
-              ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
-              : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+                ? !templatePrompt.trim()
+                  ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+                  : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)"
+                : !inputValue.trim() || Boolean(showYoutubeError)
+                  ? "linear-gradient(90deg, #e0e0e0 0%, #c0c0c0 100%)"
+                  : "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
             maskImage: 'url("/images/generate.svg")',
             WebkitMaskImage: 'url("/images/generate.svg")',
             maskSize: "cover",
@@ -724,7 +739,6 @@ export default function PresentationMaker({
           }}
         />
       </Button>
-
       {/* ERROR HANDLING */}
       {error && (
         <PresentaionErrorAlert error={error} onClose={() => setError("")} />
@@ -733,10 +747,10 @@ export default function PresentationMaker({
         <Box
           sx={{
             display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
             mb: 2,
-            gap: 70,
+            gap: { xs: 1, md: 70 },
           }}
         >
           <Typography

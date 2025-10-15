@@ -380,7 +380,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
-            Effects
+            Opacity
           </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

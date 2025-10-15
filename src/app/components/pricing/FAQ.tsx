@@ -11,18 +11,20 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 export default function FAQSection() {
-  const [expanded, setExpanded] = useState<string | false>("q2");
+ const [expanded, setExpanded] = useState<string[]>([]);
 
   const handleChange =
     (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-      setExpanded(isExpanded ? panel : false);
+      setExpanded((prev) =>
+        isExpanded ? [...prev, panel] : prev.filter((id) => id !== panel)
+      );
     };
 
   const faqs = [
     {
       id: "q1",
       question: "What is the Slidexy?",
-      answer: "",
+      answer: "Slidexy is an AI-powered presentation tool that helps you instantly turn your ideas into professional slides with minimal effort.",
     },
     {
       id: "q2",
@@ -32,23 +34,23 @@ export default function FAQSection() {
     },
     {
       id: "q3",
-      question: "How does the “Prompt to Deck” feature work?",
-      answer: "",
+      question: "Is there a free version available?",
+      answer: "Yes! Slidexy offers a free plan with basic features so you can try it out before upgrading to our premium plans for advanced functionality.",
     },
     {
       id: "q4",
       question: "Can I create a presentation from a video?",
-      answer: "",
+      answer: "Yes! Just upload your video, and our AI will analyze its content to generate a tailored presentation complete with slides, images, and text.",
     },
     {
       id: "q5",
       question: "Can I edit the generated slides?",
-      answer: "",
+      answer: "Yes, absolutely! While AI generates the initial draft, you can fully edit, style, and personalize slides to match your needs.",
     },
     {
       id: "q6",
       question: "How fast can I create a presentation with this tool?",
-      answer: "",
+      answer: "With Slidexy, you can create a complete presentation in just a few minutes, depending on the complexity of your content and the number of slides you need.",
     },
   ];
 
@@ -82,7 +84,7 @@ export default function FAQSection() {
       {faqs.map((faq) => (
         <Accordion
           key={faq.id}
-          expanded={expanded === faq.id}
+        expanded={expanded.includes(faq.id)}
           onChange={handleChange(faq.id)}
           disableGutters
           sx={{
@@ -92,7 +94,7 @@ export default function FAQSection() {
 
             borderRadius: "16px",
             "&:before": { display: "none" },
-            ...(expanded === faq.id && {
+            ...(expanded.includes(faq.id) && {
               border: "1px solid #A78BFA",
               borderRadius: "16px",
               backgroundColor: "rgba(167, 139, 250, 0.04)",
@@ -102,13 +104,13 @@ export default function FAQSection() {
           <AccordionSummary
             expandIcon={
               <ExpandMoreIcon
-                sx={{ color: expanded === faq.id ? "#7C3AED" : "inherit" }}
+                sx={{ color: expanded.includes(faq.id) ? "#7C3AED" : "inherit" }}
               />
             }
             sx={{
               typography: "subtitle1",
-              fontWeight: expanded === faq.id ? 600 : 500,
-              color: expanded === faq.id ? "#7C3AED" : "inherit",
+              fontWeight: expanded.includes(faq.id) ? 600 : 500,
+              color: expanded.includes(faq.id) ? "#7C3AED" : "inherit",
               fontSize: "20px",
             }}
           >
