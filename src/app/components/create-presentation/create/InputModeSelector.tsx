@@ -120,11 +120,11 @@ const modes = [
   { label: "Prompt-to-Template", value: "Template" },
   { label: "Text-to-Infographics", value: "TextToInfographics" },
 ];
-
+type InputMode = "Text" | "Website" | "Youtube" | "Template" | "TextToInfographics";
 export default function InputModeSelector({
   onModeChange,
 }: {
-  onModeChange: (mode: string) => void;
+  onModeChange: (mode: InputMode) => void;
 }) {
   const [activeMode, setActiveMode] = useState<string>("Text");
   const theme = useTheme();
@@ -141,7 +141,7 @@ export default function InputModeSelector({
 
   const handleModeChange = (mode: string) => {
     setActiveMode(mode);
-    onModeChange(mode);
+    onModeChange(mode as InputMode);
   };
 
   return (

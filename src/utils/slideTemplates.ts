@@ -1032,9 +1032,9 @@ const createSplitContentSlide = (
   const slideNumber = slide.knowledge?.slideNumber || 4;
 
   const colWidth = (SLIDE_WIDTH - 120) / 2;
-  const cardHeight = 65;
-  const cardSpacing = 20;
-  const startY = 150;
+  const cardHeight = 80;
+  const cardSpacing = 25;
+  const startY = 140;
 
   const leftBullets = bullets.slice(0, Math.ceil(bullets.length / 2));
   const rightBullets = bullets.slice(Math.ceil(bullets.length / 2));
@@ -1057,7 +1057,7 @@ const createSplitContentSlide = (
         y: 50,
         width: SLIDE_WIDTH - 120,
         height: 60,
-        fontSize: 32,
+        fontSize: 42,
         fontFamily: "Raleway, sans-serif",
         fontWeight: "600",
         fill: textColor,
@@ -1065,6 +1065,7 @@ const createSplitContentSlide = (
         letterSpacing: -0.2,
         padding: 6,
         verticalAlign: "top",
+        opacity: 1,
       },
     },
     elements: [
@@ -1078,8 +1079,26 @@ const createSplitContentSlide = (
           width: SLIDE_WIDTH,
           height: SLIDE_HEIGHT,
           fill: colors.background,
+          opacity: 1,
         },
       },
+
+      ...(imageUrl ? [
+        {
+          element_type: "image",
+          konva_component: "Konva.Image",
+          properties: {
+            image_id: uuidv4(),
+            imageSrc: imageUrl,
+            x: 0,
+            y: 0,
+            width: SLIDE_WIDTH,
+            height: SLIDE_HEIGHT,
+            opacity: 0.05,
+            filters: [{ type: 'Blur', radius: 15 }],
+          },
+        },
+      ] : []),
 
       {
         element_type: "shape",
@@ -1094,10 +1113,11 @@ const createSplitContentSlide = (
           fillLinearGradientStartPoint: { x: 0, y: 0 },
           fillLinearGradientEndPoint: { x: SLIDE_WIDTH, y: 120 },
           fillLinearGradientColorStops: [
-            0, hexToRgba(colors.accent, 0.04),
-            0.5, hexToRgba(colors.secondary, 0.02),
+            0, hexToRgba(colors.accent, 0.2),
+            0.5, hexToRgba(colors.secondary, 0.12),
             1, "rgba(255, 255, 255, 0)",
           ],
+          opacity: 1,
         },
       },
 
@@ -1115,49 +1135,59 @@ const createSplitContentSlide = (
           fillLinearGradientEndPoint: { x: SLIDE_WIDTH / 2 + 70, y: 110 },
           fillLinearGradientColorStops: [0, colors.primary, 0.5, colors.accent, 1, colors.secondary],
           cornerRadius: 1,
+          opacity: 1,
+        },
+      },
+
+      {
+        element_type: "shape",
+        konva_component: "Konva.Rect",
+        shape_id: uuidv4(),
+        properties: {
+          x: SLIDE_WIDTH / 2,
+          y: 120,
+          width: 1,
+          height: SLIDE_HEIGHT - 120,
+          fill: hexToRgba(textColor, 0.8),
+          opacity: 1,
         },
       },
 
       ...leftCards,
       ...rightCards,
 
-      ...(imageUrl ? [
-        {
-          element_type: "image",
-          konva_component: "Konva.Image",
-          properties: {
-            image_id: uuidv4(),
-            imageSrc: imageUrl,
-            x: 0,
-            y: SLIDE_HEIGHT - 200,
-            width: SLIDE_WIDTH,
-            height: 200,
-            opacity: 0.3,
-          },
-        },
-        {
-          element_type: "shape",
-          konva_component: "Konva.Rect",
-          shape_id: uuidv4(),
-          properties: {
-            x: 0,
-            y: SLIDE_HEIGHT - 200,
-            width: SLIDE_WIDTH,
-            height: 200,
-            fillPriority: "linear-gradient",
-            fillLinearGradientStartPoint: { x: 0, y: SLIDE_HEIGHT - 200 },
-            fillLinearGradientEndPoint: { x: SLIDE_WIDTH, y: SLIDE_HEIGHT },
-            fillLinearGradientColorStops: [
-              0, hexToRgba(colors.background, 0.8),
-              1, hexToRgba(colors.primary, 0.2),
-            ],
-            cornerRadius: 0,
-          },
-        },
-      ] : []),
+      createGradientBlob(80, 280, 100, 80, colors.secondary, colors.accent, 0.25),
+      createGradientBlob(SLIDE_WIDTH - 130, 300, 80, 70, colors.accent, colors.primary, 0.25),
 
-      createGradientBlob(80, 280, 100, 80, colors.secondary, colors.accent, 0.06),
-      createGradientBlob(SLIDE_WIDTH - 130, 300, 80, 70, colors.accent, colors.primary, 0.06),
+      // Additional decorative shape: left side circle
+      {
+        element_type: "shape",
+        konva_component: "Konva.Circle",
+        shape_id: uuidv4(),
+        properties: {
+          x: 40,
+          y: SLIDE_HEIGHT - 80,
+          radius: 30,
+          fill: hexToRgba(colors.primary, 0.3),
+          opacity: 0.8,
+        },
+      },
+
+      // Additional decorative shape: right side triangle-ish rect
+      {
+        element_type: "shape",
+        konva_component: "Konva.Rect",
+        shape_id: uuidv4(),
+        properties: {
+          x: SLIDE_WIDTH - 60,
+          y: SLIDE_HEIGHT - 100,
+          width: 40,
+          height: 40,
+          fill: hexToRgba(colors.accent, 0.3),
+          rotation: 45,
+          opacity: 0.8,
+        },
+      },
 
       {
         element_type: "text",
@@ -1166,16 +1196,27 @@ const createSplitContentSlide = (
         properties: {
           x: SLIDE_WIDTH - 50,
           y: SLIDE_HEIGHT - 35,
-          fontSize: 12,
+          fontSize: 20,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "500",
           fill: textColor,
           align: "right",
+          opacity: 1,
         },
       },
     ].flat(),
   };
 };
+// Helper function to darken a color (add this if not present)
+function darkenColor(hex: any , amount: any) {
+  let r = parseInt(hex.slice(1, 3), 16);
+  let g = parseInt(hex.slice(3, 5), 16);
+  let b = parseInt(hex.slice(5, 7), 16);
+  r = Math.max(0, Math.floor(r * (1 - amount)));
+  g = Math.max(0, Math.floor(g * (1 - amount)));
+  b = Math.max(0, Math.floor(b * (1 - amount)));
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
 
 // ============= CONCLUSION SLIDE (ENHANCED) =============
 

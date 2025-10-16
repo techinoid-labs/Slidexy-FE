@@ -166,9 +166,12 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
                   const firstBullet = slide.elements.find((el: any) =>
                     el.element_type === "bullet_point" || el.element_type === "text"
                   );
-                  return firstBullet
-                    ? firstBullet.text // Strip bullet symbol for cleaner preview (optional)
-                    : "Add description";
+                  return typeof firstBullet?.text === "string"
+                    ? firstBullet.text
+                    : typeof firstBullet?.text?.text === "string"
+                      ? firstBullet.text.text
+                      : "Add description";
+
                 })()}
               </Typography>
               {slides.length > 1 && (

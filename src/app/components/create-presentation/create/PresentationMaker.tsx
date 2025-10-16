@@ -47,7 +47,9 @@ export default function PresentationMaker({
   }[];
 }) {
   const { user } = useUser();
-  const [inputMode, setInputMode] = useState("Text");
+  type InputMode = "Text" | "Website" | "Youtube" | "Template" | "TextToInfographics";
+const [inputMode, setInputMode] = useState<InputMode>("Text");
+
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -65,6 +67,7 @@ export default function PresentationMaker({
   const [tone, setTone] = useState("");
   const [audience, setAudience] = useState("");
   const [slideCount, setSlideCount] = useState("");
+  const [artStyle, setArtStyle] = useState(""); // New state for art style
   const {
     setSlideTemplates,
     slideTemplates,
@@ -72,6 +75,19 @@ export default function PresentationMaker({
     setInfographicId,
   } = useTemplateSlides();
   // console.log({ slideTemplates });
+
+  // Auto-suggest default art style based on input mode
+  useEffect(() => {
+    const defaults = {
+      Text: "Concept Art",
+      Website: "Flat Illustration",
+      Youtube: "Cinematic Still Frame",
+      Template: "",
+      TextToInfographics: "",
+    };
+    setArtStyle(defaults[inputMode]  || "");
+  }, [inputMode]);
+
   const getPlaceholder = () => {
     switch (inputMode) {
       case "Youtube":
@@ -182,6 +198,7 @@ export default function PresentationMaker({
     const payload = {
       ...base,
       meta: promptMeta,
+      artStyle, // New: Include art style in payload
       slideCount: slideCount === "" ? 3 : slideCount,
       userData: user,
     };
@@ -405,10 +422,13 @@ export default function PresentationMaker({
         tone={tone}
         audience={audience}
         slideCount={slideCount}
+        artStyle={artStyle}
+        inputMode={inputMode}
         setGoal={setGoal}
         setTone={setTone}
         setAudience={setAudience}
         setSlideCount={setSlideCount}
+        setArtStyle={setArtStyle}
       />
 
       <Box
@@ -424,38 +444,6 @@ export default function PresentationMaker({
           mb: 3,
         }}
       >
-        {/* <TextField
-          fullWidth
-          type="url"
-          disabled={loading ? true : false}
-          variant="outlined"
-          placeholder={getPlaceholder()}
-          value={inputMode == "Template" ? templatePrompt : inputValue}
-          onChange={(e) =>
-            inputMode == "Template"
-              ? setTemplatePrompt(e.target.value)
-              : setInputValue(e.target.value)
-          }
-          InputProps={{
-            sx: {
-              height: "100%",
-              border: "none",
-              "& fieldset": { border: "none" },
-              fontSize: { xs: "1rem", md: "1rem" },
-              px: 2,
-            },
-            endAdornment:
-              inputMode === "Website" && faviconUrl ? (
-                <InputAdornment position="end">
-                  <Avatar
-                    src={faviconUrl}
-                    alt="Favicon"
-                    sx={{ width: 32, height: 32, bgcolor: "transparent" }}
-                  />
-                </InputAdornment>
-              ) : undefined,
-          }}
-        /> */}
         <TextField
           fullWidth
           type="url"
