@@ -1,0 +1,200 @@
+"use client";
+
+import { Box, Typography, Chip, Button } from "@mui/material";
+import Link from "next/link";
+import Lottie from "lottie-react";
+import Gif10ContextAware from "@/json/Gif10-context-aware.json";
+import StepsAccordion from "./components/working/StepsAccordion";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { analyticsEvent } from "@/lib/gtag";
+
+export default function WorkingSection() {
+  const router = useRouter();
+  const handleRedirect = () => {
+    analyticsEvent("get_started_click", {
+      category: "engagement",
+      label: "home_page_to_slide_generation",
+    });
+
+    router.push(`/presentation/create`);
+  };
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        background: "#fff",
+        px: { xs: 2, md: "162px" },
+        py: { xs: 6, md: "80px" },
+        display: "flex",
+        flexDirection: "column",
+        gap: "48px",
+        boxSizing: "border-box",
+        mx: "auto",
+      }}
+    >
+      {/* Badge */}
+      <Box sx={{ mb: 2, textAlign: { xs: "center", md: "left" } }}>
+        <Chip
+          icon={
+            <img
+              src="/images/Stars.svg"
+              alt="Icon"
+              width={18}
+              height={18}
+              style={{ marginRight: 4 }}
+            />
+          }
+          label={
+            <span
+              style={{ fontWeight: 500, fontSize: "14px", color: "#4A00E0" }}
+            >
+              How it Works?
+            </span>
+          }
+          sx={{
+            background: "#F3F0FF",
+            color: "#4A00E0",
+            px: 2,
+            py: 0.4,
+            fontWeight: 500,
+            fontSize: "0.95rem",
+            borderRadius: "999px",
+            width: "fit-content",
+            mx: { xs: "auto", md: 0 },
+            "& .MuiChip-icon": {
+              marginRight: "6px",
+            },
+          }}
+        />
+      </Box>
+
+      {/* Try for Free Button - Desktop View (above heading) */}
+      <Box
+        sx={{
+          textAlign: "right",
+          mb: { xs: 0, md: 10 },
+          display: { xs: "none", md: "block" }, // Show only in md and above
+        }}
+      >
+        <Button
+          variant="contained"
+          onClick={() => handleRedirect()}
+          sx={{
+            background: "#6C2BD7",
+            color: "#fff",
+            borderRadius: "999px",
+            px: 4,
+            py: 1.5,
+            fontWeight: 600,
+            fontSize: "1.1rem",
+            textTransform: "none",
+            boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
+            "&:hover": {
+              background: "#8E2DE2",
+            },
+          }}
+          endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
+        >
+          Try for Free
+        </Button>
+      </Box>
+
+      {/* Heading */}
+      <Box
+        sx={{
+          textAlign: { xs: "center", md: "left" },
+          mt: { xs: -5, md: -24 },
+        }}
+      >
+        <Typography
+          variant="h1"
+          sx={{
+            fontWeight: 500,
+            fontSize: { xs: "2rem", md: "2.5rem" },
+            color: "#18181B",
+            mb: { xs: 2, md: 0 }, // Add margin below heading in mobile view for button
+          }}
+        >
+          How Slidexy <br />
+          Saves You Time and Effort?
+        </Typography>
+      </Box>
+
+      {/* Try for Free Button - Mobile View (below heading) */}
+      <Box
+        sx={{
+          textAlign: "center",
+          mb: 2,
+          mt: { xs: -5 },
+          display: { xs: "block", md: "none" }, // Show only in xs
+        }}
+      >
+        <Link href="/presentation/create" passHref>
+          <Button
+            variant="contained"
+            sx={{
+              background: "#6C2BD7",
+              color: "#fff",
+              borderRadius: "999px",
+              px: { xs: 3, md: 4 },
+              py: { xs: 1, md: 1.5 },
+              fontWeight: 600,
+              fontSize: { xs: "0.9rem", md: "1.1rem" },
+              textTransform: "none",
+              boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
+              "&:hover": {
+                background: "#8E2DE2",
+              },
+            }}
+            endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
+          >
+            Try for Free
+          </Button>
+        </Link>
+      </Box>
+
+      {/* Main Content */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", lg: "row" },
+          gap: 6,
+          alignItems: "center",
+        }}
+      >
+        {/* Steps */}
+
+        <StepsAccordion />
+
+        {/* Right Image */}
+        {/* Right Lottie Animation */}
+        <Box
+          sx={{
+            width: { xs: "100%", md: 500 },
+            height: { xs: 250, md: 400 },
+            borderRadius: "50px",
+            border: "0.78px solid #E9E9FF",
+            background: "#F8F8FF",
+            mt: { xs: 0, md: -4 },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden", // keep animation contained
+          }}
+        >
+          <Lottie
+            animationData={Gif10ContextAware}
+            loop
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: "50px",
+              objectFit: "cover",
+            }}
+          />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
