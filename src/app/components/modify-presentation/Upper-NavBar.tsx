@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   AppBar,
@@ -115,6 +115,13 @@ const UpperNavBar: React.FC<{
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") inputRef.current?.blur();
   };
+
+  const [currentUrl, setCurrentUrl] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setCurrentUrl(window.location.href);
+    }
+  }, []);
 
   return (
     <>
@@ -251,6 +258,28 @@ const UpperNavBar: React.FC<{
               }}
             >
               <PaletteIcon />
+            </IconButton>
+
+            {/* SOCIAL SHARE BUTTONS - only shown in editor (UpperNavBar) */}
+            <IconButton
+              sx={{ mx: 0.5 }}
+              component="a"
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Share on Facebook"
+            >
+              <Image src="/images/social-ico/facebook-ico.svg" alt="Share on Facebook" width={28} height={28} />
+            </IconButton>
+            <IconButton
+              sx={{ mx: 0.5 }}
+              component="a"
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Share on LinkedIn"
+            >
+              <Image src="/images/social-ico/linkedin-ico.svg" alt="Share on LinkedIn" width={28} height={28} />
             </IconButton>
 
             {/* Export Buttons (desktop only) */}

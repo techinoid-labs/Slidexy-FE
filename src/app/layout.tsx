@@ -25,7 +25,24 @@ const raleway = Raleway({
 export const metadata: Metadata = {
   title: "Slides - Your Idea, Instantly on Slides",
   description:
-    "Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers.",
+    "Start with your idea — whether it's a prompt, a video, or a webpage. Slidexy AI turns it into a fully designed presentation deck, template, or infographic. Next, you step into the built-in editor to tweak slides: adjust layouts, swap visuals, apply your brand theme. Finally, export or share your slides instantly — no manual design needed, no long wait. With Slidexy, you turn raw content into polished, on-brand visuals in minutes.",
+  openGraph: {
+    title: "Slidexy AI – Create Decks Instantly with AI",
+    description:
+      "Start with your idea — whether it's a prompt, a video, or a webpage. Slidexy AI turns it into a fully designed presentation deck, template, or infographic. Next, you step into the built-in editor to tweak slides: adjust layouts, swap visuals, apply your brand theme. Finally, export or share your slides instantly — no manual design needed, no long wait. With Slidexy, you turn raw content into polished, on-brand visuals in minutes.",
+    url: "https://stichometric-wooingly-leroy.ngrok-free.dev/",
+    siteName: "Slidexy AI",
+    images: [
+      {
+        url: "https://stichometric-wooingly-leroy.ngrok-free.dev/og", 
+        width: 1200,
+        height: 630,
+        alt: "Slidexy AI Preview",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

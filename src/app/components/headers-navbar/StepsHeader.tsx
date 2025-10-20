@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -30,6 +30,12 @@ export default function StepsHeader() {
   const { removeSlides } = useSlides();
   const pathname = usePathname();
   const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
+  const [currentUrl, setCurrentUrl] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setCurrentUrl(window.location.href);
+    }
+  }, []);
   const handleGoBack = () => {
     if (pathname === "/editor") {
       router.push("/presentation/outline");
@@ -126,9 +132,6 @@ export default function StepsHeader() {
                 removeSlides();
                 handleGoBack();
               }}
-              // startIcon={
-              //   <Image src="/arrow-left.svg" alt="Back" width={19} height={19} />
-              // }
               sx={{
                 textTransform: "none",
                 fontWeight: 500,
