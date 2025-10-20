@@ -202,7 +202,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
           // ✅ Login / Signup Form
           <>
             <Typography variant="h6" fontWeight="bold" textAlign="center">
-              {isSignup ? "Start Your Free 7-Day Trial" : "Welcome Back"}
+              {isSignup ? "Start Your Free 3-Day Trial" : "Welcome Back"}
             </Typography>
 
             {isSignup && (
@@ -213,7 +213,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                 sx={{ mb: 1 }}
               >
                 You’ll get <b>a limited number of decks per day</b> and explore
-                for <b>7 days</b>. <br />
+                for <b>3 days</b>. <br />
                 No credit card required.
               </Typography>
             )}
