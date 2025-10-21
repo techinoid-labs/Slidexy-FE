@@ -48,7 +48,8 @@ export default function PresentationMaker({
 }) {
   const { user } = useUser();
   type InputMode = "Text" | "Website" | "Youtube" | "Template" | "TextToInfographics";
-const [inputMode, setInputMode] = useState<InputMode>("Text");
+  const [inputMode, setInputMode] = useState<InputMode>("Text");
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("landscape");
 
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
@@ -85,8 +86,12 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
       Template: "",
       TextToInfographics: "",
     };
-    setArtStyle(defaults[inputMode]  || "");
+    setArtStyle(defaults[inputMode] || "");
+    if (inputMode === "TextToInfographics") {
+      setOrientation("landscape");
+    }
   }, [inputMode]);
+
 
   const getPlaceholder = () => {
     switch (inputMode) {
@@ -165,11 +170,37 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
   const showYoutubeError =
     inputMode === "Youtube" && inputValue && !isValidYoutubeUrl(inputValue);
 
-  //Streaming submit
+  // Helper function to handle streaming response
+  const handleStream = async (reader: ReadableStreamDefaultReader<Uint8Array>, decoder: TextDecoder, onEvent: (event: any) => void) => {
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop() || "";
+
+      for (const part of parts) {
+        if (!part.startsWith("data:")) continue;
+        const jsonStr = part.replace(/^data:\s*/, "").trim();
+        if (!jsonStr || jsonStr === "[DONE]") continue;
+
+        try {
+          const event = JSON.parse(jsonStr);
+          onEvent(event);
+        } catch (err) {
+          console.error("Bad JSON chunk:", jsonStr);
+        }
+      }
+    }
+  };
+
+  //Streaming submit for presentations
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
-    setProgress(1);
+    setProgress(0);
     setSlides([]);
     setCurrentMessage("");
     setCurrentDetail("");
@@ -191,8 +222,8 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
       inputMode === "Youtube"
         ? { source: "youtube", inputUrl: inputValue }
         : inputMode === "Website"
-        ? { source: "website", inputWebsiteUrl: inputValue }
-        : { source: "text", textContent: inputValue };
+          ? { source: "website", inputWebsiteUrl: inputValue }
+          : { source: "text", textContent: inputValue };
 
     const promptMeta = { goal, tone, audience };
     const payload = {
@@ -232,65 +263,45 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let buffer = "";
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const parts = buffer.split("\n\n");
-        buffer = parts.pop() || "";
-
-        for (const part of parts) {
-          if (!part.startsWith("data:")) continue;
-          const jsonStr = part.replace(/^data:\s*/, "").trim();
-          if (!jsonStr || jsonStr === "[DONE]") continue;
-
-          try {
-            const event = JSON.parse(jsonStr);
-
-            if (event.percent !== undefined) {
-              setProgress(event.percent);
-            }
-
-            if (event.message !== undefined) {
-              setCurrentMessage(event.message);
-            }
-
-            if (event.detail !== undefined) {
-              setCurrentDetail(event.detail);
-            }
-
-            if (event.error) {
-              setError(event.error);
-              setLoading(false);
-              return;
-            }
-
-            if (event.complete) {
-              setProgress(100);
-              setCurrentMessage(event.message || "✅ Presentation successfully created!");
-              setCurrentDetail(event.detail || "All slides and visuals are ready for viewing");
-
-              if (event.slides) {
-                setSlides(event.slides);
-              }
-
-              if (event.presentation_id) {
-                setPresentationId(event.presentation_id);
-              }
-
-              setLoading(false);
-              router.push(`/presentation/outline?pid=${event.presentation_id}`);
-              return;
-            }
-          } catch (err) {
-            // console.error("Bad JSON chunk:", jsonStr);
-            // console.log("Bad JSON chunk:", jsonStr);
-          }
+      const onEvent = (event: any) => {
+        if (event.percent !== undefined) {
+          setProgress(event.percent);
         }
-      }
+
+        if (event.message !== undefined) {
+          setCurrentMessage(event.message);
+        }
+
+        if (event.detail !== undefined) {
+          setCurrentDetail(event.detail);
+        }
+
+        if (event.error) {
+          setError(event.error);
+          setLoading(false);
+          return;
+        }
+
+        if (event.complete) {
+          setProgress(100);
+          setCurrentMessage(event.message || "✅ Presentation successfully created!");
+          setCurrentDetail(event.detail || "All slides and visuals are ready for viewing");
+
+          if (event.slides) {
+            setSlides(event.slides);
+          }
+
+          if (event.presentation_id) {
+            setPresentationId(event.presentation_id);
+          }
+
+          setLoading(false);
+          router.push(`/presentation/outline?pid=${event.presentation_id}`);
+        }
+      };
+
+      await handleStream(reader, decoder, onEvent);
     } catch (err: any) {
       // console.log(err);
       setError(err.message || "Something went wrong");
@@ -299,46 +310,141 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
     }
   };
 
-  // console.log(error);
-
   const handleInfographicSubmit = async () => {
     setLoading(true);
     setError("");
     setProgress(0);
+    setCurrentMessage("");
+    setCurrentDetail("");
 
-    const payload = { prompt: inputValue, useReferences: true };
-    let interval: NodeJS.Timeout | null = null;
+    const payload = {
+      prompt: inputValue,
+      viewMode: orientation,
+      useReferences: true
+    };
 
-    // Fake loader
-    interval = setInterval(() => {
-      setProgress((prev) => (prev >= 95 ? prev : prev + Math.random() * 2));
-    }, 200);
+    // Frontend progress simulation to prevent stuck feeling
+    let frontendProgress = 0;
+    let lastBackendProgress = 0;
+    let progressInterval: NodeJS.Timeout | null = null;
+    let isCompleted = false;
+
+    const startProgressSimulation = () => {
+      progressInterval = setInterval(() => {
+        if (!isCompleted && frontendProgress < 85) {
+          // Gradually increase frontend progress, but don't exceed backend progress
+          const increment = Math.random() * 2 + 0.5; // 0.5-2.5% increment
+          frontendProgress = Math.min(frontendProgress + increment, Math.max(lastBackendProgress, 85));
+          setProgress(Math.round(frontendProgress));
+        }
+      }, 600); // Update every 600ms (faster for infographics)
+    };
+
+    const stopProgressSimulation = () => {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+    };
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/infographic`, {
+      // Start frontend progress simulation immediately
+      startProgressSimulation();
+
+      const res = await fetch(`${API_BASE_URL}/generate-poster-template`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.error || "Failed to generate infographic");
-
-      // console.log("Infographic response:", data);
-      const infographicId = data.infographic._id;
-      // console.log("Extracted Infographic ID:", infographicId);
-      if (infographicId) {
-        setInfographicId(infographicId);
-        // console.log("Infographic ID saved:", infographicId);
-        router.push(`/infographic/${infographicId}`);
+      if (!res.ok) {
+        stopProgressSimulation();
+        let errMsg = "Failed to generate infographic";
+        try {
+          const errJson = await res.json();
+          errMsg = errJson.error || errMsg;
+        } catch {
+          // non-JSON error
+        }
+        throw new Error(errMsg);
       }
 
-      setProgress(100);
+      if (!res.body) {
+        stopProgressSimulation();
+        throw new Error("No response body received from server.");
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+
+      const onEvent = (event: any) => {
+        if (event.percent !== undefined) {
+          lastBackendProgress = event.percent;
+          // Only update if backend progress is higher than frontend
+          if (event.percent > frontendProgress) {
+            frontendProgress = event.percent;
+            setProgress(event.percent);
+          }
+        }
+
+        if (event.message !== undefined) {
+          setCurrentMessage(event.message);
+        }
+
+        if (event.detail !== undefined) {
+          setCurrentDetail(event.detail);
+        }
+
+        if (event.error) {
+          stopProgressSimulation();
+          setError(event.error);
+          setLoading(false);
+          return;
+        }
+
+        if (event.complete) {
+          isCompleted = true;
+          stopProgressSimulation();
+          setProgress(100);
+          setCurrentMessage(event.message || "✅ Infographic successfully created!");
+          setCurrentDetail(event.detail || "Your infographic is ready!");
+
+          // Persist infographic to DB to get a Mongo ObjectId for viewing page
+          (async () => {
+            try {
+              const saveRes = await fetch(`${API_BASE_URL}/api/dynamicInfographic`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: inputValue, viewMode: orientation })
+              });
+              if (!saveRes.ok) {
+                throw new Error(`Failed to save infographic (${saveRes.status})`);
+              }
+              const saveData = await saveRes.json();
+              if (saveData?.success && saveData?.infographic?._id) {
+                setInfographicId(saveData.infographic._id);
+                router.push(`/infographic/${saveData.infographic._id}`);
+              } else {
+                throw new Error("Invalid save response");
+              }
+            } catch (e: any) {
+              console.error("Persisting infographic failed:", e);
+              setError(e.message || "Failed to save infographic. Please try again.");
+            } finally {
+              setLoading(false);
+            }
+          })();
+        }
+      };
+
+      await handleStream(reader, decoder, onEvent);
     } catch (err: any) {
+      stopProgressSimulation();
+      console.error("Infographic generation error:", err);
       setError(err.message || "Something went wrong");
-    } finally {
-      if (interval) clearInterval(interval);
       setLoading(false);
     }
   };
@@ -347,15 +453,8 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
     setLoading(true);
     setError("");
     setProgress(0);
-    let interval: NodeJS.Timeout | null = null;
-
-    interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) return prev;
-        const increment = Math.random() * (0.8 - 0.1) + 0.1;
-        return prev + increment;
-      });
-    }, 200);
+    setCurrentMessage("");
+    setCurrentDetail("");
 
     const meta = { goal, tone, audience };
     const payload = {
@@ -365,39 +464,114 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
       userData: user,
     };
 
+    // Frontend progress simulation to prevent stuck feeling
+    let frontendProgress = 0;
+    let lastBackendProgress = 0;
+    let progressInterval: NodeJS.Timeout | null = null;
+    let isCompleted = false;
+
+    const startProgressSimulation = () => {
+      progressInterval = setInterval(() => {
+        if (!isCompleted && frontendProgress < 85) {
+          // Gradually increase frontend progress, but don't exceed backend progress
+          const increment = Math.random() * 2 + 0.5; // 0.5-2.5% increment
+          frontendProgress = Math.min(frontendProgress + increment, Math.max(lastBackendProgress, 85));
+          setProgress(Math.round(frontendProgress));
+        }
+      }, 800); // Update every 800ms
+    };
+
+    const stopProgressSimulation = () => {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+    };
+
     try {
+      // Start frontend progress simulation immediately
+      startProgressSimulation();
+
       const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
         body: JSON.stringify(payload),
       });
 
-      let data: any;
-      try {
-        data = await res.json();
-      } catch {
-        throw new Error("Invalid JSON response");
-      }
-
       if (!res.ok) {
-        throw new Error(data.error || "Failed to generate template");
+        stopProgressSimulation();
+        let errMsg = "Failed to generate template";
+        try {
+          const errJson = await res.json();
+          errMsg = errJson.error || errMsg;
+        } catch {
+          // non-JSON error
+        }
+        throw new Error(errMsg);
       }
 
-      // console.log("Data:", data);
-      // console.log("Mongo _id:", data._id); // MongoDB ObjectId
-      // console.log("Slides array:", data.slides);
-      // console.log("UUID:", data.presentation_id); // UUID
+      if (!res.body) {
+        stopProgressSimulation();
+        throw new Error("No response body received from server.");
+      }
 
-      setProgress(100);
-      setSlideTemplates(data.slides);
-      setPresentationId(data.presentation_id); // Store MongoDB _id in context
-      router.push(`/text-to-template/${data.presentation_id}`); // Navigate with UUID
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+
+      const onEvent = (event: any) => {
+        if (event.percent !== undefined) {
+          lastBackendProgress = event.percent;
+          // Only update if backend progress is higher than frontend
+          if (event.percent > frontendProgress) {
+            frontendProgress = event.percent;
+            setProgress(event.percent);
+          }
+        }
+
+        if (event.message !== undefined) {
+          setCurrentMessage(event.message);
+        }
+
+        if (event.detail !== undefined) {
+          setCurrentDetail(event.detail);
+        }
+
+        if (event.error) {
+          stopProgressSimulation();
+          setError(event.error);
+          setLoading(false);
+          return;
+        }
+
+        if (event.complete) {
+          isCompleted = true;
+          stopProgressSimulation();
+          setProgress(100);
+          setCurrentMessage(event.message || "✅ Template successfully created!");
+          setCurrentDetail(event.detail || "Your template is ready!");
+
+          if (event.slides) {
+            setSlideTemplates(event.slides);
+          }
+
+          if (event.presentation_id) {
+            setPresentationId(event.presentation_id);
+            router.push(`/text-to-template/${event.presentation_id}`);
+          }
+
+          setLoading(false);
+        }
+      };
+
+      await handleStream(reader, decoder, onEvent);
     } catch (err: any) {
+      stopProgressSimulation();
+      console.error("Template generation error:", err);
       setError(err.message || "Something went wrong");
-    } finally {
-      if (interval) clearInterval(interval);
       setLoading(false);
-      setProgress(0);
     }
   };
   useEffect(() => {
@@ -429,6 +603,8 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
         setAudience={setAudience}
         setSlideCount={setSlideCount}
         setArtStyle={setArtStyle}
+        orientation={orientation}
+        setOrientation={setOrientation}
       />
 
       <Box
@@ -545,12 +721,12 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
           boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
           border: "1px solid #f0f0f0"
         }}>
-          <Box sx={{ 
-            display: "flex", 
+          <Box sx={{
+            display: "flex",
             flexDirection: { xs: 'column', sm: 'row' },
             alignItems: { xs: 'flex-start', sm: 'center' },
             gap: { xs: 1, sm: 0 },
-            mb: 1.5 
+            mb: 1.5
           }}>
             <Box sx={{
               width: 15,
@@ -563,19 +739,19 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
             }} />
             <Typography
               variant="h6"
-              sx={{ 
-                fontWeight: 600, 
-                color: "#8E2DE2", 
+              sx={{
+                fontWeight: 600,
+                color: "#8E2DE2",
                 flexGrow: 1,
                 fontSize: { xs: '1.25rem', md: '1.5rem' }
               }}
             >
               {currentMessage}
             </Typography>
-            <Typography 
-              variant="body2" 
+            <Typography
+              variant="body2"
               color="text.secondary"
-              sx={{ 
+              sx={{
                 mt: { xs: 0.5, sm: 0 },
                 minWidth: { sm: '50px' },
                 textAlign: { xs: 'right', sm: 'left' }
@@ -584,11 +760,11 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
               {Math.round(progress)}%
             </Typography>
           </Box>
-          <Typography 
-            variant="body1" 
-            color="text.secondary" 
-            sx={{ 
-              mb: 2, 
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{
+              mb: 2,
               lineHeight: 1.6,
               wordBreak: 'break-word'
             }}
@@ -640,12 +816,12 @@ const [inputMode, setInputMode] = useState<InputMode>("Text");
           mb: 4,
           height: { xs: 57, md: 70 },
           border: `2px solid ${inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "grey"
-                : "#8E2DE2"
-              : !inputValue.trim() || Boolean(showYoutubeError)
-                ? "grey"
-                : "#8E2DE2"
+            ? !templatePrompt.trim()
+              ? "grey"
+              : "#8E2DE2"
+            : !inputValue.trim() || Boolean(showYoutubeError)
+              ? "grey"
+              : "#8E2DE2"
             }`,
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",

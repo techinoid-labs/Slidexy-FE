@@ -1,6 +1,6 @@
 // Updated OutlinePage Component - Simplified mapCardsToSlides (no design logic)
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import OutlineCard from "@/app/components/create-presentation/outline/OutlineCard";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
@@ -9,7 +9,7 @@ import EditMenuCard from "@/app/components/create-presentation/outline/EditMenuC
 import { useSlides } from "@/app/context/SlidesContext";
 import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { Slide } from "@/app/slice/slidesSlice";
 import StepIndicator from "@/app/components/shared/StepIndicator";
 import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
@@ -136,6 +136,8 @@ export default function OutlinePage() {
   const isInfographicMode = false;
   const dispatch = useDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pid = searchParams.get("pid");
 
   const [imageSuggestionsBox, setImageSuggestionsBox] = React.useState<{
     slideIndex: number;
@@ -148,6 +150,8 @@ export default function OutlinePage() {
   const [cards, setCards] = useState(() =>
     slides && slides.length > 0 ? mapApiSlidesToCards(slides) : []
   );
+  
+  const [loading, setLoading] = useState(true);
 
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>("");
@@ -167,7 +171,35 @@ export default function OutlinePage() {
   //  // const mappedSlides = mapCardsToSlides(cards);
   //   dispatch(setSlides(mappedSlides));
   // }, [cards, dispatch]);
+  useEffect(() => {
+    if (!pid) return;
 
+    const fetchPresentation = async () => {
+      try {
+        const baseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+        const response = await fetch(`${baseUrl}/presentation/${pid}`);
+        const data = await response.json();
+        if (data?.presentation?.slides) {
+          const fetchedSlides = data.presentation.slides;
+          dispatch(setSlides(fetchedSlides)); // store in Redux
+          setCards(mapApiSlidesToCards(fetchedSlides)); // map for cards
+        } else {
+          console.warn("No slides found for this presentation.");
+        }
+      } catch (error) {
+        console.error("Error fetching presentation:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPresentation();
+  }, [pid, dispatch]);
+
+  const handleContinue = () => {
+    router.push(`/editor?pid=${pid}`);
+  };
   // -------------------- Bullets editing --------------------
   const handleBulletsEditStart = (idx: number, bullets?: string[]) => {
     setEditingBulletsIdx(idx);
@@ -262,12 +294,12 @@ export default function OutlinePage() {
   };
 
   // -------------------- Continue --------------------
-  const handleContinue = () => {
-    //const mapped = mapCardsToSlides(cards);
-    //dispatch(setSlides(mapped));
-    //console.log("[OutlinePage] Slides sent to Redux:", mapped);
-    router.push("/editor");
-  };
+  // const handleContinue = () => {
+  //   //const mapped = mapCardsToSlides(cards);
+  //   //dispatch(setSlides(mapped));
+  //   //console.log("[OutlinePage] Slides sent to Redux:", mapped);
+  //   router.push("/editor");
+  // };
 
   // -------------------- Slide updates --------------------
   const handleUpdateSlide = (
