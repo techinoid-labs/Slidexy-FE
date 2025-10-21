@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import {
   Box,
@@ -12,6 +10,8 @@ import {
   Typography,
   Fade,
   Grow,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import PaletteIcon from "@mui/icons-material/Palette";
@@ -38,6 +38,8 @@ interface Props {
   setAudience: (val: string) => void;
   setSlideCount: (val: string) => void;
   setArtStyle: (val: string) => void;
+  orientation?: "portrait" | "landscape";
+  setOrientation?: (val: "portrait" | "landscape") => void;
 }
 
 export default function PromptAttributeSelector({
@@ -52,6 +54,8 @@ export default function PromptAttributeSelector({
   setAudience,
   setSlideCount,
   setArtStyle,
+  orientation = "landscape",
+  setOrientation,
 }: Props) {
   const theme = useTheme();
 
@@ -457,6 +461,67 @@ export default function PromptAttributeSelector({
               )}
             </Select>
           </FormControl>
+        </Box>
+      )}
+
+      {/* Enhanced Orientation Toggle for TextToInfographics */}
+      {inputMode === "TextToInfographics" && setOrientation && (
+        <Box sx={{ flex: { xs: "1 1 100%", sm: "1 1 0" }, minWidth: 200 }}>
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              display: "block", 
+              mb: 1, 
+              fontWeight: 500, 
+              color: "rgba(74, 0, 224, 1)",
+              fontSize: "0.8rem",
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}
+          >
+            Orientation
+          </Typography>
+          <ToggleButtonGroup
+            value={orientation}
+            exclusive
+            onChange={(e, newValue) => setOrientation(newValue)}
+            aria-label="Orientation"
+            sx={{
+              backgroundColor: "#fff",
+              borderRadius: "12px",
+              border: `1px solid ${theme.palette.grey[200]}`,
+              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.03)",
+              overflow: "hidden",
+              "& .MuiToggleButtonGroup-grouped": {
+                border: "none !important",
+                py: 1.5,
+                px: 3,
+                fontSize: 14,
+                fontWeight: 500,
+                color: theme.palette.grey[600],
+                "&:hover": {
+                  backgroundColor: "rgba(74, 0, 224, 0.05)",
+                  color: "rgba(74, 0, 224, 1)",
+                  transform: "scale(1.05)",
+                  transition: "all 0.2s ease",
+                },
+                "&.Mui-selected": {
+                  backgroundColor: "rgba(74, 0, 224, 0.1)",
+                  color: "rgba(74, 0, 224, 1)",
+                  boxShadow: "inset 0 0 0 1px rgba(74, 0, 224, 0.2)",
+                },
+              },
+            }}
+          >
+            <ToggleButton value="landscape">
+              <PanoramaIcon sx={{ fontSize: 20, mr: 0.5 }} />
+              Landscape
+            </ToggleButton>
+            <ToggleButton value="portrait">
+              <PhotoCameraIcon sx={{ fontSize: 20, mr: 0.5 }} />
+              Portrait
+            </ToggleButton>
+          </ToggleButtonGroup>
         </Box>
       )}
 
