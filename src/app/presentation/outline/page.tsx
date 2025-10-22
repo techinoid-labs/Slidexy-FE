@@ -150,7 +150,7 @@ export default function OutlinePage() {
   const [cards, setCards] = useState(() =>
     slides && slides.length > 0 ? mapApiSlidesToCards(slides) : []
   );
-  
+
   const [loading, setLoading] = useState(true);
 
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
@@ -176,16 +176,17 @@ export default function OutlinePage() {
 
     const fetchPresentation = async () => {
       try {
-        const baseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
-        const response = await fetch(`${baseUrl}/presentation/${pid}`);
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+        const response = await fetch(`${baseUrl}/api/presentations/${pid}`);
         const data = await response.json();
-        if (data?.presentation?.slides) {
-          const fetchedSlides = data.presentation.slides;
-          dispatch(setSlides(fetchedSlides)); // store in Redux
-          setCards(mapApiSlidesToCards(fetchedSlides)); // map for cards
+        console.log("API response data:", data);
+
+        const slides = data?.slides || data?.presentation?.slides;
+        if (slides?.length) {
+          dispatch(setSlides(slides));
+          setCards(mapApiSlidesToCards(slides));
         } else {
-          console.warn("No slides found for this presentation.");
+          console.warn("No slides found in response:", data);
         }
       } catch (error) {
         console.error("Error fetching presentation:", error);
@@ -193,6 +194,7 @@ export default function OutlinePage() {
         setLoading(false);
       }
     };
+
 
     fetchPresentation();
   }, [pid, dispatch]);
@@ -218,12 +220,12 @@ export default function OutlinePage() {
         i !== idx
           ? c
           : {
-              ...c,
-              bullets: editingBulletsValue
-                .split(/\r?\n/)
-                .filter((l) => l.trim() !== ""),
-              images: "images" in c ? c.images ?? [] : [],
-            }
+            ...c,
+            bullets: editingBulletsValue
+              .split(/\r?\n/)
+              .filter((l) => l.trim() !== ""),
+            images: "images" in c ? c.images ?? [] : [],
+          }
       )
     );
     setEditingBulletsIdx(null);
@@ -599,13 +601,13 @@ export default function OutlinePage() {
                   const newCards = prev.map((card, idx) =>
                     idx === imageSuggestionsBox.slideIndex
                       ? {
-                          ...card,
-                          images: [
-                            ...(card.images || []).map((img, j) =>
-                              j === imageSuggestionsBox.imageIndex ? url : img
-                            ),
-                          ],
-                        }
+                        ...card,
+                        images: [
+                          ...(card.images || []).map((img, j) =>
+                            j === imageSuggestionsBox.imageIndex ? url : img
+                          ),
+                        ],
+                      }
                       : card
                   );
                   // Dispatch updated slides to Redux store

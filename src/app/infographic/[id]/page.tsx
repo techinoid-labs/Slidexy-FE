@@ -184,7 +184,7 @@ export default function InfographicPage() {
       // Adjust spaces for more room in portrait mobile
       const headerSpace = isPortraitMobile ? 120 : isMobile ? 150 : 250;
       const footerSpace = isPortraitMobile ? 120 : isMobile ? 150 : 150;
-      const availableHeight = window.innerHeight - headerSpace - footerSpace;
+      const availableHeight = window.innerHeight ;
 
       const scaleByWidth = availableWidth / stageWidth;
       const scaleByHeight = availableHeight / stageHeight;

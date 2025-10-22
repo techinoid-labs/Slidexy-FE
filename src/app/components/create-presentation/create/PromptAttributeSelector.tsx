@@ -385,6 +385,8 @@ export default function PromptAttributeSelector({
         >
           {renderMenuItem("3", "3", slideCount)}
           {renderMenuItem("5", "5", slideCount)}
+          {renderMenuItem("7", "7", slideCount)}
+          {renderMenuItem("10", "10", slideCount)}
         </Select>
       </FormControl>
 
