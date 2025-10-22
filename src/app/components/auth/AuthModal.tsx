@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn,signOut } from "next-auth/react";
 import axios from "axios";
 import {
   Box,
@@ -95,6 +95,8 @@ const handleSubmit = async () => {
         newPassword,
       });
 
+      await signOut({ redirect: false });
+
       setAuthSuccess(true);
       setIsForgotMode(false);
       setIsResetting(false);
@@ -135,6 +137,20 @@ const handleSubmit = async () => {
   }
 };
 
+const handleClose = () => {
+  setAuthSuccess(false);
+  setIsSignup(false);
+  setIsForgotMode(false);
+  setIsResetting(false);
+  setResetSuccess(false);
+  setError("");
+  setEmail("");
+  setPassword("");
+  setResetToken("");
+  setNewPassword("");
+  onClose();
+};
+
   return (
    <Modal open={open} onClose={onClose}>
       <Box
@@ -161,7 +177,7 @@ const handleSubmit = async () => {
             <Typography variant="body2" textAlign="center" color="text.secondary">
               You can now login and start creating presentations.
             </Typography>
-            <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={onClose}>
+            <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={handleClose}>
               Continue
             </Button>
           </>
