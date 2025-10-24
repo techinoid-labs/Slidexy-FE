@@ -12,6 +12,7 @@ import PricingSection from "@/app/components/home/Pricing";
 import CommunitySection from "@/app/components/home/Community";
 import Footer from "@/app/components/home/Footer";
 import ContactSection from "@/app/components/home/ContactSection";
+import ChatBotSidebar from "./components/chatbot-sidebar/ChatBot";
 export default function Home() {
   return (
     <Box
@@ -50,6 +51,8 @@ export default function Home() {
       <CommunitySection />
       <ContactSection />
       <Footer />
+
+      <ChatBotSidebar />
     </Box>
   );
 }
