@@ -1,6 +1,8 @@
 @layer theme, base, mui, components, utilities;
 
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ===== CSS VARIABLES ===== */
 :root {
