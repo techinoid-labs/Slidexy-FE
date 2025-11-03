@@ -91,8 +91,26 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const [aiThemes, setAiThemes] = useState<Theme[]>([]);
   const [isMobileImageSelected, setIsMobileImageSelected] = useState(false);
 
+  // FIXED: Recursive deepEqual without JSON.stringify (handles objects/arrays safely)
   const deepEqual = (a: any, b: any): boolean => {
-    return JSON.stringify(a) === JSON.stringify(b);
+    // Quick checks
+    if (a === b) return true;
+    if (a == null || b == null) return a === b; // null/undefined
+    if (typeof a !== typeof b) return false;
+    if (typeof a !== 'object') return a === b; // Primitives
+
+    // Arrays
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    if (Array.isArray(a)) {
+      if (a.length !== b.length) return false;
+      return a.every((val, idx) => deepEqual(val, b[idx]));
+    }
+
+    // Objects
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+    if (keysA.length !== keysB.length) return false;
+    return keysA.every(key => deepEqual(a[key], b[key]));
   };
 
   const handleSetSlides = (newSlides: SlidesType) => {
@@ -102,12 +120,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     // );
 
     if (!deepEqual(slides, newSlides)) {
-      console.log(
-        "[SlidesContext] State changed, updating pastSlides and dispatching new slides"
-      );
       setPastSlides((prev) => {
-        const newPast = [...prev, structuredClone(slides)];
-        console.log("[SlidesContext] Updated pastSlides:", newPast);
+        const newPast = [...prev.slice(-10), structuredClone(slides)];
         return newPast;
       });
       setFutureSlides([]);

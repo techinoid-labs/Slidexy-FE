@@ -73,12 +73,52 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   );
 
   let imageObj: KonvaComponent | null = null;
-  if (
-    selectedSlideIndex !== -1 &&
-    slides[selectedSlideIndex] &&
-    selectedImageIndex !== null
-  ) {
-    imageObj = slides[selectedSlideIndex].elements[selectedImageIndex];
+  let currentImageIndex = selectedImageIndex;  // Track for updates
+
+  if (selectedSlideIndex !== -1 && slides[selectedSlideIndex]) {
+    const currentSlide = slides[selectedSlideIndex];
+    
+    // Primary: Try index first
+    if (selectedImageIndex !== null && currentSlide.elements[selectedImageIndex]) {
+      imageObj = currentSlide.elements[selectedImageIndex];
+      if (imageObj?.element_type !== "image") {
+        console.warn('[ImageSettingsPanel] Selected index points to non-image:', imageObj);
+        imageObj = null;
+      } else {
+        currentImageIndex = selectedImageIndex;  // Valid
+      }
+    }
+    
+    // ENHANCED FALLBACK: Always search by ID if no valid obj or mismatch
+    if (!imageObj && selectedImage?.properties?.image_id) {
+      const targetId = selectedImage.properties.image_id;
+      const foundIndex = currentSlide.elements.findIndex((el: any) => 
+        el.element_type === "image" && 
+        (el.image_id === targetId || el.properties?.image_id === targetId)
+      );
+      
+      if (foundIndex !== -1) {
+        imageObj = currentSlide.elements[foundIndex];
+        currentImageIndex = foundIndex;
+        // CRITICAL: Sync context index immediately
+        if (selectedImageIndex !== foundIndex) {
+          setSelectedImageIndex(foundIndex);
+          console.log('[ImageSettingsPanel] Synced index to', foundIndex, 'via ID:', targetId);
+        }
+      } else {
+        console.error('[ImageSettingsPanel] ID search failed for:', targetId, 'Elements:', currentSlide.elements.map((el: any) => ({ type: el.element_type, id: el.image_id || el.properties?.image_id })));
+      }
+    }
+  }
+
+  // CRITICAL: Add debug logging
+  if (!imageObj && selectedImageIndex !== null) {
+    console.error('[ImageSettingsPanel] Failed to find image element', {
+      selectedSlideIndex,
+      selectedImageIndex,
+      selectedImage: selectedImage?.properties,
+      totalElements: slides[selectedSlideIndex]?.elements?.length,
+    });
   }
 
   useEffect(() => {
@@ -106,14 +146,20 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     const timeout = setTimeout(() => {
       if (
         selectedSlideIndex === -1 ||
-        selectedImageIndex === null ||
-        !slides[selectedSlideIndex]?.elements[selectedImageIndex]
+        currentImageIndex === null ||
+        !slides[selectedSlideIndex]?.elements[currentImageIndex]
       )
         return;
 
       const updatedSlides = structuredClone(slides);
       const element =
-        updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
+        updatedSlides[selectedSlideIndex].elements[currentImageIndex];
+
+      // FIXED: Add null check for element and properties to prevent undefined error
+      if (!element || !element.properties) {
+        console.warn('[ImageSettingsPanel] Element or properties missing, skipping update');
+        return;
+      }
 
       if (!isNaN(imageWidth)) {
         element.properties.width = imageWidth;
@@ -132,34 +178,37 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     imageHeight,
     slides,
     selectedSlideIndex,
-    selectedImageIndex,
+    currentImageIndex,
     setSlides,
   ]);
 
   const updateImageProperty = (props: { [key: string]: any }) => {
-    if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
+    if (selectedSlideIndex === -1 || currentImageIndex === null) return;
     const updatedSlides = structuredClone(slides);
     const target =
-      updatedSlides[selectedSlideIndex].elements[selectedImageIndex].properties;
+      updatedSlides[selectedSlideIndex].elements[currentImageIndex].properties;
     const element =
-      updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
-    if (target) {
-      Object.entries(props).forEach(([key, value]) => {
-        target[key] = value;
-        // console.log(
-        //   `[ImageSettingsPanel] Updated ${key} to ${JSON.stringify(
-        //     value
-        //   )} for image at slide ${selectedSlideIndex}, index ${selectedImageIndex}`
-        // );
-      });
-      setSlides(updatedSlides);
-      setSelectedImage({
-        ...element,
-        konva_component: element.konva_component || "Konva.Image",
-        element_type: element.element_type || "image",
-        properties: { ...element.properties },
-      });
+      updatedSlides[selectedSlideIndex].elements[currentImageIndex];
+    // FIXED: Add null check for element and target
+    if (!element || !target) {
+      console.warn('[ImageSettingsPanel] Element or properties missing in updateImageProperty');
+      return;
     }
+    Object.entries(props).forEach(([key, value]) => {
+      target[key] = value;
+      // console.log(
+      //   `[ImageSettingsPanel] Updated ${key} to ${JSON.stringify(
+      //     value
+      //   )} for image at slide ${selectedSlideIndex}, index ${currentImageIndex}`
+      // );
+    });
+    setSlides(updatedSlides);
+    setSelectedImage({
+      ...element,
+      konva_component: element.konva_component || "Konva.Image",
+      element_type: element.element_type || "image",
+      properties: { ...element.properties },
+    });
   };
 
   const updateSingleImageProperty = (prop: string, value: any) => {
@@ -167,12 +216,18 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   };
 
   const handleDuplicateImage = () => {
-    if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null)
+    if (!imageObj || selectedSlideIndex === -1 || currentImageIndex === null)
       return;
 
     const currentSlide = slides[selectedSlideIndex];
     const elements = [...currentSlide.elements];
-    const originalElement = elements[selectedImageIndex];
+    const originalElement = elements[currentImageIndex];
+
+    // FIXED: Ensure originalElement has properties
+    if (!originalElement || !originalElement.properties) {
+      console.warn('[ImageSettingsPanel] Original element missing properties in duplicate');
+      return;
+    }
 
     const newImageId = uuidv4();
     const newElement = {
@@ -185,7 +240,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       },
     };
 
-    elements.splice(selectedImageIndex + 1, 0, newElement);
+    elements.splice(currentImageIndex + 1, 0, newElement);
 
     const updatedSlide = {
       ...currentSlide,
@@ -197,15 +252,15 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
 
     setSlides(updatedSlides);
     setSelectedImage(newElement);
-    setSelectedImageIndex(selectedImageIndex + 1);
+    setSelectedImageIndex(currentImageIndex + 1);
     setSelectedImageId(newImageId);
   };
 
   const handleDeleteImage = () => {
-    if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
+    if (selectedSlideIndex === -1 || currentImageIndex === null) return;
 
     const updatedSlides = structuredClone(slides);
-    updatedSlides[selectedSlideIndex].elements.splice(selectedImageIndex, 1);
+    updatedSlides[selectedSlideIndex].elements.splice(currentImageIndex, 1);
 
     setSlides(updatedSlides);
     setSelectedImage(null);
@@ -230,21 +285,26 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
         const resultUrl = reader.result as string;
         if (
           selectedSlideIndex !== null &&
-          selectedImageIndex !== null &&
-          slides[selectedSlideIndex]?.elements[selectedImageIndex]
+          currentImageIndex !== null &&
+          slides[selectedSlideIndex]?.elements[currentImageIndex]
         ) {
           const updatedSlides = structuredClone(slides);
           const element =
-            updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
-          element.properties.imageSrc = resultUrl;
-          setSlides(updatedSlides);
-          setImageSrc(resultUrl);
-          setSelectedImage({
-            ...element,
-            konva_component: element.konva_component || "Konva.Image",
-            element_type: element.element_type || "image",
-            properties: { ...element.properties },
-          });
+            updatedSlides[selectedSlideIndex].elements[currentImageIndex];
+          // FIXED: Ensure element has properties before updating
+          if (element && element.properties) {
+            element.properties.imageSrc = resultUrl;
+            setSlides(updatedSlides);
+            setImageSrc(resultUrl);
+            setSelectedImage({
+              ...element,
+              konva_component: element.konva_component || "Konva.Image",
+              element_type: element.element_type || "image",
+              properties: { ...element.properties },
+            });
+          } else {
+            console.warn('[ImageSettingsPanel] Element missing properties in removeBackground');
+          }
         }
         setIsLoading(false);
       };
@@ -267,22 +327,27 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
 
       if (
         selectedSlideIndex === null ||
-        selectedImageIndex === null ||
-        !slides[selectedSlideIndex]?.elements[selectedImageIndex]
+        currentImageIndex === null ||
+        !slides[selectedSlideIndex]?.elements[currentImageIndex]
       )
         return;
 
       const updatedSlides = structuredClone(slides);
       const element =
-        updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
-      element.properties.imageSrc = result;
-      setSlides(updatedSlides);
-      setSelectedImage({
-        ...element,
-        konva_component: element.konva_component || "Konva.Image",
-        element_type: element.element_type || "image",
-        properties: { ...element.properties },
-      });
+        updatedSlides[selectedSlideIndex].elements[currentImageIndex];
+      // FIXED: Ensure element has properties before updating
+      if (element && element.properties) {
+        element.properties.imageSrc = result;
+        setSlides(updatedSlides);
+        setSelectedImage({
+          ...element,
+          konva_component: element.konva_component || "Konva.Image",
+          element_type: element.element_type || "image",
+          properties: { ...element.properties },
+        });
+      } else {
+        console.warn('[ImageSettingsPanel] Element missing properties in handleImageChange');
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -698,15 +763,11 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       <Box sx={{ px: 3, mb: 2, display: "flex", gap: 2 }}>
         <Button
           onClick={() => {
-            // console.log(
-            //   "Forward button clicked with selectedImageIndex:",
-            //   selectedImageIndex
-            // );
-            if (selectedImageIndex !== null) {
-              bringElementForward(selectedImageIndex);
+            if (currentImageIndex !== null) {
+              sendElementBackward(currentImageIndex);  // Use synced index
             }
           }}
-          disabled={selectedImageIndex === null}
+          disabled={currentImageIndex === null}
           variant="outlined"
           endIcon={
             <img
@@ -745,15 +806,11 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
         </Button>
         <Button
           onClick={() => {
-            // console.log(
-            //   "Backward button clicked with selectedImageIndex:",
-            //   selectedImageIndex
-            // );
-            if (selectedImageIndex !== null) {
-              sendElementBackward(selectedImageIndex);
+            if (currentImageIndex !== null) {
+              bringElementForward(currentImageIndex);  // Use synced index
             }
           }}
-          disabled={selectedImageIndex === null}
+          disabled={currentImageIndex === null}
           variant="outlined"
           endIcon={
             <img
@@ -798,7 +855,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
         onClose={() => setIsCropModalOpen(false)}
         imageSrc={imageSrc || ""}
         selectedSlideIndex={selectedSlideIndex}
-        selectedImageIndex={selectedImageIndex}
+        selectedImageIndex={currentImageIndex}  // Use synced
         updateImageProperty={updateSingleImageProperty}
       />
     </Box>
