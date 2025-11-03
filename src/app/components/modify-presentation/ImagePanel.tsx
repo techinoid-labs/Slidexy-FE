@@ -72,55 +72,79 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     selectedImage?.properties?.borderRadius ?? 0
   );
 
-  let imageObj: KonvaComponent | null = null;
-  let currentImageIndex = selectedImageIndex;  // Track for updates
+ // PART 1: ImageSettingsPanel.tsx Changes
+// Replace the image search logic (around line 48-90) with this improved version:
 
-  if (selectedSlideIndex !== -1 && slides[selectedSlideIndex]) {
-    const currentSlide = slides[selectedSlideIndex];
-    
-    // Primary: Try index first
-    if (selectedImageIndex !== null && currentSlide.elements[selectedImageIndex]) {
-      imageObj = currentSlide.elements[selectedImageIndex];
-      if (imageObj?.element_type !== "image") {
-        console.warn('[ImageSettingsPanel] Selected index points to non-image:', imageObj);
-        imageObj = null;
-      } else {
-        currentImageIndex = selectedImageIndex;  // Valid
-      }
+let imageObj: KonvaComponent | null = null;
+let currentImageIndex = selectedImageIndex;
+
+if (selectedSlideIndex !== -1 && slides[selectedSlideIndex]) {
+  const currentSlide = slides[selectedSlideIndex];
+  
+  // Primary: Try index first
+  if (selectedImageIndex !== null && currentSlide.elements[selectedImageIndex]) {
+    const candidate = currentSlide.elements[selectedImageIndex];
+    if (candidate?.element_type === "image") {
+      imageObj = candidate;
+      currentImageIndex = selectedImageIndex;
+    } else {
+      console.warn('[ImageSettingsPanel] Selected index points to non-image:', candidate);
     }
+  }
+  
+  // ENHANCED FALLBACK: Search by ID if no valid object found
+  if (!imageObj && selectedImage?.properties?.image_id) {
+    const targetId = selectedImage.properties.image_id;
+    console.log('[ImageSettingsPanel] Searching for image_id:', targetId);
     
-    // ENHANCED FALLBACK: Always search by ID if no valid obj or mismatch
-    if (!imageObj && selectedImage?.properties?.image_id) {
-      const targetId = selectedImage.properties.image_id;
-      const foundIndex = currentSlide.elements.findIndex((el: any) => 
-        el.element_type === "image" && 
-        (el.image_id === targetId || el.properties?.image_id === targetId)
-      );
+    const foundIndex = currentSlide.elements.findIndex((el: any) => {
+      if (el.element_type !== "image") return false;
       
-      if (foundIndex !== -1) {
-        imageObj = currentSlide.elements[foundIndex];
-        currentImageIndex = foundIndex;
-        // CRITICAL: Sync context index immediately
-        if (selectedImageIndex !== foundIndex) {
-          setSelectedImageIndex(foundIndex);
-          console.log('[ImageSettingsPanel] Synced index to', foundIndex, 'via ID:', targetId);
-        }
-      } else {
-        console.error('[ImageSettingsPanel] ID search failed for:', targetId, 'Elements:', currentSlide.elements.map((el: any) => ({ type: el.element_type, id: el.image_id || el.properties?.image_id })));
+      // Check both locations where ID might be stored
+      const elId = el.image_id || el.properties?.image_id;
+      const match = elId === targetId;
+      
+      if (match) {
+        console.log('[ImageSettingsPanel] Found match at index', foundIndex);
       }
+      
+      return match;
+    });
+    
+    if (foundIndex !== -1) {
+      imageObj = currentSlide.elements[foundIndex];
+      currentImageIndex = foundIndex;
+      
+      // CRITICAL: Sync context index immediately
+      if (selectedImageIndex !== foundIndex) {
+        console.log('[ImageSettingsPanel] Syncing index from', selectedImageIndex, 'to', foundIndex);
+        setSelectedImageIndex(foundIndex);
+      }
+    } else {
+      // console.error('[ImageSettingsPanel] ID search failed for:', targetId);
+      // console.error('[ImageSettingsPanel] Available images:', 
+      //   currentSlide.elements
+      //     .filter((el: any) => el.element_type === "image")
+      //     .map((el: any, idx: number) => ({
+      //       index: idx,
+      //       image_id: el.image_id,
+      //       props_id: el.properties?.image_id
+      //     }))
+      // );
     }
   }
+}
 
-  // CRITICAL: Add debug logging
-  if (!imageObj && selectedImageIndex !== null) {
-    console.error('[ImageSettingsPanel] Failed to find image element', {
-      selectedSlideIndex,
-      selectedImageIndex,
-      selectedImage: selectedImage?.properties,
-      totalElements: slides[selectedSlideIndex]?.elements?.length,
-    });
-  }
-
+// Add debug logging for failures
+if (!imageObj && selectedImageIndex !== null) {
+  // console.error('[ImageSettingsPanel] Failed to find image element', {
+  //   selectedSlideIndex,
+  //   selectedImageIndex,
+  //   selectedImageId: selectedImage?.properties?.image_id,
+  //   totalElements: slides[selectedSlideIndex]?.elements?.length,
+  //   imageElements: slides[selectedSlideIndex]?.elements?.filter((el: any) => el.element_type === "image").length
+  // });
+}
   useEffect(() => {
     if (selectedImage) {
       setImageWidth(selectedImage?.properties?.width || 0);
@@ -384,7 +408,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
 
   return (
     <Box
-      className="w-[360px] min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200"
+      className="w-[300px] min-w-[250px] bg-white flex flex-col overflow-y-auto border-r border-gray-200"
       sx={{ height: sidebarHeight || "100vh" }}
     >
       {/* Header */}

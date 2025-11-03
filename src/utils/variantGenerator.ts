@@ -47,12 +47,53 @@ export const generateSlideVariants = (slide: any, selectedTheme: any) => {
 
   const textColor = selectedTheme?.primaryColor || "#000000";
 
+  // NEW: Layout-aware image adjustments (scale down/hide/reposition for data-heavy slides)
+  let adjustedImagePlaceholder = slide.image_placeholder; // Default: keep backend's
+  let adjustedImageUrl = slide.image_url; // Optional: swap to a smaller/alt image if needed
+
+  switch (layoutType) {
+    case "infographic-bullets":
+      // Shrink image to bottom-right corner for metrics focus; or set width/height to 0 to hide
+      adjustedImagePlaceholder = {
+        x: SLIDE_WIDTH - 200, // e.g., 760 on 960px slide
+        y: SLIDE_HEIGHT - 150,
+        width: 180,
+        height: 120,
+      };
+      // Optional: Use a metrics-themed alt image (fetch from backend or generate)
+      // adjustedImageUrl = slide.image_url.replace('.webp', '-metrics-small.webp');
+      break;
+    case "quote-slide":
+      // Hide image completely for clean quote focus
+      adjustedImagePlaceholder = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      };
+      adjustedImageUrl = null;
+      break;
+    case "conclusion":
+    case "content-split":
+      // Slight shrink for balance
+      adjustedImagePlaceholder = {
+        ...slide.image_placeholder,
+        width: 300,
+        height: 350,
+      };
+      break;
+    // Add more cases as needed (e.g., "timeline-slide": vertical strip)
+    default:
+      // Image-heavy layouts: keep full size
+      break;
+  }
+
   // Exclude background to force fresh theme-based override in variants
   const { background: _, ...tempSlideBase } = slide;
   let tempSlide = {
     ...tempSlideBase,
-    image_url: slide.image_url, // ✅ Preserve this!
-    image_placeholder: slide.image_placeholder, // ✅ And this!
+    image_url: adjustedImageUrl,
+    image_placeholder: adjustedImagePlaceholder, // ✅ Use adjusted!
     elements: slide.elements || [], // Keep all elements including images
   };
 
@@ -87,6 +128,6 @@ export const generateSlideVariants = (slide: any, selectedTheme: any) => {
     }
   }
 
-  console.log(`[variantGenerator] Generated ${variants.length} variants for layout "${layoutType}"`);
+  console.log(`[variantGenerator] Generated ${variants.length} variants for layout "${layoutType}" with adjusted image:`, adjustedImagePlaceholder);
   return variants;
 };
