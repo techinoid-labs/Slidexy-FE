@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useRef, useState, useEffect } from "react";
 import SideNavBar from "../components/modify-presentation/Side-NavBar";
 import UpperNavBar from "../components/modify-presentation/Upper-NavBar";
@@ -32,6 +31,7 @@ import { useTemplateSlides } from "../context/TemplateSlidesContext";
 import { useUser } from "../context/AuthContext";
 import { getContrastingBackground } from "@/utils/colorUtils";
 import { getRandomSlide } from "@/utils/slideUtils";
+import { generateSlideVariants } from "@/utils/variantGenerator"; // ✅ NEW: Import for initial gen
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
@@ -40,6 +40,7 @@ const Page = () => {
     slides,
     selectedSlideIndex,
     setSlides,
+    setSelectedSlideIndex,  // ✅ NEW: Destructure setter
     setSelectedTextId,
     selectedTextId,
     selectedImageIndex,
@@ -51,14 +52,15 @@ const Page = () => {
     setIsMobileImageSelected,
     setSelectedShapeIndex,
   } = useSlides();
-  const { selectedTheme } = useSlideThemeContext();
+  const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const { presentationId } = useTemplateSlides();
   const dispatch = useDispatch();
   const router = useRouter();
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const [initialSlides] = useState(() => slides);
   const [isMobileTextSelected, setIsMobileTextSelected] = useState(false);
-  const [showRightPanel, setShowRightPanel] = useState(false);
+  // ✅ FIXED: Init to true for desktop (always show right panel on lg+)
+  const [showRightPanel, setShowRightPanel] = useState(true);
   const theme = useTheme();
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -67,6 +69,50 @@ const Page = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   // FIXED: State to track if there was a selection before deselect
   const [hadSelection, setHadSelection] = useState(false);
+
+  // NEW: Fetch presentation data + generate initial layouts (no theme clone)
+  useEffect(() => {
+    if (presentationId && slides.length === 0) { // Only fetch if no slides yet
+      const fetchPresentation = async () => {
+        try {
+          const response = await fetch(`/api/presentations/${presentationId}`); // Your endpoint
+          if (response.ok) {
+            const data = await response.json();
+            let fetchedSlides = data.slides || [];
+            
+            // ✅ FIXED: Generate initial layouts for each slide (triggers SlideEditor naturally)
+            fetchedSlides = fetchedSlides.map((slide: any) => {
+              const newLayouts = generateSlideVariants(slide, selectedTheme || { backgroundColor: '#fff', primaryColor: '#000', artPalette: ['#000', '#333', '#000', '#fff', '#fff'] });
+              const variant0 = newLayouts[0] || slide;
+              return {
+                ...slide,
+                layouts: newLayouts,
+                currentVariantIndex: 0,
+                slide_title: variant0.slide_title || slide.slide_title,
+                subtitle: variant0.subtitle || slide.subtitle,
+                background: variant0.background || slide.background,
+                elements: variant0.elements || slide.elements,
+              };
+            });
+            
+            setSlides(fetchedSlides); // Populates slides with layouts
+          }
+        } catch (error) {
+          console.error("Failed to fetch presentation:", error);
+        }
+      };
+      fetchPresentation();
+    }
+  }, [presentationId, setSlides, selectedTheme]); // ✅ Added selectedTheme dep if needed for gen
+
+  // ✅ FIXED: Removed the problematic theme clone useEffect (initial gen now in fetch)
+
+  // ✅ NEW: Default selectedSlideIndex to 0 on slides load (prevents no-slide render)
+  useEffect(() => {
+    if (slides.length > 0 && (selectedSlideIndex === undefined || selectedSlideIndex === -1)) {
+      setSelectedSlideIndex(0);
+    }
+  }, [slides.length, selectedSlideIndex, setSelectedSlideIndex]);
 
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
@@ -260,15 +306,21 @@ const Page = () => {
     }
   };
 
-  const isTextSelected =
-    selectedTextId !== null &&
-    selectedTextId !== "" &&
-    !selectedImageIndex &&
-    !selectedShapeIndex;
-  const isShapeSelected =
-    selectedShapeIndex !== null && !selectedTextId && !selectedImageIndex;
-  const isImageSelected =
-    selectedImageIndex !== null && !selectedTextId && !selectedShapeIndex;
+const isTextSelected =
+  selectedTextId !== null &&
+  selectedTextId !== "" &&
+  selectedImageIndex === null &&  // ✅ FIXED: Check === null instead of !
+  selectedShapeIndex === null;    // ✅ FIXED: Check === null instead of !
+
+const isShapeSelected =
+  selectedShapeIndex !== null && 
+  selectedTextId === null &&      // ✅ FIXED: More explicit
+  selectedImageIndex === null;    // ✅ FIXED: More explicit
+
+const isImageSelected =
+  selectedImageIndex !== null && 
+  selectedTextId === null &&      // ✅ FIXED: More explicit
+  selectedShapeIndex === null; 
 
   const handleExportPDF = () => {
     if (loading) return;
@@ -294,7 +346,6 @@ const Page = () => {
   const handleCloseThemePanel = () => {
     setIsThemePanelOpen(false);
   };
-
 const handleDeselect = () => {
   setSelectedTextId(null);
   setSelectedImageIndex(null);
@@ -306,24 +357,9 @@ const handleDeselect = () => {
   if (isMobile) {
     setIsThemePanelOpen(true);
   } else {
-    setShowRightPanel(true); // IMPORTANT: Add this line
+    setShowRightPanel(true); // ✅ This was already there but might not work
   }
 };
-
-// In your SlideEditor section, modify the onDeselect handling:
-<SlideEditor 
-  slides={slides} 
-  stageRefs={stageRefs} 
-  onDeselect={handleDeselect}
-  slideCount={slides.length}
-/>
-
-// The right panel will automatically show ThemePanel when nothing is selected
-// because of this condition in your JSX:
-{!isTextSelected && !isImageSelected && !isShapeSelected && (
-  <ThemePanel parsedSlides={slides} resetAll={resetAll} />
-)}
-
   // FIXED: Track previous selection to open theme only after deselect
   useEffect(() => {
     const hasSelection = !!selectedTextId || selectedImageIndex !== null || selectedShapeIndex !== null;
@@ -459,12 +495,12 @@ const handleDeselect = () => {
               <div
                 className={`
                   ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
-                  bg-white shadow-md transition-all duration-300 ease-in-out flex
+                  bg-white shadow-md transition-all duration-300 ease-in-out flex scrollbar-hide 
                   ${
                     !isLGScreen && showRightPanel
                       ? "w-96"
                       : isLGScreen
-                      ? "w-[375px]"
+                      ? "w-[310px]"
                       : "w-0"
                   }
                 `}
@@ -486,7 +522,7 @@ const handleDeselect = () => {
                   </div>
                 )}
                 <div
-                  className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
+                  className={`transition-opacity duration-300 ease-in-out overflow-auto w-full scrollbar-hide ${
                     !showRightPanel && !isLGScreen
                       ? "opacity-0 pointer-events-none"
                       : "opacity-100"

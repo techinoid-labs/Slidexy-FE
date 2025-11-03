@@ -29,10 +29,18 @@ const saveState = async (state: any) => {
 const initStore = async () => {
   const preloadedState = await loadState();
 
+  // ✅ FIX: Disable serializableCheck in dev mode (process.env.NODE_ENV === 'development')
+  // Keeps it enabled in prod for safety
+  const middleware = (getDefaultMiddleware: any) => 
+    getDefaultMiddleware({
+      serializableCheck: process.env.NODE_ENV === 'production' ? { ignoredActions: [] } : false,
+    });
+
   const store = configureStore({
     reducer: {
       slidesData: slidesReducer,
     },
+    middleware,  // ✅ Use custom middleware
     preloadedState,
   });
 

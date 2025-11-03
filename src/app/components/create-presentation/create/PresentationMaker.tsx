@@ -67,7 +67,7 @@ export default function PresentationMaker({
   const [goal, setGoal] = useState("");
   const [tone, setTone] = useState("");
   const [audience, setAudience] = useState("");
-  const [slideCount, setSlideCount] = useState("");
+  const [slideCount, setSlideCount] = useState("7");
   const [artStyle, setArtStyle] = useState(""); // New state for art style
   const {
     setSlideTemplates,
@@ -226,6 +226,7 @@ export default function PresentationMaker({
           : { source: "text", textContent: inputValue };
 
     const promptMeta = { goal, tone, audience };
+    console.log(slideCount);
     const payload = {
       ...base,
       meta: promptMeta,

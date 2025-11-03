@@ -223,10 +223,10 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   const hasValidElement = selectedTextId || selectedShapeIndex !== null;
 
   return (
-    <Box className="w-[360px] min-w-[320px] md:min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
+    <Box className="w-[300px] min-w-[250px] md:min-w-[250px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
       {/* Tabs */}
-      <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
-        <Box
+     
+        {/* <Box
           sx={{
             bgcolor: "#F5F5F5",
             color: "#222",
@@ -238,17 +238,16 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             mr: 2,
           }}
         >
-          Settings
-        </Box>
-      </Box>
-
-      <Divider sx={{ my: 2 }} />
+          Text Panel
+        </Box> */}
+     
+    
 
       {/* Text */}
       <Box sx={{ px: 3, mb: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 3, mt: 3 }}>
           <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
-            Text
+            Text Panel
           </Typography>
         </Box>
 
@@ -377,9 +376,9 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       <Divider sx={{ my: 2 }} />
 
       {/* Effects */}
-      <Box sx={{ px: 3, mb: 2 }}>
+      <Box sx={{ px: 2, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+          <Typography sx={{ fontWeight: 500, fontSize: 16, flex: 1 }}>
             Opacity
           </Typography>
         </Box>
@@ -387,15 +386,15 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           <Slider
             value={Math.round(opacity * 100)}
             onChange={(_, v) => updateTextProperty("opacity", Number(v) / 100)}
-            sx={{ color: "#7B4AE2", flex: 1 }}
+            sx={{ color: "#7B4AE2", flex: 1, fontSize: 12 }}
           />
           <InputBase
             value={`${Math.round(opacity * 100)}%`}
             readOnly
             sx={{
-              width: 64,
-              fontWeight: 600,
-              fontSize: 16,
+              width: 57,
+              fontWeight: 500,
+              fontSize: 12,
               bgcolor: "#F8F8FA",
               borderRadius: 2,
               px: 1.5,

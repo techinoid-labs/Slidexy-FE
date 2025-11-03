@@ -1,6 +1,5 @@
-// SlideEditor component
 import React, { useEffect, useState, useRef } from "react";
-import { Stage, Layer, Rect, Image as KonvaImage, Group, Circle, Ellipse } from "react-konva";
+import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 import { Box } from "@mui/material";
 import SlideImage from "./KonvaComponents/KonvaSlideImage";
@@ -9,9 +8,8 @@ import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import SlidePreviews from "./slidesPreview";
 import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
-import { getRandomSlide, getSlideDimensions } from "../../utils/slideUtils";
-import { applyTemplate, Theme } from "@/utils/slideTemplates";
-import { v4 as uuidv4 } from "uuid";
+import { getSlideDimensions } from "../../utils/slideUtils";
+import { generateSlideVariants } from "../../utils/variantGenerator";
 
 type SelectedElement = {
   id: string;
@@ -19,81 +17,80 @@ type SelectedElement = {
   index: number;
 };
 
-const getDynamicConstants = () => {
-  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
-  const IMAGE_WIDTH = 400;
-  const IMAGE_PADDING = 40;
-  const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
-  const textMaxHeight = SLIDE_HEIGHT;
+// deepEqual kept for slides comparison (optional now, but harmless)
+const deepEqual = (a: any, b: any): boolean => {
+  if (a === b) return true;
+  if (a == null || b == null) return a === b;
+  if (typeof a !== typeof b) return false;
+  if (typeof a !== 'object') return a === b;
 
-  return {
-    SLIDE_WIDTH,
-    SLIDE_HEIGHT,
-    LEFT_PADDING,
-    IMAGE_WIDTH,
-    IMAGE_PADDING,
-    textMaxWidth,
-    textMaxHeight,
-  };
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  if (Array.isArray(a)) {
+    if (a.length !== b.length) return false;
+    return a.every((val, idx) => deepEqual(val, b[idx]));
+  }
+
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  return keysA.every(key => deepEqual(a[key], b[key]));
 };
 
-const SlideEditor = ({ slides = [], stageRefs }: any) => {
+const getDynamicConstants = () => {
+  const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING } = getSlideDimensions();
+  return { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING };
+};
+
+const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
   const {
     selectedImageIndex,
     selectedShapeId,
     setSelectedShapeId,
-    setSelectedImageIndex,
+    setSelectedImageIndex,  // ✅ Ensure this is destructured
     setSelectedImage,
     selectedTextId,
     selectedImageId,
     setSelectedImageId,
     setSelectedTextId,
-
     selectedShapeIndex,
     setSelectedShapeIndex,
     setSlides,
     undo,
     redo,
+    selectedSlideIndex,  // ✅ NEW: Use context for current slide
+    setSelectedSlideIndex,  // ✅ NEW: Use context setter
   } = useSlides();
 
-  const { setSelectedTheme, selectedTheme, selectedLayout } = useSlideThemeContext();
-  const [bgImage] = useImage(selectedTheme?.image_url || "");
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const { setSelectedTheme, selectedTheme } = useSlideThemeContext();
+  // ✅ REMOVED: Local selectedIndex - use context selectedSlideIndex instead
   const [scale, setScale] = useState(1);
   const [selectedElements, setSelectedElements] = useState<SelectedElement[]>([]);
 
-  const lastKeyRef = useRef<string | null>(null);
-  const lastLengthRef = useRef(0);
-
-  const handleAddSlide = () => {
-    const newSlide = getRandomSlide();
-    const newSlides = [...slides, structuredClone(newSlide)];
-    setSlides(newSlides);
-    setSelectedIndex(newSlides.length - 1);
-  };
-
-  const handleDeleteSlide = (index: number) => {
-    const newSlides = [...slides];
-    newSlides.splice(index, 1);
-    setSlides(newSlides);
-    if (selectedIndex >= newSlides.length) {
-      setSelectedIndex(Math.max(0, newSlides.length - 1));
-    }
-  };
-
+  // ✅ SIMPLIFIED: Only regenerate when theme changes, preserve ALL slide data
   useEffect(() => {
-    setSelectedTextId(null);
-    setSelectedImageId(null);
-    setSelectedShapeId(null);
+    if (!selectedTheme || slides.length === 0) return;
 
-    if (selectedElements.length === 1) {
-      const el = selectedElements[0];
-      if (el.type === "text") setSelectedTextId(el.id);
-      if (el.type === "image") setSelectedImageId(el.id);
-      if (el.type === "shape") setSelectedShapeId(el.id);
+    console.log('[SlideEditor] Regenerating variants for theme change:', selectedTheme.backgroundColor);
+
+    const updatedSlides = slides.map((slide: any) => {
+      const newLayouts = generateSlideVariants(slide, selectedTheme);
+      const currentVariantIndex = slide.currentVariantIndex ?? 0;
+
+      return {
+        ...slide,
+        layouts: newLayouts,
+        currentVariantIndex,
+      };
+    });
+
+
+    // Only update if changed
+    const slidesChanged = !deepEqual(slides, updatedSlides);
+    if (slidesChanged) {
+      console.log('[SlideEditor] Updating slides with new layouts');
+      setSlides(updatedSlides);
     }
-  }, [selectedElements]);
-
+  }, [selectedTheme]); // ✅ ONLY selectedTheme - no slides dependency!
   useEffect(() => {
     const preservedThemeData = localStorage.getItem("slidesTheme");
     if (preservedThemeData) {
@@ -101,69 +98,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     }
   }, []);
 
-  // Apply templates initial and on theme/layout change
-  useEffect(() => {
-    if (slides.length === 0) return;
-
-    const currentKeyStr = JSON.stringify({ theme: selectedTheme, layout: selectedLayout });
-    const needsReapply = lastKeyRef.current !== currentKeyStr || lastLengthRef.current < slides.length;
-
-    if (needsReapply) {
-      console.log("[SlideEditor] Applying/reapplying templates", needsReapply ? "due to change or initial/add" : "no");
-
-      const { SLIDE_WIDTH, SLIDE_HEIGHT } = getDynamicConstants();
-
-      const templatedSlides = slides.map((slide: any, index: number) => {
-        console.log(`[SlideEditor] Applying template to slide ${index}:`, slide);
-
-        // Remove art_palette override, always use theme
-        const slideWithPal = { ...slide };
-
-        const templated = applyTemplate(
-          slideWithPal,
-          slide.layout_type || "content-right-image",
-          slide.image_url || "",
-          index,
-          slides.length,
-          SLIDE_WIDTH,
-          SLIDE_HEIGHT,
-          selectedTheme
-        );
-
-        // Ensure all IDs are preserved/assigned
-        const processedSlide = {
-          ...templated,
-          slide_id: slide.slide_id || templated.slide_id,
-          elements: templated.elements.map((el: any) => {
-            if (el.element_type === "image" && !el.properties?.image_id) {
-              el.properties = { ...el.properties, image_id: uuidv4() };
-            }
-            if (el.element_type === "shape" && !el.shape_id) {
-              el.shape_id = uuidv4();
-            }
-            return el;
-          })
-        };
-
-        console.log(`[SlideEditor] Processed slide ${index}:`, processedSlide);
-        return processedSlide;
-      });
-
-      console.log("[SlideEditor] All templated slides:", templatedSlides);
-      setSlides(templatedSlides);
-      lastKeyRef.current = currentKeyStr;
-      lastLengthRef.current = slides.length;
-    }
-  }, [selectedTheme, selectedLayout, slides.length]);
-
   useEffect(() => {
     const updateScale = () => {
       setScale(window.innerWidth < 1366 ? 0.85 : 1);
     };
-
     updateScale();
     window.addEventListener("resize", updateScale);
-
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
@@ -175,6 +115,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     setSelectedImageIndex(null);
     setSelectedImage(null);
     setSelectedShapeIndex(null);
+    if (onDeselect) onDeselect();
   };
 
   useEffect(() => {
@@ -191,42 +132,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         return;
       }
 
-      if (
-        e.ctrlKey &&
-        (e.key.toLowerCase() === "y" ||
-          (e.key.toLowerCase() === "z" && e.shiftKey))
-      ) {
+      if (e.ctrlKey && (e.key.toLowerCase() === "y" || (e.key.toLowerCase() === "z" && e.shiftKey))) {
         e.preventDefault();
         redo();
-        return;
-      }
-
-      if (e.ctrlKey && e.key.toLowerCase() === "a") {
-        e.preventDefault();
-        const currentSlide = slides[selectedIndex];
-        if (!currentSlide) return;
-
-        const all: SelectedElement[] = [];
-
-        if (currentSlide.slide_title?.text) {
-          all.push({
-            id: `title-${selectedIndex}`,
-            type: "text",
-            index: -1,
-          });
-        }
-
-        currentSlide.elements.forEach((el: any, i: number) => {
-          if (el.element_type === "image") {
-            all.push({ id: el.properties.image_id, type: "image", index: i });
-          } else if (el.element_type === "shape") {
-            all.push({ id: el.shape_id, type: "shape", index: i });
-          } else {
-            all.push({ id: `el-${selectedIndex}-${i}`, type: "text", index: i });
-          }
-        });
-
-        setSelectedElements(all);
         return;
       }
 
@@ -235,7 +143,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         if (selectedElements.length === 0) return;
 
         const updatedSlides = structuredClone(slides);
-        const currentSlide = updatedSlides[selectedIndex];
+        const currentSlide = updatedSlides[selectedSlideIndex];  // ✅ Use context selectedSlideIndex
         if (!currentSlide) return;
 
         if (selectedElements.some((el) => el.index === -1)) {
@@ -257,7 +165,7 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slides, selectedIndex, selectedElements, setSlides, undo, redo]);
+  }, [slides, selectedSlideIndex, selectedElements, setSlides, undo, redo]);  // ✅ Use selectedSlideIndex
 
   const handleSelect = (el: SelectedElement, multi = false) => {
     if (multi) {
@@ -269,32 +177,52 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     }
   };
 
+  const getCurrentVariantSlide = (slide: any) => {
+    if (!slide.layouts || slide.layouts.length === 0) {
+      console.log('[SlideEditor] No layouts found, returning original slide');
+      return slide;
+    }
+
+    const variantIndex = slide.currentVariantIndex ?? 0;
+    console.log('[SlideEditor] Getting variant', variantIndex, 'from', slide.layouts.length, 'layouts');
+    console.log('[SlideEditor] Slide currentVariantIndex:', slide.currentVariantIndex);
+
+    const variant = slide.layouts[variantIndex];
+    if (!variant) {
+      console.warn('[SlideEditor] Variant', variantIndex, 'not found! Falling back to slide');
+      return slide;
+    }
+
+    console.log('[SlideEditor] Rendering variant', variantIndex, 'background:', variant.background);
+    return variant;
+  };
+
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        overflow: "auto",
-        borderRadius: 10,
-      }}
-    >
-      {slides.map((slide: any, index: number) => {
-        console.log("[SlideEditor] Rendering slide", index, slide);
+    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", overflow: "auto" }}>
+      {slides.map((originalSlide: any, index: number) => {
+        const slide = getCurrentVariantSlide(originalSlide);
         const title = slide.slide_title;
         const titleProps = title?.properties || {};
 
+        let renderBgUrl = "";
+        if (slide.background?.type === "image" && slide.background.url) {
+          renderBgUrl = slide.background.url;
+        } else if (selectedTheme?.image_url) {
+          renderBgUrl = selectedTheme.image_url;
+        }
+
+        const [bgImage] = useImage(renderBgUrl);
+
         return (
           <Box
-            key={slide.slide_id}
+            key={originalSlide.slide_id}
             sx={{
-              borderRadius: 4,
               border: "1px solid #939393ff",
               backgroundColor: "#fff",
               position: "relative",
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
               mb: { md: 1 },
-              display: index === selectedIndex ? "block" : "none",
+              display: index === selectedSlideIndex ? "block" : "none",  // ✅ Use context selectedSlideIndex
               transform: `scale(${scale})`,
             }}
           >
@@ -302,46 +230,15 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
               width={getDynamicConstants().SLIDE_WIDTH}
               height={getDynamicConstants().SLIDE_HEIGHT}
               ref={(ref: any) => {
-                stageRefs.current[index] =
-                  ref?.getStage()?.content?.querySelector("canvas") || null;
+                stageRefs.current[index] = ref?.getStage()?.content?.querySelector("canvas") || null;
               }}
               onMouseDown={(e) => {
-                const clickedOnEmpty =
-                  e.target === e.target.getStage() ||
-                  e.target.name() === "background";
-                if (clickedOnEmpty) {
-                  deselectAll();
-                }
-              }}
-              onTouchStart={(e) => {
-                const clickedOnEmpty =
-                  e.target === e.target.getStage() ||
-                  e.target.name() === "background";
-                if (clickedOnEmpty) {
-                  deselectAll();
-                }
+                const clickedOnEmpty = e.target === e.target.getStage() || e.target.name() === "background";
+                if (clickedOnEmpty) deselectAll();
               }}
             >
-              <Layer
-                clipFunc={(ctx) => {
-                  ctx.beginPath();
-                  const radius = 50;
-                  const width = getDynamicConstants().SLIDE_WIDTH;
-                  const height = getDynamicConstants().SLIDE_HEIGHT;
-
-                  ctx.moveTo(radius, 0);
-                  ctx.lineTo(width - radius, 0);
-                  ctx.quadraticCurveTo(width, 0, width, radius);
-                  ctx.lineTo(width, height - radius);
-                  ctx.quadraticCurveTo(width, height, width - radius, height);
-                  ctx.lineTo(radius, height);
-                  ctx.quadraticCurveTo(0, height, 0, height - radius);
-                  ctx.lineTo(0, radius);
-                  ctx.quadraticCurveTo(0, 0, radius, 0);
-                  ctx.closePath();
-                }}
-              >
-                {selectedTheme?.image_url && bgImage && (
+              <Layer>
+                {bgImage && renderBgUrl ? (
                   <KonvaImage
                     image={bgImage}
                     x={0}
@@ -350,125 +247,163 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     height={getDynamicConstants().SLIDE_HEIGHT}
                     name="background"
                   />
+                ) : slide.background?.type === "linear" && slide.background.gradient ? (
+                  <Rect
+                    width={getDynamicConstants().SLIDE_WIDTH}
+                    height={getDynamicConstants().SLIDE_HEIGHT}
+                    fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+                    fillLinearGradientEndPoint={{ x: getDynamicConstants().SLIDE_WIDTH, y: getDynamicConstants().SLIDE_HEIGHT }}
+                    fillLinearGradientColorStops={slide.background.gradient.stops || [0, slide.background.gradient.start, 1, slide.background.gradient.end]}
+                    cornerRadius={8}
+                    name="background"
+                  />
+                ) : (
+                  <Rect
+                    width={getDynamicConstants().SLIDE_WIDTH}
+                    height={getDynamicConstants().SLIDE_HEIGHT}
+                    fill={slide.background?.color || selectedTheme?.backgroundColor || "#ffffff"}
+                    cornerRadius={8}
+                    name="background"
+                  />
                 )}
-                {/* Render shapes from template */}
+
                 <KonvaShapeRenderer
-                  elements={slide.elements}
+                  elements={slide.elements || []}
                   selectedShapeId={selectedShapeId}
                   selectedShapeIndex={selectedShapeIndex}
                   onSelectShape={(shapeIndex, shapeId, e) => {
-                    handleSelect(
-                      { id: shapeId!, type: "shape", index: shapeIndex! },
-                      e.evt.ctrlKey
-                    );
+                    handleSelect({ id: shapeId!, type: "shape", index: shapeIndex! }, e.evt.ctrlKey);
                     setSelectedShapeId(shapeId!);
                     setSelectedShapeIndex(shapeIndex!);
+                    // ✅ NEW: Clear other selections for mutual exclusivity
+                    setSelectedTextId(null);
+                    setSelectedImageIndex(null);
+                    setSelectedImage(null);
                   }}
                 />
 
-                {/* Render title */}
                 {title?.text && (
                   <KonvaTextEditor
                     key={`title-${index}`}
                     id={`title-${index}`}
                     text={title.text}
                     x={titleProps.x || 25}
-                    y={titleProps.y || getDynamicConstants().LEFT_PADDING}
-                    zIndex={titleProps.zIndex}
-                    width={titleProps.width || getDynamicConstants().textMaxWidth}
-                    wrap="word"
-                    fontSize={titleProps.fontSize}
-                    fontWeight={titleProps.fontWeight}
-                    fontFamily={titleProps.fontFamily}
-                    opacity={titleProps.opacity}
-                    align={titleProps.align}
-                    verticalAlign={titleProps.verticalAlign}
+                    y={titleProps.y || 40}
+                    width={titleProps.width || 800}
+                    fontSize={titleProps.fontSize || 36}
+                    fontWeight={titleProps.fontWeight || "700"}
+                    fontFamily={titleProps.fontFamily || "Raleway"}
                     fill={titleProps.fill || "#000"}
-                    fontStyle={titleProps.fontStyle}
+                    align={titleProps.align || "center"}
                     isSelected={selectedElements.some((s) => s.id === `title-${index}`)}
                     onSelect={(e) => {
-                      handleSelect(
-                        { id: `title-${index}`, type: "text", index: -1 },
-                        e.evt.ctrlKey
-                      );
+                      handleSelect({ id: `title-${index}`, type: "text", index: -1 }, e.evt.ctrlKey);
                       setSelectedTextId(`title-${index}`);
-                      setSelectedImageId(null);
+                      // ✅ NEW: Clear other selections for mutual exclusivity
                       setSelectedImageIndex(null);
                       setSelectedImage(null);
-                      setSelectedShapeId(null);
                       setSelectedShapeIndex(null);
                     }}
                   />
                 )}
 
-                {/* Render text elements */}
-                {slide.elements.map((el: any, i: number) => {
-                  if (
-                    el.element_type !== "text" &&
-                    el.element_type !== "bullet_point"
-                  )
-                    return null;
+                {slide.subtitle?.text && (
+                  <KonvaTextEditor
+                    key={`subtitle-${index}`}
+                    id={`subtitle-${index}`}
+                    text={slide.subtitle.text}
+                    x={slide.subtitle.properties?.x || 80}
+                    y={slide.subtitle.properties?.y || 320}
+                    width={slide.subtitle.properties?.width || 800}
+                    height={slide.subtitle.properties?.height || 80}
+                    fontSize={slide.subtitle.properties?.fontSize || 26}
+                    fontWeight={slide.subtitle.properties?.fontWeight || "400"}
+                    fontFamily={slide.subtitle.properties?.fontFamily || "Raleway, sans-serif"}
+                    fill={slide.subtitle.properties?.fill || "#000000"}
+                    align={slide.subtitle.properties?.align || "center"}
+                    lineHeight={slide.subtitle.properties?.lineHeight || 1.5}
+                    isSelected={selectedElements.some((s) => s.id === `subtitle-${index}`)}
+                    onSelect={(e) => {
+                      handleSelect({ id: `subtitle-${index}`, type: "text", index: -2 }, e.evt.ctrlKey);
+                      setSelectedTextId(`subtitle-${index}`);
+                      // NEW: Clear other selections for mutual exclusivity
+                      setSelectedImageIndex(null);
+                      setSelectedImage(null);
+                      setSelectedShapeIndex(null);
+                    }}
+                  />
+                )}
 
+                {slide.elements?.map((el: any, i: number) => {
+                  if (el.element_type !== "text" && el.element_type !== "bullet_point") return null;
                   return (
                     <KonvaTextEditor
                       key={`el-${index}-${i}`}
                       id={`el-${index}-${i}`}
                       text={el.text}
-                      x={el.properties.x}
-                      y={el.properties.y}
-                      zIndex={el.properties.zIndex}
-                      width={el.properties.width || getDynamicConstants().textMaxWidth}
-                      opacity={el.properties.opacity}
-                      align={el.properties.align}
-                      verticalAlign={el.properties.verticalAlign}
-                      wrap="word"
-                      fontSize={el.properties.fontSize}
-                      fontFamily={el.properties.fontFamily || "Arial"}
-                      fill={el.properties.fill}
-                      fontStyle={el.properties.fontStyle}
-                      fontWeight={el.properties.fontWeight}
+                      x={el.properties?.x || 0}
+                      y={el.properties?.y || 0}
+                      width={el.properties?.width || 300}
+                      fontSize={el.properties?.fontSize || 16}
+                      fontFamily={el.properties?.fontFamily || "Raleway"}
+                      fill={el.properties?.fill || "#000"}
+                      align={el.properties?.align || "left"}
                       isSelected={selectedElements.some((s) => s.id === `el-${index}-${i}`)}
                       onSelect={(e) => {
-                        handleSelect(
-                          { id: `el-${index}-${i}`, type: "text", index: i },
-                          e.evt.ctrlKey
-                        );
+                        handleSelect({ id: `el-${index}-${i}`, type: "text", index: i }, e.evt.ctrlKey);
                         setSelectedTextId(`el-${index}-${i}`);
-                        setSelectedImageId(null);
+                        // NEW: Clear other selections for mutual exclusivity
                         setSelectedImageIndex(null);
                         setSelectedImage(null);
-                        setSelectedShapeId(null);
                         setSelectedShapeIndex(null);
                       }}
                     />
                   );
                 })}
+                {slide.elements?.map((el: any, i: number) => {
+                  if (el.element_type === "image") {
+                    // ✅ CRITICAL: Use proper ID from element or properties
+                    const imageId = el.image_id || el.properties?.image_id || `img-${i}`;
 
-                {/* Render images */}
-                {slide.elements.map((el: any, i: number) => {
-                  if (el.element_type === "image" && el.konva_component === "Konva.Image") {
                     return (
                       <SlideImage
-                        key={`image-${index}-${i}-${el.properties.image_id}`}
-                        image_id={el.properties.image_id}
-                        imageSrc={el.properties.imageSrc}
-                        x={el.properties.x}
-                        y={el.properties.y}
-                        zIndex={el.properties.zIndex}
-                        width={el.properties.width}
-                        height={el.properties.height}
-                        opacity={el.properties.opacity}
-                        shadow={el.properties.shadow}
-                        borderRadius={el.properties.borderRadius}
-                        isSelected={selectedElements.some((s) => s.id === el.properties.image_id)}
+                        key={`image-${index}-${i}-${imageId}`} // ✅ Unique key
+                        image_id={imageId}
+                        imageSrc={el.properties?.imageSrc}
+                        x={el.properties?.x || 0}
+                        y={el.properties?.y || 0}
+                        width={el.properties?.width || 200}
+                        height={el.properties?.height || 200}
+                        borderRadius={el.properties?.cornerRadius || 0}
+                        isSelected={selectedElements.some((s) => s.id === imageId)}
                         onSelect={(e) => {
+                          console.log('[SlideEditor] Image clicked:', imageId, 'at index', i);
+
                           handleSelect(
-                            { id: el.properties.image_id, type: "image", index: i },
+                            { id: imageId, type: "image", index: i },
                             e.evt.ctrlKey
                           );
-                          setSelectedImage({ ...el });
-                          setSelectedImageId(el.properties.image_id);
+
+                          // ✅ CRITICAL: Set all image selection states
+                          setSelectedImageId(imageId);
                           setSelectedImageIndex(i);
+                          setSelectedImage({
+                            ...el,
+                            image_id: imageId, // ✅ Ensure ID is at top level
+                            konva_component: el.konva_component || "Konva.Image",
+                            element_type: "image",
+                            properties: {
+                              ...el.properties,
+                              image_id: imageId, // ✅ And in properties
+                            },
+                          });
+
+                          // ✅ Clear other selections for mutual exclusivity
+                          setSelectedTextId(null);
+                          setSelectedShapeIndex(null);
+                          setSelectedShapeId(null);
+
+                          console.log('[SlideEditor] Image selection state updated');
                         }}
                       />
                     );
@@ -483,12 +418,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
       <SlidePreviews
         slides={slides}
         scale={scale}
-        selectedIndex={selectedIndex}
+        selectedIndex={selectedSlideIndex}  // ✅ Pass context selectedSlideIndex
         slide_width={getDynamicConstants().SLIDE_WIDTH}
         slide_height={getDynamicConstants().SLIDE_HEIGHT}
-        onSelect={setSelectedIndex}
-        onAddSlide={handleAddSlide}
-        onDeleteSlide={handleDeleteSlide}
+        onSelect={setSelectedSlideIndex}  // ✅ Use context setter
+        onAddSlide={() => { }}
+        onDeleteSlide={() => { }}
       />
     </Box>
   );

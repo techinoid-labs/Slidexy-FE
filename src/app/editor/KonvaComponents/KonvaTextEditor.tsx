@@ -29,6 +29,7 @@ interface KonvaTextEditorProps {
   isSelected: boolean;
   onSelect: (e: any) => void;
   verticalAlign?: string;
+  lineHeight?: number;
 }
 
 const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
