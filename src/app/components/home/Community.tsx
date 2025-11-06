@@ -9,7 +9,7 @@ export default function CommunitySection() {
       sx={{
         width: "100%",
         maxWidth: "100vw",
-        background: "#723AFF",
+        background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%);",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
