@@ -12,6 +12,7 @@ import PricingSection from "@/app/components/home/Pricing";
 import CommunitySection from "@/app/components/home/Community";
 import Footer from "@/app/components/home/Footer";
 import ContactSection from "@/app/components/home/ContactSection";
+import WhatWeOffer from "./components/home/WhatWeOffer";
 export default function Home() {
   return (
     <Box
@@ -41,7 +42,7 @@ export default function Home() {
       {/* FOREGROUND CONTENT */}
       <Header />
       <HeroSection />
-      <FeaturesSection />
+      <WhatWeOffer />
       <PurposeSection />
       <PresentationStyleSection />
       <WorkingSection />
