@@ -3,17 +3,19 @@
 import { Box, Container, Typography, Chip, IconButton } from "@mui/material";
 import { ArrowOutward } from "@mui/icons-material";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const tools = [
-    { label: "Prompt-to-Deck", tag: "Free" },
-    { label: "Video-to-Deck", tag: "New" },
-    { label: "Web-to-Deck", tag: "New" },
-    { label: "Text-to-Infographics", tag: "Pro" },
-    { label: "Prompt-to-Template", tag: "Soon" },
-    { label: "Prompt-to-Website", tag: "Soon" },
+    { label: "Prompt-to-Deck", tag: "Free", route: "/tools/prompt-to-deck" },
+    { label: "Video-to-Deck", tag: "New", route: "/tools/video-to-deck" },
+    { label: "Web-to-Deck", tag: "New", route: "/tools/web-to-deck" },
+    { label: "Text-to-Infographics", tag: "Pro", route: "/tools/text-to-infographics" },
+    { label: "Prompt-to-Template", tag: "Soon", route: "/tools/prompt-to-template" },
+    { label: "Prompt-to-Website", tag: "Soon", route: "/tools/url-to-website" },
 ];
 
 export default function Services() {
+    const router = useRouter();
     return (
         <Box
             sx={{
@@ -31,7 +33,7 @@ export default function Services() {
                 sx={{
                     position: "absolute",
                     top: { xs: 10, md: 40 },
-                    left: { xs: 20, md: 200 },
+                    left: { xs: 20, md: 150 },
                     width: { xs: 24, md: 72 },
                     height: { xs: 24, md: 72 },
                     animation: "sparkle 2s ease-in-out infinite",
@@ -44,9 +46,9 @@ export default function Services() {
                 <Image
                     src="/images/light-purple-stars.png"
                     alt="Stars"
-                    width={72}
-                    height={72}
-                    style={{ width: "100%", height: "100%" }}
+                    width={36}
+                    height={36}
+                    style={{ width: "75%", height: "75%" }}
                 />
             </Box>
 
@@ -91,6 +93,7 @@ export default function Services() {
                 {tools.map((tool, i) => (
                     <Box
                         key={i}
+                        onClick={() => router.push(tool.route)}
                         sx={{
                             position: "relative",
                             borderRadius: "16px",
@@ -103,6 +106,7 @@ export default function Services() {
                             justifyContent: "space-between",
                             p: 3,
                             height: 100,
+                            width: 361.3333435058594,
                             transition: "all 0.3s ease",
                             "&:hover": {
                                 transform: "translateY(-5px)",

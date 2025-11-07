@@ -14,9 +14,11 @@ import { ArrowForward } from "@mui/icons-material";
 import { useState } from "react";
 import Lottie from "lottie-react";
 import templateAnimation from "@/json/Gif8-template-section.json";
+import { useRouter } from "next/navigation";
 
 export default function WhatWeOffer() {
     const theme = useTheme();
+    const router = useRouter();
 
     // Define all tools with detailed descriptions
     const tools = [
@@ -24,32 +26,37 @@ export default function WhatWeOffer() {
             title: "Prompt-to-Deck",
             description:
                 "Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers. Simply describe your idea, and get a complete deck with slides, visuals, and tone matching your brand.",
+            route: "/tools/prompt-to-deck",
         },
         {
             title: "Video-to-Deck",
             description:
                 "Upload a video or lecture and automatically convert it into a structured slide deck. Our AI extracts speech, visuals, and highlights to create story-driven presentations ready for delivery.",
+            route: "/tools/video-to-deck",
         },
         {
             title: "Web-to-Deck",
             description:
                 "Transform any web page or article into a clean, visually consistent presentation. Summarize sections, keep key visuals, and align design with your company’s brand.",
+            route: "/tools/web-to-deck",
         },
         {
             title: "Text-to-Infographics",
             description:
                 "Convert long reports or data-heavy text into dynamic, easy-to-read infographics. AI identifies data patterns and crafts compelling visuals to simplify complex insights.",
+            route: "/tools/text-to-infographics",
         },
         {
             title: "Prompt-to-Template",
             description:
                 "Need a new presentation design? Describe your theme, tone, and purpose, and our AI generates a matching slide template — fully editable and brand-consistent.",
+            route: "/tools/prompt-to-template",
         },
         // {
         //   title: "Prompt-to-Website",
         //   description:
         //     "Turn your presentation or written idea into a live website. AI handles structure, layout, and content, giving you a functional landing page or portfolio instantly.",
-        // },
+        //   route: "/tools/url-to-website",  },
     ];
 
     // State to track active tool
@@ -205,11 +212,12 @@ export default function WhatWeOffer() {
                                                 >
                                                     {tool.description}
                                                 </Typography>
-                                                    <Button
+                                                <Button
                                                     variant="contained"
+                                                    onClick={() => router.push(tool.route)}
                                                     sx={{
                                                         background: "rgba(242, 240, 255, 1)",
-                                                        color:"rgba(74, 0, 224, 1)",
+                                                        color: "rgba(74, 0, 224, 1)",
                                                         textTransform: "none",
                                                         fontWeight: 500,
                                                         borderRadius: "30px",
@@ -217,9 +225,10 @@ export default function WhatWeOffer() {
                                                         px: 2.5,
                                                         py: 0.8,
                                                         fontSize: "0.85rem",
-                                                        "&:hover": { background: "rgba(74, 0, 224, 1)",
+                                                        "&:hover": {
+                                                            background: "rgba(74, 0, 224, 1)",
                                                             color: "rgba(242, 240, 255, 1)"
-                                                         },
+                                                        },
                                                     }}
                                                     endIcon={<ArrowForward />}
                                                 >
