@@ -28,12 +28,12 @@ export const createConclusionSlide = {
       elements: [
         // Background
         {
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
         },
         // Decorative accent bar
         {
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 80, y: 130, width: 60, height: 6,
             fill: colors.primary, cornerRadius: 3
@@ -52,7 +52,7 @@ export const createConclusionSlide = {
         ...bullets.map((bullet: any, index: number) => [
           // Card background
           {
-            element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
             properties: {
               x: 80, y: 230 + (index * 85), width: SLIDE_WIDTH - 160, height: 70,
               fill: colors.surface, cornerRadius: 12,
@@ -61,7 +61,7 @@ export const createConclusionSlide = {
           },
           // Number badge
           {
-            element_type: "shape", konva_component: "Circle", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Circle", shape_id: `auto-${uuidv4()}`,
             properties: {
               x: 115, y: 265 + (index * 85), radius: 18,
               fill: colors.primary
@@ -109,12 +109,13 @@ export const createConclusionSlide = {
       elements: [
         // Background
         {
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
         },
         // Decorative circle
+
         {
-          element_type: "shape", konva_component: "Circle", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Circle", shape_id: `auto-${uuidv4()}`,
           properties: {
             x: SLIDE_WIDTH / 2, y: 175, radius: 3,
             fill: colors.primary
@@ -132,7 +133,7 @@ export const createConclusionSlide = {
         // Action items - horizontal cards
         ...bullets.slice(0, 2).map((bullet: any, index: number) => [
           {
-            element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
             properties: {
               x: SLIDE_WIDTH / 2 - 370 + (index * 390), y: 270, width: 350, height: 160,
               fill: colors.surface, cornerRadius: 16,
@@ -141,7 +142,7 @@ export const createConclusionSlide = {
           },
           // Icon circle
           {
-            element_type: "shape", konva_component: "Circle", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Circle", shape_id: `auto-${uuidv4()}`,
             properties: {
               x: SLIDE_WIDTH / 2 - 195 + (index * 390), y: 310, radius: 24,
               fill: hexToRgba(colors.primary, 0.15)
@@ -189,12 +190,12 @@ export const createConclusionSlide = {
       elements: [
         // Background
         {
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
         },
         // Gradient overlay
         {
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT,
             fillLinearGradientStartPoint: { x: 0, y: 0 },
@@ -213,7 +214,7 @@ export const createConclusionSlide = {
         }] : []),
         // Timeline connector
         {
-          element_type: "shape", konva_component: "Line", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Line", shape_id: `auto-${uuidv4()}`,
           properties: {
             points: bullets.slice(0, 3).map((_: any, i: any) => [150 + (i * 250), 250]).flat(),
             stroke: hexToRgba(colors.accent, 0.3), strokeWidth: 2
@@ -223,7 +224,7 @@ export const createConclusionSlide = {
         ...bullets.slice(0, 3).map((bullet: any, index: number) => [
           // Checkpoint circle
           {
-            element_type: "shape", konva_component: "Circle", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Circle", shape_id: `auto-${uuidv4()}`,
             properties: {
               x: 150 + (index * 250), y: 250, radius: 28,
               fill: colors.surface,
@@ -242,7 +243,7 @@ export const createConclusionSlide = {
           },
           // Content card
           {
-            element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
             properties: {
               x: 70 + (index * 250), y: 300, width: 160, height: 120,
               fill: colors.surface, cornerRadius: 12,
@@ -282,12 +283,12 @@ export const createConclusionSlide = {
       elements: [
         // Background
         {
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
         },
         // Large feature card
         {
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: {
             x: SLIDE_WIDTH / 2 - 350, y: 200, width: 700, height: 280,
             fill: colors.surface, cornerRadius: 20,
@@ -306,7 +307,7 @@ export const createConclusionSlide = {
         // Action buttons/items
         ...bullets.slice(0, 2).map((bullet: any, index: number) => [
           {
-            element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
             properties: {
               x: SLIDE_WIDTH / 2 - 280 + (index * 300), y: 330, width: 260, height: 110,
               fill: index === 0 ? colors.primary : hexToRgba(colors.accent, 0.1),

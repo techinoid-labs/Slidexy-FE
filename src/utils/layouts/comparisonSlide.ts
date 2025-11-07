@@ -23,12 +23,12 @@ shadowColor: hexToRgba(textColor, 0.15), shadowBlur: 8, shadowOffsetY: 4
 }
 },
 elements: [
-{ element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+{ element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
 },
 // Enhanced two-column layout with subtle shadows
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 80, y: 120, width: SLIDE_WIDTH/2 - 120, height: SLIDE_HEIGHT - 200,
 fill: hexToRgba(colors.primary, 0.08), cornerRadius: 16,
@@ -36,7 +36,7 @@ shadowColor: hexToRgba(colors.primary, 0.1), shadowBlur: 12, shadowOffsetY: 6
 }
 },
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: SLIDE_WIDTH/2 + 40, y: 120, width: SLIDE_WIDTH/2 - 120, height: SLIDE_HEIGHT - 200,
 fill: hexToRgba(colors.secondary, 0.08), cornerRadius: 16,
@@ -82,7 +82,7 @@ shadowColor: hexToRgba(textColor, 0.1), shadowBlur: 4
 })),
 // Elegant divider
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: SLIDE_WIDTH/2 - 2, y: 100, width: 4, height: SLIDE_HEIGHT - 180,
 fillLinearGradientStartPoint: { x: 0, y: 0 },
@@ -109,12 +109,12 @@ fill: textColor, align: "center", lineHeight: 1.1
 }
 },
 elements: [
-{ element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+{ element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
 },
 // Wave divider for modern feel
 {
-element_type: "shape", konva_component: "Line", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Line", shape_id: `auto-${uuidv4()}`,
 properties: {
 points: [SLIDE_WIDTH/2, 80, SLIDE_WIDTH/2 + 20, 120, SLIDE_WIDTH/2, 160, SLIDE_WIDTH/2 - 20, 200, SLIDE_WIDTH/2, SLIDE_HEIGHT - 100],
 stroke: colors.accent, strokeWidth: 3, tension: 0.4, lineCap: "round"
@@ -122,14 +122,14 @@ stroke: colors.accent, strokeWidth: 3, tension: 0.4, lineCap: "round"
 },
 // Left pros icons
 ...leftBullets.slice(0, 3).map((bullet: any, index: number) => ({
-element_type: "shape", konva_component: "Path", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Path", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 80, y: 130 + (index * 80), data: "M0 0L10 5L0 10Z", fill: colors.primary, scaleX: 2
 }
 })),
 // Right cons icons
 ...rightBullets.slice(0, 3).map((bullet: any, index: number) => ({
-element_type: "shape", konva_component: "Path", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Path", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: SLIDE_WIDTH/2 + 40, y: 130 + (index * 80), data: "M0 10L10 0M0 0L10 10", stroke: colors.secondary, strokeWidth: 3
 }
@@ -168,12 +168,12 @@ fill: textColor, align: "center", lineHeight: 1.1
 }
 },
 elements: [
-{ element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+{ element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
 },
 // Table-like grid with borders
 ...[0,1,2].map(row => ({
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 80, y: 140 + (row * 120), width: SLIDE_WIDTH - 160, height: 2,
 fill: hexToRgba(textColor, 0.15)
@@ -181,7 +181,7 @@ fill: hexToRgba(textColor, 0.15)
 })),
 // Vertical dividers
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: SLIDE_WIDTH/2 - 1, y: 120, width: 2, height: SLIDE_HEIGHT - 200,
 fill: hexToRgba(textColor, 0.2)
@@ -216,12 +216,12 @@ fill: textColor, align: "center", lineHeight: 1.2
 }
 },
 elements: [
-{ element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+{ element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
 },
 // Card-based comparison with hover-like shadows
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 80, y: 150, width: SLIDE_WIDTH/2 - 120, height: 300,
 fill: colors.surface, cornerRadius: 20,
@@ -229,7 +229,7 @@ shadowColor: hexToRgba(colors.primary, 0.15), shadowBlur: 20, shadowOffsetY: 10
 }
 },
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: SLIDE_WIDTH/2 + 40, y: 150, width: SLIDE_WIDTH/2 - 120, height: 300,
 fill: colors.surface, cornerRadius: 20,
@@ -238,14 +238,14 @@ shadowColor: hexToRgba(colors.secondary, 0.15), shadowBlur: 20, shadowOffsetY: 1
 },
 // Header underlines
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 100, y: 130, width: SLIDE_WIDTH/2 - 140, height: 3,
 fill: colors.primary, cornerRadius: 2
 }
 },
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: SLIDE_WIDTH/2 + 60, y: 130, width: SLIDE_WIDTH/2 - 140, height: 3,
 fill: colors.secondary, cornerRadius: 2
@@ -285,26 +285,26 @@ fill: textColor, align: "center", lineHeight: 1.1
 }
 },
 elements: [
-{ element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+{ element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
 },
-// Asymmetrical balanced icons with connection lines
+// Asymmetrical balanced icons with connection Konva.Lines
 {
-element_type: "shape", konva_component: "Line", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Line", shape_id: `auto-${uuidv4()}`,
 properties: {
 points: [200, 150, SLIDE_WIDTH - 200, 150],
 stroke: hexToRgba(colors.accent, 0.4), strokeWidth: 2, dash: [5, 5], lineCap: "round"
 }
 },
 {
-element_type: "shape", konva_component: "Circle", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Circle", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 200, y: 150, radius: 25, fill: hexToRgba(colors.primary, 0.3),
 shadowColor: hexToRgba(colors.primary, 0.2), shadowBlur: 10
 }
 },
 {
-element_type: "shape", konva_component: "Circle", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Circle", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: SLIDE_WIDTH - 200, y: 150, radius: 25, fill: hexToRgba(colors.secondary, 0.3),
 shadowColor: hexToRgba(colors.secondary, 0.2), shadowBlur: 10

@@ -4,10 +4,7 @@ import React from "react";
 import { Box, Button, Typography, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
-import { useDispatch } from "react-redux";
 import { useSlides } from "@/app/context/SlidesContext";
-import { addTextElementToSlide } from "@/app/slice/slidesSlice";
-import { v4 as uuidv4 } from "uuid";
 
 interface TextEditorProps {
   sidebarHeight?: string | number;
@@ -18,8 +15,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
   sidebarHeight = "100vh",
   onClose,
 }) => {
-  const { selectedSlideIndex } = useSlides();
-  const dispatch = useDispatch();
+  const { addText } = useSlides();
 
   const handleAddTextElement = (
     text: string,
@@ -27,29 +23,16 @@ const TextEditor: React.FC<TextEditorProps> = ({
     fontWeight: number,
     color = "#222"
   ) => {
-    const newTextElement = {
+    // ✅ FIXED: Use addText from context which handles variants correctly
+    addText({
       text,
-      konva_component: "Konva.Text",
-      element_type: "text",
-      element_id: uuidv4(),
-
-      properties: {
-        fontSize,
-        fontFamily: "Inter",
-        fill: color,
-        fontStyle: "normal",
-        fontWeight: fontWeight.toString(),
-        x: 200,
-        y: 300,
-      },
-    };
-
-    dispatch(
-      addTextElementToSlide({
-        slideIndex: selectedSlideIndex,
-        newElement: newTextElement,
-      })
-    );
+      fontSize,
+      fontWeight: fontWeight.toString(),
+      fill: color,
+      fontFamily: "Inter",
+      x: 200,
+      y: 300,
+    });
 
     if (onClose) onClose();
   };

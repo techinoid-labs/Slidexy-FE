@@ -125,38 +125,63 @@ const Page = () => {
     setSelectedShapeIndex(null);
   };
 
-  const handleClearCanvas = () => {
-    if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
+const handleClearCanvas = () => {
+  if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
 
-    const newSlides = [...slides];
-    newSlides[selectedSlideIndex] = {
-      ...newSlides[selectedSlideIndex],
-      slide_title: {
-        konva_component: "Konva.Text",
-        text: "",
-        properties: {
-          fontSize: 14,
-          fontWeight: "normal",
-          fontFamily: "Roboto",
-          fill: "#444",
-          fontStyle: "normal",
-          align: "left",
-          x: 0,
-          y: 25,
-          width: 220,
-          height: 0,
-          radius: 0,
-          numPoints: 0,
-          innerRadius: 0,
-          outerRadius: 0,
-        },
+  console.log('[ClearCanvas] Starting canvas clear...');
+
+  const newSlides = structuredClone(slides);
+  const currentSlide = newSlides[selectedSlideIndex];
+
+  // ✅ Create completely blank slide structure
+  const blankSlide = {
+    ...currentSlide,
+    slide_title: {
+      konva_component: "Konva.Text",
+      text: "",
+      properties: {
+        fontSize: 36,
+        fontWeight: "700",
+        fontFamily: "Raleway",
+        fill: selectedTheme?.primaryColor || "#000",
+        fontStyle: "normal",
+        align: "center",
+        x: 25,
+        y: 40,
+        width: 800,
+        height: 0,
       },
-      elements: [],
-      image_url: "",
-    };
-
-    setSlides(newSlides);
+    },
+    subtitle: undefined,        // ✅ Remove subtitle completely
+    elements: [],               // ✅ Clear ALL elements (no filtering!)
+    image_url: "",             // ✅ Clear image
+    image_placeholder: {       // ✅ Reset placeholder
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+    },
   };
+
+  // ✅ Regenerate layouts from blank state
+  const freshLayouts = generateSlideVariants(blankSlide, selectedTheme);
+  blankSlide.layouts = freshLayouts;
+  blankSlide.currentVariantIndex = 0;
+
+  // Update slides array
+  newSlides[selectedSlideIndex] = blankSlide;
+  setSlides(newSlides);
+  
+  // Clear all selections
+  setSelectedTextId(null);
+  setSelectedImageIndex(null);
+  setSelectedImage(null);
+  setSelectedShapeIndex(null);
+  setIsMobileTextSelected(false);
+  setIsMobileImageSelected(false);
+
+  console.log('[ClearCanvas] Canvas cleared successfully');
+};
 
   const handleExportPPTX = () => {
     if (loading) return;

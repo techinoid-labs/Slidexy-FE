@@ -12,7 +12,7 @@ interface BaseElement {
 interface ShapeElement extends BaseElement {
   element_type: "shape";
   shape_id: string;
-  konva_component: "Rect" | "Circle" | "Ellipse" | "Line";
+  konva_component: "Konva.Rect" | "Konva.Circle" | "Konva.Ellipse" | "Konva.Line";
   properties: {
     x?: number;
     y?: number;
@@ -90,8 +90,8 @@ const createGradientBlob = (
   opacity: number
 ): ShapeElement => ({
   element_type: "shape",
-  konva_component: "Ellipse",
-  shape_id: uuidv4(),
+  konva_component: "Konva.Ellipse",
+  shape_id: `auto-${uuidv4()}`,
   properties: {
     x, y, radiusX, radiusY,
     fillRadialGradientStartPoint: { x: 0, y: 0 },
@@ -115,8 +115,8 @@ export const createContentRightImageSlide = {
       // Content card
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 40,
           y: 120,
@@ -135,8 +135,8 @@ export const createContentRightImageSlide = {
       // Gradient accent line
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 60,
           y: 140,
@@ -153,8 +153,8 @@ export const createContentRightImageSlide = {
       // Image frame
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 520,
           y: 80,
@@ -177,7 +177,7 @@ export const createContentRightImageSlide = {
       newElements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 530,
@@ -218,7 +218,7 @@ export const createContentRightImageSlide = {
     return {
       ...slide,
       slide_title: {
-        text: slide.slide_title?.text || "Strategic Insights",
+        text: slide.slide_title?.text ,
         konva_component: "Text",
         properties: {
           x: 60,
@@ -254,8 +254,8 @@ export const createContentRightImageSlide = {
       // Vertical accent bar
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 465,
           y: 0,
@@ -275,8 +275,8 @@ export const createContentRightImageSlide = {
       // Content card
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 40,
           y: 110,
@@ -295,8 +295,8 @@ export const createContentRightImageSlide = {
       // Image frame
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 500,
           y: 60,
@@ -319,7 +319,7 @@ export const createContentRightImageSlide = {
       newElements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 510,
@@ -337,8 +337,8 @@ export const createContentRightImageSlide = {
       ...bullets.slice(0, 4).map((bullet: any, index: number) => [
         {
           element_type: "shape",
-          konva_component: "Line",
-          shape_id: uuidv4(),
+          konva_component: "Konva.Line",
+          shape_id: `auto-${uuidv4()}`,
           properties: {
             points: [64, 146 + (index * 65), 70, 152 + (index * 65), 78, 142 + (index * 65)],
             stroke: colors.accent,
@@ -410,8 +410,8 @@ export const createContentRightImageSlide = {
       // Gradient background
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 0,
           y: 0,
@@ -430,8 +430,8 @@ export const createContentRightImageSlide = {
       // Grid cards
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 40,
           y: 120,
@@ -446,8 +446,8 @@ export const createContentRightImageSlide = {
       } as ShapeElement,
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 270,
           y: 120,
@@ -464,8 +464,8 @@ export const createContentRightImageSlide = {
       // Panoramic image
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 40,
           y: 340,
@@ -487,7 +487,7 @@ export const createContentRightImageSlide = {
       newElements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 50,
@@ -578,8 +578,8 @@ export const createContentRightImageSlide = {
       // Brand sidebar
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 0,
           y: 120,
@@ -596,8 +596,8 @@ export const createContentRightImageSlide = {
       // Content card
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 60,
           y: 130,
@@ -615,8 +615,8 @@ export const createContentRightImageSlide = {
       // Image frame
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 520,
           y: 100,
@@ -636,7 +636,7 @@ export const createContentRightImageSlide = {
       newElements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 530,
@@ -708,8 +708,8 @@ export const createContentRightImageSlide = {
       // Gradient background
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 0,
           y: 0,
@@ -729,8 +729,8 @@ export const createContentRightImageSlide = {
       // Content overlay
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 40,
           y: 110,
@@ -748,8 +748,8 @@ export const createContentRightImageSlide = {
       // Image frame with white stroke
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 500,
           y: 80,
@@ -771,7 +771,7 @@ export const createContentRightImageSlide = {
       newElements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 510,

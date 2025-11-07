@@ -135,7 +135,17 @@ interface ThemePanelProps {
 
 const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
-  const { slides, setSlides, selectedSlideIndex } = useSlides();
+  const {
+    slides,
+    setSlides,
+    selectedSlideIndex,
+    setSelectedTextId,
+    setSelectedImageId,
+    setSelectedImageIndex,
+    setSelectedImage,
+    setSelectedShapeIndex,
+    setSelectedShapeId,
+  } = useSlides();
 
   const [quotaError, setQuotaError] = useState(false);
   const [currentVariants, setCurrentVariants] = useState<any[]>([]);
@@ -196,7 +206,34 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
   const currentSlide = updatedSlides[selectedSlideIndex];
   const selectedVariant = currentVariants[variantIndex];
 
+  // ✅ CRITICAL FIX: Always use variant elements, never fall back to original (prevents stacking)
+  // If variant has elements, use them. If not, use empty array to completely clear slide.
+  currentSlide.elements = selectedVariant.elements 
+    ? structuredClone(selectedVariant.elements)
+    : [];
+
+  // Also update the variant in layouts array to keep it in sync
+  if (!currentSlide.layouts) {
+    currentSlide.layouts = [];
+  }
+  if (!currentSlide.layouts[variantIndex]) {
+    currentSlide.layouts[variantIndex] = selectedVariant;
+  } else {
+    currentSlide.layouts[variantIndex] = {
+      ...currentSlide.layouts[variantIndex],
+      elements: structuredClone(selectedVariant.elements || []),
+    };
+  }
+
   currentSlide.currentVariantIndex = variantIndex;
+
+  if (selectedVariant.image_url !== undefined) {
+    currentSlide.image_url = selectedVariant.image_url;
+  }
+
+  if (selectedVariant.background) {
+    currentSlide.background = structuredClone(selectedVariant.background);
+  }
 
   if (selectedVariant.slide_title) {
     currentSlide.slide_title = structuredClone(selectedVariant.slide_title);
@@ -204,75 +241,28 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
 
   if (selectedVariant.subtitle) {
     currentSlide.subtitle = structuredClone(selectedVariant.subtitle);
-  } else if (originalSlide.subtitle && !currentSlide.subtitle) {
-    currentSlide.subtitle = structuredClone(originalSlide.subtitle);
-    if (!currentSlide.subtitle.konva_component) {
-      currentSlide.subtitle.konva_component = "Text";
-      currentSlide.subtitle.properties = {
-        x: 80, y: 320, width: 800, height: 80, fontSize: 26,
-        fontFamily: "Raleway, sans-serif", fontWeight: "400",
-        fill: selectedTheme?.primaryColor || "#000",
-        align: "center", lineHeight: 1.5
-      };
-    }
   }
-
-  if (selectedVariant.background) {
-    currentSlide.background = structuredClone(selectedVariant.background);
-    console.log('[ThemePanel] Applied variant background:', currentSlide.background);
-  } else if (originalSlide.background) {
-    currentSlide.background = structuredClone(originalSlide.background);
-  } else {
-    currentSlide.background = {
-      type: "solid",
-      color: selectedTheme?.backgroundColor || "#ffffff"
-    };
-  }
-
-  // ✅ FIXED: Use all elements from variant to preserve positioned texts and shapes
-  if (selectedVariant.elements) {
-    currentSlide.elements = structuredClone(selectedVariant.elements);
-  } else if (originalSlide.elements) {
-    currentSlide.elements = structuredClone(originalSlide.elements);
-  }
-
-  if (selectedVariant.image_url !== undefined) {
-    currentSlide.image_url = selectedVariant.image_url;
-  }
-  if (selectedVariant.image_placeholder) {
-    currentSlide.image_placeholder = structuredClone(selectedVariant.image_placeholder);
-  }
-
-  Object.keys(selectedVariant).forEach(key => {
-    if (!['slide_title', 'subtitle', 'elements', 'background', 'image_url', 'image_placeholder', 'name'].includes(key)) {
-      currentSlide[key] = structuredClone(selectedVariant[key]);
-    }
-  });
-
-  const freshLayoutsAfterBake = generateSlideVariants(currentSlide, selectedTheme);
-  currentSlide.layouts = structuredClone(freshLayoutsAfterBake);
-
-  currentSlide.currentVariantIndex = variantIndex;
-
-  setCurrentVariants(freshLayoutsAfterBake);
-
-  console.log('[ThemePanel] About to update slides. currentVariantIndex:', currentSlide.currentVariantIndex);
 
   setSlides(updatedSlides);
+
+  // ✅ CRITICAL: Clear all selections after applying variant to prevent stale state
+  setTimeout(() => {
+    setSelectedTextId(null);
+    setSelectedImageId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+    setSelectedShapeIndex(null);
+    setSelectedShapeId(null);
+  }, 100);
+
+  setIsApplying(false);
+  isApplyingRef.current = false;
 
   try {
     localStorage.setItem(`slide-variant-${selectedSlideIndex}`, String(variantIndex));
   } catch (e) {
-    console.error("Failed to save variant selection", e);
+    console.warn('[ThemePanel] Failed to save variant index to localStorage:', e);
   }
-
-  console.log('[ThemePanel] Variant applied & layouts regenerated. currentVariantIndex:', variantIndex);
-
-  setTimeout(() => {
-    setIsApplying(false);
-    isApplyingRef.current = false;
-    console.log('[ThemePanel] Apply complete, flags cleared');
-  }, 200);
 };
 
   const handlePaletteClick = (palette: string[], index: number) => {

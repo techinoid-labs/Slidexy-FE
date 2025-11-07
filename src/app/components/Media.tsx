@@ -49,48 +49,15 @@ const Media: React.FC<MediaPanelProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const {
-    slides,
-    setSlides,
-    selectedSlideIndex,
-    setSelectedImageIndex,
-    setSelectedImageId,
-    setSelectedImage,
-  } = useSlides();
+  const { addImage } = useSlides();
 
   const insertImageIntoRedux = (base64: string, width = 400, height = 400) => {
-    const SLIDE_WIDTH = 920;
-    const SLIDE_HEIGHT = 430;
-    const x = (SLIDE_WIDTH - width) / 2;
-    const y = (SLIDE_HEIGHT - height) / 2;
-
-    const elementIndex = slides[selectedSlideIndex].elements.length;
-
-    const newImageElement = {
-      konva_component: "Konva.Image",
-      element_type: "image",
-      properties: {
-        x,
-        y,
-        width,
-        height,
-        imageSrc: base64,
-        zIndex: elementIndex,
-        image_id: uuidv4(), // Move image_id inside properties
-      },
-    };
-
-    const updatedSlides = [...slides];
-    const slide = { ...updatedSlides[selectedSlideIndex] };
-
-    slide.elements = [...(slide.elements || []), newImageElement];
-    updatedSlides[selectedSlideIndex] = slide;
-
-    setSlides(updatedSlides);
-
-    // Set selection to newly added image
-    setSelectedImage(newImageElement);
-    setSelectedImageId(newImageElement.properties.image_id); // Update to access image_id from properties
+    // ✅ FIXED: Use addImage from context which handles variants correctly
+    addImage({
+      imageSrc: base64,
+      width,
+      height,
+    });
   };
 
   const handleFile = (file: File) => {
@@ -305,7 +272,7 @@ const Media: React.FC<MediaPanelProps> = ({
                   src={images[idx]}
                   alt={`library-img-${idx}`}
                   onClick={() => {
-                    insertImageIntoRedux(images[idx]);
+                    insertImageIntoRedux(images[idx], 400, 400);
                     onClose?.();
                   }}
                   style={{

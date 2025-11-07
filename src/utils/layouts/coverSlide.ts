@@ -46,8 +46,8 @@ const createGradientBlob = (
   opacity: number
 ) => ({
   element_type: "shape",
-  konva_component: "Ellipse",
-  shape_id: uuidv4(),
+  konva_component: "Konva.Ellipse",
+  shape_id: `auto-${uuidv4()}`,
   properties: {
     x, y, radiusX, radiusY,
     fillRadialGradientStartPoint: { x: 0, y: 0 },
@@ -76,8 +76,8 @@ export const createCoverSlide = {
       // Connecting curve
       {
         element_type: "shape",
-        konva_component: "Line",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Line",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           points: [160, 100, SLIDE_WIDTH - 180, SLIDE_HEIGHT - 80, SLIDE_WIDTH - 100, 70],
           stroke: hexToRgba(colors.accent, 0.08),
@@ -91,8 +91,8 @@ export const createCoverSlide = {
       // Modern glass card
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 400,
           y: 110,
@@ -112,8 +112,8 @@ export const createCoverSlide = {
       // Accent indicator
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 60,
           y: 100,
@@ -130,7 +130,7 @@ export const createCoverSlide = {
     let newSlide = {
       ...slide,
       slide_title: {
-        text: slide.slide_title?.text || "Executive Presentation",
+        text: slide.slide_title?.text ,
         konva_component: "Text",
         properties: {
           x: 80,
@@ -190,8 +190,8 @@ export const createCoverSlide = {
       // Diagonal panel
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: -120,
           y: -60,
@@ -215,8 +215,8 @@ export const createCoverSlide = {
       // Flowing curve
       {
         element_type: "shape",
-        konva_component: "Line",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Line",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           points: [540, 0, 560, 110, 550, 220, 570, 320, 555, 440, 580, SLIDE_HEIGHT],
           stroke: hexToRgba("#ffffff", 0.2),
@@ -232,8 +232,8 @@ export const createCoverSlide = {
       // Decorative elements
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH - 110,
           y: 130,
@@ -247,8 +247,8 @@ export const createCoverSlide = {
       },
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH - 170,
           y: 290,
@@ -262,8 +262,8 @@ export const createCoverSlide = {
       // Accent dots
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 290,
           y: 190,
@@ -274,8 +274,8 @@ export const createCoverSlide = {
       },
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 440,
           y: 340,
@@ -340,8 +340,8 @@ export const createCoverSlide = {
       // Back layer
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2,
           y: SLIDE_HEIGHT / 2,
@@ -368,8 +368,8 @@ export const createCoverSlide = {
       // Middle layer
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2,
           y: SLIDE_HEIGHT / 2,
@@ -390,8 +390,8 @@ export const createCoverSlide = {
       // Front card
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 320,
           y: SLIDE_HEIGHT / 2 - 150,
@@ -411,8 +411,8 @@ export const createCoverSlide = {
       // Top accent bar
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 90,
           y: 155,
@@ -429,8 +429,8 @@ export const createCoverSlide = {
       // Subtle background line
       {
         element_type: "shape",
-        konva_component: "Line",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Line",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           points: [0, SLIDE_HEIGHT / 2, SLIDE_WIDTH, SLIDE_HEIGHT / 2],
           stroke: hexToRgba(colors.primary, 0.04),
@@ -494,8 +494,8 @@ export const createCoverSlide = {
       // Central gradient
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2,
           y: SLIDE_HEIGHT / 2,
@@ -519,8 +519,8 @@ export const createCoverSlide = {
       // Rings
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2,
           y: SLIDE_HEIGHT / 2,
@@ -533,8 +533,8 @@ export const createCoverSlide = {
       },
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2,
           y: SLIDE_HEIGHT / 2,
@@ -548,8 +548,8 @@ export const createCoverSlide = {
       // Decorative dots
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 + 210,
           y: SLIDE_HEIGHT / 2 - 95,
@@ -562,8 +562,8 @@ export const createCoverSlide = {
       },
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 190,
           y: SLIDE_HEIGHT / 2 + 115,
@@ -578,8 +578,8 @@ export const createCoverSlide = {
       // Small accents
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 + 95,
           y: SLIDE_HEIGHT / 2 - 145,
@@ -590,8 +590,8 @@ export const createCoverSlide = {
       },
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 145,
           y: SLIDE_HEIGHT / 2 + 75,
@@ -656,8 +656,8 @@ export const createCoverSlide = {
       // Mesh overlay
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 0,
           y: 0,
@@ -680,8 +680,8 @@ export const createCoverSlide = {
       // Organic blobs
       {
         element_type: "shape",
-        konva_component: "Ellipse",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Ellipse",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH - 140,
           y: 95,
@@ -696,8 +696,8 @@ export const createCoverSlide = {
       },
       {
         element_type: "shape",
-        konva_component: "Ellipse",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Ellipse",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 110,
           y: SLIDE_HEIGHT - 75,
@@ -714,8 +714,8 @@ export const createCoverSlide = {
       // Top accent line
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 110,
           y: 142,
@@ -733,8 +733,8 @@ export const createCoverSlide = {
       // Floating particles
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 190,
           y: 195,
@@ -745,8 +745,8 @@ export const createCoverSlide = {
       },
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 690,
           y: 295,
@@ -757,8 +757,8 @@ export const createCoverSlide = {
       },
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 390,
           y: 440,

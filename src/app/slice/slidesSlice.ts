@@ -20,7 +20,7 @@ interface KonvaTextProperties {
   innerRadius?: number;
   outerRadius?: number;
   imageSrc?: string;
-  zIndex?: number;
+  zIndex: number;
   opacity?: number;
   shadow?: { offsetX: number; offsetY: number; blur: number; color: string };
   borderRadius?: number;
@@ -39,7 +39,7 @@ interface KonvaImageProperties {
   opacity?: number;
   shadow?: { offsetX: number; offsetY: number; blur: number; color: string };
   borderRadius?: number;
-  zIndex?: number;
+  zIndex: number;
   isBackground?: boolean;
   rotation?: number;
   stroke?: string;
@@ -65,7 +65,7 @@ interface KonvaShapeProperties {
   opacity?: number;
   shadow?: { offsetX: number; offsetY: number; blur: number; color: string };
   borderRadius?: number;
-  zIndex?: number;
+  zIndex: number;
   points?: number[];
   data?: string; // For Path
 }
@@ -81,7 +81,7 @@ export interface KonvaComponent {
   element_type?: string;
   type?: string;
   shape_id?: string;
-  properties: KonvaTextProperties | KonvaImageProperties | KonvaShapeProperties | GroupProperties;
+  properties: KonvaTextProperties | KonvaImageProperties | KonvaShapeProperties | GroupProperties  | Record<string, any>;
   text?: string;
   useThemeColor?: boolean;
   elements?: KonvaComponent[]; // New: For groups
@@ -109,6 +109,9 @@ export interface Slide {
   image_url: string | null;
   image_caption: string;
   _initialState?: Slide;
+  layouts?: Slide[]; // or Array<Slide> if you prefer
+currentVariantIndex?: number;
+
 }
 
 interface SlidesState {

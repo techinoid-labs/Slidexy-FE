@@ -12,7 +12,7 @@ interface BaseElement {
 interface ShapeElement extends BaseElement {
   element_type: "shape";
   shape_id: string;
-  konva_component: "Rect" | "Circle" | "Ellipse" | "Line";
+  konva_component: "Konva.Rect" | "Konva.Circle" | "Konva.Ellipse" | "Konva.Line";
   properties: {
     x?: number;
     y?: number;
@@ -80,15 +80,17 @@ const hexToRgba = (hex: string, alpha: number): string => {
 };
 
 export const createContentLeftImageSlide = {
+  
   // Variant 1: Clean Card Layout with Elegant Spacing
   variant1: (slide: any, colors: any, textColor: string, SLIDE_WIDTH: number = 960, SLIDE_HEIGHT: number = 540): any => {
     const bullets = slide.elements?.filter((el: any) => el.element_type === "bullet_point") || [];
+    
     const newElements: SlideElement[] = [
       // Image container with subtle shadow and border
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 40,
           y: 100,
@@ -107,8 +109,8 @@ export const createContentLeftImageSlide = {
       // Accent bar on image frame
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 40,
           y: 100,
@@ -126,7 +128,7 @@ export const createContentLeftImageSlide = {
       newElements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 50,
@@ -145,8 +147,8 @@ export const createContentLeftImageSlide = {
         // Checkmark circle background
         {
           element_type: "shape",
-          konva_component: "Circle",
-          shape_id: uuidv4(),
+          konva_component: "Konva.Circle",
+          shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 480,
             y: 150 + (index * 80),
@@ -158,8 +160,8 @@ export const createContentLeftImageSlide = {
         // Checkmark icon (simplified V shape)
         {
           element_type: "shape",
-          konva_component: "Line",
-          shape_id: uuidv4(),
+          konva_component: "Konva.Line",
+          shape_id: `auto-${uuidv4()}`,
           properties: {
             points: [474, 150 + (index * 80), 478, 154 + (index * 80), 486, 146 + (index * 80)],
             stroke: colors.accent,
@@ -194,7 +196,7 @@ export const createContentLeftImageSlide = {
     return {
       ...slide,
       slide_title: {
-        text: slide.slide_title?.text || "Visual Content Focus",
+        text: slide.slide_title?.text ,
         konva_component: "Text",
         properties: {
           x: 470,
@@ -228,8 +230,8 @@ export const createContentLeftImageSlide = {
       // Gradient background panel for image
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 0,
           y: 0,
@@ -247,8 +249,8 @@ export const createContentLeftImageSlide = {
       // Image frame with rounded corners
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 50,
           y: 120,
@@ -267,8 +269,8 @@ export const createContentLeftImageSlide = {
       // Decorative corner element
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 50,
           y: 120,
@@ -287,7 +289,7 @@ export const createContentLeftImageSlide = {
       newElements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 60,
@@ -306,8 +308,8 @@ export const createContentLeftImageSlide = {
         // Number badge background
         {
           element_type: "shape",
-          konva_component: "Rect",
-          shape_id: uuidv4(),
+          konva_component: "Konva.Rect",
+          shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 480,
             y: 140 + (index * 75),
@@ -394,8 +396,8 @@ export const createContentLeftImageSlide = {
       // Clean image container
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 60,
           y: 110,
@@ -411,8 +413,8 @@ export const createContentLeftImageSlide = {
       // Vertical divider line
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 455,
           y: 110,
@@ -429,7 +431,7 @@ export const createContentLeftImageSlide = {
       newElements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 70,
@@ -448,8 +450,8 @@ export const createContentLeftImageSlide = {
         // Dot indicator
         {
           element_type: "shape",
-          konva_component: "Circle",
-          shape_id: uuidv4(),
+          konva_component: "Konva.Circle",
+          shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 490,
             y: 150 + (index * 75),
@@ -480,8 +482,8 @@ export const createContentLeftImageSlide = {
         // Subtle underline (except last)
         ...(index < 3 ? [{
           element_type: "shape",
-          konva_component: "Rect",
-          shape_id: uuidv4(),
+          konva_component: "Konva.Rect",
+          shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 490,
             y: 188 + (index * 75),
@@ -530,8 +532,8 @@ export const createContentLeftImageSlide = {
       // Layered shadow effect (back layer)
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 70,
           y: 125,
@@ -545,8 +547,8 @@ export const createContentLeftImageSlide = {
       // Main image card
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 60,
           y: 115,
@@ -565,8 +567,8 @@ export const createContentLeftImageSlide = {
       // Content card background
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 470,
           y: 130,
@@ -586,7 +588,7 @@ export const createContentLeftImageSlide = {
       newElements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 70,
@@ -605,8 +607,8 @@ export const createContentLeftImageSlide = {
         // Icon background square
         {
           element_type: "shape",
-          konva_component: "Rect",
-          shape_id: uuidv4(),
+          konva_component: "Konva.Rect",
+          shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 495,
             y: 155 + (index * 70),
@@ -620,8 +622,8 @@ export const createContentLeftImageSlide = {
         // Icon dot
         {
           element_type: "shape",
-          konva_component: "Circle",
-          shape_id: uuidv4(),
+          konva_component: "Konva.Circle",
+          shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 509,
             y: 169 + (index * 70),
@@ -688,8 +690,8 @@ export const createContentLeftImageSlide = {
       // Accent bar on left edge
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 0,
           y: 0,
@@ -702,8 +704,8 @@ export const createContentLeftImageSlide = {
       // Image container with soft edges
       {
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 50,
           y: 120,
@@ -722,8 +724,8 @@ export const createContentLeftImageSlide = {
       // Decorative circle accent
       {
         element_type: "shape",
-        konva_component: "Circle",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Circle",
+        shape_id: `auto-${uuidv4()}`,
         properties: {
           x: 410,
           y: 140,
@@ -740,7 +742,7 @@ export const createContentLeftImageSlide = {
       newElements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 60,
@@ -759,8 +761,8 @@ export const createContentLeftImageSlide = {
         // Left accent line
         {
           element_type: "shape",
-          konva_component: "Rect",
-          shape_id: uuidv4(),
+          konva_component: "Konva.Rect",
+          shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 465,
             y: 150 + (index * 75),

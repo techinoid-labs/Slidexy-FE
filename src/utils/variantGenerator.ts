@@ -30,10 +30,8 @@ export const generateSlideVariants = (slide: any, selectedTheme: any) => {
   const layoutType = slide.layout_type || "content-right-image";
   const variantCreator = LAYOUT_VARIANT_MAP[layoutType];
 
-  // ✅ Add debugging to catch missing layout types
   if (!variantCreator) {
     console.warn(`[variantGenerator] No variant creator found for layout_type: "${layoutType}"`);
-    console.warn('[variantGenerator] Available layout types:', Object.keys(LAYOUT_VARIANT_MAP));
     return [];
   }
 
@@ -47,57 +45,28 @@ export const generateSlideVariants = (slide: any, selectedTheme: any) => {
 
   const textColor = selectedTheme?.primaryColor || "#000000";
 
-  // NEW: Layout-aware image adjustments (scale down/hide/reposition for data-heavy slides)
-  let adjustedImagePlaceholder = slide.image_placeholder; // Default: keep backend's
-  let adjustedImageUrl = slide.image_url; // Optional: swap to a smaller/alt image if needed
+  const userElements = (slide.elements || []).filter((el: any) => {
+    const isUserAdded = 
+      el.element_type === "image" || 
+      el.element_type === "text" || 
+      el.element_type === "bullet_point" ||
+      (el.element_type === "shape" && 
+       el.shape_id && 
+       !el.shape_id.startsWith('auto-') && 
+       el.userAdded !== false);  // New: Assume shapes are user unless marked otherwise
+    
+    return isUserAdded;
+  });
 
-  switch (layoutType) {
-    case "infographic-bullets":
-      // Shrink image to bottom-right corner for metrics focus; or set width/height to 0 to hide
-      adjustedImagePlaceholder = {
-        x: SLIDE_WIDTH - 200, // e.g., 760 on 960px slide
-        y: SLIDE_HEIGHT - 150,
-        width: 180,
-        height: 120,
-      };
-      // Optional: Use a metrics-themed alt image (fetch from backend or generate)
-      // adjustedImageUrl = slide.image_url.replace('.webp', '-metrics-small.webp');
-      break;
-    case "quote-slide":
-      // Hide image completely for clean quote focus
-      adjustedImagePlaceholder = {
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-      };
-      adjustedImageUrl = null;
-      break;
-    case "conclusion":
-    case "content-split":
-      // Slight shrink for balance
-      adjustedImagePlaceholder = {
-        ...slide.image_placeholder,
-        width: 300,
-        height: 350,
-      };
-      break;
-    // Add more cases as needed (e.g., "timeline-slide": vertical strip)
-    default:
-      // Image-heavy layouts: keep full size
-      break;
-  }
+  console.log(`[variantGenerator] Preserving ${userElements.length} user elements`);
 
-  // Exclude background to force fresh theme-based override in variants
   const { background: _, ...tempSlideBase } = slide;
   let tempSlide = {
     ...tempSlideBase,
-    image_url: adjustedImageUrl,
-    image_placeholder: adjustedImagePlaceholder, // ✅ Use adjusted!
-    elements: slide.elements || [], // Keep all elements including images
+    elements: userElements,  // Only users - decoratives filtered out
   };
 
-  // Update fills for all text-based non-shapes to ensure theme consistency
+  // Update fills for text elements
   tempSlide.elements = tempSlide.elements.map((el: any) => {
     if ((el.element_type === "text" || el.element_type === "bullet_point") && el.properties) {
       return {
@@ -111,7 +80,7 @@ export const generateSlideVariants = (slide: any, selectedTheme: any) => {
     return el;
   });
 
-  // Generate all variants (up to 5)
+  // Generate all variants
   const variants = [];
   for (let i = 1; i <= 5; i++) {
     const variantFn = variantCreator[`variant${i}`];
@@ -123,11 +92,18 @@ export const generateSlideVariants = (slide: any, selectedTheme: any) => {
           ...variantSlide,
         });
       } catch (error) {
-        console.error(`[variantGenerator] Error creating variant ${i} for layout ${layoutType}:`, error);
+        console.error(`[variantGenerator] Error creating variant ${i}:`, error);
       }
     }
   }
+  variants.forEach(variant => {
+    (variant.elements || []).forEach((el : any) => {
+      if (el.element_type === "shape" && el.shape_id?.startsWith('auto-')) {
+        el.userAdded = false;  // Explicitly mark for future filters
+      }
+    });
+  });
 
-  console.log(`[variantGenerator] Generated ${variants.length} variants for layout "${layoutType}" with adjusted image:`, adjustedImagePlaceholder);
+  console.log(`[variantGenerator] Generated ${variants.length} variants for layout "${layoutType}"`);
   return variants;
 };
