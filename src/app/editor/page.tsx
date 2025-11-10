@@ -31,17 +31,17 @@ import { useTemplateSlides } from "../context/TemplateSlidesContext";
 import { useUser } from "../context/AuthContext";
 import { getContrastingBackground } from "@/utils/colorUtils";
 import { getRandomSlide } from "@/utils/slideUtils";
-import { generateSlideVariants } from "@/utils/variantGenerator"; // ✅ NEW: Import for initial gen
+import { generateSlideVariants } from "@/utils/variantGenerator";
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
-  
+
   const {
     slides,
     selectedSlideIndex,
     setSlides,
-    setSelectedSlideIndex,  // ✅ NEW: Destructure setter
+    setSelectedSlideIndex,
     setSelectedTextId,
     selectedTextId,
     selectedImageIndex,
@@ -60,7 +60,6 @@ const Page = () => {
   const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const [initialSlides] = useState(() => slides);
   const [isMobileTextSelected, setIsMobileTextSelected] = useState(false);
-  // ✅ FIXED: Init to true for desktop (always show right panel on lg+)
   const [showRightPanel, setShowRightPanel] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -69,20 +68,18 @@ const Page = () => {
   const { data: session } = useSession();
   const { user, loading } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  // FIXED: State to track if there was a selection before deselect
   const [hadSelection, setHadSelection] = useState(false);
 
-  // NEW: Fetch presentation data + generate initial layouts (no theme clone)
+  // Fetch presentation data + generate initial layouts
   useEffect(() => {
-    if (presentationId && slides.length === 0) { // Only fetch if no slides yet
+    if (presentationId && slides.length === 0) {
       const fetchPresentation = async () => {
         try {
-          const response = await fetch(`/api/presentations/${presentationId}`); // Your endpoint
+          const response = await fetch(`/api/presentations/${presentationId}`);
           if (response.ok) {
             const data = await response.json();
             let fetchedSlides = data.slides || [];
 
-            // ✅ FIXED: Generate initial layouts for each slide (triggers SlideEditor naturally)
             fetchedSlides = fetchedSlides.map((slide: any) => {
               const newLayouts = generateSlideVariants(slide, selectedTheme || { backgroundColor: '#fff', primaryColor: '#000', artPalette: ['#000', '#333', '#000', '#fff', '#fff'] });
               const variant0 = newLayouts[0] || slide;
@@ -97,7 +94,7 @@ const Page = () => {
               };
             });
 
-            setSlides(fetchedSlides); // Populates slides with layouts
+            setSlides(fetchedSlides);
           }
         } catch (error) {
           console.error("Failed to fetch presentation:", error);
@@ -105,16 +102,22 @@ const Page = () => {
       };
       fetchPresentation();
     }
-  }, [presentationId, setSlides, selectedTheme]); // ✅ Added selectedTheme dep if needed for gen
+  }, [presentationId, setSlides, selectedTheme]);
 
-  // ✅ FIXED: Removed the problematic theme clone useEffect (initial gen now in fetch)
-
-  // ✅ NEW: Default selectedSlideIndex to 0 on slides load (prevents no-slide render)
+  // Default selectedSlideIndex to 0 on slides load
   useEffect(() => {
     if (slides.length > 0 && (selectedSlideIndex === undefined || selectedSlideIndex === -1)) {
       setSelectedSlideIndex(0);
     }
   }, [slides.length, selectedSlideIndex, setSelectedSlideIndex]);
+
+  // ✅ FIXED: Close theme panel when any element is selected
+  useEffect(() => {
+    const hasSelection = selectedTextId !== null || selectedImageIndex !== null || selectedShapeIndex !== null;
+    if (hasSelection) {
+      setIsThemePanelOpen(false);
+    }
+  }, [selectedTextId, selectedImageIndex, selectedShapeIndex]);
 
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
@@ -135,7 +138,6 @@ const Page = () => {
     const newSlides = structuredClone(slides);
     const currentSlide = newSlides[selectedSlideIndex];
 
-    // ✅ Create completely blank slide structure
     const blankSlide = {
       ...currentSlide,
       slide_title: {
@@ -154,10 +156,10 @@ const Page = () => {
           height: 0,
         },
       },
-      subtitle: undefined,        // ✅ Remove subtitle completely
-      elements: [],               // ✅ Clear ALL elements (no filtering!)
-      image_url: "",             // ✅ Clear image
-      image_placeholder: {       // ✅ Reset placeholder
+      subtitle: undefined,
+      elements: [],
+      image_url: "",
+      image_placeholder: {
         x: 0,
         y: 0,
         width: 0,
@@ -165,16 +167,13 @@ const Page = () => {
       },
     };
 
-    // ✅ Regenerate layouts from blank state
     const freshLayouts = generateSlideVariants(blankSlide, selectedTheme);
     blankSlide.layouts = freshLayouts;
     blankSlide.currentVariantIndex = 0;
 
-    // Update slides array
     newSlides[selectedSlideIndex] = blankSlide;
     setSlides(newSlides);
 
-    // Clear all selections
     setSelectedTextId(null);
     setSelectedImageIndex(null);
     setSelectedImage(null);
@@ -191,17 +190,13 @@ const Page = () => {
     if (session?.user || user) {
       setShowAuthModal(false);
 
-      // FIXED: Enhanced structuring for PPT export to include gradients and backgrounds properly
       const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
         const elements: StructuredSlide["elements"] = [];
 
-        // FIXED: Handle background gradient explicitly
         const background = slide.elements.find((el: any) => el.element_type === "background");
-        // Do not push a "background" element_type, just extract properties for later use
-        // If needed, pass background info via a separate property below
 
         slide.elements?.forEach((el: any) => {
-          if (el.element_type === "background") return; // Already handled
+          if (el.element_type === "background") return;
 
           const { element_type, text, properties = {}, konva_component } = el;
           const {
@@ -217,7 +212,6 @@ const Page = () => {
             fontStyle,
             fontWeight,
             imageSrc,
-            // FIXED: Include shape-specific props for better export
             stroke,
             strokeWidth,
             radius,
@@ -322,7 +316,6 @@ const Page = () => {
             : undefined,
           elements,
           image_url: slide.image_url,
-          // FIXED: Pass theme/gradient info for slide background
           backgroundGradient: background?.properties?.gradientColors || [],
         };
       });
@@ -333,20 +326,21 @@ const Page = () => {
     }
   };
 
+  // ✅ FIXED: Updated logic to properly determine panel states
   const isTextSelected =
     selectedTextId !== null &&
     selectedTextId !== "" &&
-    selectedImageIndex === null &&  // ✅ FIXED: Check === null instead of !
-    selectedShapeIndex === null;    // ✅ FIXED: Check === null instead of !
+    selectedImageIndex === null &&
+    selectedShapeIndex === null;
 
   const isShapeSelected =
     selectedShapeIndex !== null &&
-    selectedTextId === null &&      // ✅ FIXED: More explicit
-    selectedImageIndex === null;    // ✅ FIXED: More explicit
+    selectedTextId === null &&
+    selectedImageIndex === null;
 
   const isImageSelected =
     selectedImageIndex !== null &&
-    selectedTextId === null &&      // ✅ FIXED: More explicit
+    selectedTextId === null &&
     selectedShapeIndex === null;
 
   const handleExportPDF = () => {
@@ -361,18 +355,20 @@ const Page = () => {
   };
 
   const handleOpenThemePanel = () => {
-    setIsThemePanelOpen(true);
-    setIsMobileTextSelected(false);
-    setIsMobileImageSelected(false);
+    // ✅ FIXED: Clear all selections when opening theme panel
     setSelectedTextId(null);
     setSelectedImageIndex(null);
     setSelectedImage(null);
     setSelectedShapeIndex(null);
+    setIsMobileTextSelected(false);
+    setIsMobileImageSelected(false);
+    setIsThemePanelOpen(true);
   };
 
   const handleCloseThemePanel = () => {
     setIsThemePanelOpen(false);
   };
+
   const handleDeselect = () => {
     setSelectedTextId(null);
     setSelectedImageIndex(null);
@@ -384,10 +380,11 @@ const Page = () => {
     if (isMobile) {
       setIsThemePanelOpen(true);
     } else {
-      setShowRightPanel(true); // ✅ This was already there but might not work
+      setShowRightPanel(true);
     }
   };
-  // FIXED: Track previous selection to open theme only after deselect
+
+  // Track previous selection to open theme only after deselect
   useEffect(() => {
     const hasSelection = !!selectedTextId || selectedImageIndex !== null || selectedShapeIndex !== null;
     if (hasSelection) {
@@ -396,9 +393,7 @@ const Page = () => {
       setIsThemePanelOpen(true);
       setHadSelection(false);
     }
-  }, [selectedTextId, selectedImageIndex, selectedShapeIndex]);
-
-  
+  }, [selectedTextId, selectedImageIndex, selectedShapeIndex, hadSelection, isMobile]);
 
   return (
     <>
@@ -430,6 +425,7 @@ const Page = () => {
               onClearCanvas={handleClearCanvas}
               onPreview={() => setPreviewOpen(true)}
               onOpenThemePanel={handleOpenThemePanel}
+              isThemePanelOpen={isThemePanelOpen}
               showAuthModal={showAuthModal}
               setShowAuthModal={setShowAuthModal}
             />
@@ -441,6 +437,7 @@ const Page = () => {
             onClearCanvas={handleClearCanvas}
             onPreview={() => setPreviewOpen(true)}
             onOpenThemePanel={handleOpenThemePanel}
+            isThemePanelOpen={isThemePanelOpen}   
             showAuthModal={showAuthModal}
             setShowAuthModal={setShowAuthModal}
           />
@@ -549,8 +546,8 @@ const Page = () => {
                 )}
                 <div
                   className={`transition-opacity duration-300 ease-in-out overflow-auto w-full scrollbar-hide ${!showRightPanel && !isLGScreen
-                      ? "opacity-0 pointer-events-none"
-                      : "opacity-100"
+                    ? "opacity-0 pointer-events-none"
+                    : "opacity-100"
                     }`}
                 >
                   {isTextSelected && !isShapeSelected && (

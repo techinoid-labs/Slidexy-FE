@@ -121,22 +121,8 @@ export default function PresentationMaker({
   // Progress tracker instance
   const progressTracker = new FrontendProgressTracker();
 
-  // Auto-suggest default art style based on input mode
-  useEffect(() => {
-    const defaults = {
-      Text: "Concept Art",
-      Website: "Flat Illustration",
-      Youtube: "Cinematic Still Frame",
-      Template: "",
-      TextToInfographics: "",
-    };
 
-    setArtStyle(defaults[inputMode] || "");
-
-    if (inputMode === "TextToInfographics") {
-      setOrientation("landscape");
-    }
-  }, [inputMode]);
+ 
 
   const getPlaceholder = () => {
     switch (inputMode) {
