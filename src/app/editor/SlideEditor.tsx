@@ -10,7 +10,7 @@ import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 import { getSlideDimensions } from "../../utils/slideUtils";
 import { generateSlideVariants } from "../../utils/variantGenerator";
-
+import { takeStageSnapshot } from "../../utils/snapShotUtils";
 type SelectedElement = {
   id: string;
   type: "text" | "image" | "shape";
@@ -50,6 +50,24 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
   const layoutsInitializedRef = useRef(false);
   const lastThemeRef = useRef<any>(null);
 
+
+  // Add this useEffect
+  useEffect(() => {
+    const updateSnapshots = () => {
+      const updatedSlides = slides.map((slide: any, index: any) => {
+        const stage = stageRefs.current[index];
+        if (!stage) return slide;
+
+        const snapshot = takeStageSnapshot({ current: stage });
+        return { ...slide, snapshot };
+      });
+      setSlides(updatedSlides);
+    };
+
+    // Take snapshot after render
+    const timer = setTimeout(updateSnapshots, 300);
+    return () => clearTimeout(timer);
+  }, [slides, selectedSlideIndex]);
   // 🔧 FIXED: Stable useEffect with proper dependency array
   useEffect(() => {
     if (!selectedTheme || slides.length === 0) return;
@@ -232,8 +250,8 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
             <Stage
               width={getDynamicConstants().SLIDE_WIDTH}
               height={getDynamicConstants().SLIDE_HEIGHT}
-              ref={(ref: any) => {
-                stageRefs.current[index] = ref?.getStage()?.content?.querySelector("canvas") || null;
+              ref={(node) => {
+                stageRefs.current[index] = node;
               }}
               onMouseDown={(e) => {
                 const clickedOnEmpty = e.target === e.target.getStage() || e.target.name() === "background";

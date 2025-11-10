@@ -299,7 +299,7 @@ export const createCoverSlide = {
           fontSize: 50,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "800",
-          fill: textColor,
+          fill: "#ffffff",
           align: "left",
           lineHeight: 1.2,
           shadowColor: "rgba(0,0,0,0.35)",
@@ -320,7 +320,7 @@ export const createCoverSlide = {
           fontSize: 19,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "400",
-          fill: hexToRgba(textColor, 0.92),
+          fill: "#ffffff",
           align: "left",
           lineHeight: 1.5,
           zIndex: 3

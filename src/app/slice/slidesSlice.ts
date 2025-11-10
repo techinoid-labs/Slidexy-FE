@@ -81,7 +81,7 @@ export interface KonvaComponent {
   element_type?: string;
   type?: string;
   shape_id?: string;
-  properties: KonvaTextProperties | KonvaImageProperties | KonvaShapeProperties | GroupProperties  | Record<string, any>;
+  properties: KonvaTextProperties | KonvaImageProperties | KonvaShapeProperties | GroupProperties | Record<string, any>;
   text?: string;
   useThemeColor?: boolean;
   elements?: KonvaComponent[]; // New: For groups
@@ -110,7 +110,8 @@ export interface Slide {
   image_caption: string;
   _initialState?: Slide;
   layouts?: Slide[]; // or Array<Slide> if you prefer
-currentVariantIndex?: number;
+  currentVariantIndex?: number;
+  snapshot?: string;
 
 }
 
@@ -142,18 +143,18 @@ const slidesSlice = createSlice({
       if (!state.slides[slideIndex]) return;
       state.slides[slideIndex].elements.push(newElement);
     },
-    updateShapeElement: (state, action: PayloadAction<{ 
-      slideIndex: number; 
-      shapeId: string; 
-      updatedProperties: Partial<KonvaShapeProperties | GroupProperties> 
+    updateShapeElement: (state, action: PayloadAction<{
+      slideIndex: number;
+      shapeId: string;
+      updatedProperties: Partial<KonvaShapeProperties | GroupProperties>
     }>) => {
       const { slideIndex, shapeId, updatedProperties } = action.payload;
       if (!state.slides[slideIndex]) return;
-      
+
       const elementIndex = state.slides[slideIndex].elements.findIndex(
         (el) => el.shape_id === shapeId
       );
-      
+
       if (elementIndex !== -1) {
         state.slides[slideIndex].elements[elementIndex].properties = {
           ...state.slides[slideIndex].elements[elementIndex].properties,
@@ -164,7 +165,7 @@ const slidesSlice = createSlice({
     removeShapeElement: (state, action: PayloadAction<{ slideIndex: number; shapeId: string }>) => {
       const { slideIndex, shapeId } = action.payload;
       if (!state.slides[slideIndex]) return;
-      
+
       state.slides[slideIndex].elements = state.slides[slideIndex].elements.filter(
         (el) => el.shape_id !== shapeId
       );
@@ -172,10 +173,10 @@ const slidesSlice = createSlice({
   },
 });
 
-export const { 
-  setSlides, 
-  updateSlideImages, 
-  addTextElementToSlide, 
+export const {
+  setSlides,
+  updateSlideImages,
+  addTextElementToSlide,
   removeSlides,
   updateShapeElement,
   removeShapeElement

@@ -36,6 +36,7 @@ import { generateSlideVariants } from "@/utils/variantGenerator"; // ✅ NEW: Im
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
+  
   const {
     slides,
     selectedSlideIndex,
@@ -62,6 +63,7 @@ const Page = () => {
   // ✅ FIXED: Init to true for desktop (always show right panel on lg+)
   const [showRightPanel, setShowRightPanel] = useState(true);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
   const [previewOpen, setPreviewOpen] = useState(false);
   const { data: session } = useSession();
@@ -79,7 +81,7 @@ const Page = () => {
           if (response.ok) {
             const data = await response.json();
             let fetchedSlides = data.slides || [];
-            
+
             // ✅ FIXED: Generate initial layouts for each slide (triggers SlideEditor naturally)
             fetchedSlides = fetchedSlides.map((slide: any) => {
               const newLayouts = generateSlideVariants(slide, selectedTheme || { backgroundColor: '#fff', primaryColor: '#000', artPalette: ['#000', '#333', '#000', '#fff', '#fff'] });
@@ -94,7 +96,7 @@ const Page = () => {
                 elements: variant0.elements || slide.elements,
               };
             });
-            
+
             setSlides(fetchedSlides); // Populates slides with layouts
           }
         } catch (error) {
@@ -125,63 +127,63 @@ const Page = () => {
     setSelectedShapeIndex(null);
   };
 
-const handleClearCanvas = () => {
-  if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
+  const handleClearCanvas = () => {
+    if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
 
-  console.log('[ClearCanvas] Starting canvas clear...');
+    console.log('[ClearCanvas] Starting canvas clear...');
 
-  const newSlides = structuredClone(slides);
-  const currentSlide = newSlides[selectedSlideIndex];
+    const newSlides = structuredClone(slides);
+    const currentSlide = newSlides[selectedSlideIndex];
 
-  // ✅ Create completely blank slide structure
-  const blankSlide = {
-    ...currentSlide,
-    slide_title: {
-      konva_component: "Konva.Text",
-      text: "",
-      properties: {
-        fontSize: 36,
-        fontWeight: "700",
-        fontFamily: "Raleway",
-        fill: selectedTheme?.primaryColor || "#000",
-        fontStyle: "normal",
-        align: "center",
-        x: 25,
-        y: 40,
-        width: 800,
+    // ✅ Create completely blank slide structure
+    const blankSlide = {
+      ...currentSlide,
+      slide_title: {
+        konva_component: "Konva.Text",
+        text: "",
+        properties: {
+          fontSize: 36,
+          fontWeight: "700",
+          fontFamily: "Raleway",
+          fill: selectedTheme?.primaryColor || "#000",
+          fontStyle: "normal",
+          align: "center",
+          x: 25,
+          y: 40,
+          width: 800,
+          height: 0,
+        },
+      },
+      subtitle: undefined,        // ✅ Remove subtitle completely
+      elements: [],               // ✅ Clear ALL elements (no filtering!)
+      image_url: "",             // ✅ Clear image
+      image_placeholder: {       // ✅ Reset placeholder
+        x: 0,
+        y: 0,
+        width: 0,
         height: 0,
       },
-    },
-    subtitle: undefined,        // ✅ Remove subtitle completely
-    elements: [],               // ✅ Clear ALL elements (no filtering!)
-    image_url: "",             // ✅ Clear image
-    image_placeholder: {       // ✅ Reset placeholder
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
-    },
+    };
+
+    // ✅ Regenerate layouts from blank state
+    const freshLayouts = generateSlideVariants(blankSlide, selectedTheme);
+    blankSlide.layouts = freshLayouts;
+    blankSlide.currentVariantIndex = 0;
+
+    // Update slides array
+    newSlides[selectedSlideIndex] = blankSlide;
+    setSlides(newSlides);
+
+    // Clear all selections
+    setSelectedTextId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+    setSelectedShapeIndex(null);
+    setIsMobileTextSelected(false);
+    setIsMobileImageSelected(false);
+
+    console.log('[ClearCanvas] Canvas cleared successfully');
   };
-
-  // ✅ Regenerate layouts from blank state
-  const freshLayouts = generateSlideVariants(blankSlide, selectedTheme);
-  blankSlide.layouts = freshLayouts;
-  blankSlide.currentVariantIndex = 0;
-
-  // Update slides array
-  newSlides[selectedSlideIndex] = blankSlide;
-  setSlides(newSlides);
-  
-  // Clear all selections
-  setSelectedTextId(null);
-  setSelectedImageIndex(null);
-  setSelectedImage(null);
-  setSelectedShapeIndex(null);
-  setIsMobileTextSelected(false);
-  setIsMobileImageSelected(false);
-
-  console.log('[ClearCanvas] Canvas cleared successfully');
-};
 
   const handleExportPPTX = () => {
     if (loading) return;
@@ -309,14 +311,14 @@ const handleClearCanvas = () => {
           slide_id: slide.slide_id,
           slide_title: slideTitle
             ? {
-                text: slideTitle,
-                properties: {
-                  fontSize: slideTitleProps.fontSize,
-                  fill: slideTitleProps.fill?.replace("#", ""),
-                  fontStyle: slideTitleProps.fontStyle,
-                  fontFamily: slideTitleProps.fontFamily,
-                },
-              }
+              text: slideTitle,
+              properties: {
+                fontSize: slideTitleProps.fontSize,
+                fill: slideTitleProps.fill?.replace("#", ""),
+                fontStyle: slideTitleProps.fontStyle,
+                fontFamily: slideTitleProps.fontFamily,
+              },
+            }
             : undefined,
           elements,
           image_url: slide.image_url,
@@ -331,21 +333,21 @@ const handleClearCanvas = () => {
     }
   };
 
-const isTextSelected =
-  selectedTextId !== null &&
-  selectedTextId !== "" &&
-  selectedImageIndex === null &&  // ✅ FIXED: Check === null instead of !
-  selectedShapeIndex === null;    // ✅ FIXED: Check === null instead of !
+  const isTextSelected =
+    selectedTextId !== null &&
+    selectedTextId !== "" &&
+    selectedImageIndex === null &&  // ✅ FIXED: Check === null instead of !
+    selectedShapeIndex === null;    // ✅ FIXED: Check === null instead of !
 
-const isShapeSelected =
-  selectedShapeIndex !== null && 
-  selectedTextId === null &&      // ✅ FIXED: More explicit
-  selectedImageIndex === null;    // ✅ FIXED: More explicit
+  const isShapeSelected =
+    selectedShapeIndex !== null &&
+    selectedTextId === null &&      // ✅ FIXED: More explicit
+    selectedImageIndex === null;    // ✅ FIXED: More explicit
 
-const isImageSelected =
-  selectedImageIndex !== null && 
-  selectedTextId === null &&      // ✅ FIXED: More explicit
-  selectedShapeIndex === null; 
+  const isImageSelected =
+    selectedImageIndex !== null &&
+    selectedTextId === null &&      // ✅ FIXED: More explicit
+    selectedShapeIndex === null;
 
   const handleExportPDF = () => {
     if (loading) return;
@@ -371,20 +373,20 @@ const isImageSelected =
   const handleCloseThemePanel = () => {
     setIsThemePanelOpen(false);
   };
-const handleDeselect = () => {
-  setSelectedTextId(null);
-  setSelectedImageIndex(null);
-  setSelectedImage(null);
-  setSelectedShapeIndex(null);
-  setIsMobileTextSelected(false);
-  setIsMobileImageSelected(false);
-  
-  if (isMobile) {
-    setIsThemePanelOpen(true);
-  } else {
-    setShowRightPanel(true); // ✅ This was already there but might not work
-  }
-};
+  const handleDeselect = () => {
+    setSelectedTextId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+    setSelectedShapeIndex(null);
+    setIsMobileTextSelected(false);
+    setIsMobileImageSelected(false);
+
+    if (isMobile) {
+      setIsThemePanelOpen(true);
+    } else {
+      setShowRightPanel(true); // ✅ This was already there but might not work
+    }
+  };
   // FIXED: Track previous selection to open theme only after deselect
   useEffect(() => {
     const hasSelection = !!selectedTextId || selectedImageIndex !== null || selectedShapeIndex !== null;
@@ -396,7 +398,7 @@ const handleDeselect = () => {
     }
   }, [selectedTextId, selectedImageIndex, selectedShapeIndex]);
 
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  
 
   return (
     <>
@@ -453,9 +455,9 @@ const handleDeselect = () => {
               <SlideEditorMobile slides={slides} stageRefs={stageRefs} onDeselect={handleDeselect} />
               <SlideShowPlayer
                 slides={slides}
-                theme={selectedTheme}
                 open={previewOpen}
                 onClose={() => setPreviewOpen(false)}
+                theme={selectedTheme}
               />
               {isMobileTextSelected && !isShapeSelected && (
                 <TextSettingsPanelMobile
@@ -521,10 +523,9 @@ const handleDeselect = () => {
                 className={`
                   ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
                   bg-white shadow-md transition-all duration-300 ease-in-out flex scrollbar-hide 
-                  ${
-                    !isLGScreen && showRightPanel
-                      ? "w-96"
-                      : isLGScreen
+                  ${!isLGScreen && showRightPanel
+                    ? "w-96"
+                    : isLGScreen
                       ? "w-[310px]"
                       : "w-0"
                   }
@@ -547,11 +548,10 @@ const handleDeselect = () => {
                   </div>
                 )}
                 <div
-                  className={`transition-opacity duration-300 ease-in-out overflow-auto w-full scrollbar-hide ${
-                    !showRightPanel && !isLGScreen
+                  className={`transition-opacity duration-300 ease-in-out overflow-auto w-full scrollbar-hide ${!showRightPanel && !isLGScreen
                       ? "opacity-0 pointer-events-none"
                       : "opacity-100"
-                  }`}
+                    }`}
                 >
                   {isTextSelected && !isShapeSelected && (
                     <TextSettingsPanel resetAll={resetAll} />

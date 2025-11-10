@@ -136,7 +136,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
   };
 
   return (
-    <Box className="w-[360px] min-w-[320px] md:min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
+    <Box className="w-[300px] min-w-[250px] md:min-w-[250px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
       {/* Tabs */}
       <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
         <Box
@@ -172,7 +172,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
               setShapeFillAndDisableTheme(e.target.value);
             }}
           />
-          <Typography sx={{ fontSize: 14 }}>{fill.toUpperCase()}</Typography>
+          {/* <Typography sx={{ fontSize: 14 }}>{fill.toUpperCase()}</Typography> */}
         </Box>
       </Box>
 
