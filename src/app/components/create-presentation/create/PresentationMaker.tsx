@@ -932,7 +932,7 @@ export default function PresentationMaker({
           },
         }}
       >
-        {/* <span
+        <span
           style={{
             color: loading
               ? "#fff"
@@ -955,7 +955,7 @@ export default function PresentationMaker({
             : inputMode === "Template"
               ? "Generate Template"
               : "Generate Outlines"}
-        </span> */}
+        </span>
 
         <Box
           className="icon"
