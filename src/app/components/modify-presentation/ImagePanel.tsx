@@ -33,6 +33,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     setSelectedImage,
     setSelectedImageIndex,
     setSelectedImageId,
+    addImage,
   } = useSlides();
 
   const [imageWidth, setImageWidth] = useState<number>(
@@ -72,79 +73,55 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     selectedImage?.properties?.borderRadius ?? 0
   );
 
- // PART 1: ImageSettingsPanel.tsx Changes
-// Replace the image search logic (around line 48-90) with this improved version:
-
-let imageObj: KonvaComponent | null = null;
-let currentImageIndex = selectedImageIndex;
-
-if (selectedSlideIndex !== -1 && slides[selectedSlideIndex]) {
-  const currentSlide = slides[selectedSlideIndex];
-  
-  // Primary: Try index first
-  if (selectedImageIndex !== null && currentSlide.elements[selectedImageIndex]) {
-    const candidate = currentSlide.elements[selectedImageIndex];
-    if (candidate?.element_type === "image") {
-      imageObj = candidate;
-      currentImageIndex = selectedImageIndex;
-    } else {
-      console.warn('[ImageSettingsPanel] Selected index points to non-image:', candidate);
+  // ✅ FIXED: All useEffects FIRST (before any returns) - sync logic moved INSIDE its effect
+  // Sync index effect: Compute & sync post-render when selection changes
+  useEffect(() => {
+    if (
+      selectedSlideIndex === -1 ||
+      !slides[selectedSlideIndex] ||
+      !selectedImage?.properties?.image_id ||
+      selectedImageIndex === null
+    ) {
+      return;
     }
-  }
-  
-  // ENHANCED FALLBACK: Search by ID if no valid object found
-  if (!imageObj && selectedImage?.properties?.image_id) {
+
+    const originalSlide = slides[selectedSlideIndex];
+
+    const getCurrentVariantSlide = (slide: any) => {
+      if (!slide.layouts || slide.layouts.length === 0) {
+        return slide;
+      }
+      const variantIndex = slide.currentVariantIndex ?? 0;
+      const variant = slide.layouts[variantIndex];
+      return variant || slide;
+    };
+
+    const currentSlide = getCurrentVariantSlide(originalSlide);
+
+    // Primary: Try index first from variant slide
+    if (currentSlide.elements?.[selectedImageIndex] && currentSlide.elements[selectedImageIndex]?.element_type === "image") {
+      return; // Already in sync
+    }
+
+    // Fallback: Search by ID
     const targetId = selectedImage.properties.image_id;
     console.log('[ImageSettingsPanel] Searching for image_id:', targetId);
-    
-    const foundIndex = currentSlide.elements.findIndex((el: any) => {
-      if (el.element_type !== "image") return false;
-      
-      // Check both locations where ID might be stored
-      const elId = el.image_id || el.properties?.image_id;
-      const match = elId === targetId;
-      
-      if (match) {
-        console.log('[ImageSettingsPanel] Found match at index', foundIndex);
-      }
-      
-      return match;
-    });
-    
-    if (foundIndex !== -1) {
-      imageObj = currentSlide.elements[foundIndex];
-      currentImageIndex = foundIndex;
-      
-      // CRITICAL: Sync context index immediately
-      if (selectedImageIndex !== foundIndex) {
-        console.log('[ImageSettingsPanel] Syncing index from', selectedImageIndex, 'to', foundIndex);
-        setSelectedImageIndex(foundIndex);
-      }
-    } else {
-      // console.error('[ImageSettingsPanel] ID search failed for:', targetId);
-      // console.error('[ImageSettingsPanel] Available images:', 
-      //   currentSlide.elements
-      //     .filter((el: any) => el.element_type === "image")
-      //     .map((el: any, idx: number) => ({
-      //       index: idx,
-      //       image_id: el.image_id,
-      //       props_id: el.properties?.image_id
-      //     }))
-      // );
-    }
-  }
-}
 
-// Add debug logging for failures
-if (!imageObj && selectedImageIndex !== null) {
-  // console.error('[ImageSettingsPanel] Failed to find image element', {
-  //   selectedSlideIndex,
-  //   selectedImageIndex,
-  //   selectedImageId: selectedImage?.properties?.image_id,
-  //   totalElements: slides[selectedSlideIndex]?.elements?.length,
-  //   imageElements: slides[selectedSlideIndex]?.elements?.filter((el: any) => el.element_type === "image").length
-  // });
-}
+    const foundIndex = currentSlide.elements?.findIndex((el: any) => {
+      if (el.element_type !== "image") return false;
+      const elId = el.image_id || el.properties?.image_id;
+      return elId === targetId;
+    }) ?? -1;
+
+    if (foundIndex !== -1 && selectedImageIndex !== foundIndex) {
+      console.log('[ImageSettingsPanel] Syncing index from', selectedImageIndex, 'to', foundIndex);
+      setSelectedImageIndex(foundIndex);
+    } else {
+      console.warn('[ImageSettingsPanel] No match found for image_id:', targetId);
+    }
+  }, [selectedImageIndex, selectedSlideIndex, slides, selectedImage, setSelectedImageIndex]); // ✅ FIXED: Stable deps (no let vars)
+
+  // Existing useEffect for selectedImage updates
   useEffect(() => {
     if (selectedImage) {
       setImageWidth(selectedImage?.properties?.width || 0);
@@ -166,31 +143,66 @@ if (!imageObj && selectedImageIndex !== null) {
     }
   }, [selectedImage]);
 
+  // Existing useEffect for dimensions (uses selectedImageIndex - will re-run post-sync)
   useEffect(() => {
+    // Skip if no valid selection or invalid dimensions
+    if (
+      selectedSlideIndex === -1 ||
+      selectedImageIndex === null ||  // ✅ FIXED: Use selectedImageIndex (global, synced via effect)
+      !slides[selectedSlideIndex] ||
+      (isNaN(imageWidth) && isNaN(imageHeight))
+    )
+      return;
+
     const timeout = setTimeout(() => {
-      if (
-        selectedSlideIndex === -1 ||
-        currentImageIndex === null ||
-        !slides[selectedSlideIndex]?.elements[currentImageIndex]
-      )
-        return;
-
+      // ✅ FIXED: Get current variant slide and update variant elements
       const updatedSlides = structuredClone(slides);
-      const element =
-        updatedSlides[selectedSlideIndex].elements[currentImageIndex];
+      const originalSlide = updatedSlides[selectedSlideIndex];
 
-      // FIXED: Add null check for element and properties to prevent undefined error
-      if (!element || !element.properties) {
-        console.warn('[ImageSettingsPanel] Element or properties missing, skipping update');
-        return;
-      }
+      if (!originalSlide) return;
 
-      if (!isNaN(imageWidth)) {
-        element.properties.width = imageWidth;
-      }
+      // Update the variant, not the original
+      if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+        const variantIndex = originalSlide.currentVariantIndex ?? 0;
+        const variant = originalSlide.layouts[variantIndex];
+        if (variant && variant.elements?.[selectedImageIndex]) {  // ✅ FIXED: Use selectedImageIndex
+          const element = variant.elements[selectedImageIndex];
 
-      if (!isNaN(imageHeight)) {
-        element.properties.height = imageHeight;
+          if (!element || !element.properties) {
+            return;
+          }
+
+          if (!isNaN(imageWidth)) {
+            element.properties.width = imageWidth;
+          }
+
+          if (!isNaN(imageHeight)) {
+            element.properties.height = imageHeight;
+          }
+        }
+        // Also update original for consistency
+        if (originalSlide.elements?.[selectedImageIndex]) {
+          const originalElement = originalSlide.elements[selectedImageIndex];
+          if (originalElement && originalElement.properties) {
+            if (!isNaN(imageWidth)) {
+              originalElement.properties.width = imageWidth;
+            }
+            if (!isNaN(imageHeight)) {
+              originalElement.properties.height = imageHeight;
+            }
+          }
+        }
+      } else {
+        // Fallback to original slide if no variant
+        const element = originalSlide.elements?.[selectedImageIndex];
+        if (element && element.properties) {
+          if (!isNaN(imageWidth)) {
+            element.properties.width = imageWidth;
+          }
+          if (!isNaN(imageHeight)) {
+            element.properties.height = imageHeight;
+          }
+        }
       }
 
       setSlides(updatedSlides);
@@ -200,32 +212,118 @@ if (!imageObj && selectedImageIndex !== null) {
   }, [
     imageWidth,
     imageHeight,
-    slides,
     selectedSlideIndex,
-    currentImageIndex,
+    selectedImageIndex,  // ✅ FIXED: Use global index (post-sync)
+    slides,
     setSlides,
   ]);
 
+  // ✅ FIXED: Compute unconditionally AFTER hooks (for display only, no side effects)
+  let imageObj: KonvaComponent | null = null;
+  let currentImageIndex = selectedImageIndex;  // Local for display (synced via effect)
+
+  if (selectedSlideIndex !== -1 && slides[selectedSlideIndex]) {
+    const originalSlide = slides[selectedSlideIndex];
+
+    const getCurrentVariantSlide = (slide: any) => {
+      if (!slide.layouts || slide.layouts.length === 0) {
+        return slide;
+      }
+      const variantIndex = slide.currentVariantIndex ?? 0;
+      const variant = slide.layouts[variantIndex];
+      return variant || slide;
+    };
+
+    const currentSlide = getCurrentVariantSlide(originalSlide);
+
+    // Primary: Try index first from variant slide
+    if (selectedImageIndex !== null && currentSlide.elements?.[selectedImageIndex]) {
+      const candidate = currentSlide.elements[selectedImageIndex];
+      if (candidate?.element_type === "image") {
+        imageObj = candidate;
+        currentImageIndex = selectedImageIndex;
+      } else {
+        console.warn('[ImageSettingsPanel] Selected index points to non-image:', candidate);
+      }
+    }
+
+    // Fallback: Search by ID (compute only, no setState - sync handled in effect)
+    if (!imageObj && selectedImage?.properties?.image_id) {
+      const targetId = selectedImage.properties.image_id;
+      console.log('[ImageSettingsPanel] Searching for image_id:', targetId);
+
+      const foundIndex = currentSlide.elements?.findIndex((el: any) => {
+        if (el.element_type !== "image") return false;
+        const elId = el.image_id || el.properties?.image_id;
+        return elId === targetId;
+      }) ?? -1;
+
+      if (foundIndex !== -1) {
+        console.log('[ImageSettingsPanel] Found match at index', foundIndex);
+        imageObj = currentSlide.elements[foundIndex];
+        currentImageIndex = foundIndex;
+      } else {
+        console.warn('[ImageSettingsPanel] No match found for image_id:', targetId);
+      }
+    }
+  }
+
+  // ✅ FIXED: Early return AFTER all hooks (now safe - always 17 hooks called)
+  if (!imageObj || imageObj.element_type !== "image") return null;
+
   const updateImageProperty = (props: { [key: string]: any }) => {
-    if (selectedSlideIndex === -1 || currentImageIndex === null) return;
+    if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
+
+    // ✅ FIXED: Get current variant slide and update variant elements
     const updatedSlides = structuredClone(slides);
-    const target =
-      updatedSlides[selectedSlideIndex].elements[currentImageIndex].properties;
-    const element =
-      updatedSlides[selectedSlideIndex].elements[currentImageIndex];
+    const originalSlide = updatedSlides[selectedSlideIndex];
+
+    const getCurrentVariantSlide = (slide: any) => {
+      if (!slide.layouts || slide.layouts.length === 0) {
+        return slide;
+      }
+      const variantIndex = slide.currentVariantIndex ?? 0;
+      const variant = slide.layouts[variantIndex];
+      return variant || slide;
+    };
+
+    let element: any = null;
+    let target: any = null;
+
+    // Update the variant, not the original
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant && variant.elements?.[selectedImageIndex]) {
+        element = variant.elements[selectedImageIndex];
+        target = element.properties;
+      }
+    } else {
+      // Fallback to original slide if no variant
+      element = originalSlide.elements?.[selectedImageIndex];
+      target = element?.properties;
+    }
+
     // FIXED: Add null check for element and target
     if (!element || !target) {
       console.warn('[ImageSettingsPanel] Element or properties missing in updateImageProperty');
       return;
     }
+
     Object.entries(props).forEach(([key, value]) => {
       target[key] = value;
-      // console.log(
-      //   `[ImageSettingsPanel] Updated ${key} to ${JSON.stringify(
-      //     value
-      //   )} for image at slide ${selectedSlideIndex}, index ${currentImageIndex}`
-      // );
     });
+
+    // Also update original for consistency
+    if (originalSlide.elements?.[selectedImageIndex]) {
+      const originalElement = originalSlide.elements[selectedImageIndex];
+      if (originalElement.properties) {
+        Object.entries(props).forEach(([key, value]) => {
+          originalElement.properties[key] = value;
+        });
+      }
+    }
+
     setSlides(updatedSlides);
     setSelectedImage({
       ...element,
@@ -243,48 +341,48 @@ if (!imageObj && selectedImageIndex !== null) {
     if (!imageObj || selectedSlideIndex === -1 || currentImageIndex === null)
       return;
 
-    const currentSlide = slides[selectedSlideIndex];
-    const elements = [...currentSlide.elements];
-    const originalElement = elements[currentImageIndex];
-
-    // FIXED: Ensure originalElement has properties
+    // ✅ FIXED: Use addImage from context which handles variants correctly
+    // Get the current image properties to duplicate
+    const originalElement = imageObj;
     if (!originalElement || !originalElement.properties) {
       console.warn('[ImageSettingsPanel] Original element missing properties in duplicate');
       return;
     }
 
-    const newImageId = uuidv4();
-    const newElement = {
-      ...structuredClone(originalElement),
-      properties: {
-        ...structuredClone(originalElement.properties),
-        image_id: newImageId,
-        x: (originalElement.properties?.x || 0) + 20,
-        y: (originalElement.properties?.y || 0) + 20,
-      },
-    };
-
-    elements.splice(currentImageIndex + 1, 0, newElement);
-
-    const updatedSlide = {
-      ...currentSlide,
-      elements,
-    };
-
-    const updatedSlides = [...slides];
-    updatedSlides[selectedSlideIndex] = updatedSlide;
-
-    setSlides(updatedSlides);
-    setSelectedImage(newElement);
-    setSelectedImageIndex(currentImageIndex + 1);
-    setSelectedImageId(newImageId);
+    // Use addImage to add a duplicate with offset position
+    addImage({
+      imageSrc: originalElement.properties.imageSrc,
+      width: originalElement.properties.width,
+      height: originalElement.properties.height,
+      x: (originalElement.properties?.x || 0) + 20,
+      y: (originalElement.properties?.y || 0) + 20,
+    });
   };
 
   const handleDeleteImage = () => {
-    if (selectedSlideIndex === -1 || currentImageIndex === null) return;
+    if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
 
+    // ✅ FIXED: Delete from variant, not just original
     const updatedSlides = structuredClone(slides);
-    updatedSlides[selectedSlideIndex].elements.splice(currentImageIndex, 1);
+    const originalSlide = updatedSlides[selectedSlideIndex];
+
+    // Delete from variant
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant && variant.elements) {
+        variant.elements.splice(currentImageIndex!, 1);
+      }
+      // Also delete from original
+      if (originalSlide.elements) {
+        originalSlide.elements.splice(selectedImageIndex, 1);
+      }
+    } else {
+      // Fallback to original if no variant
+      if (originalSlide.elements) {
+        originalSlide.elements.splice(selectedImageIndex, 1);
+      }
+    }
 
     setSlides(updatedSlides);
     setSelectedImage(null);
@@ -310,14 +408,40 @@ if (!imageObj && selectedImageIndex !== null) {
         if (
           selectedSlideIndex !== null &&
           currentImageIndex !== null &&
-          slides[selectedSlideIndex]?.elements[currentImageIndex]
+          slides[selectedSlideIndex]
         ) {
+          // ✅ FIXED: Update variant slide, not just original
           const updatedSlides = structuredClone(slides);
-          const element =
-            updatedSlides[selectedSlideIndex].elements[currentImageIndex];
-          // FIXED: Ensure element has properties before updating
+          const originalSlide = updatedSlides[selectedSlideIndex];
+
+          let element: any = null;
+
+          // Update the variant, not the original
+          if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+            if (variant && variant.elements?.[currentImageIndex]) {
+              element = variant.elements[currentImageIndex];
+              if (element && element.properties) {
+                element.properties.imageSrc = resultUrl;
+              }
+            }
+            // Also update original
+            if (originalSlide.elements?.[currentImageIndex]) {
+              const originalElement = originalSlide.elements[currentImageIndex];
+              if (originalElement && originalElement.properties) {
+                originalElement.properties.imageSrc = resultUrl;
+              }
+            }
+          } else {
+            // Fallback to original if no variant
+            element = originalSlide.elements?.[currentImageIndex];
+            if (element && element.properties) {
+              element.properties.imageSrc = resultUrl;
+            }
+          }
+
           if (element && element.properties) {
-            element.properties.imageSrc = resultUrl;
             setSlides(updatedSlides);
             setImageSrc(resultUrl);
             setSelectedImage({
@@ -352,16 +476,42 @@ if (!imageObj && selectedImageIndex !== null) {
       if (
         selectedSlideIndex === null ||
         currentImageIndex === null ||
-        !slides[selectedSlideIndex]?.elements[currentImageIndex]
+        !slides[selectedSlideIndex]
       )
         return;
 
+      // ✅ FIXED: Update variant slide, not just original
       const updatedSlides = structuredClone(slides);
-      const element =
-        updatedSlides[selectedSlideIndex].elements[currentImageIndex];
-      // FIXED: Ensure element has properties before updating
+      const originalSlide = updatedSlides[selectedSlideIndex];
+
+      let element: any = null;
+
+      // Update the variant, not the original
+      if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+        const variantIndex = originalSlide.currentVariantIndex ?? 0;
+        const variant = originalSlide.layouts[variantIndex];
+        if (variant && variant.elements?.[currentImageIndex]) {
+          element = variant.elements[currentImageIndex];
+          if (element && element.properties) {
+            element.properties.imageSrc = result;
+          }
+        }
+        // Also update original
+        if (originalSlide.elements?.[currentImageIndex]) {
+          const originalElement = originalSlide.elements[currentImageIndex];
+          if (originalElement && originalElement.properties) {
+            originalElement.properties.imageSrc = result;
+          }
+        }
+      } else {
+        // Fallback to original if no variant
+        element = originalSlide.elements?.[currentImageIndex];
+        if (element && element.properties) {
+          element.properties.imageSrc = result;
+        }
+      }
+
       if (element && element.properties) {
-        element.properties.imageSrc = result;
         setSlides(updatedSlides);
         setSelectedImage({
           ...element,
@@ -788,10 +938,10 @@ if (!imageObj && selectedImageIndex !== null) {
         <Button
           onClick={() => {
             if (currentImageIndex !== null) {
-              sendElementBackward(currentImageIndex);  // Use synced index
+              sendElementBackward(selectedImageIndex);  // Use synced index
             }
           }}
-          disabled={currentImageIndex === null}
+          disabled={selectedImageIndex === null}
           variant="outlined"
           endIcon={
             <img
@@ -831,10 +981,10 @@ if (!imageObj && selectedImageIndex !== null) {
         <Button
           onClick={() => {
             if (currentImageIndex !== null) {
-              bringElementForward(currentImageIndex);  // Use synced index
+              bringElementForward(selectedImageIndex);  // Use synced index
             }
           }}
-          disabled={currentImageIndex === null}
+          disabled={selectedImageIndex === null}
           variant="outlined"
           endIcon={
             <img

@@ -31,9 +31,26 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
   const slideIndex = selectedSlideIndex;
   const elementIndex = selectedShapeIndex;
 
+  // ✅ FIXED: Read from current variant slide, not original
   let shapeObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex] && elementIndex !== null) {
-    shapeObj = slides[slideIndex].elements[elementIndex];
+    const originalSlide = slides[slideIndex];
+    
+    // Get the current variant slide (what's actually being rendered)
+    const getCurrentVariantSlide = (slide: any) => {
+      if (!slide.layouts || slide.layouts.length === 0) {
+        return slide;
+      }
+      const variantIndex = slide.currentVariantIndex ?? 0;
+      const variant = slide.layouts[variantIndex];
+      return variant || slide;
+    };
+    
+    const currentSlide = getCurrentVariantSlide(originalSlide);
+    
+    if (currentSlide.elements?.[elementIndex]) {
+      shapeObj = currentSlide.elements[elementIndex];
+    }
   }
 
   if (!shapeObj || shapeObj.element_type !== "shape") return null;
@@ -44,37 +61,82 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
 
   const updateShapeProperty = (prop: string, value: any) => {
     if (!shapeObj || slideIndex === -1 || elementIndex === null) return;
+    
+    // ✅ FIXED: Update variant slide, not original
     const updatedSlides = structuredClone(slides);
-    const target = updatedSlides[slideIndex].elements[elementIndex].properties;
-    if (target) target[prop] = value;
+    const originalSlide = updatedSlides[slideIndex];
+    
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant && variant.elements?.[elementIndex]) {
+        variant.elements[elementIndex].properties[prop] = value;
+        // Also update original for consistency
+        if (originalSlide.elements?.[elementIndex]) {
+          originalSlide.elements[elementIndex].properties[prop] = value;
+        }
+      }
+    } else {
+      if (originalSlide.elements?.[elementIndex]) {
+        originalSlide.elements[elementIndex].properties[prop] = value;
+      }
+    }
+    
     setSlides(updatedSlides);
   };
 
   const setShapeFillAndDisableTheme = (color: string) => {
     // Add proper null checks before using elementIndex as an array index
     if (slideIndex === -1 || elementIndex === null) return;
-    
+
+    // ✅ FIXED: Update variant slide, not original
     const updatedSlides = structuredClone(slides);
-    
+    const originalSlide = updatedSlides[slideIndex];
+
     // Ensure the slide exists
-    if (!updatedSlides[slideIndex] || !updatedSlides[slideIndex].elements) return;
-    
-    // Ensure the element exists at the specified index
-    const el = updatedSlides[slideIndex].elements[elementIndex];
-    if (!el) return;
-    
-    // Update properties
-    if (!el.properties) {
-      el.properties = {};
+    if (!originalSlide) return;
+
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      
+      if (variant && variant.elements?.[elementIndex]) {
+        const el = variant.elements[elementIndex];
+        if (!el.properties) {
+          el.properties = {};
+        }
+        el.properties.fill = color;
+        el.useThemeColor = false;
+        
+        // Also update original for consistency
+        if (originalSlide.elements?.[elementIndex]) {
+          const originalEl = originalSlide.elements[elementIndex];
+          if (!originalEl.properties) {
+            originalEl.properties = {};
+          }
+          originalEl.properties.fill = color;
+          originalEl.useThemeColor = false;
+        }
+      }
+    } else {
+      // Ensure the element exists at the specified index
+      const el = originalSlide.elements?.[elementIndex];
+      if (!el) return;
+
+      // Update properties
+      if (!el.properties) {
+        el.properties = {};
+      }
+
+      el.properties.fill = color;
+      el.useThemeColor = false;
     }
     
-    el.properties.fill = color;
-    el.useThemeColor = false;
     setSlides(updatedSlides);
   };
 
   return (
-    <Box className="w-[360px] min-w-[320px] md:min-w-[320px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
+    <Box className="w-[300px] min-w-[250px] md:min-w-[250px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
       {/* Tabs */}
       <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
         <Box
@@ -110,7 +172,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
               setShapeFillAndDisableTheme(e.target.value);
             }}
           />
-          <Typography sx={{ fontSize: 14 }}>{fill.toUpperCase()}</Typography>
+          {/* <Typography sx={{ fontSize: 14 }}>{fill.toUpperCase()}</Typography> */}
         </Box>
       </Box>
 

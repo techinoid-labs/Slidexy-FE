@@ -91,6 +91,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
   return (
     <>
       {elements.map((el: any, i: number) => {
+        const originalIndex = elements.findIndex(e => e.shape_id === el.shape_id);
         if (el.element_type !== "shape") return null;
 
         // Ensure shape_id exists - use existing or generate new one
@@ -110,7 +111,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
         const isSelected = selectedShapeId === safeShapeId;
         const { zIndex, ...safeProps } = el.properties || {};
         const commonProps = {
-          ref: (node: any) => (shapeRefs.current[i] = node),
+          ref: (node: any) => (shapeRefs.current[i] = node),          
           id: safeShapeId,
           draggable: true,
           onClick: (e: any) => {
@@ -145,31 +146,31 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
             updated.y = node.y();
 
             // --- Handle each shape separately ---
-            if (shapeType === "Rect") {
+            if (shapeType === "Konva.Rect") {
               updated.width = Math.max(50, node.width() * scaleX);
               updated.height = Math.max(50, node.height() * scaleY);
             }
 
-            if (shapeType === "Ellipse") {
+            if (shapeType === "Konva.Ellipse") {
               updated.radiusX = Math.max(25, node.radiusX() * scaleX);
               updated.radiusY = Math.max(25, node.radiusY() * scaleY);
               updated.width = updated.radiusX * 2;
               updated.height = updated.radiusY * 2;
             }
 
-            if (shapeType === "RegularPolygon") {
+            if (shapeType === "Konva.RegularPolygon") {
               updated.radius = Math.max(25, node.radius() * Math.max(scaleX, scaleY));
               updated.width = updated.radius * 2;
               updated.height = updated.radius * 2;
             }
 
-            if (shapeType === "Circle") {
+            if (shapeType === "Konva.Circle") {
               updated.radius = Math.max(25, node.radius() * Math.max(scaleX, scaleY));
               updated.width = updated.radius * 2;
               updated.height = updated.radius * 2;
             }
 
-            if (shapeType === "Star") {
+            if (shapeType === "Konva.Star") {
               updated.outerRadius = Math.max(
                 25,
                 node.outerRadius() * Math.max(scaleX, scaleY)
@@ -179,7 +180,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
               updated.height = updated.outerRadius * 2;
             }
 
-            if (shapeType === "Line" || shapeType === "Arrow") {
+            if (shapeType === "Konva.Line" || shapeType === "Konva.Arrow") {
               updated.points = node.points().map((point: number, idx: number) =>
                 idx % 2 === 0 ? point * scaleX : point * scaleY
               );
@@ -189,7 +190,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
               updated.height = Math.max(30, Math.max(...ys) - Math.min(...ys));
             }
 
-            if (shapeType === "Arc" || shapeType === "Wedge") {
+            if (shapeType === "Konva.Arc" || shapeType === "Konva.Wedge") {
               updated.width = Math.max(50, node.width() * scaleX);
               updated.height = Math.max(50, node.height() * scaleY);
             }
@@ -227,10 +228,10 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
             const shapeProps = { ...el.properties };
 
             // Ensure width/height for some shapes
-            if (shapeType === "Ellipse") {
+            if (shapeType === "Konva.Ellipse") {
               shapeProps.width = (shapeProps.radiusX || 25) * 2;
               shapeProps.height = (shapeProps.radiusY || 25) * 2;
-            } else if (shapeType === "RegularPolygon") {
+            } else if (shapeType === "Konva.RegularPolygon") {
               shapeProps.width = (shapeProps.radius || 25) * 2;
               shapeProps.height = (shapeProps.radius || 25) * 2;
             }
@@ -270,15 +271,15 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
         };
 
         switch (el.konva_component) {
-          case "Circle":
+          case "Konva.Circle":
             return <Circle key={`shape-${safeShapeId}`} {...commonProps} />;
-          case "Rect":
+          case "Konva.Rect":
             return <Rect key={`shape-${safeShapeId}`} {...commonProps} />; // Line ~278 fixed
-          case "RegularPolygon":
+          case "Konva.RegularPolygon":
             return <RegularPolygon key={`shape-${safeShapeId}`} {...commonProps} />;
-          case "Star":
+          case "Konva.Star":
             return <Star key={`shape-${safeShapeId}`} {...commonProps} />;
-          case "Line":
+          case "Konva.Line":
             return (
               <Line
                 key={`shape-${safeShapeId}`}
@@ -291,7 +292,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                 {...commonProps}
               />
             ); // Line ~285 fixed
-          case "Arrow":
+          case "Konva.Arrow":
             return (
               <Arrow
                 key={`shape-${safeShapeId}`}
@@ -301,11 +302,11 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
                 {...commonProps}
               />
             );
-          case "Ellipse":
+          case "Konva.Ellipse":
             return <Ellipse key={`shape-${safeShapeId}`} {...commonProps} />; // Line ~303 fixed
-          case "Arc":
+          case "Konva.Arc":
             return <Arc key={`shape-${safeShapeId}`} {...commonProps} />;
-          case "Wedge":
+          case "Konva.Wedge":
             return <Wedge key={`shape-${safeShapeId}`} {...commonProps} />;
           default:
             console.warn(`Unknown shape type: ${el.konva_component}`); // ✅ FIXED: Add for debug
@@ -329,10 +330,10 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
             let height = newBox.height;
 
             // Adjust width and height for specific shapes
-            if (shapeType === "Ellipse") {
+            if (shapeType === "Konva.Ellipse") {
               width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newBox.width));
               height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, newBox.height));
-            } else if (shapeType === "RegularPolygon") {
+            } else if (shapeType === "Konva.RegularPolygon") {
               const radius = Math.max(MIN_SIZE / 2, Math.min(MAX_SIZE / 2, Math.max(newBox.width, newBox.height) / 2));
               width = height = radius * 2;
             } else {

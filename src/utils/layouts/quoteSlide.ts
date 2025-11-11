@@ -12,7 +12,7 @@ interface BaseElement {
 interface ShapeElement extends BaseElement {
   element_type: "shape";
   shape_id: string;
-  konva_component: "Rect" | "Circle" | "Ellipse" | "Line";
+  konva_component: "Konva.Rect" | "Konva.Circle" | "Konva.Ellipse" | "Konva.Line";
   properties: {
     x?: number;
     y?: number;
@@ -94,7 +94,7 @@ export const createQuoteSlide = {
       elements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 0,
@@ -109,8 +109,8 @@ export const createQuoteSlide = {
       // Add solid background if no image
       elements.push({
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background, zIndex: 0 }
       } as ShapeElement);
     }
@@ -212,7 +212,7 @@ export const createQuoteSlide = {
       elements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 0,
@@ -227,8 +227,8 @@ export const createQuoteSlide = {
       // Add solid background if no image
       elements.push({
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background, zIndex: 0 }
       } as ShapeElement);
     }
@@ -236,8 +236,8 @@ export const createQuoteSlide = {
     // Subtle accent bar with dash
     elements.push({
       element_type: "shape",
-      konva_component: "Rect",
-      shape_id: uuidv4(),
+      konva_component: "Konva.Rect",
+      shape_id: `auto-${uuidv4()}`,
       properties: {
         x: SLIDE_WIDTH / 2 - 150,
         y: SLIDE_HEIGHT / 2 + 40,
@@ -307,7 +307,7 @@ export const createQuoteSlide = {
       elements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 0,
@@ -322,8 +322,8 @@ export const createQuoteSlide = {
       // Add solid background if no image
       elements.push({
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background, zIndex: 0 }
       } as ShapeElement);
     }
@@ -375,8 +375,8 @@ export const createQuoteSlide = {
     // Subtle frame
     elements.push({
       element_type: "shape",
-      konva_component: "Rect",
-      shape_id: uuidv4(),
+      konva_component: "Konva.Rect",
+      shape_id: `auto-${uuidv4()}`,
       properties: {
         x: 140,
         y: 170,
@@ -426,7 +426,7 @@ export const createQuoteSlide = {
       elements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 0,
@@ -441,8 +441,8 @@ export const createQuoteSlide = {
       // Add solid background if no image
       elements.push({
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background, zIndex: 0 }
       } as ShapeElement);
     }
@@ -450,8 +450,8 @@ export const createQuoteSlide = {
     // Central circle backdrop
     elements.push({
       element_type: "shape",
-      konva_component: "Circle",
-      shape_id: uuidv4(),
+      konva_component: "Konva.Circle",
+      shape_id: `auto-${uuidv4()}`,
       properties: {
         x: SLIDE_WIDTH / 2,
         y: SLIDE_HEIGHT / 2,
@@ -466,8 +466,8 @@ export const createQuoteSlide = {
     // Quote separator
     elements.push({
       element_type: "shape",
-      konva_component: "Rect",
-      shape_id: uuidv4(),
+      konva_component: "Konva.Rect",
+      shape_id: `auto-${uuidv4()}`,
       properties: {
         x: SLIDE_WIDTH / 2 - 100,
         y: SLIDE_HEIGHT / 2 + 20,
@@ -515,7 +515,7 @@ export const createQuoteSlide = {
       elements.push({
         element_type: "image",
         konva_component: "Image",
-        image_id: uuidv4(),
+        image_id: `auto-${uuidv4()}`,
         properties: {
           imageSrc: slide.image_url,
           x: 0,
@@ -530,8 +530,8 @@ export const createQuoteSlide = {
       // Add solid background if no image
       elements.push({
         element_type: "shape",
-        konva_component: "Rect",
-        shape_id: uuidv4(),
+        konva_component: "Konva.Rect",
+        shape_id: `auto-${uuidv4()}`,
         properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background, zIndex: 0 }
       } as ShapeElement);
     }
@@ -539,8 +539,8 @@ export const createQuoteSlide = {
     // Border with enhanced stroke
     elements.push({
       element_type: "shape",
-      konva_component: "Rect",
-      shape_id: uuidv4(),
+      konva_component: "Konva.Rect",
+      shape_id: `auto-${uuidv4()}`,
       properties: {
         x: 100,
         y: 140,

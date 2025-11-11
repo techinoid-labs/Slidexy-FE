@@ -22,7 +22,7 @@ shadowColor: "rgba(0,0,0,0.5)", shadowBlur: 20, shadowOffsetY: 10
 elements: [
 // Optimized overlay for readability with vignette
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT,
 fillRadialGradientStartPoint: { x: SLIDE_WIDTH/2, y: SLIDE_HEIGHT/2 },
@@ -34,7 +34,7 @@ fillRadialGradientColorStops: [0, "transparent", 0.8, hexToRgba("#000000", 0.45)
 },
 // Subtle bottom fade
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 0, y: SLIDE_HEIGHT - 150, width: SLIDE_WIDTH, height: 150,
 fillLinearGradientStartPoint: { x: 0, y: SLIDE_HEIGHT - 150 },
@@ -59,7 +59,7 @@ shadowColor: "rgba(0,0,0,0.4)", shadowBlur: 15, shadowOffsetY: 8
 elements: [
 // Enhanced bottom gradient with color infusion
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 0, y: SLIDE_HEIGHT - 220, width: SLIDE_WIDTH, height: 220,
 fillLinearGradientStartPoint: { x: 0, y: SLIDE_HEIGHT - 220 },
@@ -69,7 +69,7 @@ fillLinearGradientColorStops: [0, "transparent", 0.3, hexToRgba(colors.primary, 
 },
 // Call-to-action accent line
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 60, y: SLIDE_HEIGHT - 130, width: SLIDE_WIDTH - 120, height: 2,
 fill: hexToRgba(colors.accent, 0.8), cornerRadius: 1
@@ -92,7 +92,7 @@ shadowColor: "rgba(0,0,0,0.6)", shadowBlur: 25, shadowOffsetY: 12
 elements: [
 // Circular vignette overlay
 {
-element_type: "shape", konva_component: "Ellipse", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Ellipse", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: SLIDE_WIDTH/2, y: SLIDE_HEIGHT/2, radiusX: 250, radiusY: 150,
 fill: hexToRgba("#000000", 0.55),
@@ -101,7 +101,7 @@ shadowColor: "rgba(0,0,0,0.3)", shadowBlur: 30
 },
 // Inner glow ring
 {
-element_type: "shape", konva_component: "Ellipse", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Ellipse", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: SLIDE_WIDTH/2, y: SLIDE_HEIGHT/2, radiusX: 220, radiusY: 130,
 fill: "transparent", stroke: hexToRgba(colors.accent, 0.3), strokeWidth: 4
@@ -124,7 +124,7 @@ shadowColor: "rgba(0,0,0,0.4)", shadowBlur: 18, shadowOffsetY: 9
 elements: [
 // Horizontal gradient overlay
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: 0, y: 0, width: SLIDE_WIDTH/2 + 50, height: SLIDE_HEIGHT,
 fillLinearGradientStartPoint: { x: SLIDE_WIDTH/2 + 50, y: 0 },
@@ -135,7 +135,7 @@ cornerRadius: [0, 40, 40, 0]
 },
 // Content divider line
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: SLIDE_WIDTH/2 - 1, y: 0, width: 2, height: SLIDE_HEIGHT,
 fill: hexToRgba(colors.primary, 0.3)
@@ -158,7 +158,7 @@ shadowColor: "rgba(0,0,0,0.5)", shadowBlur: 30, shadowOffsetY: 15
 elements: [
 // Diagonal overlay with rotation
 {
-element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
 properties: {
 x: -100, y: -100, width: 1160, height: 740,
 fill: hexToRgba("#000000", 0.35), rotation: 8,
@@ -167,7 +167,7 @@ shadowColor: "rgba(0,0,0,0.2)", shadowBlur: 40
 },
 // Accent curve
 {
-element_type: "shape", konva_component: "Line", shape_id: uuidv4(),
+element_type: "shape", konva_component: "Konva.Line", shape_id: `auto-${uuidv4()}`,
 properties: {
 points: [0, SLIDE_HEIGHT, SLIDE_WIDTH, 0],
 stroke: hexToRgba(colors.accent, 0.4), strokeWidth: 4, tension: 0.6, lineCap: "round"

@@ -12,7 +12,7 @@ export const createInfographicBulletsSlide = {
     return {
       ...slide,
       slide_title: {
-        text: slide.slide_title?.text || "Core Insights",
+        text: slide.slide_title?.text,
         konva_component: "Text",
         properties: {
           x: 60, y: 40, width: SLIDE_WIDTH - 120, height: 60,
@@ -23,13 +23,13 @@ export const createInfographicBulletsSlide = {
       },
       elements: [
         {
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
         },
         // Icon-integrated bullets with shadows
         ...bullets.slice(0, 4).map((bullet: any, index: number) => [
           {
-            element_type: "shape", konva_component: "Circle", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Circle", shape_id: `auto-${uuidv4()}`,
             properties: {
               x: 120, y: 150 + (index * 100), radius: 22,
               fillLinearGradientStartPoint: { x: 0, y: 0 },
@@ -65,13 +65,13 @@ export const createInfographicBulletsSlide = {
       },
       elements: [
         {
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
         },
         // Numbered badges with gradients
         ...bullets.slice(0, 5).map((bullet: any, index: number) => [
           {
-            element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
             properties: {
               x: 100, y: 130 + (index * 70), width: 35, height: 35,
               fillLinearGradientStartPoint: { x: 0, y: 0 },
@@ -116,13 +116,13 @@ variant3: (slide: any, colors: any, textColor: string, SLIDE_WIDTH: number = 960
     },
     elements: [
       {
-        element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+        element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
         properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
       },
       // Checkmark icons with path precision
       ...bullets.slice(0, 4).map((bullet: any, index: number) => [
         {
-          element_type: "shape", konva_component: "Path", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Path", shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 120, y: 150 + (index * 80), data: "M4 10L8 14L16 6", fill: "none", stroke: colors.secondary, strokeWidth: 4, strokeLinecap: "round"
           }
@@ -154,12 +154,12 @@ variant3: (slide: any, colors: any, textColor: string, SLIDE_WIDTH: number = 960
       },
       elements: [
         {
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
         },
         // Card stack with perspective shadows
         ...bullets.slice(0, 3).map((bullet: any, index: number) => ({
-          element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+          element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
           properties: {
             x: 120 + (index * 260), y: 180 - (index * 5), width: 220, height: 120,
             fill: hexToRgba(colors.primary, 0.12), cornerRadius: 16,
@@ -195,12 +195,12 @@ variant3: (slide: any, colors: any, textColor: string, SLIDE_WIDTH: number = 960
         },
         elements: [
           {
-            element_type: "shape", konva_component: "Rect", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Rect", shape_id: `auto-${uuidv4()}`,
             properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background }
           },
           // Flowing connector line
           {
-            element_type: "shape", konva_component: "Line", shape_id: uuidv4(),
+            element_type: "shape", konva_component: "Konva.Line", shape_id: `auto-${uuidv4()}`,
             properties: {
               points: [140, 160, 140, 460],
               stroke: hexToRgba(colors.accent, 0.6), strokeWidth: 3, lineCap: "round",
@@ -210,7 +210,7 @@ variant3: (slide: any, colors: any, textColor: string, SLIDE_WIDTH: number = 960
           // Dots along connector
           ...bullets.slice(0, 4).map((bullet: any, index: number) => [
             {
-              element_type: "shape", konva_component: "Circle", shape_id: uuidv4(),
+              element_type: "shape", konva_component: "Konva.Circle", shape_id: `auto-${uuidv4()}`,
               properties: {
                 x: 140, y: 170 + (index * 80), radius: 8,
                 fill: colors.primary, shadowColor: hexToRgba(colors.primary, 0.2), shadowBlur: 6

@@ -10,30 +10,11 @@ import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 import { getSlideDimensions } from "../../utils/slideUtils";
 import { generateSlideVariants } from "../../utils/variantGenerator";
-
+import { takeStageSnapshot } from "../../utils/snapShotUtils";
 type SelectedElement = {
   id: string;
   type: "text" | "image" | "shape";
   index: number;
-};
-
-// deepEqual kept for slides comparison (optional now, but harmless)
-const deepEqual = (a: any, b: any): boolean => {
-  if (a === b) return true;
-  if (a == null || b == null) return a === b;
-  if (typeof a !== typeof b) return false;
-  if (typeof a !== 'object') return a === b;
-
-  if (Array.isArray(a) !== Array.isArray(b)) return false;
-  if (Array.isArray(a)) {
-    if (a.length !== b.length) return false;
-    return a.every((val, idx) => deepEqual(val, b[idx]));
-  }
-
-  const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
-  if (keysA.length !== keysB.length) return false;
-  return keysA.every(key => deepEqual(a[key], b[key]));
 };
 
 const getDynamicConstants = () => {
@@ -46,7 +27,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
     selectedImageIndex,
     selectedShapeId,
     setSelectedShapeId,
-    setSelectedImageIndex,  // ✅ Ensure this is destructured
+    setSelectedImageIndex,
     setSelectedImage,
     selectedTextId,
     selectedImageId,
@@ -57,22 +38,66 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
     setSlides,
     undo,
     redo,
-    selectedSlideIndex,  // ✅ NEW: Use context for current slide
-    setSelectedSlideIndex,  // ✅ NEW: Use context setter
+    selectedSlideIndex,
+    setSelectedSlideIndex,
   } = useSlides();
 
   const { setSelectedTheme, selectedTheme } = useSlideThemeContext();
-  // ✅ REMOVED: Local selectedIndex - use context selectedSlideIndex instead
   const [scale, setScale] = useState(1);
   const [selectedElements, setSelectedElements] = useState<SelectedElement[]>([]);
 
-  // ✅ SIMPLIFIED: Only regenerate when theme changes, preserve ALL slide data
+  // ✅ NEW: Refs to track initialization and theme changes
+  const layoutsInitializedRef = useRef(false);
+  const lastThemeRef = useRef<any>(null);
+
+
+  // Add this useEffect
+  useEffect(() => {
+    const updateSnapshots = () => {
+      const updatedSlides = slides.map((slide: any, index: any) => {
+        const stage = stageRefs.current[index];
+        if (!stage) return slide;
+
+        const snapshot = takeStageSnapshot({ current: stage });
+        return { ...slide, snapshot };
+      });
+      setSlides(updatedSlides);
+    };
+
+    // Take snapshot after render
+    const timer = setTimeout(updateSnapshots, 300);
+    return () => clearTimeout(timer);
+  }, [slides, selectedSlideIndex]);
+  // 🔧 FIXED: Stable useEffect with proper dependency array
   useEffect(() => {
     if (!selectedTheme || slides.length === 0) return;
 
-    console.log('[SlideEditor] Regenerating variants for theme change:', selectedTheme.backgroundColor);
+    // Check if theme actually changed (deep comparison)
+    const themeChanged = JSON.stringify(lastThemeRef.current) !== JSON.stringify(selectedTheme);
+
+    console.log('[SlideEditor] Theme changed:', themeChanged);
+    console.log('[SlideEditor] Layouts initialized:', layoutsInitializedRef.current);
+
+    // Only regenerate if:
+    // 1. Layouts not yet initialized, OR
+    // 2. Theme changed AND we need to update existing layouts
+    const needsRegeneration = !layoutsInitializedRef.current || (
+      themeChanged && slides.some((slide: any) => slide.layouts && slide.layouts.length > 0)
+    );
+
+    if (!needsRegeneration) {
+      console.log('[SlideEditor] Skipping regeneration to preserve user edits');
+      return;
+    }
+
+    console.log('[SlideEditor] Regenerating variants');
 
     const updatedSlides = slides.map((slide: any) => {
+      // Skip if slide already has layouts and theme hasn't changed
+      if (slide.layouts && slide.layouts.length > 0 && !themeChanged) {
+        return slide;
+      }
+
       const newLayouts = generateSlideVariants(slide, selectedTheme);
       const currentVariantIndex = slide.currentVariantIndex ?? 0;
 
@@ -83,14 +108,11 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
       };
     });
 
+    setSlides(updatedSlides);
+    layoutsInitializedRef.current = true;
+    lastThemeRef.current = selectedTheme;
+  }, [selectedTheme, slides]); // ✅ STABLE: Only selectedTheme
 
-    // Only update if changed
-    const slidesChanged = !deepEqual(slides, updatedSlides);
-    if (slidesChanged) {
-      console.log('[SlideEditor] Updating slides with new layouts');
-      setSlides(updatedSlides);
-    }
-  }, [selectedTheme]); // ✅ ONLY selectedTheme - no slides dependency!
   useEffect(() => {
     const preservedThemeData = localStorage.getItem("slidesTheme");
     if (preservedThemeData) {
@@ -143,7 +165,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
         if (selectedElements.length === 0) return;
 
         const updatedSlides = structuredClone(slides);
-        const currentSlide = updatedSlides[selectedSlideIndex];  // ✅ Use context selectedSlideIndex
+        const currentSlide = updatedSlides[selectedSlideIndex];
         if (!currentSlide) return;
 
         if (selectedElements.some((el) => el.index === -1)) {
@@ -165,7 +187,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slides, selectedSlideIndex, selectedElements, setSlides, undo, redo]);  // ✅ Use selectedSlideIndex
+  }, [slides, selectedSlideIndex, selectedElements, setSlides, undo, redo]);
 
   const handleSelect = (el: SelectedElement, multi = false) => {
     if (multi) {
@@ -185,7 +207,6 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
 
     const variantIndex = slide.currentVariantIndex ?? 0;
     console.log('[SlideEditor] Getting variant', variantIndex, 'from', slide.layouts.length, 'layouts');
-    console.log('[SlideEditor] Slide currentVariantIndex:', slide.currentVariantIndex);
 
     const variant = slide.layouts[variantIndex];
     if (!variant) {
@@ -193,7 +214,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
       return slide;
     }
 
-    console.log('[SlideEditor] Rendering variant', variantIndex, 'background:', variant.background);
+    console.log('[SlideEditor] Rendering variant', variantIndex);
     return variant;
   };
 
@@ -222,15 +243,15 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
               position: "relative",
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
               mb: { md: 1 },
-              display: index === selectedSlideIndex ? "block" : "none",  // ✅ Use context selectedSlideIndex
+              display: index === selectedSlideIndex ? "block" : "none",
               transform: `scale(${scale})`,
             }}
           >
             <Stage
               width={getDynamicConstants().SLIDE_WIDTH}
               height={getDynamicConstants().SLIDE_HEIGHT}
-              ref={(ref: any) => {
-                stageRefs.current[index] = ref?.getStage()?.content?.querySelector("canvas") || null;
+              ref={(node) => {
+                stageRefs.current[index] = node;
               }}
               onMouseDown={(e) => {
                 const clickedOnEmpty = e.target === e.target.getStage() || e.target.name() === "background";
@@ -275,7 +296,6 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                     handleSelect({ id: shapeId!, type: "shape", index: shapeIndex! }, e.evt.ctrlKey);
                     setSelectedShapeId(shapeId!);
                     setSelectedShapeIndex(shapeIndex!);
-                    // ✅ NEW: Clear other selections for mutual exclusivity
                     setSelectedTextId(null);
                     setSelectedImageIndex(null);
                     setSelectedImage(null);
@@ -293,13 +313,13 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                     fontSize={titleProps.fontSize || 36}
                     fontWeight={titleProps.fontWeight || "700"}
                     fontFamily={titleProps.fontFamily || "Raleway"}
+                    opacity={titleProps.opacity || 1}
                     fill={titleProps.fill || "#000"}
                     align={titleProps.align || "center"}
                     isSelected={selectedElements.some((s) => s.id === `title-${index}`)}
                     onSelect={(e) => {
                       handleSelect({ id: `title-${index}`, type: "text", index: -1 }, e.evt.ctrlKey);
                       setSelectedTextId(`title-${index}`);
-                      // ✅ NEW: Clear other selections for mutual exclusivity
                       setSelectedImageIndex(null);
                       setSelectedImage(null);
                       setSelectedShapeIndex(null);
@@ -316,6 +336,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                     y={slide.subtitle.properties?.y || 320}
                     width={slide.subtitle.properties?.width || 800}
                     height={slide.subtitle.properties?.height || 80}
+                    opacity={slide.subtitle.properties?.opacity ?? 1}
                     fontSize={slide.subtitle.properties?.fontSize || 26}
                     fontWeight={slide.subtitle.properties?.fontWeight || "400"}
                     fontFamily={slide.subtitle.properties?.fontFamily || "Raleway, sans-serif"}
@@ -326,7 +347,6 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                     onSelect={(e) => {
                       handleSelect({ id: `subtitle-${index}`, type: "text", index: -2 }, e.evt.ctrlKey);
                       setSelectedTextId(`subtitle-${index}`);
-                      // NEW: Clear other selections for mutual exclusivity
                       setSelectedImageIndex(null);
                       setSelectedImage(null);
                       setSelectedShapeIndex(null);
@@ -338,21 +358,21 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                   if (el.element_type !== "text" && el.element_type !== "bullet_point") return null;
                   return (
                     <KonvaTextEditor
-                      key={`el-${index}-${i}`}
-                      id={`el-${index}-${i}`}
+                      key={`${el.id || `el-${index}-${i}`}`}
+                      id={el.id || `el-${index}-${i}`}
                       text={el.text}
                       x={el.properties?.x || 0}
                       y={el.properties?.y || 0}
                       width={el.properties?.width || 300}
                       fontSize={el.properties?.fontSize || 16}
                       fontFamily={el.properties?.fontFamily || "Raleway"}
+                      opacity={el.properties?.opacity || 1}
                       fill={el.properties?.fill || "#000"}
                       align={el.properties?.align || "left"}
                       isSelected={selectedElements.some((s) => s.id === `el-${index}-${i}`)}
                       onSelect={(e) => {
                         handleSelect({ id: `el-${index}-${i}`, type: "text", index: i }, e.evt.ctrlKey);
                         setSelectedTextId(`el-${index}-${i}`);
-                        // NEW: Clear other selections for mutual exclusivity
                         setSelectedImageIndex(null);
                         setSelectedImage(null);
                         setSelectedShapeIndex(null);
@@ -360,21 +380,24 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                     />
                   );
                 })}
+
                 {slide.elements?.map((el: any, i: number) => {
                   if (el.element_type === "image") {
-                    // ✅ CRITICAL: Use proper ID from element or properties
                     const imageId = el.image_id || el.properties?.image_id || `img-${i}`;
 
                     return (
                       <SlideImage
-                        key={`image-${index}-${i}-${imageId}`} // ✅ Unique key
-                        image_id={imageId}
+                        key={`${el.id || `el-${index}-${i}`}`}
+                        image_id={el.id || `el-${index}-${i}`}
                         imageSrc={el.properties?.imageSrc}
                         x={el.properties?.x || 0}
                         y={el.properties?.y || 0}
                         width={el.properties?.width || 200}
                         height={el.properties?.height || 200}
-                        borderRadius={el.properties?.cornerRadius || 0}
+                        opacity={el.properties?.opacity ?? 1}
+                        shadow={el.properties?.shadow}
+                        zIndex={el.properties?.zIndex}
+                        borderRadius={el.properties?.borderRadius || 0}
                         isSelected={selectedElements.some((s) => s.id === imageId)}
                         onSelect={(e) => {
                           console.log('[SlideEditor] Image clicked:', imageId, 'at index', i);
@@ -384,21 +407,19 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                             e.evt.ctrlKey
                           );
 
-                          // ✅ CRITICAL: Set all image selection states
                           setSelectedImageId(imageId);
                           setSelectedImageIndex(i);
                           setSelectedImage({
                             ...el,
-                            image_id: imageId, // ✅ Ensure ID is at top level
+                            image_id: imageId,
                             konva_component: el.konva_component || "Konva.Image",
                             element_type: "image",
                             properties: {
                               ...el.properties,
-                              image_id: imageId, // ✅ And in properties
+                              image_id: imageId,
                             },
                           });
 
-                          // ✅ Clear other selections for mutual exclusivity
                           setSelectedTextId(null);
                           setSelectedShapeIndex(null);
                           setSelectedShapeId(null);
@@ -418,10 +439,10 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
       <SlidePreviews
         slides={slides}
         scale={scale}
-        selectedIndex={selectedSlideIndex}  // ✅ Pass context selectedSlideIndex
+        selectedIndex={selectedSlideIndex}
         slide_width={getDynamicConstants().SLIDE_WIDTH}
         slide_height={getDynamicConstants().SLIDE_HEIGHT}
-        onSelect={setSelectedSlideIndex}  // ✅ Use context setter
+        onSelect={setSelectedSlideIndex}
         onAddSlide={() => { }}
         onDeleteSlide={() => { }}
       />
