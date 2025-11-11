@@ -12,21 +12,13 @@ import {
     IconButton,
     Chip,
     Stack,
-    LinearProgress,
     Alert,
     AlertTitle,
 } from "@mui/material";
-import {
-    Add,
-    Remove,
-    AutoAwesome,
-    Close as CloseIcon,
-} from "@mui/icons-material";
-import { useState, useEffect, useRef } from "react";
+import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useSlides } from "@/app/context/SlidesContext";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
-import { useUser } from "@/app/context/AuthContext";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -35,17 +27,8 @@ const viewMode = [
     { value: "portrait", label: "Portrait" },
 ];
 
-const getProgressMessage = (progress: number) => {
-    if (progress < 8) return "Initializing…";
-    if (progress < 17) return "Analyzing your idea…";
-    if (progress < 24) return "Thinking deeply…";
-    if (progress < 43) return "Building content…";
-    if (progress < 76) return "Generating visuals…";
-    return "Finalizing your deck…";
-};
-
 export default function TextToInfographics() {
-    // const [count, setCount] = useState(7);
+    const { setInfographicId } = useTemplateSlides();
     const [goal, setGoal] = useState("pitch");
     const [orientation, setOrientation] = useState("landscape");
     const [description, setDescription] = useState("");
@@ -57,123 +40,122 @@ export default function TextToInfographics() {
     const [error, setError] = useState("");
 
     const router = useRouter();
-    const { setSlides } = useSlides();
-    const { setPresentationId } = useTemplateSlides();
-    const { user } = useUser();
-
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const handleSubmit = async () => {
-        // ---- validation -------------------------------------------------
         if (!description.trim()) {
-            setError("Please describe your idea.");
+            setError("Please enter a description for the infographic.");
             return;
         }
 
-        // ---- reset UI ---------------------------------------------------
         setLoading(true);
         setError("");
         setProgress(0);
-        setCurrentMessage("");
+        setCurrentMessage("Starting AI generation...");
         setCurrentDetail("");
-        setSlides([]);
 
-        const controller = new AbortController();
-        abortControllerRef.current = controller;
-
+        abortControllerRef.current = new AbortController();
         const payload = {
             prompt: description,
             viewMode: orientation,
-            useReferences: true
+            useReferences: true,
         };
-        console.log(payload);
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/dynamicInfographic`, {
+            const res = await fetch(`${API_BASE_URL}/generate-poster-template`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Accept: "text/event-stream",
                 },
                 body: JSON.stringify(payload),
-                signal: controller.signal,
+                signal: abortControllerRef.current.signal,
             });
 
             if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || "Something went wrong");
+                const msg = await res.text();
+                throw new Error(msg || "Failed to start infographic generation");
             }
 
-            if (!res.body) throw new Error("No response body");
+            if (!res.body) throw new Error("No response body received.");
 
             const reader = res.body.getReader();
-            const decoder = new TextDecoder();
+            const decoder = new TextDecoder("utf-8");
+            let done = false;
 
-            // ---- stream parser (identical to PresentationMaker) ----------
-            let buffer = "";
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+            while (!done) {
+                const { value, done: readerDone } = await reader.read();
+                done = readerDone;
+                if (value) {
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split("\n").filter((line) => line.trim() !== "" && !line.startsWith(":"));
 
-                buffer += decoder.decode(value, { stream: true });
-                const parts = buffer.split("\n\n");
-                buffer = parts.pop() ?? "";
-
-                for (const part of parts) {
-                    if (!part.startsWith("data:")) continue;
-                    const jsonStr = part.replace(/^data:\s*/, "").trim();
-                    if (!jsonStr || jsonStr === "[DONE]") continue;
-
-                    console.log("SSE Event:", jsonStr); // DEBUG: See what's coming
-
-                    try {
-                        const event = JSON.parse(jsonStr);
-                        // progress
-                        if (event.percent !== undefined) setProgress(event.percent);
-                        // messages
-                        if (event.percent !== undefined) {
-                            setProgress(event.percent);
-                            setCurrentMessage(getProgressMessage(event.percent));
-                        } if (event.detail !== undefined) setCurrentDetail(event.detail);
-                        // error
-                        if (event.error) {
-                            setError(event.error);
-                            setLoading(false);
-                            return;
+                    for (const line of lines) {
+                        if (line === "data: [DONE]") {
+                            done = true;
+                            break;
                         }
-                        // completion
-                        if (event.complete) {
-                            setProgress(100);
-                            setCurrentMessage(event.message || "Infographic ready!");
-                            setCurrentDetail(event.detail || "");
 
-                            if (event.slides) setSlides(event.slides);
-                            if (event.infographic_id) {
-                                setPresentationId(event.infographic_id);
-                                router.push(
-                                    `/infographic/${event.infographic_id}`
-                                );
+                        if (line.startsWith("data: ")) {
+                            try {
+                                const event = JSON.parse(line.replace("data: ", ""));
+                                if (event.error) {
+                                    setError(event.error);
+                                    setLoading(false);
+                                    return;
+                                }
+
+                                if (event.percent) setProgress(event.percent);
+                                if (event.message) setCurrentMessage(event.message);
+                                if (event.detail) setCurrentDetail(event.detail);
+                            } catch {
+                                console.warn("Invalid SSE event:", line);
                             }
-                            setLoading(false);
                         }
-                    } catch (e) {
-                        console.error("Bad SSE chunk:", jsonStr);
                     }
                 }
             }
-        } catch (err: any) {
-            if (err.name !== "AbortError") {
-                setError(err.message || "Network error");
+
+            // ✅ Save only once after full generation is complete
+            setCurrentMessage("Finalizing infographic...");
+            setCurrentDetail("Saving your generated infographic...");
+
+            const saveRes = await fetch(`${API_BASE_URL}/api/dynamicInfographic`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: description, viewMode: orientation }),
+            });
+
+            if (!saveRes.ok) throw new Error(`Failed to save infographic (${saveRes.status})`);
+
+            const saveData = await saveRes.json();
+
+            if (saveData?.success && saveData?.infographic?._id) {
+                setCurrentMessage("✅ Infographic successfully created!");
+                setCurrentDetail("Redirecting to your infographic...");
+                setInfographicId(saveData.infographic._id);
+                router.push(`/infographic/${saveData.infographic._id}`);
+            } else {
+                throw new Error("Invalid response from save endpoint");
             }
-            setLoading(false);
+        } catch (err: any) {
+            console.error("Infographic generation error:", err);
+            if (err.name === "AbortError") {
+                setError("Infographic generation was cancelled.");
+            } else {
+                setError(err.message || "Something went wrong during generation.");
+            }
         } finally {
+            setLoading(false);
             abortControllerRef.current = null;
         }
     };
 
-    /* ---------- Cancel generation ---------- */
     const cancelGeneration = () => {
-        abortControllerRef.current?.abort();
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
         setLoading(false);
         setProgress(0);
         setCurrentMessage("");
@@ -187,7 +169,6 @@ export default function TextToInfographics() {
         "UX UI guidelines",
         "Accessibility best practices",
         "Design system components",
-        "Responsive design principles",
     ];
 
     return (
@@ -199,44 +180,23 @@ export default function TextToInfographics() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "flex-start",
                 py: { xs: 8, md: 10 },
                 px: { xs: 2, md: 6 },
-                textAlign: "center",
             }}
         >
-            {/* Title */}
-            <Typography
-                variant="h2"
-                sx={{
-                    fontWeight: 700,
-                    mb: 1,
-                    color: "rgba(26, 26, 26, 1)",
-                }}
-            >
+            <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, color: "rgba(26, 26, 26, 1)" }}>
                 Text-to-Infographics
             </Typography>
 
-            {/* Subtitle */}
-            <Typography
-                sx={{
-                    color: "rgba(109, 109, 109, 1)",
-                    maxWidth: 520,
-                    mb: 6,
-                    fontSize: { xs: "1rem", md: "1.1rem" },
-                }}
-            >
-                Elevate your presentations with our AI-powered tool—create polished,
-                professional slides in just seconds.
+            <Typography sx={{ color: "rgba(109, 109, 109, 1)", maxWidth: 520, mb: 6 }}>
+                Elevate your presentations with our AI-powered tool—create polished, professional slides in just seconds.
             </Typography>
 
-            {/* Input Section */}
             <Box
                 sx={{
                     width: "100%",
                     maxWidth: "926px",
-                    maxHeight: { xs: "50%", md: "340px" },
-                    backgroundColor: "rgba(251, 250, 255, 1)",
+                    bgcolor: "rgba(251, 250, 255, 1)",
                     borderRadius: 1,
                     boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
                     border: "1px solid rgba(232, 228, 255, 1)",
@@ -244,191 +204,69 @@ export default function TextToInfographics() {
                     mb: 4,
                 }}
             >
-                {/* Goal Selector */}
-                <Box
+                <FormControl
                     sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        mb: 1,
-                    }}>
+                        mb: 2,
+                        width: "142px",
+                        backgroundColor: "white",
+                        "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                    }}
+                >
+                    <InputLabel>Select Goal</InputLabel>
+                    <Select value={goal} onChange={(e) => setGoal(e.target.value)} disabled={loading}>
+                        <MenuItem value="pitch">Pitch Deck</MenuItem>
+                        <MenuItem value="education">Educational Deck</MenuItem>
+                        <MenuItem value="marketing">Marketing Presentation</MenuItem>
+                    </Select>
+                </FormControl>
+
+                <TextField
+                    fullWidth
+                    multiline
+                    minRows={4}
+                    placeholder="Describe your idea..."
+                    variant="outlined"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    sx={{
+                        mb: 2,
+                        "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                        borderBottom: "1px solid rgba(242, 240, 255, 1)",
+                    }}
+                />
+
+                <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center">
                     <FormControl
                         variant="outlined"
                         sx={{
-                            backgroundColor: " rgba(255, 255, 255, 1)",
-                            width: "142px",
+                            display: "flex",
+                            width: { xs: "100%", sm: "231px" },
                             height: "44px",
-                            borderRadius: "10px",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+                            borderRadius: "4px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                            backgroundColor: " rgba(255, 255, 255, 1)",
                             "& .MuiOutlinedInput-notchedOutline": {
                                 border: "none",
                             },
                             "& .MuiSelect-select": {
                                 py: "8px",
                             },
-                        }}
-                    >
-                        <InputLabel
-                            sx={{
-                                fontSize: "14px",
-                                fontFamily: "Raleway",
-                            }}
-                        >
-                            Select Goal
-                        </InputLabel>
-                        <Select
-                            value={goal}
-                            label="Select Goal"
-                            onChange={(e) => setGoal(e.target.value)}
-                            disabled={loading}
-                            sx={{
-                                backgroundColor: "#fff",
-                                height: "44px",
-                                fontSize: "14px",
-                            }}
-                        >
-                            <MenuItem value="pitch">Pitch Deck</MenuItem>
-                            <MenuItem value="education">Educational Deck</MenuItem>
-                            <MenuItem value="marketing">Marketing Presentation</MenuItem>
+                        }}>
+                        <InputLabel>Select Orientation</InputLabel>
+                        <Select value={orientation} onChange={(e) => setOrientation(e.target.value)} disabled={loading}>
+                            {viewMode.map((v) => (
+                                <MenuItem key={v.value} value={v.value}>
+                                    {v.label}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
-                </Box>
 
-                {/* Description Field */}
-                <TextField
-                    fullWidth
-                    multiline
-                    minRows={4}
-                    placeholder="Describe your idea... '"
-                    variant="outlined"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    sx={{
-                        mb: 1.5,
-                        "& .MuiOutlinedInput-notchedOutline": {
-                            border: "none",
-                        },
-                        borderBottom: "1px solid rgba(242, 240, 255, 1)",
-                        "& .MuiInputBase-input": {
-                            fontSize: "15px",
-                            lineHeight: 1.6,
-                        },
-                    }}
-                />
-
-                {/* Control Row */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        flexDirection: { xs: "column", md: "row" },
-                        justifyContent: { xs: "center", md: "space-between" },
-                        alignItems: { xs: "stretch", md: "center" },
-                        gap: 2,
-                        width: "100%",
-                    }}
-                >
-                    <Stack
-                        direction={{ xs: "column", sm: "row" }}
-                        alignItems={{ xs: "stretch", sm: "center" }}
-                        sx={{
-                            flex: 1,
-                        }}
-                        spacing={1.5}>
-                        {/* <IconButton>
-                            <img
-                                src="/images/voice-icon-input.svg"
-                                alt="Custom icon"
-                                style={{ width: 20, height: 20 }}
-                            />
-                        </IconButton>
-                        <IconButton>
-                            <img
-                                src="/images/file-icon.svg"
-                                alt="Custom icon"
-                                style={{ width: 18, height: 18 }}
-                            />
-                        </IconButton> */}
-
-                        {/* Counter */}
-                        {/* <Box
-                            sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                overflow: "hidden",
-                                width: "100px",
-                                height: "44px",
-                                borderRadius: "4px",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                                backgroundColor: " rgba(255, 255, 255, 1)",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                    border: "none",
-                                },
-                                "& .MuiSelect-select": {
-                                    py: "8px",
-                                },
-                            }}
-
-                        >
-                            <IconButton
-                                size="small"
-                                onClick={() => setCount(Math.max(1, count - 1))}
-                                disabled={loading}
-                            >
-                                <Remove />
-                            </IconButton>
-                            <Typography sx={{ px: 1 }}>{count}</Typography>
-                            <IconButton
-                                size="small"
-                                onClick={() => setCount(count + 1)}
-                                disabled={loading}                            >
-                                <Add />
-                            </IconButton>
-                        </Box> */}
-                        {/* Visual Style Selector */}
-                        <FormControl
-                            variant="outlined"
-                            sx={{
-                                display: "flex",
-                                width: { xs: "100%", sm: "231px" },
-                                height: "44px",
-                                borderRadius: "4px",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                                backgroundColor: " rgba(255, 255, 255, 1)",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                    border: "none",
-                                },
-                                "& .MuiSelect-select": {
-                                    py: "8px",
-                                },
-                            }}
-                        >
-                            <InputLabel sx={{
-                                fontSize: "14px", fontFamily: "Raleway",
-                            }}>Select Orientation</InputLabel>
-                            <Select
-                                value={orientation}
-                                label="Select Orientation"
-                                onChange={(e) => setOrientation(e.target.value)}
-                                disabled={loading}
-                                sx={{
-                                    backgroundColor: "#fff",
-                                    height: "44px",
-                                    fontSize: "14px",
-                                }}
-                            >
-                                {viewMode.map((style) => (
-                                    <MenuItem key={style.value} value={style.value}>
-                                        {style.label}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Stack>
-
-                    {/* Generate Button */}
                     <Button
                         variant="contained"
-                        disabled={loading}
                         onClick={handleSubmit}
+                        disabled={loading}
+                        startIcon={<AutoAwesome />}
                         sx={{
                             backgroundColor: "#6C2BD9",
                             color: "#fff",
@@ -442,22 +280,23 @@ export default function TextToInfographics() {
                             alignSelf: { xs: "stretch", md: "center" },
                             "&:hover": { backgroundColor: "#5B21B6" },
                         }}
-                        startIcon={<AutoAwesome />}
                     >
-                        Generate
+                        {loading ? "Generating..." : "Generate"}
                     </Button>
-                </Box>
+
+                    {loading && (
+                        <Button color="error" onClick={cancelGeneration}>
+                            Cancel
+                        </Button>
+                    )}
+                </Stack>
 
                 {error && (
                     <Alert
                         severity="error"
                         sx={{ mt: 2 }}
                         action={
-                            <IconButton
-                                size="small"
-                                onClick={() => setError("")}
-                                color="inherit"
-                            >
+                            <IconButton onClick={() => setError("")} color="inherit">
                                 <CloseIcon fontSize="small" />
                             </IconButton>
                         }
@@ -467,120 +306,44 @@ export default function TextToInfographics() {
                     </Alert>
                 )}
             </Box>
-            {/* ---------- PROGRESS */}
+
             {loading && (
-                <Box sx={{
-                    mb: { xs: 2, md: 4 },
-                    p: { xs: 2, sm: 3, md: 5 },
-                    height: { xs: 'auto', sm: 250, md: 270 },
-                    width: { sx: 'auto', md: 800 },
-                    mx: 'auto',
-                    borderRadius: 3,
-                    bgcolor: "white",
-                    boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
-                    border: "1px solid #f0f0f0"
-                }}>
-                    <Box sx={{
-                        display: "flex",
-                        flexDirection: { xs: 'column', sm: 'row' },
-                        alignItems: { xs: 'flex-start', sm: 'center' },
-                        gap: { xs: 1, sm: 0 },
-                        mb: 1.5
-                    }}>
-                        <Box sx={{
-                            width: 15,
-                            height: 15,
-                            borderRadius: "50%",
-                            bgcolor: "#8E2DE2",
-                            mr: { xs: 0, sm: 2 },
-                            mb: { xs: 1, sm: 0 },
-                            animation: "pulse 1.5s ease-in-out infinite"
-                        }} />
-                        <Typography
-                            variant="h6"
-                            sx={{
-                                fontWeight: 600,
-                                color: "#8E2DE2",
-                                flexGrow: 1,
-                                fontSize: { xs: '1.25rem', md: '1.5rem' }
-                            }}
-                        >
-                            {currentMessage}
-                        </Typography>
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                                mt: { xs: 0.5, sm: 0 },
-                                minWidth: { sm: '50px' },
-                                textAlign: { xs: 'right', sm: 'left' }
-                            }}
-                        >
-                            {Math.round(progress)}%
-                        </Typography>
-                    </Box>
-                    <Typography
-                        variant="body1"
-                        color="text.secondary"
-                        sx={{
-                            mb: 2,
-                            lineHeight: 1.6,
-                            wordBreak: 'break-word'
-                        }}
-                    >
+                <Box
+                    sx={{
+                        p: 3,
+                        borderRadius: 2,
+                        bgcolor: "white",
+                        boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
+                        border: "1px solid #f0f0f0",
+                        width: "100%",
+                        maxWidth: 800,
+                    }}
+                >
+                    <Typography variant="h6" color="#8E2DE2" sx={{ mb: 1 }}>
+                        {currentMessage}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                         {currentDetail}
                     </Typography>
-                    {/* <LinearProgress
-            variant="determinate"
-            value={progress}
-            sx={{
-              height: 6,
-              borderRadius: 5,
-              bgcolor: "grey.200",
-              "& .MuiLinearProgress-bar": {
-                borderRadius: 5,
-                background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
-                boxShadow: "0 2px 10px rgba(142, 45, 226, 0.3)",
-              },
-            }}
-          /> */}
+                    <Typography variant="body2" color="text.secondary">
+                        Progress: {Math.round(progress)}%
+                    </Typography>
                 </Box>
             )}
 
-            {/* Quick Prompt Generator */}
-            <Box sx={{ textAlign: "center", maxWidth: 800 }}>
-                <Typography
-                    sx={{
-                        fontWeight: 500,
-                        mb: 2,
-                        color: "#6D6D6D",
-                        fontSize: "1rem",
-                    }}
-                >
+            <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
+                <Typography sx={{ fontWeight: 500, mb: 2, color: "#6D6D6D" }}>
                     Quick Prompt Generator:
                 </Typography>
-
-                <Stack
-                    display="flex"
-                    flexDirection={{ xs: "column", md: "row" }}
-                    flexWrap="wrap"
-                    justifyContent="center"
-                    gap={2.2}
-                    alignItems="center"
-                >
-
-                    {quickPrompts.map((prompt, index) => (
+                <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
+                    {quickPrompts.map((prompt, i) => (
                         <Chip
-                            key={index}
+                            key={i}
                             label={prompt}
                             onClick={() => setDescription(prompt)}
                             sx={{
                                 bgcolor: "rgba(242, 240, 255, 1)",
-                                color: "#1A1A1A",
-                                fontWeight: 400,
-                                borderRadius: "20px",
                                 "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
-                                px: 1.5
                             }}
                         />
                     ))}
