@@ -1,26 +1,26 @@
 "use client";
 
 import {
-    Box,
-    Typography,
-    Button,
-    TextField,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    IconButton,
-    Chip,
-    Stack,
-    LinearProgress,
-    Alert,
-    AlertTitle,
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  IconButton,
+  Chip,
+  Stack,
+  LinearProgress,
+  Alert,
+  AlertTitle,
 } from "@mui/material";
 import {
-    Add,
-    Remove,
-    AutoAwesome,
-    Close as CloseIcon,
+  Add,
+  Remove,
+  AutoAwesome,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -31,13 +31,13 @@ import { useUser } from "@/app/context/AuthContext";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const TEXT_ART_STYLES = [
-    { value: "Concept Art", label: "Concept Art" },
-    { value: "3D Render / CGI", label: "3D Render / CGI" },
-    { value: "Watercolor Illustration", label: "Watercolor Illustration" },
-    { value: "AI Collage / Mixed Media", label: "AI Collage / Mixed Media" },
-    { value: "Digital Painting", label: "Digital Painting" },
-    { value: "Fantasy / Sci-Fi Style", label: "Fantasy / Sci-Fi Style" },
-    { value: "Minimal Abstract", label: "Minimal Abstract" },
+  { value: "Concept Art", label: "Concept Art" },
+  { value: "3D Render / CGI", label: "3D Render / CGI" },
+  { value: "Watercolor Illustration", label: "Watercolor Illustration" },
+  { value: "AI Collage / Mixed Media", label: "AI Collage / Mixed Media" },
+  { value: "Digital Painting", label: "Digital Painting" },
+  { value: "Fantasy / Sci-Fi Style", label: "Fantasy / Sci-Fi Style" },
+  { value: "Minimal Abstract", label: "Minimal Abstract" },
 ];
 
 const getProgressMessage = (progress: number) => {
@@ -50,295 +50,296 @@ const getProgressMessage = (progress: number) => {
 };
 
 export default function UrlToWebsite() {
-    const [count, setCount] = useState(7);
-    const [goal, setGoal] = useState("pitch");
-    const [tone, setTone] = useState("professional");
-    const [visualStyle, setVisualStyle] = useState("Minimal Abstract");
-    const [description, setDescription] = useState("");
+  const [count, setCount] = useState(7);
+  const [goal, setGoal] = useState("pitch");
+  const [tone, setTone] = useState("professional");
+  const [visualStyle, setVisualStyle] = useState("Minimal Abstract");
+  const [description, setDescription] = useState("");
 
-    const [loading, setLoading] = useState(false);
-    const [progress, setProgress] = useState(0);
-    const [currentMessage, setCurrentMessage] = useState("");
-    const [currentDetail, setCurrentDetail] = useState("");
-    const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentMessage, setCurrentMessage] = useState("");
+  const [currentDetail, setCurrentDetail] = useState("");
+  const [error, setError] = useState("");
 
-    const router = useRouter();
-    const { setSlides } = useSlides();
-    const { setPresentationId } = useTemplateSlides();
-    const { user } = useUser();
+  const router = useRouter();
+  const { setSlides } = useSlides();
+  const { setPresentationId } = useTemplateSlides();
+  const { user } = useUser();
 
-    const abortControllerRef = useRef<AbortController | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-    const handleSubmit = async () => {
-        // ---- validation -------------------------------------------------
-        if (!description.trim()) {
-            setError("Please describe your idea.");
-            return;
-        }
+  const handleSubmit = async () => {
+    // ---- validation -------------------------------------------------
+    if (!description.trim()) {
+      setError("Please describe your idea.");
+      return;
+    }
 
-        // ---- reset UI ---------------------------------------------------
-        setLoading(true);
-        setError("");
-        setProgress(0);
-        setCurrentMessage("");
-        setCurrentDetail("");
-        setSlides([]);
+    // ---- reset UI ---------------------------------------------------
+    setLoading(true);
+    setError("");
+    setProgress(0);
+    setCurrentMessage("");
+    setCurrentDetail("");
+    setSlides([]);
 
-        const controller = new AbortController();
-        abortControllerRef.current = controller;
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
-        const payload = {
-            source: "text",
-            textContent: description,
-            meta: { goal, tone, audience: "" }, // audience not used here
-            artStyle: visualStyle,
-            slideCount: count,
-            userData: user,
-        };
-
-        
-        try {
-            const res = await fetch(`${API_BASE_URL}/generate-slides`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "text/event-stream",
-                },
-                body: JSON.stringify(payload),
-                signal: controller.signal,
-            });
-
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || "Something went wrong");
-            }
-
-            if (!res.body) throw new Error("No response body");
-
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-
-            // ---- stream parser (identical to PresentationMaker) ----------
-            let buffer = "";
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                buffer += decoder.decode(value, { stream: true });
-                const parts = buffer.split("\n\n");
-                buffer = parts.pop() ?? "";
-
-                for (const part of parts) {
-                    if (!part.startsWith("data:")) continue;
-                    const jsonStr = part.replace(/^data:\s*/, "").trim();
-                    if (!jsonStr || jsonStr === "[DONE]") continue;
-
-                    try {
-                        const event = JSON.parse(jsonStr);
-                        // progress
-                        if (event.percent !== undefined) setProgress(event.percent);
-                        // messages
-                        if (event.message !== undefined) setCurrentMessage(event.message);
-                        if (event.detail !== undefined) setCurrentDetail(event.detail);
-                        // error
-                        if (event.error) {
-                            setError(event.error);
-                            setLoading(false);
-                            return;
-                        }
-                        // completion
-                        if (event.complete) {
-                            setProgress(100);
-                            setCurrentMessage(event.message || "Presentation ready!");
-                            setCurrentDetail(event.detail || "");
-
-                            if (event.slides) setSlides(event.slides);
-                            if (event.presentation_id) {
-                                setPresentationId(event.presentation_id);
-                                router.push(
-                                    `/presentation/outline?pid=${event.presentation_id}`
-                                );
-                            }
-                            setLoading(false);
-                        }
-                    } catch (e) {
-                        console.error("Bad SSE chunk:", jsonStr);
-                    }
-                }
-            }
-        } catch (err: any) {
-            if (err.name !== "AbortError") {
-                setError(err.message || "Network error");
-            }
-            setLoading(false);
-        } finally {
-            abortControllerRef.current = null;
-        }
+    const payload = {
+      source: "text",
+      textContent: description,
+      meta: { goal, tone, audience: "" }, // audience not used here
+      artStyle: visualStyle,
+      slideCount: count,
+      userData: user,
     };
 
-    /* ---------- Cancel generation ---------- */
-    const cancelGeneration = () => {
-        abortControllerRef.current?.abort();
-        setLoading(false);
-        setProgress(0);
-        setCurrentMessage("");
-        setCurrentDetail("");
-    };
+    try {
+      const res = await fetch(`${API_BASE_URL}/generate-slides`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
 
-    const quickPrompts = [
-        "Creativity at Work",
-        "Responsive design principles",
-        "Healthy diet",
-        "UX UI guidelines",
-        "Accessibility best practices",
-        "Design system components",
-        "Responsive design principles",
-    ];
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Something went wrong");
+      }
 
-    return (
+      if (!res.body) throw new Error("No response body");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+
+      // ---- stream parser (identical to PresentationMaker) ----------
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+
+        for (const part of parts) {
+          if (!part.startsWith("data:")) continue;
+          const jsonStr = part.replace(/^data:\s*/, "").trim();
+          if (!jsonStr || jsonStr === "[DONE]") continue;
+
+          try {
+            const event = JSON.parse(jsonStr);
+            // progress
+            if (event.percent !== undefined) setProgress(event.percent);
+            // messages
+            if (event.message !== undefined) setCurrentMessage(event.message);
+            if (event.detail !== undefined) setCurrentDetail(event.detail);
+            // error
+            if (event.error) {
+              setError(event.error);
+              setLoading(false);
+              return;
+            }
+            // completion
+            if (event.complete) {
+              setProgress(100);
+              setCurrentMessage(event.message || "Presentation ready!");
+              setCurrentDetail(event.detail || "");
+
+              if (event.slides) setSlides(event.slides);
+              if (event.presentation_id) {
+                setPresentationId(event.presentation_id);
+                router.push(
+                  `/presentation/outline?pid=${event.presentation_id}`
+                );
+              }
+              setLoading(false);
+            }
+          } catch (e) {
+            console.error("Bad SSE chunk:", jsonStr);
+          }
+        }
+      }
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        setError(err.message || "Network error");
+      }
+      setLoading(false);
+    } finally {
+      abortControllerRef.current = null;
+    }
+  };
+
+  /* ---------- Cancel generation ---------- */
+  const cancelGeneration = () => {
+    abortControllerRef.current?.abort();
+    setLoading(false);
+    setProgress(0);
+    setCurrentMessage("");
+    setCurrentDetail("");
+  };
+
+  const quickPrompts = [
+    "Creativity at Work",
+    "Responsive design principles",
+    "Healthy diet",
+    "UX UI guidelines",
+    "Accessibility best practices",
+    "Design system components",
+    "Responsive design principles",
+  ];
+
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "100vh",
+        bgcolor: "#fff",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        py: { xs: 8, md: 10 },
+        px: { xs: 2, md: 6 },
+        textAlign: "center",
+      }}
+    >
+      {/* Title */}
+      <Typography
+        variant="h2"
+        sx={{
+          fontWeight: 700,
+          mb: 1,
+          color: "rgba(26, 26, 26, 1)",
+        }}
+      >
+        Url-to-Website
+      </Typography>
+
+      {/* Subtitle */}
+      <Typography
+        sx={{
+          color: "rgba(109, 109, 109, 1)",
+          maxWidth: 520,
+          mb: 6,
+          fontSize: { xs: "1rem", md: "1.1rem" },
+        }}
+      >
+        Elevate your presentations with our AI-powered tool—create polished,
+        professional slides in just seconds.
+      </Typography>
+
+      {/* Input Section */}
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: "926px",
+          maxHeight: { xs: "50%", md: "340px" },
+          backgroundColor: "rgba(251, 250, 255, 1)",
+          borderRadius: 1,
+          boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
+          border: "1px solid rgba(232, 228, 255, 1)",
+          p: { xs: 3, md: 4 },
+          mb: 4,
+        }}
+      >
+        {/* Goal Selector */}
         <Box
-            sx={{
-                width: "100%",
-                minHeight: "100vh",
-                bgcolor: "#fff",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "flex-start",
-                py: { xs: 8, md: 10 },
-                px: { xs: 2, md: 6 },
-                textAlign: "center",
-            }}
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            mb: 1,
+          }}
         >
-            {/* Title */}
-            <Typography
-                variant="h2"
-                sx={{
-                    fontWeight: 700,
-                    mb: 1,
-                    color: "rgba(26, 26, 26, 1)",
-                }}
+          <FormControl
+            variant="outlined"
+            sx={{
+              backgroundColor: " rgba(255, 255, 255, 1)",
+              width: "142px",
+              height: "44px",
+              borderRadius: "10px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+              "& .MuiOutlinedInput-notchedOutline": {
+                border: "none",
+              },
+              "& .MuiSelect-select": {
+                py: "8px",
+              },
+            }}
+          >
+            <InputLabel
+              sx={{
+                fontSize: "14px",
+                fontFamily: "Raleway",
+              }}
             >
-                Url-to-Website
-            </Typography>
-
-            {/* Subtitle */}
-            <Typography
-                sx={{
-                    color: "rgba(109, 109, 109, 1)",
-                    maxWidth: 520,
-                    mb: 6,
-                    fontSize: { xs: "1rem", md: "1.1rem" },
-                }}
+              Select Goal
+            </InputLabel>
+            <Select
+              value={goal}
+              label="Select Goal"
+              onChange={(e) => setGoal(e.target.value)}
+              disabled={loading}
+              sx={{
+                backgroundColor: "#fff",
+                height: "44px",
+                fontSize: "14px",
+              }}
             >
-                Elevate your presentations with our AI-powered tool—create polished,
-                professional slides in just seconds.
-            </Typography>
+              <MenuItem value="pitch">Pitch Deck</MenuItem>
+              <MenuItem value="education">Educational Deck</MenuItem>
+              <MenuItem value="marketing">Marketing Presentation</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
 
-            {/* Input Section */}
-            <Box
-                sx={{
-                    width: "100%",
-                    maxWidth: "926px",
-                    maxHeight: { xs: "50%", md: "340px" },
-                    backgroundColor: "rgba(251, 250, 255, 1)",
-                    borderRadius: 1,
-                    boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
-                    border: "1px solid rgba(232, 228, 255, 1)",
-                    p: { xs: 3, md: 4 },
-                    mb: 4,
-                }}
-            >
-                {/* Goal Selector */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        mb: 1,
-                    }}>
-                    <FormControl
-                        variant="outlined"
-                        sx={{
-                            backgroundColor: " rgba(255, 255, 255, 1)",
-                            width: "142px",
-                            height: "44px",
-                            borderRadius: "10px",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                                border: "none",
-                            },
-                            "& .MuiSelect-select": {
-                                py: "8px",
-                            },
-                        }}
-                    >
-                        <InputLabel
-                            sx={{
-                                fontSize: "14px",
-                                fontFamily: "Raleway",
-                            }}
-                        >
-                            Select Goal
-                        </InputLabel>
-                        <Select
-                            value={goal}
-                            label="Select Goal"
-                            onChange={(e) => setGoal(e.target.value)}
-                            disabled={loading}
-                            sx={{
-                                backgroundColor: "#fff",
-                                height: "44px",
-                                fontSize: "14px",
-                            }}
-                        >
-                            <MenuItem value="pitch">Pitch Deck</MenuItem>
-                            <MenuItem value="education">Educational Deck</MenuItem>
-                            <MenuItem value="marketing">Marketing Presentation</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Box>
+        {/* Description Field */}
+        <TextField
+          fullWidth
+          multiline
+          minRows={4}
+          placeholder="Describe your idea... e.g., 'Pitch for a new mental health app'"
+          variant="outlined"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          sx={{
+            mb: 1.5,
+            "& .MuiOutlinedInput-notchedOutline": {
+              border: "none",
+            },
+            borderBottom: "1px solid rgba(242, 240, 255, 1)",
+            "& .MuiInputBase-input": {
+              fontSize: "15px",
+              lineHeight: 1.6,
+            },
+          }}
+        />
 
-                {/* Description Field */}
-                <TextField
-                    fullWidth
-                    multiline
-                    minRows={4}
-                    placeholder="Describe your idea... e.g., 'Pitch for a new mental health app'"
-                    variant="outlined"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    sx={{
-                        mb: 1.5,
-                        "& .MuiOutlinedInput-notchedOutline": {
-                            border: "none",
-                        },
-                        borderBottom: "1px solid rgba(242, 240, 255, 1)",
-                        "& .MuiInputBase-input": {
-                            fontSize: "15px",
-                            lineHeight: 1.6,
-                        },
-                    }}
-                />
-
-                {/* Control Row */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        flexDirection: { xs: "column", md: "row" },
-                        justifyContent: { xs: "center", md: "space-between" },
-                        alignItems: { xs: "stretch", md: "center" },
-                        gap: 2,
-                        width: "100%",
-                    }}
-                >
-                    <Stack
-                        direction={{ xs: "column", sm: "row" }}
-                        alignItems={{ xs: "stretch", sm: "center" }}
-                        sx={{
-                            flex: 1,
-                        }}
-                        spacing={1.5}>
-                        {/* <IconButton>
+        {/* Control Row */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            justifyContent: { xs: "center", md: "space-between" },
+            alignItems: { xs: "stretch", md: "center" },
+            gap: 2,
+            width: "100%",
+          }}
+        >
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            alignItems={{ xs: "stretch", sm: "center" }}
+            sx={{
+              flex: 1,
+            }}
+            spacing={1.5}
+          >
+            {/* <IconButton>
                             <img
                                 src="/images/voice-icon-input.svg"
                                 alt="Custom icon"
@@ -353,228 +354,244 @@ export default function UrlToWebsite() {
                             />
                         </IconButton> */}
 
-                        {/* Counter */}
-                        <Box
-                            sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                overflow: "hidden",
-                                width: "100px",
-                                height: "44px",
-                                borderRadius: "4px",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                                backgroundColor: " rgba(255, 255, 255, 1)",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                    border: "none",
-                                },
-                                "& .MuiSelect-select": {
-                                    py: "8px",
-                                },
-                            }}
-
-                        >
-                            <IconButton
-                                size="small"
-                                onClick={() => setCount(Math.max(1, count - 1))}
-                                disabled={loading}
-                            >
-                                <Remove />
-                            </IconButton>
-                            <Typography sx={{ px: 1 }}>{count}</Typography>
-                            <IconButton
-                                size="small"
-                                onClick={() => setCount(count + 1)}
-                                disabled={loading}                            >
-                                <Add />
-                            </IconButton>
-                        </Box>
-
-                        {/* Tone Selector */}
-                        <FormControl
-                            variant="outlined"
-                            sx={{
-                                display: "flex",
-                                width: { xs: "100%", sm: "130px" },
-                                height: "44px",
-                                borderRadius: "4px",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                                backgroundColor: " rgba(255, 255, 255, 1)",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                    border: "none",
-                                },
-                                "& .MuiSelect-select": {
-                                    py: "8px",
-                                },
-                                mb: 4,
-                            }}
-                        >
-                            <InputLabel sx={{
-                                fontSize: "14px", fontFamily: "Raleway",
-                            }}>Select Tone</InputLabel>
-                            <Select
-                                value={tone}
-                                label="Select Tone"
-                                onChange={(e) => setTone(e.target.value)}
-                                disabled={loading}
-                                sx={{
-                                    backgroundColor: "#fff",
-                                    height: "44px",
-                                    fontSize: "14px",
-                                }}
-                            >
-                                <MenuItem value="professional">Professional</MenuItem>
-                                <MenuItem value="casual">Casual</MenuItem>
-                                <MenuItem value="inspirational">Inspirational</MenuItem>
-                            </Select>
-                        </FormControl>
-                        {/* Visual Style Selector */}
-                        <FormControl
-                            variant="outlined"
-                            sx={{
-                                display: "flex",
-                                width: { xs: "100%", sm: "231px" },
-                                height: "44px",
-                                borderRadius: "4px",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                                backgroundColor: " rgba(255, 255, 255, 1)",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                    border: "none",
-                                },
-                                "& .MuiSelect-select": {
-                                    py: "8px",
-                                },
-                            }}
-                        >
-                            <InputLabel sx={{
-                                fontSize: "14px", fontFamily: "Raleway",
-                            }}>Select Visual Style</InputLabel>
-                            <Select
-                                value={visualStyle}
-                                label="Select Visual Style"
-                                onChange={(e) => setVisualStyle(e.target.value)}
-                                disabled={loading}
-                                sx={{
-                                    backgroundColor: "#fff",
-                                    height: "44px",
-                                    fontSize: "14px",
-                                }}
-                            >
-                                {TEXT_ART_STYLES.map((style) => (
-                                    <MenuItem key={style.value} value={style.value}>
-                                        {style.label}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Stack>
-
-                    {/* Generate Button */}
-                    <Button
-                        variant="contained"
-                        disabled={loading}
-                        onClick={handleSubmit}
-                        sx={{
-                            backgroundColor: "#6C2BD9",
-                            color: "#fff",
-                            borderRadius: "32px",
-                            width: { xs: "100%", sm: "130px" },
-                            height: "44px",
-                            px: 4,
-                            py: 1.2,
-                            fontWeight: 600,
-                            boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
-                            alignSelf: { xs: "stretch", md: "center" },
-                            "&:hover": { backgroundColor: "#5B21B6" },
-                        }}
-                        startIcon={<AutoAwesome />}
-                    >
-                        Generate
-                    </Button>
-                </Box>
-
-                {error && (
-                    <Alert
-                        severity="error"
-                        sx={{ mt: 2 }}
-                        action={
-                            <IconButton
-                                size="small"
-                                onClick={() => setError("")}
-                                color="inherit"
-                            >
-                                <CloseIcon fontSize="small" />
-                            </IconButton>
-                        }
-                    >
-                        <AlertTitle>Error</AlertTitle>
-                        {error}
-                    </Alert>
-                )}
+            {/* Counter */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                overflow: "hidden",
+                width: "100px",
+                height: "44px",
+                borderRadius: "4px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                backgroundColor: " rgba(255, 255, 255, 1)",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                "& .MuiSelect-select": {
+                  py: "8px",
+                },
+              }}
+            >
+              <IconButton
+                size="small"
+                onClick={() => setCount(Math.max(1, count - 1))}
+                disabled={loading}
+              >
+                <Remove />
+              </IconButton>
+              <Typography sx={{ px: 1 }}>{count}</Typography>
+              <IconButton
+                size="small"
+                onClick={() => setCount(count + 1)}
+                disabled={loading}
+              >
+                <Add />
+              </IconButton>
             </Box>
-            {/* ---------- PROGRESS */}
-                            {loading && (
-                    <Box sx={{
-                        mb: { xs: 2, md: 4 },
-                        p: { xs: 2, sm: 3, md: 5 },
-                        height: { xs: 'auto', sm: 250, md: 270 },
-                        width: {sx: 'auto',md: 800},
-                        mx: 'auto',
-                        borderRadius: 3,
-                        bgcolor: "white",
-                        boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
-                        border: "1px solid #f0f0f0"
-                    }}>
-                        <Box sx={{
-                            display: "flex",
-                            flexDirection: { xs: 'column', sm: 'row' },
-                            alignItems: { xs: 'flex-start', sm: 'center' },
-                            gap: { xs: 1, sm: 0 },
-                            mb: 1.5
-                        }}>
-                            <Box sx={{
-                                width: 15,
-                                height: 15,
-                                borderRadius: "50%",
-                                bgcolor: "#8E2DE2",
-                                mr: { xs: 0, sm: 2 },
-                                mb: { xs: 1, sm: 0 },
-                                animation: "pulse 1.5s ease-in-out infinite"
-                            }} />
-                            <Typography
-                                variant="h6"
-                                sx={{
-                                    fontWeight: 600,
-                                    color: "#8E2DE2",
-                                    flexGrow: 1,
-                                    fontSize: { xs: '1.25rem', md: '1.5rem' }
-                                }}
-                            >
-                                {currentMessage}
-                            </Typography>
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{
-                                    mt: { xs: 0.5, sm: 0 },
-                                    minWidth: { sm: '50px' },
-                                    textAlign: { xs: 'right', sm: 'left' }
-                                }}
-                            >
-                                {Math.round(progress)}%
-                            </Typography>
-                        </Box>
-                        <Typography
-                            variant="body1"
-                            color="text.secondary"
-                            sx={{
-                                mb: 2,
-                                lineHeight: 1.6,
-                                wordBreak: 'break-word'
-                            }}
-                        >
-                            {currentDetail}
-                        </Typography>
-                        {/* <LinearProgress
+
+            {/* Tone Selector */}
+            <FormControl
+              variant="outlined"
+              sx={{
+                display: "flex",
+                width: { xs: "100%", sm: "130px" },
+                height: "44px",
+                borderRadius: "4px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                backgroundColor: " rgba(255, 255, 255, 1)",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                "& .MuiSelect-select": {
+                  py: "8px",
+                },
+                mb: 4,
+              }}
+            >
+              <InputLabel
+                sx={{
+                  fontSize: "14px",
+                  fontFamily: "Raleway",
+                }}
+              >
+                Select Tone
+              </InputLabel>
+              <Select
+                value={tone}
+                label="Select Tone"
+                onChange={(e) => setTone(e.target.value)}
+                disabled={loading}
+                sx={{
+                  backgroundColor: "#fff",
+                  height: "44px",
+                  fontSize: "14px",
+                }}
+              >
+                <MenuItem value="professional">Professional</MenuItem>
+                <MenuItem value="casual">Casual</MenuItem>
+                <MenuItem value="inspirational">Inspirational</MenuItem>
+              </Select>
+            </FormControl>
+            {/* Visual Style Selector */}
+            <FormControl
+              variant="outlined"
+              sx={{
+                display: "flex",
+                width: { xs: "100%", sm: "231px" },
+                height: "44px",
+                borderRadius: "4px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                backgroundColor: " rgba(255, 255, 255, 1)",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                "& .MuiSelect-select": {
+                  py: "8px",
+                },
+              }}
+            >
+              <InputLabel
+                sx={{
+                  fontSize: "14px",
+                  fontFamily: "Raleway",
+                }}
+              >
+                Select Visual Style
+              </InputLabel>
+              <Select
+                value={visualStyle}
+                label="Select Visual Style"
+                onChange={(e) => setVisualStyle(e.target.value)}
+                disabled={loading}
+                sx={{
+                  backgroundColor: "#fff",
+                  height: "44px",
+                  fontSize: "14px",
+                }}
+              >
+                {TEXT_ART_STYLES.map((style) => (
+                  <MenuItem key={style.value} value={style.value}>
+                    {style.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
+
+          {/* Generate Button */}
+          <Button
+            variant="contained"
+            disabled={loading}
+            onClick={handleSubmit}
+            sx={{
+              backgroundColor: "#6C2BD9",
+              color: "#fff",
+              borderRadius: "32px",
+              width: { xs: "100%", sm: "130px" },
+              height: "44px",
+              px: 4,
+              py: 1.2,
+              fontWeight: 600,
+              boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
+              alignSelf: { xs: "stretch", md: "center" },
+              "&:hover": { backgroundColor: "#5B21B6" },
+            }}
+            startIcon={<AutoAwesome />}
+          >
+            Generate
+          </Button>
+        </Box>
+
+        {error && (
+          <Alert
+            severity="error"
+            sx={{ mt: 2 }}
+            action={
+              <IconButton
+                size="small"
+                onClick={() => setError("")}
+                color="inherit"
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            }
+          >
+            <AlertTitle>Error</AlertTitle>
+            {error}
+          </Alert>
+        )}
+      </Box>
+      {/* ---------- PROGRESS */}
+      {loading && (
+        <Box
+          sx={{
+            mb: { xs: 2, md: 4 },
+            p: { xs: 2, sm: 3, md: 5 },
+            height: { xs: "auto", sm: 250, md: 270 },
+            width: { sx: "auto", md: 800 },
+            mx: "auto",
+            borderRadius: 3,
+            bgcolor: "white",
+            boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
+            border: "1px solid #f0f0f0",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "flex-start", sm: "center" },
+              gap: { xs: 1, sm: 0 },
+              mb: 1.5,
+            }}
+          >
+            <Box
+              sx={{
+                width: 15,
+                height: 15,
+                borderRadius: "50%",
+                bgcolor: "#8E2DE2",
+                mr: { xs: 0, sm: 2 },
+                mb: { xs: 1, sm: 0 },
+                animation: "pulse 1.5s ease-in-out infinite",
+              }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                color: "#8E2DE2",
+                flexGrow: 1,
+                fontSize: { xs: "1.25rem", md: "1.5rem" },
+              }}
+            >
+              {currentMessage}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                mt: { xs: 0.5, sm: 0 },
+                minWidth: { sm: "50px" },
+                textAlign: { xs: "right", sm: "left" },
+              }}
+            >
+              {Math.round(progress)}%
+            </Typography>
+          </Box>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{
+              mb: 2,
+              lineHeight: 1.6,
+              wordBreak: "break-word",
+            }}
+          >
+            {currentDetail}
+          </Typography>
+          {/* <LinearProgress
             variant="determinate"
             value={progress}
             sx={{
@@ -588,48 +605,47 @@ export default function UrlToWebsite() {
               },
             }}
           /> */}
-                    </Box>
-                )}
-
-            {/* Quick Prompt Generator */}
-            <Box sx={{ textAlign: "center", maxWidth: 800 }}>
-                <Typography
-                    sx={{
-                        fontWeight: 500,
-                        mb: 2,
-                        color: "#6D6D6D",
-                        fontSize: "1rem",
-                    }}
-                >
-                    Quick Prompt Generator:
-                </Typography>
-
-                <Stack
-                    display="flex"
-                    flexDirection={{ xs: "column", md: "row" }}
-                    flexWrap="wrap"
-                    justifyContent="center"
-                    gap={2.2}
-                    alignItems="center"
-                >
-
-                    {quickPrompts.map((prompt, index) => (
-                        <Chip
-                            key={index}
-                            label={prompt}
-                            onClick={() => setDescription(prompt)}
-                            sx={{
-                                bgcolor: "rgba(242, 240, 255, 1)",
-                                color: "#1A1A1A",
-                                fontWeight: 400,
-                                borderRadius: "20px",
-                                "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
-                                px: 1.5
-                            }}
-                        />
-                    ))}
-                </Stack>
-            </Box>
         </Box>
-    );
+      )}
+
+      {/* Quick Prompt Generator */}
+      <Box sx={{ textAlign: "center", maxWidth: 800 }}>
+        <Typography
+          sx={{
+            fontWeight: 500,
+            mb: 2,
+            color: "#6D6D6D",
+            fontSize: "1rem",
+          }}
+        >
+          Quick Prompt Generator:
+        </Typography>
+
+        <Stack
+          display="flex"
+          flexDirection={{ xs: "column", md: "row" }}
+          flexWrap="wrap"
+          justifyContent="center"
+          gap={2.2}
+          alignItems="center"
+        >
+          {quickPrompts.map((prompt, index) => (
+            <Chip
+              key={index}
+              label={prompt}
+              onClick={() => setDescription(prompt)}
+              sx={{
+                bgcolor: "rgba(242, 240, 255, 1)",
+                color: "#1A1A1A",
+                fontWeight: 400,
+                borderRadius: "20px",
+                "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
+                px: 1.5,
+              }}
+            />
+          ))}
+        </Stack>
+      </Box>
+    </Box>
+  );
 }
