@@ -250,7 +250,7 @@ useClickOutsideToClose(panelRef, onClose);
     <Box
     ref={panelRef}
       sx={{
-        width: 320,
+        width: 290,
         bgcolor: "#fff",
         height: sidebarHeight,
         position: "absolute",

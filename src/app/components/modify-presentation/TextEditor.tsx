@@ -40,7 +40,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
   return (
     <Box
       sx={{
-        width: 320,
+        width: 300,
         bgcolor: "#fff",
         height: sidebarHeight,
         position: "absolute",

@@ -206,7 +206,7 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
         left: 80,
         top: 0,
         height: sidebarHeight,
-        width: 420,
+        width: 300,
         bgcolor: "#fff",
         borderRight: "1px solid #E0E0E0",
         zIndex: 10,
