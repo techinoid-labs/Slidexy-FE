@@ -19,7 +19,12 @@ import { useRouter } from "next/navigation";
 export default function WhatWeOffer() {
     const theme = useTheme();
     const router = useRouter();
-
+    const scrollToContact = () => {
+        const contactSection = document.getElementById("contact-section");
+        if (contactSection) {
+            contactSection.scrollIntoView({ behavior: "smooth" });
+        }
+    };
     // Define all tools with detailed descriptions
     const tools = [
         {
@@ -267,10 +272,13 @@ export default function WhatWeOffer() {
                             display: "flex",
                             justifyContent: "center",
                             gap: 3,
+                            mt: 4,
                         }}
                     >
+                        {/* Contact Us - Smooth Scroll */}
                         <Button
                             variant="contained"
+                            onClick={scrollToContact}
                             sx={{
                                 backgroundImage: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
                                 textTransform: "none",
@@ -281,15 +289,16 @@ export default function WhatWeOffer() {
                                 fontWeight: 500,
                                 color: "#fff",
                                 "&:hover": {
-                                    backgroundImage:
-                                        "linear-gradient(80.89deg, #4A00E0 -20%, #8E2DE2 100%)",
+                                    backgroundImage: "linear-gradient(80.89deg, #4A00E0 -20%, #8E2DE2 100%)",
                                 },
                             }}
                         >
                             Contact Us
                         </Button>
 
+                        {/* View All - Go to /tools */}
                         <Button
+                            onClick={() => router.push("/tools")}
                             sx={{
                                 color: "rgba(74, 0, 224, 1)",
                                 textTransform: "none",
