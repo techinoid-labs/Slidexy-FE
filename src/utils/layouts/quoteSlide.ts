@@ -6,7 +6,7 @@ interface BaseElement {
   konva_component: string;
   shape_id?: string;
   image_id?: string;
-  properties: any; // Use any for flexibility, or define specific unions below
+  properties: any;
 }
 
 interface ShapeElement extends BaseElement {
@@ -106,7 +106,6 @@ export const createQuoteSlide = {
         }
       } as ImageElement);
     } else {
-      // Add solid background if no image
       elements.push({
         element_type: "shape",
         konva_component: "Konva.Rect",
@@ -115,11 +114,11 @@ export const createQuoteSlide = {
       } as ShapeElement);
     }
 
-    // Elegant quote marks with scale
+    // Elegant quote marks
     elements.push(
       {
         element_type: "text",
-        text: "“",
+        text: "",
         konva_component: "Text",
         properties: {
           x: 80,
@@ -136,7 +135,7 @@ export const createQuoteSlide = {
       } as any,
       {
         element_type: "text",
-        text: "”",
+        text: "",
         konva_component: "Text",
         properties: {
           x: SLIDE_WIDTH - 160,
@@ -153,32 +152,11 @@ export const createQuoteSlide = {
       } as any
     );
 
-    // Author with refined styling
-    if (author) {
+    // ✅ CRITICAL FIX: Add the actual quote text as an element
+    if (quote?.text) {
       elements.push({
         element_type: "text",
-        text: author.text,
-        konva_component: "Text",
-        properties: {
-          x: SLIDE_WIDTH - 300,
-          y: SLIDE_HEIGHT / 2 + 60,
-          width: 250,
-          height: 40,
-          fontSize: 18,
-          fontFamily: "Raleway, sans-serif",
-          fontWeight: "600",
-          fill: hexToRgba(textColor, 0.75),
-          align: "right",
-          lineHeight: 1.2,
-          zIndex: 2
-        }
-      } as any);
-    }
-
-    return {
-      ...slide,
-      slide_title: {
-        text: quote?.text || slide.slide_title?.text || "Timeless Wisdom",
+        text: quote.text,
         konva_component: "Text",
         properties: {
           x: 100,
@@ -196,7 +174,50 @@ export const createQuoteSlide = {
           shadowBlur: 12,
           shadowOffsetY: 6,
           letterSpacing: 0.5,
-          zIndex: 2
+          zIndex: 3
+        }
+      } as any);
+    }
+
+    // Author
+    if (author?.text) {
+      elements.push({
+        element_type: "text",
+        text: author.text,
+        konva_component: "Text",
+        properties: {
+          x: SLIDE_WIDTH - 300,
+          y: SLIDE_HEIGHT / 2 + 60,
+          width: 250,
+          height: 40,
+          fontSize: 18,
+          fontFamily: "Raleway, sans-serif",
+          fontWeight: "600",
+          fill: hexToRgba(textColor, 0.75),
+          align: "right",
+          lineHeight: 1.2,
+          zIndex: 3
+        }
+      } as any);
+    }
+
+    return {
+      ...slide,
+      slide_title: {
+        text: slide.slide_title?.text || "Expert Perspective",
+        konva_component: "Text",
+        properties: {
+          x: 80,
+          y: 80,
+          width: SLIDE_WIDTH - 160,
+          height: 60,
+          fontSize: 36,
+          fontFamily: "Raleway, sans-serif",
+          fontWeight: "700",
+          fill: textColor,
+          align: "center",
+          lineHeight: 1.2,
+          zIndex: 3
         }
       },
       elements
@@ -207,7 +228,6 @@ export const createQuoteSlide = {
     const quote = slide.elements?.find((el: any) => el.element_type === "quote");
     const elements: SlideElement[] = [];
 
-    // ✅ ADD IMAGE as background if image_url exists
     if (slide.image_url) {
       elements.push({
         element_type: "image",
@@ -224,7 +244,6 @@ export const createQuoteSlide = {
         }
       } as ImageElement);
     } else {
-      // Add solid background if no image
       elements.push({
         element_type: "shape",
         konva_component: "Konva.Rect",
@@ -233,7 +252,7 @@ export const createQuoteSlide = {
       } as ShapeElement);
     }
 
-    // Subtle accent bar with dash
+    // Subtle accent bar
     elements.push({
       element_type: "shape",
       konva_component: "Konva.Rect",
@@ -249,6 +268,31 @@ export const createQuoteSlide = {
         zIndex: 1
       }
     } as ShapeElement);
+
+    // ✅ CRITICAL FIX: Add the actual quote text as an element
+    if (quote?.text) {
+      elements.push({
+        element_type: "text",
+        text: quote.text,
+        konva_component: "Text",
+        properties: {
+          x: SLIDE_WIDTH / 2 - 300,
+          y: SLIDE_HEIGHT / 2 - 60,
+          width: 600,
+          height: 120,
+          fontSize: 36,
+          fontFamily: "'Playfair Display', serif",
+          fontWeight: "600",
+          fill: textColor,
+          align: "center",
+          lineHeight: 1.3,
+          shadowColor: hexToRgba(textColor, 0.18),
+          shadowBlur: 10,
+          shadowOffsetY: 5,
+          zIndex: 3
+        }
+      } as any);
+    }
 
     // Contextual note
     elements.push({
@@ -266,30 +310,27 @@ export const createQuoteSlide = {
         fill: hexToRgba(textColor, 0.7),
         align: "center",
         fontStyle: "italic",
-        zIndex: 2
+        zIndex: 3
       }
     } as any);
 
     return {
       ...slide,
       slide_title: {
-        text: quote?.text || slide.slide_title?.text || "Profound Insight",
+        text: slide.slide_title?.text || "Profound Insight",
         konva_component: "Text",
         properties: {
-          x: SLIDE_WIDTH / 2 - 300,
-          y: SLIDE_HEIGHT / 2 - 60,
-          width: 600,
-          height: 120,
+          x: 80,
+          y: 80,
+          width: SLIDE_WIDTH - 160,
+          height: 60,
           fontSize: 36,
-          fontFamily: "'Playfair Display', serif",
-          fontWeight: "600",
+          fontFamily: "Raleway, sans-serif",
+          fontWeight: "700",
           fill: textColor,
           align: "center",
-          lineHeight: 1.3,
-          shadowColor: hexToRgba(textColor, 0.18),
-          shadowBlur: 10,
-          shadowOffsetY: 5,
-          zIndex: 2
+          lineHeight: 1.2,
+          zIndex: 3
         }
       },
       elements
@@ -302,7 +343,6 @@ export const createQuoteSlide = {
     const context = slide.elements?.find((el: any) => el.element_type === "context");
     const elements: SlideElement[] = [];
 
-    // ✅ ADD IMAGE as background if image_url exists
     if (slide.image_url) {
       elements.push({
         element_type: "image",
@@ -319,57 +359,12 @@ export const createQuoteSlide = {
         }
       } as ImageElement);
     } else {
-      // Add solid background if no image
       elements.push({
         element_type: "shape",
         konva_component: "Konva.Rect",
         shape_id: `auto-${uuidv4()}`,
         properties: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT, fill: colors.background, zIndex: 0 }
       } as ShapeElement);
-    }
-
-    // Author with elegant underline
-    if (author) {
-      elements.push({
-        element_type: "text",
-        text: author.text,
-        konva_component: "Text",
-        properties: {
-          x: SLIDE_WIDTH - 300,
-          y: 320,
-          width: 200,
-          height: 30,
-          fontSize: 18,
-          fontFamily: "Raleway, sans-serif",
-          fontWeight: "600",
-          fill: hexToRgba(textColor, 0.75),
-          align: "right",
-          lineHeight: 1.2,
-          zIndex: 2
-        }
-      } as any);
-    }
-
-    // Context
-    if (context) {
-      elements.push({
-        element_type: "text",
-        text: context.text,
-        konva_component: "Text",
-        properties: {
-          x: 150,
-          y: 360,
-          width: SLIDE_WIDTH - 300,
-          height: 40,
-          fontSize: 16,
-          fontFamily: "Raleway, sans-serif",
-          fontWeight: "300",
-          fill: hexToRgba(textColor, 0.6),
-          align: "center",
-          lineHeight: 1.3,
-          zIndex: 2
-        }
-      } as any);
     }
 
     // Subtle frame
@@ -391,10 +386,11 @@ export const createQuoteSlide = {
       }
     } as ShapeElement);
 
-    return {
-      ...slide,
-      slide_title: {
-        text: quote?.text || slide.slide_title?.text || "Enduring Perspective",
+    // ✅ CRITICAL FIX: Add the actual quote text as an element
+    if (quote?.text) {
+      elements.push({
+        element_type: "text",
+        text: quote.text,
         konva_component: "Text",
         properties: {
           x: 150,
@@ -410,7 +406,72 @@ export const createQuoteSlide = {
           lineHeight: 1.4,
           shadowColor: hexToRgba(textColor, 0.15),
           shadowBlur: 8,
-          zIndex: 2
+          zIndex: 3
+        }
+      } as any);
+    }
+
+    // Author
+    if (author?.text) {
+      elements.push({
+        element_type: "text",
+        text: author.text,
+        konva_component: "Text",
+        properties: {
+          x: SLIDE_WIDTH - 300,
+          y: 320,
+          width: 200,
+          height: 30,
+          fontSize: 18,
+          fontFamily: "Raleway, sans-serif",
+          fontWeight: "600",
+          fill: hexToRgba(textColor, 0.75),
+          align: "right",
+          lineHeight: 1.2,
+          zIndex: 3
+        }
+      } as any);
+    }
+
+    // Context
+    if (context?.text) {
+      elements.push({
+        element_type: "text",
+        text: context.text,
+        konva_component: "Text",
+        properties: {
+          x: 150,
+          y: 360,
+          width: SLIDE_WIDTH - 300,
+          height: 40,
+          fontSize: 16,
+          fontFamily: "Raleway, sans-serif",
+          fontWeight: "300",
+          fill: hexToRgba(textColor, 0.6),
+          align: "center",
+          lineHeight: 1.3,
+          zIndex: 3
+        }
+      } as any);
+    }
+
+    return {
+      ...slide,
+      slide_title: {
+        text: slide.slide_title?.text || "Enduring Perspective",
+        konva_component: "Text",
+        properties: {
+          x: 80,
+          y: 80,
+          width: SLIDE_WIDTH - 160,
+          height: 60,
+          fontSize: 36,
+          fontFamily: "Raleway, sans-serif",
+          fontWeight: "700",
+          fill: textColor,
+          align: "center",
+          lineHeight: 1.2,
+          zIndex: 3
         }
       },
       elements
@@ -421,7 +482,6 @@ export const createQuoteSlide = {
     const quote = slide.elements?.find((el: any) => el.element_type === "quote");
     const elements: SlideElement[] = [];
 
-    // ✅ ADD IMAGE as background if image_url exists
     if (slide.image_url) {
       elements.push({
         element_type: "image",
@@ -438,7 +498,6 @@ export const createQuoteSlide = {
         }
       } as ImageElement);
     } else {
-      // Add solid background if no image
       elements.push({
         element_type: "shape",
         konva_component: "Konva.Rect",
@@ -463,26 +522,11 @@ export const createQuoteSlide = {
       }
     } as ShapeElement);
 
-    // Quote separator
-    elements.push({
-      element_type: "shape",
-      konva_component: "Konva.Rect",
-      shape_id: `auto-${uuidv4()}`,
-      properties: {
-        x: SLIDE_WIDTH / 2 - 100,
-        y: SLIDE_HEIGHT / 2 + 20,
-        width: 200,
-        height: 2,
-        fill: hexToRgba(colors.accent, 0.6),
-        cornerRadius: 1,
-        zIndex: 1
-      }
-    } as ShapeElement);
-
-    return {
-      ...slide,
-      slide_title: {
-        text: quote?.text || slide.slide_title?.text || "Reflective Thought",
+    // ✅ CRITICAL FIX: Add the actual quote text as an element
+    if (quote?.text) {
+      elements.push({
+        element_type: "text",
+        text: quote.text,
         konva_component: "Text",
         properties: {
           x: 100,
@@ -498,7 +542,44 @@ export const createQuoteSlide = {
           shadowColor: hexToRgba(textColor, 0.2),
           shadowBlur: 12,
           shadowOffsetY: 6,
-          zIndex: 2
+          zIndex: 3
+        }
+      } as any);
+    }
+
+    // Quote separator
+    elements.push({
+      element_type: "shape",
+      konva_component: "Konva.Rect",
+      shape_id: `auto-${uuidv4()}`,
+      properties: {
+        x: SLIDE_WIDTH / 2 - 100,
+        y: SLIDE_HEIGHT / 2 + 20,
+        width: 200,
+        height: 2,
+        fill: hexToRgba(colors.accent, 0.6),
+        cornerRadius: 1,
+        zIndex: 2
+      }
+    } as ShapeElement);
+
+    return {
+      ...slide,
+      slide_title: {
+        text: slide.slide_title?.text || "Reflective Thought",
+        konva_component: "Text",
+        properties: {
+          x: 80,
+          y: 80,
+          width: SLIDE_WIDTH - 160,
+          height: 60,
+          fontSize: 36,
+          fontFamily: "Raleway, sans-serif",
+          fontWeight: "700",
+          fill: textColor,
+          align: "center",
+          lineHeight: 1.2,
+          zIndex: 3
         }
       },
       elements
@@ -510,7 +591,6 @@ export const createQuoteSlide = {
     const author = slide.elements?.find((el: any) => el.element_type === "author");
     const elements: SlideElement[] = [];
 
-    // ✅ ADD IMAGE as background if image_url exists
     if (slide.image_url) {
       elements.push({
         element_type: "image",
@@ -527,7 +607,6 @@ export const createQuoteSlide = {
         }
       } as ImageElement);
     } else {
-      // Add solid background if no image
       elements.push({
         element_type: "shape",
         konva_component: "Konva.Rect",
@@ -556,31 +635,11 @@ export const createQuoteSlide = {
       }
     } as ShapeElement);
 
-    // Author
-    if (author) {
+    // ✅ CRITICAL FIX: Add the actual quote text as an element
+    if (quote?.text) {
       elements.push({
         element_type: "text",
-        text: author.text,
-        konva_component: "Text",
-        properties: {
-          x: SLIDE_WIDTH / 2 - 100,
-          y: SLIDE_HEIGHT - 100,
-          width: 200,
-          height: 40,
-          fontSize: 18,
-          fontFamily: "Raleway, sans-serif",
-          fontWeight: "600",
-          fill: hexToRgba(textColor, 0.8),
-          align: "center",
-          zIndex: 2
-        }
-      } as any);
-    }
-
-    return {
-      ...slide,
-      slide_title: {
-        text: quote?.text || slide.slide_title?.text || "Featured Reflection",
+        text: quote.text,
         konva_component: "Text",
         properties: {
           x: 120,
@@ -596,7 +655,49 @@ export const createQuoteSlide = {
           lineHeight: 1.4,
           shadowColor: hexToRgba(textColor, 0.18),
           shadowBlur: 10,
-          zIndex: 2
+          zIndex: 3
+        }
+      } as any);
+    }
+
+    // Author
+    if (author?.text) {
+      elements.push({
+        element_type: "text",
+        text: author.text,
+        konva_component: "Text",
+        properties: {
+          x: SLIDE_WIDTH / 2 - 100,
+          y: SLIDE_HEIGHT - 100,
+          width: 200,
+          height: 40,
+          fontSize: 18,
+          fontFamily: "Raleway, sans-serif",
+          fontWeight: "600",
+          fill: hexToRgba(textColor, 0.8),
+          align: "center",
+          zIndex: 3
+        }
+      } as any);
+    }
+
+    return {
+      ...slide,
+      slide_title: {
+        text: slide.slide_title?.text || "Featured Reflection",
+        konva_component: "Text",
+        properties: {
+          x: 80,
+          y: 80,
+          width: SLIDE_WIDTH - 160,
+          height: 60,
+          fontSize: 36,
+          fontFamily: "Raleway, sans-serif",
+          fontWeight: "700",
+          fill: textColor,
+          align: "center",
+          lineHeight: 1.2,
+          zIndex: 3
         }
       },
       elements

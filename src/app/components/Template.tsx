@@ -274,7 +274,7 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
 
       {/* TAB SWITCH */}
       <Box sx={{ display: "flex", px: 3 }}>
-        <Box
+        {/* <Box
           onClick={() => setActiveTab("ai")}
           sx={{
             flex: 1,
@@ -289,7 +289,7 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
           }}
         >
           From Slide AI
-        </Box>
+        </Box> */}
         <Box sx={{ width: 8 }} />
         <Box
           onClick={() => setActiveTab("default")}

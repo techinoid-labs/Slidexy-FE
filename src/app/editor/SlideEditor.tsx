@@ -247,6 +247,14 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
               transform: `scale(${scale})`,
             }}
           >
+            {/* This inner div allows interaction only when needed */}
+  <Box
+    sx={{
+      pointerEvents: "auto",
+      width: getDynamicConstants().SLIDE_WIDTH,
+      height: getDynamicConstants().SLIDE_HEIGHT,
+    }}
+  >
             <Stage
               width={getDynamicConstants().SLIDE_WIDTH}
               height={getDynamicConstants().SLIDE_HEIGHT}
@@ -267,6 +275,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                     width={getDynamicConstants().SLIDE_WIDTH}
                     height={getDynamicConstants().SLIDE_HEIGHT}
                     name="background"
+                    listening={false}
                   />
                 ) : slide.background?.type === "linear" && slide.background.gradient ? (
                   <Rect
@@ -277,6 +286,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                     fillLinearGradientColorStops={slide.background.gradient.stops || [0, slide.background.gradient.start, 1, slide.background.gradient.end]}
                     cornerRadius={8}
                     name="background"
+                    listening={false}
                   />
                 ) : (
                   <Rect
@@ -285,6 +295,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                     fill={slide.background?.color || selectedTheme?.backgroundColor || "#ffffff"}
                     cornerRadius={8}
                     name="background"
+                    listening={false}
                   />
                 )}
 
@@ -433,6 +444,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                 })}
               </Layer>
             </Stage>
+             </Box>
           </Box>
         );
       })}

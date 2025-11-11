@@ -6,6 +6,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import { useSlides } from "@/app/context/SlidesContext";
 import { v4 as uuidv4 } from "uuid";
+import { useClickOutsideToClose } from "../hooks/useClickOutsideToClose";
+import { useRef } from "react";
 const shapes = [
   {
     name: "Circle",
@@ -221,8 +223,9 @@ interface ShapedProps {
 }
 
 const Shapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
+  const panelRef = useRef<HTMLDivElement>(null);
   const { slides, setSlides, selectedSlideIndex } = useSlides();
-
+useClickOutsideToClose(panelRef, onClose);
   const handleShapeClick = (shape: any) => {
     const newShape = {
       konva_component: shape.konva_component,
@@ -245,6 +248,7 @@ const Shapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
 
   return (
     <Box
+    ref={panelRef}
       sx={{
         width: 320,
         bgcolor: "#fff",

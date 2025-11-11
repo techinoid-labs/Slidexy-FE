@@ -21,7 +21,7 @@ export const usePresentation = (presentationId: string) => {
 
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/presentation/${presentationId}`);
+        const response = await fetch(`${API_BASE_URL}/template-presentation/${presentationId}`);
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.error || `Failed to fetch presentation (status: ${response.status})`);
