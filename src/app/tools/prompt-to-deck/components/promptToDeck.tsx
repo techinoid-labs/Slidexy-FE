@@ -40,14 +40,14 @@ const TEXT_ART_STYLES = [
     { value: "Minimal Abstract", label: "Minimal Abstract" },
 ];
 
-const getProgressMessage = (progress: number) => {
-  if (progress < 8) return "Initializing…";
-  if (progress < 17) return "Analyzing your idea…";
-  if (progress < 24) return "Thinking deeply…";
-  if (progress < 43) return "Building content…";
-  if (progress < 76) return "Generating visuals…";
-  return "Finalizing your deck…";
-};
+// const getProgressMessage = (progress: number) => {
+//   if (progress < 8) return "Initializing…";
+//   if (progress < 17) return "Analyzing your idea…";
+//   if (progress < 24) return "Thinking deeply…";
+//   if (progress < 43) return "Building content…";
+//   if (progress < 76) return "Generating visuals…";
+//   return "Finalizing your deck…";
+// };
 
 export default function PromptToDeck() {
     const [count, setCount] = useState(7);
