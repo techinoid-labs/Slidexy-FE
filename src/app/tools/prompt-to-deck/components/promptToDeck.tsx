@@ -12,15 +12,178 @@ import {
     IconButton,
     Chip,
     Stack,
+    LinearProgress,
+    Alert,
+    AlertTitle,
 } from "@mui/material";
-import { Add, Remove, AutoAwesome, Edit, Language } from "@mui/icons-material";
-import { useState } from "react";
-import { fontStyle } from "html2canvas/dist/types/css/property-descriptors/font-style";
+import {
+    Add,
+    Remove,
+    AutoAwesome,
+    Close as CloseIcon,
+} from "@mui/icons-material";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useSlides } from "@/app/context/SlidesContext";
+import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
+import { useUser } from "@/app/context/AuthContext";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+const TEXT_ART_STYLES = [
+    { value: "Concept Art", label: "Concept Art" },
+    { value: "3D Render / CGI", label: "3D Render / CGI" },
+    { value: "Watercolor Illustration", label: "Watercolor Illustration" },
+    { value: "AI Collage / Mixed Media", label: "AI Collage / Mixed Media" },
+    { value: "Digital Painting", label: "Digital Painting" },
+    { value: "Fantasy / Sci-Fi Style", label: "Fantasy / Sci-Fi Style" },
+    { value: "Minimal Abstract", label: "Minimal Abstract" },
+];
+
+const getProgressMessage = (progress: number) => {
+  if (progress < 8) return "Initializing…";
+  if (progress < 17) return "Analyzing your idea…";
+  if (progress < 24) return "Thinking deeply…";
+  if (progress < 43) return "Building content…";
+  if (progress < 76) return "Generating visuals…";
+  return "Finalizing your deck…";
+};
 
 export default function PromptToDeck() {
-    const [count, setCount] = useState(1);
-    const [goal, setGoal] = useState("");
-    const [tone, setTone] = useState("");
+    const [count, setCount] = useState(7);
+    const [goal, setGoal] = useState("pitch");
+    const [tone, setTone] = useState("professional");
+    const [visualStyle, setVisualStyle] = useState("Minimal Abstract");
+    const [description, setDescription] = useState("");
+
+    const [loading, setLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [currentMessage, setCurrentMessage] = useState("");
+    const [currentDetail, setCurrentDetail] = useState("");
+    const [error, setError] = useState("");
+
+    const router = useRouter();
+    const { setSlides } = useSlides();
+    const { setPresentationId } = useTemplateSlides();
+    const { user } = useUser();
+
+    const abortControllerRef = useRef<AbortController | null>(null);
+
+    const handleSubmit = async () => {
+        // ---- validation -------------------------------------------------
+        if (!description.trim()) {
+            setError("Please describe your idea.");
+            return;
+        }
+
+        // ---- reset UI ---------------------------------------------------
+        setLoading(true);
+        setError("");
+        setProgress(0);
+        setCurrentMessage("");
+        setCurrentDetail("");
+        setSlides([]);
+
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
+        const payload = {
+            source: "text",
+            textContent: description,
+            meta: { goal, tone, audience: "" }, // audience not used here
+            artStyle: visualStyle,
+            slideCount: count,
+            userData: user,
+        };
+
+        
+        try {
+            const res = await fetch(`${API_BASE_URL}/generate-slides`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "text/event-stream",
+                },
+                body: JSON.stringify(payload),
+                signal: controller.signal,
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || "Something went wrong");
+            }
+
+            if (!res.body) throw new Error("No response body");
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+
+            // ---- stream parser (identical to PresentationMaker) ----------
+            let buffer = "";
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const parts = buffer.split("\n\n");
+                buffer = parts.pop() ?? "";
+
+                for (const part of parts) {
+                    if (!part.startsWith("data:")) continue;
+                    const jsonStr = part.replace(/^data:\s*/, "").trim();
+                    if (!jsonStr || jsonStr === "[DONE]") continue;
+
+                    try {
+                        const event = JSON.parse(jsonStr);
+                        // progress
+                        if (event.percent !== undefined) setProgress(event.percent);
+                        // messages
+                        if (event.message !== undefined) setCurrentMessage(event.message);
+                        if (event.detail !== undefined) setCurrentDetail(event.detail);
+                        // error
+                        if (event.error) {
+                            setError(event.error);
+                            setLoading(false);
+                            return;
+                        }
+                        // completion
+                        if (event.complete) {
+                            setProgress(100);
+                            setCurrentMessage(event.message || "Presentation ready!");
+                            setCurrentDetail(event.detail || "");
+
+                            if (event.slides) setSlides(event.slides);
+                            if (event.presentation_id) {
+                                setPresentationId(event.presentation_id);
+                                router.push(
+                                    `/presentation/outline?pid=${event.presentation_id}`
+                                );
+                            }
+                            setLoading(false);
+                        }
+                    } catch (e) {
+                        console.error("Bad SSE chunk:", jsonStr);
+                    }
+                }
+            }
+        } catch (err: any) {
+            if (err.name !== "AbortError") {
+                setError(err.message || "Network error");
+            }
+            setLoading(false);
+        } finally {
+            abortControllerRef.current = null;
+        }
+    };
+
+    /* ---------- Cancel generation ---------- */
+    const cancelGeneration = () => {
+        abortControllerRef.current?.abort();
+        setLoading(false);
+        setProgress(0);
+        setCurrentMessage("");
+        setCurrentDetail("");
+    };
 
     const quickPrompts = [
         "Creativity at Work",
@@ -77,7 +240,7 @@ export default function PromptToDeck() {
                 sx={{
                     width: "100%",
                     maxWidth: "926px",
-                    maxHeight: {xs:"50%",md:"340px"},
+                    maxHeight: { xs: "50%", md: "340px" },
                     backgroundColor: "rgba(251, 250, 255, 1)",
                     borderRadius: 1,
                     boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
@@ -92,8 +255,7 @@ export default function PromptToDeck() {
                         display: "flex",
                         justifyContent: "flex-start",
                         mb: 1,
-                    }}
-                >
+                    }}>
                     <FormControl
                         variant="outlined"
                         sx={{
@@ -101,12 +263,12 @@ export default function PromptToDeck() {
                             width: "142px",
                             height: "44px",
                             borderRadius: "10px",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.08)", 
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
                             "& .MuiOutlinedInput-notchedOutline": {
-                                border: "none", 
+                                border: "none",
                             },
                             "& .MuiSelect-select": {
-                                py: "8px", 
+                                py: "8px",
                             },
                         }}
                     >
@@ -122,6 +284,7 @@ export default function PromptToDeck() {
                             value={goal}
                             label="Select Goal"
                             onChange={(e) => setGoal(e.target.value)}
+                            disabled={loading}
                             sx={{
                                 backgroundColor: "#fff",
                                 height: "44px",
@@ -142,6 +305,8 @@ export default function PromptToDeck() {
                     minRows={4}
                     placeholder="Describe your idea... e.g., 'Pitch for a new mental health app'"
                     variant="outlined"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     sx={{
                         mb: 1.5,
                         "& .MuiOutlinedInput-notchedOutline": {
@@ -158,13 +323,13 @@ export default function PromptToDeck() {
                 {/* Control Row */}
                 <Box
                     sx={{
-    display: "flex",
-    flexDirection: { xs: "column", md: "row" },
-    justifyContent: { xs: "center", md: "space-between" },
-    alignItems: { xs: "stretch", md: "center" },
-    gap: 2,
-    width: "100%",
-  }}
+                        display: "flex",
+                        flexDirection: { xs: "column", md: "row" },
+                        justifyContent: { xs: "center", md: "space-between" },
+                        alignItems: { xs: "stretch", md: "center" },
+                        gap: 2,
+                        width: "100%",
+                    }}
                 >
                     <Stack
                         direction={{ xs: "column", sm: "row" }}
@@ -211,11 +376,15 @@ export default function PromptToDeck() {
                             <IconButton
                                 size="small"
                                 onClick={() => setCount(Math.max(1, count - 1))}
+                                disabled={loading}
                             >
                                 <Remove />
                             </IconButton>
                             <Typography sx={{ px: 1 }}>{count}</Typography>
-                            <IconButton size="small" onClick={() => setCount(count + 1)}>
+                            <IconButton
+                                size="small"
+                                onClick={() => setCount(count + 1)}
+                                disabled={loading}                            >
                                 <Add />
                             </IconButton>
                         </Box>
@@ -246,6 +415,7 @@ export default function PromptToDeck() {
                                 value={tone}
                                 label="Select Tone"
                                 onChange={(e) => setTone(e.target.value)}
+                                disabled={loading}
                                 sx={{
                                     backgroundColor: "#fff",
                                     height: "44px",
@@ -279,22 +449,21 @@ export default function PromptToDeck() {
                                 fontSize: "14px", fontFamily: "Raleway",
                             }}>Select Visual Style</InputLabel>
                             <Select
-                                value={tone}
+                                value={visualStyle}
                                 label="Select Visual Style"
-                                onChange={(e) => setTone(e.target.value)}
+                                onChange={(e) => setVisualStyle(e.target.value)}
+                                disabled={loading}
                                 sx={{
                                     backgroundColor: "#fff",
                                     height: "44px",
                                     fontSize: "14px",
                                 }}
                             >
-                                <MenuItem value="professional">Concept Art</MenuItem>
-                                <MenuItem value="professional">3D Render / CGI</MenuItem>
-                                <MenuItem value="professional">Watercolor Illustration</MenuItem>
-                                <MenuItem value="professional">AI Collage / Mixed Media</MenuItem>
-                                <MenuItem value="professional">Digital Painting</MenuItem>
-                                <MenuItem value="casual">Fantasy / Sci-Fi Style</MenuItem>
-                                <MenuItem value="inspirational">Minimal Abstract</MenuItem>
+                                {TEXT_ART_STYLES.map((style) => (
+                                    <MenuItem key={style.value} value={style.value}>
+                                        {style.label}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                     </Stack>
@@ -302,6 +471,8 @@ export default function PromptToDeck() {
                     {/* Generate Button */}
                     <Button
                         variant="contained"
+                        disabled={loading}
+                        onClick={handleSubmit}
                         sx={{
                             backgroundColor: "#6C2BD9",
                             color: "#fff",
@@ -312,7 +483,7 @@ export default function PromptToDeck() {
                             py: 1.2,
                             fontWeight: 600,
                             boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
-                            alignSelf: { xs: "stretch", md: "center" }, 
+                            alignSelf: { xs: "stretch", md: "center" },
                             "&:hover": { backgroundColor: "#5B21B6" },
                         }}
                         startIcon={<AutoAwesome />}
@@ -320,8 +491,105 @@ export default function PromptToDeck() {
                         Generate
                     </Button>
                 </Box>
-            </Box>
 
+                {error && (
+                    <Alert
+                        severity="error"
+                        sx={{ mt: 2 }}
+                        action={
+                            <IconButton
+                                size="small"
+                                onClick={() => setError("")}
+                                color="inherit"
+                            >
+                                <CloseIcon fontSize="small" />
+                            </IconButton>
+                        }
+                    >
+                        <AlertTitle>Error</AlertTitle>
+                        {error}
+                    </Alert>
+                )}
+            </Box>
+            {/* ---------- PROGRESS */}
+                            {loading && (
+                    <Box sx={{
+                        mb: { xs: 2, md: 4 },
+                        p: { xs: 2, sm: 3, md: 5 },
+                        height: { xs: 'auto', sm: 250, md: 270 },
+                        width: {sx: 'auto',md: 800},
+                        mx: 'auto',
+                        borderRadius: 3,
+                        bgcolor: "white",
+                        boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
+                        border: "1px solid #f0f0f0"
+                    }}>
+                        <Box sx={{
+                            display: "flex",
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            alignItems: { xs: 'flex-start', sm: 'center' },
+                            gap: { xs: 1, sm: 0 },
+                            mb: 1.5
+                        }}>
+                            <Box sx={{
+                                width: 15,
+                                height: 15,
+                                borderRadius: "50%",
+                                bgcolor: "#8E2DE2",
+                                mr: { xs: 0, sm: 2 },
+                                mb: { xs: 1, sm: 0 },
+                                animation: "pulse 1.5s ease-in-out infinite"
+                            }} />
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    fontWeight: 600,
+                                    color: "#8E2DE2",
+                                    flexGrow: 1,
+                                    fontSize: { xs: '1.25rem', md: '1.5rem' }
+                                }}
+                            >
+                                {currentMessage}
+                            </Typography>
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{
+                                    mt: { xs: 0.5, sm: 0 },
+                                    minWidth: { sm: '50px' },
+                                    textAlign: { xs: 'right', sm: 'left' }
+                                }}
+                            >
+                                {Math.round(progress)}%
+                            </Typography>
+                        </Box>
+                        <Typography
+                            variant="body1"
+                            color="text.secondary"
+                            sx={{
+                                mb: 2,
+                                lineHeight: 1.6,
+                                wordBreak: 'break-word'
+                            }}
+                        >
+                            {currentDetail}
+                        </Typography>
+                        {/* <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{
+              height: 6,
+              borderRadius: 5,
+              bgcolor: "grey.200",
+              "& .MuiLinearProgress-bar": {
+                borderRadius: 5,
+                background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
+                boxShadow: "0 2px 10px rgba(142, 45, 226, 0.3)",
+              },
+            }}
+          /> */}
+                    </Box>
+                )}
 
             {/* Quick Prompt Generator */}
             <Box sx={{ textAlign: "center", maxWidth: 800 }}>
@@ -349,6 +617,7 @@ export default function PromptToDeck() {
                         <Chip
                             key={index}
                             label={prompt}
+                            onClick={() => setDescription(prompt)}
                             sx={{
                                 bgcolor: "rgba(242, 240, 255, 1)",
                                 color: "#1A1A1A",
