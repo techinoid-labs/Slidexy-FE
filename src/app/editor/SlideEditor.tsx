@@ -365,32 +365,54 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect }: any) => {
                   />
                 )}
 
-                {slide.elements?.map((el: any, i: number) => {
-                  if (el.element_type !== "text" && el.element_type !== "bullet_point") return null;
-                  return (
-                    <KonvaTextEditor
-                      key={`${el.id || `el-${index}-${i}`}`}
-                      id={el.id || `el-${index}-${i}`}
-                      text={el.text}
-                      x={el.properties?.x || 0}
-                      y={el.properties?.y || 0}
-                      width={el.properties?.width || 300}
-                      fontSize={el.properties?.fontSize || 16}
-                      fontFamily={el.properties?.fontFamily || "Raleway"}
-                      opacity={el.properties?.opacity || 1}
-                      fill={el.properties?.fill || "#000"}
-                      align={el.properties?.align || "left"}
-                      isSelected={selectedElements.some((s) => s.id === `el-${index}-${i}`)}
-                      onSelect={(e) => {
-                        handleSelect({ id: `el-${index}-${i}`, type: "text", index: i }, e.evt.ctrlKey);
-                        setSelectedTextId(`el-${index}-${i}`);
-                        setSelectedImageIndex(null);
-                        setSelectedImage(null);
-                        setSelectedShapeIndex(null);
-                      }}
-                    />
-                  );
-                })}
+               {slide.elements?.map((el: any, i: number) => {
+  // RENDER: text, bullet_point, quote, author, context
+  if (
+    el.element_type === "text" ||
+    el.element_type === "bullet_point" ||
+    el.element_type === "quote" ||
+    el.element_type === "author" ||
+    el.element_type === "context"
+  ) {
+    return (
+      <KonvaTextEditor
+        key={`${el.id || `el-${index}-${i}`}`}
+        id={el.id || `el-${index}-${i}`}
+        text={el.text || ""}
+        x={el.properties?.x || 0}
+        y={el.properties?.y || 0}
+        width={el.properties?.width || 300}
+        height={el.properties?.height || 100}
+        fontSize={el.properties?.fontSize || 16}
+        fontFamily={el.properties?.fontFamily || "Raleway"}
+        fontWeight={el.properties?.fontWeight || "400"}
+        opacity={el.properties?.opacity ?? 1}
+        fill={el.properties?.fill || "#000000"}
+        align={el.properties?.align || "left"}
+        lineHeight={el.properties?.lineHeight || 1.4}
+        wrap="word"
+        isSelected={selectedElements.some((s) => s.id === (el.id || `el-${index}-${i}`))}
+        onSelect={(e) => {
+          const elementId = el.id || `el-${index}-${i}`;
+          handleSelect({ id: elementId, type: "text", index: i }, e.evt.ctrlKey);
+          setSelectedTextId(elementId);
+          setSelectedImageIndex(null);
+          setSelectedImage(null);
+          setSelectedShapeIndex(null);
+        }}
+        onChange={(newText) => {
+          const updatedSlides = [...slides];
+          const currentSlide = updatedSlides[selectedSlideIndex];
+          if (currentSlide?.elements?.[i]) {
+            currentSlide.elements[i].text = newText;
+            setSlides(updatedSlides);
+          }
+        }}
+      />
+    );
+  }
+  return null;
+})}
 
                 {slide.elements?.map((el: any, i: number) => {
                   if (el.element_type === "image") {
