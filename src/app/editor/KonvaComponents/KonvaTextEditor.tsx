@@ -30,6 +30,7 @@ interface KonvaTextEditorProps {
   onSelect: (e: any) => void;
   verticalAlign?: string;
   lineHeight?: number;
+  onChange?: (newText: string) => void;
 }
 
 const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
