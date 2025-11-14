@@ -195,151 +195,178 @@ export default function PromptToDeck() {
   ];
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        minHeight: "100vh",
-        bgcolor: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "flex-start",
-        py: { xs: 8, md: 10 },
-        px: { xs: 2, md: 6 },
-        textAlign: "center",
-      }}
-    >
-      {/* Title */}
-      <Typography
-        variant="h2"
+    <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
+      <Box
         sx={{
-          fontWeight: 700,
-          mb: 1,
-          color: "rgba(26, 26, 26, 1)",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          overflow: "hidden",
+          zIndex: -1,
         }}
       >
-        Prompt-to-Deck
-      </Typography>
-
-      {/* Subtitle */}
-      <Typography
-        sx={{
-          color: "rgba(109, 109, 109, 1)",
-          maxWidth: 520,
-          mb: 6,
-          fontSize: { xs: "1rem", md: "1.1rem" },
-        }}
-      >
-        Elevate your presentations with our AI-powered tool—create polished,
-        professional slides in just seconds.
-      </Typography>
-
-      {/* Input Section */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: "0.1"
+          }}
+        >
+          <source src="/services-background.mp4" type="video/mp4" />
+        </video>
+      </Box>
       <Box
         sx={{
           width: "100%",
-          maxWidth: "926px",
-          maxHeight: { xs: "50%", md: "340px" },
-          backgroundColor: "rgba(251, 250, 255, 1)",
-          borderRadius: 1,
-          boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
-          border: "1px solid rgba(232, 228, 255, 1)",
-          p: { xs: 3, md: 4 },
-          mb: 4,
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          py: { xs: 8, md: 10 },
+          px: { xs: 2, md: 6 },
+          textAlign: "center",
         }}
       >
-        {/* Goal Selector */}
-        <Box
+        {/* Title */}
+        <Typography
+          variant="h2"
           sx={{
-            display: "flex",
-            justifyContent: "flex-start",
+            fontWeight: 700,
             mb: 1,
+            color: "rgba(26, 26, 26, 1)",
+            fontSize: { xs: "16px", md: "18px" },
           }}
         >
-          <FormControl
-            variant="outlined"
+          Prompt-to-Deck
+        </Typography>
+
+        {/* Subtitle */}
+        <Typography
+          sx={{
+            color: "rgba(109, 109, 109, 1)",
+            maxWidth: 520,
+            mb: 6,
+            fontSize: { xs: "1rem", md: "18px" },
+          }}
+        >
+          Elevate your presentations with our AI-powered tool—create polished,
+          professional slides in just seconds.
+        </Typography>
+
+        {/* Input Section */}
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "926px",
+            maxHeight: { xs: "50%", md: "340px" },
+            backgroundColor: "rgba(251, 250, 255, 1)",
+            borderRadius: 1,
+            boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
+            border: "1px solid rgba(232, 228, 255, 1)",
+            p: { xs: 3, md: 4 },
+            mb: 4,
+          }}
+        >
+          {/* Goal Selector */}
+          <Box
             sx={{
-              backgroundColor: " rgba(255, 255, 255, 1)",
-              width: "142px",
-              height: "44px",
-              borderRadius: "10px",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+              display: "flex",
+              justifyContent: "flex-start",
+              mb: 1,
+            }}
+          >
+            <FormControl
+              variant="outlined"
+              sx={{
+                backgroundColor: " rgba(255, 255, 255, 1)",
+                width: "142px",
+                height: "44px",
+                borderRadius: "10px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                "& .MuiSelect-select": {
+                  py: "8px",
+                },
+              }}
+            >
+              <InputLabel
+                sx={{
+                  fontSize: "14px",
+                  fontFamily: "Raleway",
+                }}
+              >
+                Select Goal
+              </InputLabel>
+              <Select
+                value={goal}
+                label="Select Goal"
+                onChange={(e) => setGoal(e.target.value)}
+                disabled={loading}
+                sx={{
+                  backgroundColor: "#fff",
+                  height: "44px",
+                  fontSize: "14px",
+                }}
+              >
+                <MenuItem value="pitch">Pitch Deck</MenuItem>
+                <MenuItem value="education">Educational Deck</MenuItem>
+                <MenuItem value="marketing">Marketing Presentation</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Description Field */}
+          <TextField
+            fullWidth
+            multiline
+            minRows={4}
+            placeholder="Describe your idea... e.g., 'Pitch for a new mental health app'"
+            variant="outlined"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            sx={{
+              mb: 1.5,
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "none",
               },
-              "& .MuiSelect-select": {
-                py: "8px",
+              borderBottom: "1px solid rgba(242, 240, 255, 1)",
+              "& .MuiInputBase-input": {
+                fontSize: "15px",
+                lineHeight: 1.6,
               },
             }}
-          >
-            <InputLabel
-              sx={{
-                fontSize: "14px",
-                fontFamily: "Raleway",
-              }}
-            >
-              Select Goal
-            </InputLabel>
-            <Select
-              value={goal}
-              label="Select Goal"
-              onChange={(e) => setGoal(e.target.value)}
-              disabled={loading}
-              sx={{
-                backgroundColor: "#fff",
-                height: "44px",
-                fontSize: "14px",
-              }}
-            >
-              <MenuItem value="pitch">Pitch Deck</MenuItem>
-              <MenuItem value="education">Educational Deck</MenuItem>
-              <MenuItem value="marketing">Marketing Presentation</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+          />
 
-        {/* Description Field */}
-        <TextField
-          fullWidth
-          multiline
-          minRows={4}
-          placeholder="Describe your idea... e.g., 'Pitch for a new mental health app'"
-          variant="outlined"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          sx={{
-            mb: 1.5,
-            "& .MuiOutlinedInput-notchedOutline": {
-              border: "none",
-            },
-            borderBottom: "1px solid rgba(242, 240, 255, 1)",
-            "& .MuiInputBase-input": {
-              fontSize: "15px",
-              lineHeight: 1.6,
-            },
-          }}
-        />
-
-        {/* Control Row */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            justifyContent: { xs: "center", md: "space-between" },
-            alignItems: { xs: "stretch", md: "center" },
-            gap: 2,
-            width: "100%",
-          }}
-        >
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            alignItems={{ xs: "stretch", sm: "center" }}
+          {/* Control Row */}
+          <Box
             sx={{
-              flex: 1,
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              justifyContent: { xs: "center", md: "space-between" },
+              alignItems: { xs: "stretch", md: "center" },
+              gap: 2,
+              width: "100%",
             }}
-            spacing={1.5}
           >
-            {/* <IconButton>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              alignItems={{ xs: "stretch", sm: "center" }}
+              sx={{
+                flex: 1,
+              }}
+              spacing={1.5}
+            >
+              {/* <IconButton>
                             <img
                                 src="/images/voice-icon-input.svg"
                                 alt="Custom icon"
@@ -354,249 +381,249 @@ export default function PromptToDeck() {
                             />
                         </IconButton> */}
 
-            {/* Counter */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                overflow: "hidden",
-                width: "100px",
-                height: "44px",
-                borderRadius: "4px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                backgroundColor: " rgba(255, 255, 255, 1)",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: "none",
-                },
-                "& .MuiSelect-select": {
-                  py: "8px",
-                },
-              }}
-            >
-              <IconButton
-                size="small"
-                onClick={() => setCount(Math.max(1, count - 1))}
-                disabled={loading}
-              >
-                <Remove />
-              </IconButton>
-              <Typography sx={{ px: 1 }}>{count}</Typography>
-              <IconButton
-                size="small"
-                onClick={() => {
-                  if (count > 6) {
-                    return;
-                  }
-                  setCount(count + 1);
+              {/* Counter */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  overflow: "hidden",
+                  width: "100px",
+                  height: "44px",
+                  borderRadius: "4px",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                  backgroundColor: " rgba(255, 255, 255, 1)",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    border: "none",
+                  },
+                  "& .MuiSelect-select": {
+                    py: "8px",
+                  },
                 }}
-                disabled={loading}
               >
-                <Add />
-              </IconButton>
-            </Box>
+                <IconButton
+                  size="small"
+                  onClick={() => setCount(Math.max(1, count - 1))}
+                  disabled={loading}
+                >
+                  <Remove />
+                </IconButton>
+                <Typography sx={{ px: 1 }}>{count}</Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    if (count > 6) {
+                      return;
+                    }
+                    setCount(count + 1);
+                  }}
+                  disabled={loading}
+                >
+                  <Add />
+                </IconButton>
+              </Box>
 
-            {/* Tone Selector */}
-            <FormControl
-              variant="outlined"
+              {/* Tone Selector */}
+              <FormControl
+                variant="outlined"
+                sx={{
+                  display: "flex",
+                  width: { xs: "100%", sm: "130px" },
+                  height: "44px",
+                  borderRadius: "4px",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                  backgroundColor: " rgba(255, 255, 255, 1)",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    border: "none",
+                  },
+                  "& .MuiSelect-select": {
+                    py: "8px",
+                  },
+                  mb: 4,
+                }}
+              >
+                <InputLabel
+                  sx={{
+                    fontSize: "14px",
+                    fontFamily: "Raleway",
+                  }}
+                >
+                  Select Tone
+                </InputLabel>
+                <Select
+                  value={tone}
+                  label="Select Tone"
+                  onChange={(e) => setTone(e.target.value)}
+                  disabled={loading}
+                  sx={{
+                    backgroundColor: "#fff",
+                    height: "44px",
+                    fontSize: "14px",
+                  }}
+                >
+                  <MenuItem value="professional">Professional</MenuItem>
+                  <MenuItem value="casual">Casual</MenuItem>
+                  <MenuItem value="inspirational">Inspirational</MenuItem>
+                </Select>
+              </FormControl>
+              {/* Visual Style Selector */}
+              <FormControl
+                variant="outlined"
+                sx={{
+                  display: "flex",
+                  width: { xs: "100%", sm: "231px" },
+                  height: "44px",
+                  borderRadius: "4px",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                  backgroundColor: " rgba(255, 255, 255, 1)",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    border: "none",
+                  },
+                  "& .MuiSelect-select": {
+                    py: "8px",
+                  },
+                }}
+              >
+                <InputLabel
+                  sx={{
+                    fontSize: "14px",
+                    fontFamily: "Raleway",
+                  }}
+                >
+                  Select Visual Style
+                </InputLabel>
+                <Select
+                  value={visualStyle}
+                  label="Select Visual Style"
+                  onChange={(e) => setVisualStyle(e.target.value)}
+                  disabled={loading}
+                  sx={{
+                    backgroundColor: "#fff",
+                    height: "44px",
+                    fontSize: "14px",
+                  }}
+                >
+                  {TEXT_ART_STYLES.map((style) => (
+                    <MenuItem key={style.value} value={style.value}>
+                      {style.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
+
+            {/* Generate Button */}
+            <Button
+              variant="contained"
+              disabled={loading}
+              onClick={handleSubmit}
               sx={{
-                display: "flex",
+                backgroundColor: "#6C2BD9",
+                color: "#fff",
+                borderRadius: "32px",
                 width: { xs: "100%", sm: "130px" },
                 height: "44px",
-                borderRadius: "4px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                backgroundColor: " rgba(255, 255, 255, 1)",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: "none",
-                },
-                "& .MuiSelect-select": {
-                  py: "8px",
-                },
-                mb: 4,
+                px: 4,
+                py: 1.2,
+                fontWeight: 600,
+                boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
+                alignSelf: { xs: "stretch", md: "center" },
+                "&:hover": { backgroundColor: "#5B21B6" },
               }}
+              startIcon={<AutoAwesome />}
             >
-              <InputLabel
-                sx={{
-                  fontSize: "14px",
-                  fontFamily: "Raleway",
-                }}
-              >
-                Select Tone
-              </InputLabel>
-              <Select
-                value={tone}
-                label="Select Tone"
-                onChange={(e) => setTone(e.target.value)}
-                disabled={loading}
-                sx={{
-                  backgroundColor: "#fff",
-                  height: "44px",
-                  fontSize: "14px",
-                }}
-              >
-                <MenuItem value="professional">Professional</MenuItem>
-                <MenuItem value="casual">Casual</MenuItem>
-                <MenuItem value="inspirational">Inspirational</MenuItem>
-              </Select>
-            </FormControl>
-            {/* Visual Style Selector */}
-            <FormControl
-              variant="outlined"
-              sx={{
-                display: "flex",
-                width: { xs: "100%", sm: "231px" },
-                height: "44px",
-                borderRadius: "4px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                backgroundColor: " rgba(255, 255, 255, 1)",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: "none",
-                },
-                "& .MuiSelect-select": {
-                  py: "8px",
-                },
-              }}
-            >
-              <InputLabel
-                sx={{
-                  fontSize: "14px",
-                  fontFamily: "Raleway",
-                }}
-              >
-                Select Visual Style
-              </InputLabel>
-              <Select
-                value={visualStyle}
-                label="Select Visual Style"
-                onChange={(e) => setVisualStyle(e.target.value)}
-                disabled={loading}
-                sx={{
-                  backgroundColor: "#fff",
-                  height: "44px",
-                  fontSize: "14px",
-                }}
-              >
-                {TEXT_ART_STYLES.map((style) => (
-                  <MenuItem key={style.value} value={style.value}>
-                    {style.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
+              Generate
+            </Button>
+          </Box>
 
-          {/* Generate Button */}
-          <Button
-            variant="contained"
-            disabled={loading}
-            onClick={handleSubmit}
-            sx={{
-              backgroundColor: "#6C2BD9",
-              color: "#fff",
-              borderRadius: "32px",
-              width: { xs: "100%", sm: "130px" },
-              height: "44px",
-              px: 4,
-              py: 1.2,
-              fontWeight: 600,
-              boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
-              alignSelf: { xs: "stretch", md: "center" },
-              "&:hover": { backgroundColor: "#5B21B6" },
-            }}
-            startIcon={<AutoAwesome />}
-          >
-            Generate
-          </Button>
+          {error && (
+            <Alert
+              severity="error"
+              sx={{ mt: 2 }}
+              action={
+                <IconButton
+                  size="small"
+                  onClick={() => setError("")}
+                  color="inherit"
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              }
+            >
+              <AlertTitle>Error</AlertTitle>
+              {error}
+            </Alert>
+          )}
         </Box>
-
-        {error && (
-          <Alert
-            severity="error"
-            sx={{ mt: 2 }}
-            action={
-              <IconButton
-                size="small"
-                onClick={() => setError("")}
-                color="inherit"
-              >
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            }
-          >
-            <AlertTitle>Error</AlertTitle>
-            {error}
-          </Alert>
-        )}
-      </Box>
-      {/* ---------- PROGRESS */}
-      {loading && (
-        <Box
-          sx={{
-            mb: { xs: 2, md: 4 },
-            p: { xs: 2, sm: 3, md: 5 },
-            height: { xs: "auto", sm: 250, md: 270 },
-            width: { sx: "auto", md: 800 },
-            mx: "auto",
-            borderRadius: 3,
-            bgcolor: "white",
-            boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
-            border: "1px solid #f0f0f0",
-          }}
-        >
+        {/* ---------- PROGRESS */}
+        {loading && (
           <Box
             sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              alignItems: { xs: "flex-start", sm: "center" },
-              gap: { xs: 1, sm: 0 },
-              mb: 1.5,
+              mb: { xs: 2, md: 4 },
+              p: { xs: 2, sm: 3, md: 5 },
+              height: { xs: "auto", sm: 250, md: 270 },
+              width: { sx: "auto", md: 800 },
+              mx: "auto",
+              borderRadius: 3,
+              bgcolor: "white",
+              boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
+              border: "1px solid #f0f0f0",
             }}
           >
             <Box
               sx={{
-                width: 15,
-                height: 15,
-                borderRadius: "50%",
-                bgcolor: "#8E2DE2",
-                mr: { xs: 0, sm: 2 },
-                mb: { xs: 1, sm: 0 },
-                animation: "pulse 1.5s ease-in-out infinite",
-              }}
-            />
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 600,
-                color: "#8E2DE2",
-                flexGrow: 1,
-                fontSize: { xs: "1.25rem", md: "1.5rem" },
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "flex-start", sm: "center" },
+                gap: { xs: 1, sm: 0 },
+                mb: 1.5,
               }}
             >
-              {currentMessage}
-            </Typography>
+              <Box
+                sx={{
+                  width: 15,
+                  height: 15,
+                  borderRadius: "50%",
+                  bgcolor: "#8E2DE2",
+                  mr: { xs: 0, sm: 2 },
+                  mb: { xs: 1, sm: 0 },
+                  animation: "pulse 1.5s ease-in-out infinite",
+                }}
+              />
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  color: "#8E2DE2",
+                  flexGrow: 1,
+                  fontSize: { xs: "1.25rem", md: "1.5rem" },
+                }}
+              >
+                {currentMessage}
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  mt: { xs: 0.5, sm: 0 },
+                  minWidth: { sm: "50px" },
+                  textAlign: { xs: "right", sm: "left" },
+                }}
+              >
+                {Math.round(progress)}%
+              </Typography>
+            </Box>
             <Typography
-              variant="body2"
+              variant="body1"
               color="text.secondary"
               sx={{
-                mt: { xs: 0.5, sm: 0 },
-                minWidth: { sm: "50px" },
-                textAlign: { xs: "right", sm: "left" },
+                mb: 2,
+                lineHeight: 1.6,
+                wordBreak: "break-word",
               }}
             >
-              {Math.round(progress)}%
+              {currentDetail}
             </Typography>
-          </Box>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{
-              mb: 2,
-              lineHeight: 1.6,
-              wordBreak: "break-word",
-            }}
-          >
-            {currentDetail}
-          </Typography>
-          {/* <LinearProgress
+            {/* <LinearProgress
             variant="determinate"
             value={progress}
             sx={{
@@ -610,46 +637,37 @@ export default function PromptToDeck() {
               },
             }}
           /> */}
+          </Box>
+        )}
+
+        <Box sx={{ textAlign: "center", maxWidth: 800 }}>
+
+          <Stack
+            display="flex"
+            flexDirection={{ xs: "column", md: "row" }}
+            flexWrap="wrap"
+            justifyContent="center"
+            gap={2.2}
+            alignItems="center"
+          >
+            {quickPrompts.map((prompt, index) => (
+              <Chip
+                key={index}
+                label={prompt}
+                onClick={() => setDescription(prompt)}
+                sx={{
+                  border: "1px solid rgba(246, 246, 246, 1)",
+                  bgcolor: "rgba(248, 248, 248, 0.14)",
+                  color: "#1A1A1A",
+                  fontWeight: 400,
+                  borderRadius: "20px",
+                  "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
+                  px: 1.5,
+                }}
+              />
+            ))}
+          </Stack>
         </Box>
-      )}
-
-      {/* Quick Prompt Generator */}
-      <Box sx={{ textAlign: "center", maxWidth: 800 }}>
-        <Typography
-          sx={{
-            fontWeight: 500,
-            mb: 2,
-            color: "#6D6D6D",
-            fontSize: "1rem",
-          }}
-        >
-          Quick Prompt Generator:
-        </Typography>
-
-        <Stack
-          display="flex"
-          flexDirection={{ xs: "column", md: "row" }}
-          flexWrap="wrap"
-          justifyContent="center"
-          gap={2.2}
-          alignItems="center"
-        >
-          {quickPrompts.map((prompt, index) => (
-            <Chip
-              key={index}
-              label={prompt}
-              onClick={() => setDescription(prompt)}
-              sx={{
-                bgcolor: "rgba(242, 240, 255, 1)",
-                color: "#1A1A1A",
-                fontWeight: 400,
-                borderRadius: "20px",
-                "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
-                px: 1.5,
-              }}
-            />
-          ))}
-        </Stack>
       </Box>
     </Box>
   );
