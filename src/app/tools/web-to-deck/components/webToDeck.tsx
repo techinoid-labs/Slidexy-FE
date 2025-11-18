@@ -399,7 +399,7 @@ export default function WebToDeck() {
               <IconButton
                 size="small"
                 onClick={() => {
-                  if (count > 6) {
+                  if (count > 9) {
                     return;
                   }
                   setCount(count + 1);
