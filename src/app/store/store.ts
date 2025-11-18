@@ -19,7 +19,21 @@ const loadState = async () => {
 // Save state to IndexedDB
 const saveState = async (state: any) => {
   try {
-    await set(PERSIST_KEY, state.slidesData);
+    // Strip any transient snapshot fields before persisting
+    const slidesData = state.slidesData;
+    if (slidesData && Array.isArray(slidesData.slides)) {
+      const sanitized = {
+        ...slidesData,
+        slides: slidesData.slides.map((s: any) => {
+          const copy = { ...s };
+          if (copy.snapshot) delete copy.snapshot;
+          return copy;
+        }),
+      };
+      await set(PERSIST_KEY, sanitized);
+    } else {
+      await set(PERSIST_KEY, slidesData);
+    }
   } catch (err) {
     console.error("Error saving Redux state to IndexedDB:", err);
   }
@@ -43,9 +57,18 @@ const initStore = async () => {
     middleware,  // ✅ Use custom middleware
     preloadedState,
   });
-
+  // Debounced save: keep the timeout variable outside the handler
+  let saveTimeout: any = null;
   store.subscribe(() => {
-    saveState(store.getState());
+    try {
+      if (saveTimeout) clearTimeout(saveTimeout);
+    } catch (e) {
+      /* ignore clear errors */
+    }
+    saveTimeout = setTimeout(() => {
+      // Persist the full store state; saveState will extract slidesData
+      saveState(store.getState());
+    }, 800);
   });
   setStoreInstance(store);
   return store;

@@ -23,6 +23,7 @@ import {
     Close as CloseIcon,
 } from "@mui/icons-material";
 import { useState, useRef } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
@@ -80,6 +81,7 @@ export default function PromptToTemplate() {
     const { user } = useUser();
 
     const abortControllerRef = useRef<AbortController | null>(null);
+    const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const progressTracker = useRef(new FrontendProgressTracker()).current;
 
     // Helper function to handle streaming response
@@ -139,13 +141,12 @@ export default function PromptToTemplate() {
             userData: user,
         };
 
-        let frontendProgress = 0;
-        let lastBackendProgress = 0;
-        let progressInterval: NodeJS.Timeout | null = null;
+    let frontendProgress = 0;
+    let lastBackendProgress = 0;
         let isCompleted = false;
 
         const startProgressSimulation = () => {
-            progressInterval = setInterval(() => {
+            progressIntervalRef.current = setInterval(() => {
                 if (!isCompleted && frontendProgress < 90) {
                     const increment = Math.random() * 1.8 + 0.4;
                     frontendProgress = Math.min(frontendProgress + increment, 90);
@@ -155,9 +156,9 @@ export default function PromptToTemplate() {
         };
 
         const stopProgressSimulation = () => {
-            if (progressInterval) {
-                clearInterval(progressInterval);
-                progressInterval = null;
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
             }
         };
 
@@ -255,6 +256,17 @@ export default function PromptToTemplate() {
             abortControllerRef.current = null;
         }
     };
+
+    // Cleanup on unmount: abort ongoing request and clear any progress interval
+    useEffect(() => {
+        return () => {
+            abortControllerRef.current?.abort();
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
+            }
+        };
+    }, []);
 
     const cancelGeneration = () => {
         abortControllerRef.current?.abort();

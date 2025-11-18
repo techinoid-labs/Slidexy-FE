@@ -1,7 +1,7 @@
-// Updated OutlinePage Component - Simplified mapCardsToSlides (no design logic)
 "use client";
-import React, { useState, useEffect } from "react";
-import { Box, Button, Typography } from "@mui/material";
+
+import React, { useState, useEffect, useCallback } from "react";
+import { Box, Button, Typography, CircularProgress } from "@mui/material";
 import OutlineCard from "@/app/components/create-presentation/outline/OutlineCard";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import Image from "next/image";
@@ -10,22 +10,15 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
 import { useSearchParams, useRouter } from "next/navigation";
-import type { Slide } from "@/app/slice/slidesSlice";
 import StepIndicator from "@/app/components/shared/StepIndicator";
 import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
-import { getSlideDimensions } from "@/utils/slideUtils";
-import { getSlideDimensions as getMobileSlideDimensions } from "@/utils/slideUtilsmobile";
-import { KonvaComponent } from "@/app/context/SlidesContext";
-import { fontWeight } from "html2canvas/dist/types/css/property-descriptors/font-weight";
+import debounce from "lodash/debounce";
 
-// API response type and map helper
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export interface SlideApiResponse {
   slide_id: string;
-  slide_title: {
-    text: string;
-    konva_component: string;
-    properties: Record<string, any>;
-  };
+  slide_title: { text: string; konva_component: string; properties: Record<string, any> };
   image_url?: string;
   image_caption?: string;
   elements: Array<{
@@ -33,6 +26,8 @@ export interface SlideApiResponse {
     text: string;
     konva_component: string;
     properties: Record<string, any>;
+    id?: string;
+    element_id?: string;
   }>;
 }
 
@@ -45,101 +40,51 @@ function mapApiSlidesToCards(apiSlides: SlideApiResponse[]) {
     images: slide.image_url ? [slide.image_url] : [],
   }));
 }
+const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/upload-image`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        base64Image,
+        filename: `outline-image-${Date.now()}`
+      }),
+    });
 
-// Simplified mapCardsToSlides - Basic structure only, no design/gradients/shapes
-// Design handled in editor via templates
-// function mapCardsToSlides(cards: any[]): Slide[] {
-//   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
-//   const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.statusText}`);
+    }
 
-//   const bulletFontSize = isMobile ? 16 : 18;
-//   const titleFontSize = isMobile ? 22 : 26;
-
-//   const PADDING = SLIDE_WIDTH * 0.08;
-//   const TEXT_WIDTH = SLIDE_WIDTH * 0.5;
-
-//   return cards.map((card, index) => {
-//     const title = {
-//       text: card.title,
-//       konva_component: "Konva.Text",
-//       properties: {
-//         shape_id: `title-${index}`,
-//         fontSize: titleFontSize,
-//         fontFamily: "Raleway",
-//         fontWeight: "700",
-//         fill: "#1a1a1a",
-//         x: PADDING,
-//         y: 50,
-//         width: TEXT_WIDTH,
-//         align: "left",
-//         zIndex: 2,
-//       },
-//     };
-
-//     // Bullet points - basic only
-//     const bulletElements: any[] = (card.bullets || []).map(
-//       (text: string, bulletIndex: number) => {
-//         const bulletY = 120 + bulletIndex * (bulletFontSize + 24);
-
-//         return {
-//           element_type: "bullet_point",
-//           text: `• ${text}`,
-//           konva_component: "Konva.Text",
-//           properties: {
-//             width: TEXT_WIDTH,
-//             fontSize: bulletFontSize,
-//             fontFamily: "Raleway",
-//             fill: "#333333",
-//             fontWeight: "400",
-//             lineHeight: 1.6,
-//             x: PADDING,
-//             y: bulletY,
-//             zIndex: 4,
-//           },
-//         };
-//       }
-//     );
-
-//     // Basic image element - no frame/overlay/shadows (handled in templates)
-//     const imageElement = card.images?.[0]
-//       ? [
-//           {
-//             element_type: "image",
-//             konva_component: "Konva.Image",
-//             properties: {
-//               image_id: `image-${index}`,
-//               imageSrc: card.images[0],
-//               x: SLIDE_WIDTH - PADDING - 400, // Basic right-aligned
-//               y: (SLIDE_HEIGHT - 300) / 2,
-//               width: 400,
-//               height: 300,
-//               zIndex: 3,
-//             },
-//           },
-//         ]
-//       : [];
-
-//     return {
-//       slide_id: `slide-${index + 1}`,
-//       layout_type: "content-right-image", // Default layout, overridden in editor
-//       slide_title: title,
-//       elements: [...bulletElements, ...imageElement],
-//       image_url: card.images?.[0] || null,
-//       image_caption: "",
-//     };
-//   });
-// }
-
+    const data = await response.json();
+    console.log('Image uploaded to S3:', data.imageUrl);
+    return data.imageUrl;
+  } catch (error) {
+    console.error('Failed to upload image to S3:', error);
+    return null;
+  }
+};
 export default function OutlinePage() {
   const { slides }: any = useSlides();
-  const slidesState = slides;
-  const isInfographicMode = false;
+  const slidesState = slides || [];
   const dispatch = useDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pid = searchParams.get("pid");
 
-  const [imageSuggestionsBox, setImageSuggestionsBox] = React.useState<{
+  const [cards, setCards] = useState(() =>
+    slidesState.length > 0 ? mapApiSlidesToCards(slidesState) : []
+  );
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState<string>("");
+  const [editingBulletsIdx, setEditingBulletsIdx] = useState<number | null>(null);
+  const [editingBulletsValue, setEditingBulletsValue] = useState<string>("");
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [editMenuAnchor, setEditMenuAnchor] = useState<null | HTMLElement>(null);
+  const [editMenuCardIdx, setEditMenuCardIdx] = useState<number | null>(null);
+  const [imageSuggestionsBox, setImageSuggestionsBox] = useState<{
     slideIndex: number;
     imageIndex: number;
     x: number;
@@ -147,46 +92,84 @@ export default function OutlinePage() {
     suggestions: string[];
   } | null>(null);
 
-  const [cards, setCards] = useState(() =>
-    slides && slides.length > 0 ? mapApiSlidesToCards(slides) : []
+  // ✅ FIXED: Improved save function with better error handling
+  const saveToBackend = async (updatedCards: any[]) => {
+    if (!pid || updatedCards.length === 0) return false;
+
+    try {
+      const slidesToSave = updatedCards.map((card, index) => {
+        const originalSlide = slidesState[index] || {};
+
+        return {
+          ...originalSlide,
+          slide_title: {
+            ...originalSlide.slide_title,
+            text: card.title,
+          },
+          elements: (card.bullets || []).map((text: string, i: number) => ({
+            element_type: "bullet_point",
+            text,
+            konva_component: "Konva.Text",
+            id: originalSlide.elements?.[i]?.id || `element-${index}-${i}`,
+            element_id: originalSlide.elements?.[i]?.element_id || `element-${index}-${i}`,
+            properties: originalSlide.elements?.[i]?.properties || {},
+          })),
+          image_url: card.images?.[0] || null,
+          slide_number: index + 1,
+          total_slides: updatedCards.length,
+          updated_at: new Date().toISOString(),
+        };
+      });
+
+      const response = await fetch(`${API_BASE_URL}/api/presentations/${pid}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slides: slidesToSave }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to save: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ Presentation saved successfully:", result);
+      
+      // ✅ Update Redux store with saved slides
+      dispatch(setSlides(slidesToSave));
+      
+      return true;
+    } catch (err) {
+      console.error("❌ Failed to save presentation:", err);
+      return false;
+    }
+  };
+
+  // Debounced save (for auto-save during editing)
+  const debouncedSave = useCallback(
+    debounce(async (updatedCards: any[]) => {
+      setIsSaving(true);
+      await saveToBackend(updatedCards);
+      setIsSaving(false);
+    }, 800),
+    [pid, slidesState]
   );
 
-  const [loading, setLoading] = useState(true);
-
-  const [editingIdx, setEditingIdx] = useState<number | null>(null);
-  const [editingTitle, setEditingTitle] = useState<string>("");
-  const [editingBulletsIdx, setEditingBulletsIdx] = useState<number | null>(
-    null
-  );
-  const [editingBulletsValue, setEditingBulletsValue] = useState<string>("");
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
-  const [editMenuAnchor, setEditMenuAnchor] = useState<null | HTMLElement>(
-    null
-  );
-  const [editMenuCardIdx, setEditMenuCardIdx] = useState<number | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  // ✅ Keep Redux in sync AFTER cards change
-  // React.useEffect(() => {
-  //  // const mappedSlides = mapCardsToSlides(cards);
-  //   dispatch(setSlides(mappedSlides));
-  // }, [cards, dispatch]);
+  // Fetch presentation on mount
   useEffect(() => {
-    if (!pid) return;
+    if (!pid) {
+      setLoading(false);
+      return;
+    }
 
     const fetchPresentation = async () => {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
-        const response = await fetch(`${baseUrl}/api/presentations/${pid}`);
+        const response = await fetch(`${API_BASE_URL}/api/presentations/${pid}`);
         const data = await response.json();
-        console.log("API response data:", data);
 
-        const slides = data?.slides || data?.presentation?.slides;
-        if (slides?.length) {
-          dispatch(setSlides(slides));
-          setCards(mapApiSlidesToCards(slides));
-        } else {
-          console.warn("No slides found in response:", data);
+        const fetchedSlides = data?.slides || data?.presentation?.slides || [];
+        if (fetchedSlides.length > 0) {
+          dispatch(setSlides(fetchedSlides));
+          setCards(mapApiSlidesToCards(fetchedSlides));
         }
       } catch (error) {
         console.error("Error fetching presentation:", error);
@@ -195,115 +178,144 @@ export default function OutlinePage() {
       }
     };
 
-
     fetchPresentation();
   }, [pid, dispatch]);
 
-  const handleContinue = () => {
-    router.push(`/editor?pid=${pid}`);
+  // ✅ FIXED: Ensure all changes are saved before navigation
+  const handleContinue = async () => {
+    setIsSaving(true);
+    
+    // Cancel any pending debounced saves
+    debouncedSave.cancel();
+    
+    // Perform immediate save
+    const success = await saveToBackend(cards);
+    
+    setIsSaving(false);
+    
+    if (success) {
+      // Navigate to editor after successful save
+      router.push(`/editor?pid=${pid}`);
+    } else {
+      alert("Failed to save changes. Please try again.");
+    }
   };
-  // -------------------- Bullets editing --------------------
+
+  // Title editing
+  const handleTitleEditStart = (idx: number, currentTitle: string) => {
+    setEditingIdx(idx);
+    setEditingTitle(currentTitle);
+  };
+
+  const handleTitleEditChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setEditingTitle(e.target.value);
+
+  const handleTitleEditSave = (idx: number) => {
+    setCards((prev) => {
+      const newCards = prev.map((c, i) =>
+        i === idx ? { ...c, title: editingTitle } : c
+      );
+      debouncedSave(newCards);
+      return newCards;
+    });
+    setEditingIdx(null);
+    setEditingTitle("");
+  };
+
+  const handleTitleEditCancel = () => {
+    setEditingIdx(null);
+    setEditingTitle("");
+  };
+
+  // Bullets editing
   const handleBulletsEditStart = (idx: number, bullets?: string[]) => {
     setEditingBulletsIdx(idx);
     setEditingBulletsValue((bullets || []).join("\n"));
   };
+
   const handleBulletsEditChange = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
     setEditingBulletsValue(e.target.value);
+
   const handleBulletsEditSave = (idx: number) => {
     if (!editingBulletsValue.trim()) {
       setEditingBulletsIdx(null);
       setEditingBulletsValue("");
       return;
     }
-    setCards((prev) =>
-      prev.map((c, i) =>
-        i !== idx
-          ? c
-          : {
-            ...c,
-            bullets: editingBulletsValue
-              .split(/\r?\n/)
-              .filter((l) => l.trim() !== ""),
-            images: "images" in c ? c.images ?? [] : [],
-          }
-      )
-    );
+
+    setCards((prev) => {
+      const newCards = prev.map((c, i) =>
+        i === idx
+          ? {
+              ...c,
+              bullets: editingBulletsValue
+                .split(/\r?\n/)
+                .map((l) => l.trim())
+                .filter((l) => l !== ""),
+            }
+          : c
+      );
+      debouncedSave(newCards);
+      return newCards;
+    });
+
     setEditingBulletsIdx(null);
     setEditingBulletsValue("");
   };
+
   const handleBulletsEditCancel = () => {
     setEditingBulletsIdx(null);
     setEditingBulletsValue("");
   };
 
-  // -------------------- Drag + delete --------------------
+  // Drag & Drop
   const onDragEnd = (result: any) => {
     if (!result.destination) return;
-    const arr = Array.from(cards);
-    const [removed] = arr.splice(result.source.index, 1);
-    arr.splice(result.destination.index, 0, removed);
-    setCards(arr);
+
+    setCards((prev) => {
+      const arr = Array.from(prev);
+      const [removed] = arr.splice(result.source.index, 1);
+      arr.splice(result.destination.index, 0, removed);
+      debouncedSave(arr);
+      return arr;
+    });
+
     setExpandedIdx(null);
   };
 
+  // Delete
   const handleDelete = (idx: number) => {
-    setCards((prev) => prev.filter((_, i) => i !== idx));
+    setCards((prev) => {
+      const newCards = prev.filter((_, i) => i !== idx);
+      debouncedSave(newCards);
+      return newCards;
+    });
     if (expandedIdx === idx) setExpandedIdx(null);
   };
 
-  // -------------------- Other actions --------------------
-  const handleRegenerate = () => {
-    setCards([]);
-    setExpandedIdx(null);
-  };
-
+  // Card expand
   const handleCardClick = (idx: number) => {
     if (editingIdx !== null) return;
     setExpandedIdx(expandedIdx === idx ? null : idx);
   };
 
-  // -------------------- Title editing --------------------
-  const handleTitleEditStart = (idx: number, currentTitle: string) => {
-    setEditingIdx(idx);
-    setEditingTitle(currentTitle);
-  };
-  const handleTitleEditChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setEditingTitle(e.target.value);
-  const handleTitleEditSave = (idx: number) => {
-    setCards((prev) =>
-      prev.map((c, i) => (i === idx ? { ...c, title: editingTitle } : c))
-    );
-    setEditingIdx(null);
-    setEditingTitle("");
-  };
-  const handleTitleEditCancel = () => {
-    setEditingIdx(null);
-    setEditingTitle("");
-  };
-
-  // -------------------- Edit menu --------------------
+  // Edit menu
   const handleEditClick = (e: React.MouseEvent<HTMLElement>, idx: number) => {
     e.stopPropagation();
     setEditMenuAnchor(e.currentTarget);
     setEditMenuCardIdx(idx);
   };
+
   const handleEditMenuClose = () => {
     setEditMenuAnchor(null);
     setEditMenuCardIdx(null);
   };
+
   const handleEditMenuAction = (key: string) => {
     handleEditMenuClose();
   };
 
-  // -------------------- Continue --------------------
-  // const handleContinue = () => {
-  //   //const mapped = mapCardsToSlides(cards);
-  //   //dispatch(setSlides(mapped));
-  //   //console.log("[OutlinePage] Slides sent to Redux:", mapped);
-  //   router.push("/editor");
-  // };
-
-  // -------------------- Slide updates --------------------
+  // AI suggestions update
   const handleUpdateSlide = (
     slideIndex: number,
     updated: Partial<{
@@ -313,146 +325,85 @@ export default function OutlinePage() {
       image_url?: string;
     }>
   ) => {
-    setCards((prev) =>
-      prev.map((card, i) => (i === slideIndex ? { ...card, ...updated } : card))
-    );
-    if (updated.image_url) {
-      setPreviewImage(updated.image_url);
-    }
+    setCards((prev) => {
+      const newCards = prev.map((card, i) =>
+        i === slideIndex ? { ...card, ...updated } : card
+      );
+      debouncedSave(newCards);
+      return newCards;
+    });
   };
 
+  // Image update
   const handleUpdateSlideImages = (slideIndex: number, newImages: string[]) => {
-    setCards((prev) =>
-      prev.map((card, i) =>
-        i === slideIndex ? { ...card, images: [...newImages] } : card
-      )
-    );
+    setCards((prev) => {
+      const newCards = prev.map((card, i) =>
+        i === slideIndex ? { ...card, images: newImages } : card
+      );
+      debouncedSave(newCards);
+      return newCards;
+    });
   };
+
+  // Image suggestions box (from OutlineCard)
+  const handleImageSuggestionClick = (url: string) => {
+    if (!imageSuggestionsBox) return;
+
+    setCards((prev) => {
+      const newCards = prev.map((card, idx) =>
+        idx === imageSuggestionsBox.slideIndex
+          ? {
+              ...card,
+              images: card.images.map((img, j) =>
+                j === imageSuggestionsBox.imageIndex ? url : img
+              ),
+            }
+          : card
+      );
+      debouncedSave(newCards);
+      return newCards;
+    });
+    setImageSuggestionsBox(null);
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        width: "100vw",
-        bgcolor: "#FBFAFF",
-        position: "relative",
-        overflowX: "hidden",
-      }}
-    >
+    <Box sx={{ minHeight: "100vh", width: "100vw", bgcolor: "#FBFAFF", position: "relative", overflowX: "hidden" }}>
       <StepsHeader />
       <Box sx={{ mt: 4 }}>
         <StepIndicator activeStep={1} />
       </Box>
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: 1440,
-          mx: "auto",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          px: { xs: 1, md: 8, lg: 0 },
-        }}
-        className="sm:px-4 px-1"
-      >
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            pt: { xs: 4, md: 10 },
-            pb: { xs: 1, md: 2 },
-          }}
-        >
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 700,
-              textAlign: "center",
-              color: "#18181B",
-              fontSize: { xs: "1.3rem", sm: "2rem", md: "3rem", lg: "3.5rem" },
-              mb: { xs: 1.5, md: 2.5 },
-              mt: { xs: -2, md: -6 },
-            }}
-          >
+
+      <Box sx={{ width: "100%", maxWidth: 1440, mx: "auto", px: { xs: 1, md: 8, lg: 0 } }}>
+        <Box sx={{ textAlign: "center", pt: { xs: 4, md: 10 }, pb: { xs: 1, md: 2 } }}>
+          <Typography variant="h3" sx={{ fontWeight: 700, fontSize: { xs: "1.8rem", md: "3rem" }, mb: 2 }}>
             Review the Outline
           </Typography>
-          <Typography
-            sx={{
-              color: "#757575",
-              textAlign: "center",
-              mb: { xs: 3, md: 6 },
-              maxWidth: { xs: 320, sm: 700 },
-              fontSize: { xs: "0.95rem", sm: "1rem", md: "1.15rem" },
-            }}
-          >
-            Enhance and tailor your slide content to deliver a powerful,
-            persuasive presentation.
+          <Typography sx={{ color: "#757575", mb: 6, maxWidth: 700, mx: "auto" }}>
+            Enhance and tailor your slide content to deliver a powerful, persuasive presentation.
           </Typography>
-          <Box
-            sx={{
-              width: "100%",
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              alignItems: "center",
-              justifyContent: { xs: "center", md: "space-between" },
-              mb: { xs: 1, md: 2 },
-              gap: { xs: 1, md: 2 },
-              maxWidth: 1200,
-            }}
-            className="w-full flex flex-col md:flex-row items-center justify-center md:justify-between gap-2 mb-2"
-          >
-            <Typography
-              sx={{
-                fontWeight: 600,
-                color: "#18181B",
-                fontSize: { xs: "0.98rem", md: "1.15rem" },
-                mb: { xs: 1, md: 0 },
-                textAlign: { xs: "center", md: "left" },
-              }}
-              className="text-center md:text-left"
-            >
-              Personal portfolio outline
-            </Typography>
-          </Box>
-          <Typography
-            sx={{
-              color: "#757575",
-              fontSize: { xs: "0.92rem", md: "0.98rem" },
-              mb: { xs: 2, md: 4 },
-              maxWidth: 1200,
-              width: "100%",
-              textAlign: { xs: "center", md: "left" },
-            }}
-          >
-            {cards.length} Cards
-          </Typography>
+          <Typography sx={{ fontWeight: 600, mb: 1 }}>Personal portfolio outline</Typography>
+          <Typography sx={{ color: "#757575", mb: 4 }}>{cards.length} Cards</Typography>
+          {isSaving && (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+              <CircularProgress size={16} />
+              <Typography variant="caption" color="primary">Saving changes...</Typography>
+            </Box>
+          )}
         </Box>
 
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            gap: 3,
-            alignItems: "center",
-            maxWidth: 1200,
-          }}
-        >
+        <Box sx={{ maxWidth: 1200, mx: "auto" }}>
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="outline-cards">
               {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 24,
-                  }}
-                >
+                <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                   {cards.map((card, idx) => (
                     <Draggable key={idx} draggableId={String(idx)} index={idx}>
                       {(provided, snapshot) => (
@@ -461,7 +412,6 @@ export default function OutlinePage() {
                           {...provided.draggableProps}
                           style={{
                             ...provided.draggableProps.style,
-                            width: "100%",
                             cursor: "pointer",
                             zIndex: snapshot.isDragging ? 100 : "auto",
                           }}
@@ -469,48 +419,37 @@ export default function OutlinePage() {
                           <OutlineCard
                             index={idx}
                             title={card.title}
+                            bullets={card.bullets}
+                            images={card.images}
                             onDelete={() => handleDelete(idx)}
-                            onSetImageSuggestionsBox={setImageSuggestionsBox}
                             dragHandleProps={provided.dragHandleProps}
                             isDragging={snapshot.isDragging}
                             expanded={expandedIdx === idx}
-                            bullets={card.bullets}
-                            images={card.images}
                             onToggleExpand={() => handleCardClick(idx)}
-                            onEdit={
-                              expandedIdx === idx
-                                ? (e: any) => handleEditClick(e, idx)
-                                : undefined
-                            }
+                            onEdit={expandedIdx === idx ? (e: any) => handleEditClick(e, idx) : undefined}
                             editable
                             isEditing={editingIdx === idx}
                             editingTitle={editingTitle}
-                            onTitleEditStart={() =>
-                              handleTitleEditStart(idx, card.title)
-                            }
+                            onTitleEditStart={() => handleTitleEditStart(idx, card.title)}
                             onTitleEditChange={handleTitleEditChange}
                             onTitleEditSave={() => handleTitleEditSave(idx)}
                             onTitleEditCancel={handleTitleEditCancel}
                             editingBulletsIdx={editingBulletsIdx}
                             editingBulletsValue={editingBulletsValue}
-                            onBulletsEditStart={() =>
-                              handleBulletsEditStart(idx, card.bullets)
-                            }
+                            onBulletsEditStart={() => handleBulletsEditStart(idx, card.bullets)}
                             onBulletsEditChange={handleBulletsEditChange}
                             onBulletsEditSave={() => handleBulletsEditSave(idx)}
                             onBulletsEditCancel={handleBulletsEditCancel}
                             slideIndex={idx}
                             slidesState={slidesState}
-                            isInfographicMode={isInfographicMode}
+                            isInfographicMode={false}
                             onUpdateSlideImages={handleUpdateSlideImages}
                             onUpdateSlide={handleUpdateSlide}
+                            onSetImageSuggestionsBox={setImageSuggestionsBox}
                           />
                           {expandedIdx === idx && (
                             <EditMenuCard
-                              open={
-                                editMenuCardIdx === idx &&
-                                Boolean(editMenuAnchor)
-                              }
+                              open={editMenuCardIdx === idx && Boolean(editMenuAnchor)}
                               anchorEl={editMenuAnchor}
                               onClose={handleEditMenuClose}
                               onAction={handleEditMenuAction}
@@ -531,42 +470,33 @@ export default function OutlinePage() {
       {/* Continue Button */}
       <Box
         sx={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          mt: { xs: 4, md: 10 },
-          px: { xs: 0.5, md: 0 },
-          position: { xs: "sticky", md: "static" },
+          position: "sticky",
           bottom: 0,
-          zIndex: 10,
           bgcolor: "#FBFAFF",
-          pt: { xs: 2, md: 4 },
-          pb: { xs: 3, md: 6 },
+          py: 4,
+          textAlign: "center",
+          zIndex: 10,
         }}
-        className="w-full flex justify-center items-center"
       >
         <Button
           variant="contained"
           onClick={handleContinue}
+          disabled={isSaving}
           sx={{
             width: { xs: "80%", md: 320 },
-            maxWidth: 400,
             borderRadius: "999px",
-            py: { xs: 1.2, md: 2.5 },
-            fontSize: { xs: "1rem", md: "1.15rem" },
+            py: 2,
+            fontSize: "1.1rem",
             fontWeight: 600,
-            textTransform: "none",
-            background:
-              "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-            boxShadow: "none",
-            "&:hover": { background: "#4A00E0" },
+            background: isSaving ? "#ccc" : "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
+            "&:hover": { background: isSaving ? "#ccc" : "#4A00E0" },
           }}
-          className="w-4/5 md:w-[320px]"
         >
-          Continue
+          {isSaving ? "Saving..." : "Continue"}
         </Button>
       </Box>
 
+      {/* Image Suggestions Popup */}
       {imageSuggestionsBox && (
         <Box
           sx={{
@@ -574,57 +504,31 @@ export default function OutlinePage() {
             top: imageSuggestionsBox.y,
             left: imageSuggestionsBox.x,
             zIndex: 1300,
-            backgroundColor: "#fff",
+            bgcolor: "white",
             border: "1px solid #ddd",
             borderRadius: 2,
             boxShadow: 3,
             p: 1,
             display: "flex",
-            flexDirection: "column",
             gap: 1,
+            flexWrap: "wrap",
           }}
         >
           {imageSuggestionsBox.suggestions.map((url, i) => (
             <Box
               key={i}
               sx={{
-                width: 120,
-                height: 120,
+                width: 100,
+                height: 100,
                 cursor: "pointer",
                 overflow: "hidden",
                 borderRadius: 1,
-                border: "1px solid #eee",
+                border: "2px solid transparent",
                 "&:hover": { borderColor: "#8E2DE2" },
               }}
-              onClick={() => {
-                setCards((prev) => {
-                  const newCards = prev.map((card, idx) =>
-                    idx === imageSuggestionsBox.slideIndex
-                      ? {
-                        ...card,
-                        images: [
-                          ...(card.images || []).map((img, j) =>
-                            j === imageSuggestionsBox.imageIndex ? url : img
-                          ),
-                        ],
-                      }
-                      : card
-                  );
-                  // Dispatch updated slides to Redux store
-                  //const mappedSlides = mapCardsToSlides(newCards);
-                  //dispatch(setSlides(mappedSlides));
-                  return newCards;
-                });
-                setImageSuggestionsBox(null);
-              }}
+              onClick={() => handleImageSuggestionClick(url)}
             >
-              <Image
-                src={url}
-                alt={`suggested-${i}`}
-                width={120}
-                height={120}
-                style={{ objectFit: "cover", width: "100%", height: "100%" }}
-              />
+              <Image src={url} alt="suggestion" width={100} height={100} style={{ objectFit: "cover" }} />
             </Box>
           ))}
         </Box>
