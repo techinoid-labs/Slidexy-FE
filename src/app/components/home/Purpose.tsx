@@ -180,9 +180,9 @@ export default function PurposeSection() {
               mb: { xs: 3, md: 1 },
             }}
           >
-            AI turns a prompt into a styled presentation with sections,
-            <br />
-            tone, goals, keywords, and a smart title.
+            Transform any prompt into a clean, branded presentation. SlideXy
+            organizes your content with sections, tone alignment, titles, and
+            keyword integration
           </Typography>
 
           {/* Replace image with animation */}
@@ -280,8 +280,8 @@ export default function PurposeSection() {
                 mb: { xs: 2, md: 0 },
               }}
             >
-              Transform any picture with AI that refines and recreates stunning
-              results.
+              Improve image quality with AI-enhanced visuals. Convert simple
+              graphics into polished slides for more professional results.
             </Typography>
           </Box>
           {/* Bottom Animation */}
@@ -382,7 +382,8 @@ export default function PurposeSection() {
                 mb: 2,
               }}
             >
-              Google Slides, PNG, JPEG, PowerPoint, PDF
+              Export your presentations instantly to Google Slides, PowerPoint,
+              PDF, JPG, or PNG. Fast, flexible, and hassle-free.{" "}
             </Typography>
           </Box>
           {/* Right Side Animation */}
@@ -473,9 +474,15 @@ export default function PurposeSection() {
             AI Voice Assistance
           </Typography>
           <Typography
-            sx={{ color: "#757575", fontSize: { xs: "1rem", md: "1.05rem" } }}
+            sx={{
+              color: "#757575",
+              fontSize: { xs: "1rem", md: "1.05rem" },
+              maxWidth: "28rem",
+            }}
           >
-            Google Slides, PowerPoint, PDF
+            Speak your content and SlideXy builds the slides for you. Generate
+            presentations from voice input for Google Slides, PowerPoint, and
+            PDFs.
           </Typography>
         </Box>
 
