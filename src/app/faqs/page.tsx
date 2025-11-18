@@ -13,14 +13,14 @@ import Footer from "@/app/components/home/Footer";
 export default function FAQPage() {
   const faqs = [
     {
-      question: "What is Slidexy?",
+      question: "What is SlideXy?",
       answer:
-        "Slidexy is an AI-powered presentation tool that helps you instantly turn your ideas into professional slides with minimal effort.",
+        "SlideXy is an AI-powered presentation tool that helps users create well-designed, branded decks from text, voice, or video content",
     },
     {
       question: "Is there a free version available?",
       answer:
-        "Yes! Slidexy offers a free plan with basic features so you can try it out before upgrading to our premium plans for advanced functionality.",
+        "It converts spoken ideas into presentation slides automatically. You speak, SlideXy builds.",
     },
     {
       question: "Can I customize the slides?",
@@ -30,7 +30,7 @@ export default function FAQPage() {
     {
       question: "Do I need to install anything?",
       answer:
-        "No installation required. Slidexy is 100% web-based, so you can create and access your presentations from any device with a browser.",
+        "No installation required. SlideXy is 100% web-based, so you can create and access your presentations from any device with a browser.",
     },
     {
       question: "How do I get support?",
