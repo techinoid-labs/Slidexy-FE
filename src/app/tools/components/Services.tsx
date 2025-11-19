@@ -10,9 +10,9 @@ const tools = [
     { label: "Video-to-Deck", tag: "New", route: "/tools/video-to-deck" },
     { label: "Web-to-Deck", tag: "New", route: "/tools/web-to-deck" },
     { label: "Prompt-to-eBook", tag: "New", route: "/tools/prompt-to-ebook" },
-    { label: "Text-to-Infographics", tag: "Pro", route: "/tools/text-to-infographics" },
-    { label: "Prompt-to-Template", tag: "Soon", route: "/tools/prompt-to-template" },
-    // { label: "Prompt-to-Website", tag: "Soon", route: "/tools/url-to-website" },
+    { label: "Text-to-Infographics", tag: "New", route: "/tools/text-to-infographics" },
+    { label: "Prompt-to-Template", tag: "New", route: "/tools/prompt-to-template" },
+    { label: "Prompt-to-Website", tag: "New", route: "/tools/url-to-website" },
 ];
 
 export default function Services() {
@@ -192,7 +192,7 @@ export default function Services() {
                         justifyItems: "center",
                     }}
                 >
-                    {tools.slice(3, 6).map((tool, i) => (
+                    {tools.slice(3, 7).map((tool, i) => (
                         <Box
                             key={i + 3}
                             onClick={() => router.push(tool.route)}
