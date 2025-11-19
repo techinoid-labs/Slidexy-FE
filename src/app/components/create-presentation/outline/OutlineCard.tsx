@@ -254,58 +254,92 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     "/images/sample-image.svg",
     "/images/sample-image.svg",
   ];
+const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/upload-image`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        base64Image,
+        filename: `outline-image-${Date.now()}`
+      }),
+    });
 
-  const handleRegenerateImage = async (
-    imageIndex: number,
-    e: React.MouseEvent
-  ) => {
-    e.stopPropagation();
-    if (loadingImageIndex !== null) return;
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.statusText}`);
+    }
 
-    setLoadingImageIndex(imageIndex);
-    const currentSlide = slidesState[slideIndex];
-    const imagePrompt = `Generate a high-quality, professional image based on the slide titled "${currentSlide.slide_title.text}".under no circumstances there should be any text or labels inside the generated image.`;
+    const data = await response.json();
+    console.log('Image uploaded to S3:', data.imageUrl);
+    return data.imageUrl;
+  } catch (error) {
+    console.error('Failed to upload image to S3:', error);
+    return null;
+  }
+};
+ const handleRegenerateImage = async (
+  imageIndex: number,
+  e: React.MouseEvent
+) => {
+  e.stopPropagation();
+  if (loadingImageIndex !== null) return;
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/generate-image-suggestions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: imagePrompt,
-          count: 3,
-        }),
+  setLoadingImageIndex(imageIndex);
+  const currentSlide = slidesState[slideIndex];
+  const imagePrompt = `Generate a high-quality, professional image based on the slide titled "${currentSlide.slide_title.text}". Under no circumstances should there be any text or labels inside the generated image.`;
+
+  try {
+    console.log('Generating image suggestions...');
+    
+    // Generate images (now returns S3 URLs directly from backend)
+    const res = await fetch(`${API_BASE_URL}/generate-image-suggestions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: imagePrompt,
+        count: 3,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to generate images: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    
+    if (data.imageUrls?.length > 0) {
+      console.log(`Received ${data.imageUrls.length} S3 image URLs`);
+      
+      // Include the original image in suggestions
+      const originalImage = imageList[imageIndex] || SAMPLE_IMAGES[0];
+      
+      // All images are now S3 URLs, no base64 conversion needed
+      setSuggestedImages({
+        imageIndex,
+        suggestions: [originalImage, ...data.imageUrls],
       });
-
-      const data = await res.json();
-      if (data.imageUrls?.length > 0) {
-        // Include the original image in the suggestions
-        const originalImage = imageList[imageIndex] || SAMPLE_IMAGES[0];
-        setSuggestedImages({
-          imageIndex,
-          suggestions: [originalImage, ...data.imageUrls],
-        });
-      } else {
-        alert("Failed to generate image suggestions.");
-        // Fallback to include original image and sample images
-        const originalImage = imageList[imageIndex] || SAMPLE_IMAGES[0];
-        setSuggestedImages({
-          imageIndex,
-          suggestions: [originalImage, ...SAMPLE_IMAGES],
-        });
-      }
-    } catch (err) {
-      console.error("Image regeneration error:", err);
-      alert("Error generating image suggestions.");
-      // Fallback to include original image and sample images
+    } else {
+      console.warn('No images generated, using fallback');
       const originalImage = imageList[imageIndex] || SAMPLE_IMAGES[0];
       setSuggestedImages({
         imageIndex,
         suggestions: [originalImage, ...SAMPLE_IMAGES],
       });
-    } finally {
-      setLoadingImageIndex(null);
     }
-  };
+  } catch (err) {
+    console.error("Image regeneration error:", err);
+    alert("Error generating image suggestions. Please try again.");
+    
+    // Fallback to original image and samples
+    const originalImage = imageList[imageIndex] || SAMPLE_IMAGES[0];
+    setSuggestedImages({
+      imageIndex,
+      suggestions: [originalImage, ...SAMPLE_IMAGES],
+    });
+  } finally {
+    setLoadingImageIndex(null);
+  }
+};
 
   return (
     <Paper

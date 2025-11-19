@@ -111,7 +111,6 @@ export interface Slide {
   _initialState?: Slide;
   layouts?: Slide[]; // or Array<Slide> if you prefer
   currentVariantIndex?: number;
-  snapshot?: string;
 
 }
 

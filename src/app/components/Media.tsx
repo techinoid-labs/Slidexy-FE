@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState , forwardRef} from "react";
 import {
   Box,
   Typography,
@@ -27,10 +27,8 @@ const ACCEPTED_TYPES = [
   "image/gif",
 ];
 
-const Media: React.FC<MediaPanelProps> = ({
-  sidebarHeight = "100vh",
-  onClose,
-}) => {
+const Media = forwardRef<HTMLDivElement, MediaPanelProps>(
+  ({ sidebarHeight = "100vh", onClose }, ref) => { 
   const [uploadType, setUploadType] = useState("Upload Image");
 
   const [images, setImages] = useState<string[]>(() => {
@@ -115,6 +113,7 @@ const Media: React.FC<MediaPanelProps> = ({
 
   return (
     <Box
+      ref={ref}
       sx={{
         width: 300,
         bgcolor: "#fff",
@@ -290,6 +289,7 @@ const Media: React.FC<MediaPanelProps> = ({
       </Box>
     </Box>
   );
-};
+}
+);
 
 export default Media;

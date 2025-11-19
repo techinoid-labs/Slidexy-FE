@@ -1,30 +1,31 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import { Box, Tooltip, IconButton, Button, Divider } from "@mui/material";
 import { useRouter } from "next/navigation";
 import TemplatePanel from "../Template";
-// import TextEditorPanel from "../TextEditor";
 import TextEditor from "./TextEditor";
 import MediaPanel from "../Media";
-import ShapesPanel from "../../editor/Shapes";
+import Shapes from "../Shapes";
 import { useSlides } from "@/app/context/SlidesContext";
 import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
+
 
 type PanelType = null | "template" | "text" | "media" | "shapes";
 
 interface SideNavBarProps {
   showTemplatePanel: boolean;
   setShowTemplatePanel: React.Dispatch<React.SetStateAction<boolean>>;
+
 }
 
 const navItems = [
-  { label: "Themes", icon: "/images/template-icon.svg" },
-  { label: "Text", icon: "/images/text-icon.svg" },
-  { label: "Images", icon: "/images/picture-icon.svg" },
-  { label: "Shapes", icon: "/images/nav-icon.svg" },
+  { label: "Themes", icon: "/images/template-icon.svg", panel: "template" },
+  { label: "Text", icon: "/images/text-icon.svg", panel: "text" },
+  { label: "Images", icon: "/images/picture-icon.svg", panel: "media" },
+  { label: "Shapes", icon: "/images/nav-icon.svg", panel: "shapes" },
 ];
 
 const SideNavBar = ({
@@ -32,11 +33,92 @@ const SideNavBar = ({
   setShowTemplatePanel,
 }: SideNavBarProps) => {
   const [selectedIdx, setSelectedIdx] = React.useState(0);
-
-  // console.log(selectedIdx);
   const [openPanel, setOpenPanel] = React.useState<PanelType>(null);
   const { undo, redo, canUndo, canRedo } = useSlides();
-  const sidebarHeight =  "100vh";
+  const panelRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const sidebarHeight = "100vh";
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      // Check if clicking inside any open panel
+      let clickedInsideAnyPanel = false;
+      Object.values(panelRefs.current).forEach((ref) => {
+        if (ref && ref.contains(target)) {
+          clickedInsideAnyPanel = true;
+        }
+      });
+
+      // If clicked inside a panel, don't close
+      if (clickedInsideAnyPanel) return;
+
+      // If clicked on sidebar buttons, don't close (let the toggle handle it)
+      if (target.closest('[data-panel-trigger]')) return;
+
+      // ✅ FIX: Close panels when clicking on canvas or anywhere else
+      // Removed the canvas check that was preventing closure
+      setOpenPanel(null);
+    };
+
+    // Small delay to allow panel to mount
+    const timeout = setTimeout(() => {
+      document.addEventListener("mousedown", handleGlobalClick);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener("mousedown", handleGlobalClick);
+    };
+  }, []);
+
+  // Alternative: If you want to ONLY close when clicking on the canvas/stage area:
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      // Check if clicking inside any open panel
+      let clickedInsideAnyPanel = false;
+      Object.values(panelRefs.current).forEach((ref) => {
+        if (ref && ref.contains(target)) {
+          clickedInsideAnyPanel = true;
+        }
+      });
+
+      if (clickedInsideAnyPanel) return;
+
+      // Don't close on sidebar button clicks (let toggle handle it)
+      if (target.closest('[data-panel-trigger]')) return;
+
+      // ✅ Close if clicking on canvas OR slide editor area
+      const isCanvasClick = target.closest('canvas') || target.tagName === 'CANVAS';
+      const isSlideEditorClick = target.closest('[data-slide-editor]'); // Add this attribute to SlideEditor
+
+      if (isCanvasClick || isSlideEditorClick) {
+        setOpenPanel(null);
+        return;
+      }
+
+      // Close on any other outside click
+      setOpenPanel(null);
+    };
+
+    const timeout = setTimeout(() => {
+      document.addEventListener("mousedown", handleGlobalClick);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener("mousedown", handleGlobalClick);
+    };
+  }, []);
+  const handlePanelToggle = (idx: number, panelType: PanelType) => {
+    setSelectedIdx(idx);
+    // Toggle panel: close if already open, open if closed
+    setOpenPanel((prev) => (prev === panelType ? null : panelType));
+  };
+  const registerPanelRef = (type: string, ref: HTMLDivElement | null) => {
+    panelRefs.current[type] = ref;
+  };
   return (
     <Box sx={{ position: "relative", display: "flex" }}>
       <Box
@@ -69,24 +151,8 @@ const SideNavBar = ({
               arrow
             >
               <IconButton
-                onClick={() => {
-                  setSelectedIdx(idx);
-                  if (idx === 0) {
-                    setOpenPanel((prev) =>
-                      prev === "template" ? null : "template"
-                    );
-                  } else if (idx === 1) {
-                    setOpenPanel((prev) => (prev === "text" ? null : "text"));
-                  } else if (idx === 2) {
-                    setOpenPanel((prev) => (prev === "media" ? null : "media"));
-                  } else if (idx === 3) {
-                    setOpenPanel((prev) =>
-                      prev === "shapes" ? null : "shapes"
-                    );
-                  } else {
-                    setOpenPanel(null);
-                  }
-                }}
+                data-panel-trigger={item.panel}
+                onClick={() => handlePanelToggle(idx, item.panel as PanelType)}
                 sx={{
                   width: 64,
                   height: 64,
@@ -109,7 +175,7 @@ const SideNavBar = ({
             </Tooltip>
           ))}
         </Box>
-        <Divider className=" w-full" sx={{ mb: 1 }} />
+        <Divider className="w-full" sx={{ mb: 1 }} />
         <div className="flex flex-col items-center justify-center w-full gap-4">
           <IconButton
             color="primary"
@@ -122,8 +188,6 @@ const SideNavBar = ({
               width: 32,
               height: 30,
               mb: 0.2,
-              // ml: { xs: 12, md: 100 },
-              // mr: { xs: -2 },
             }}
           >
             <UndoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
@@ -139,54 +203,41 @@ const SideNavBar = ({
               width: 32,
               height: 30,
               mb: 0.2,
-              // ml: { xs: 2, md: 0 },
             }}
           >
             <RedoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
           </IconButton>
         </div>
-        {/* <Box>
-          <IconButton
-            color="primary"
-            onClick={redo}
-            disabled={!canRedo}
-            sx={{
-              color: "#222",
-              backgroundColor: "#F8F8FA",
-              padding: "2px",
-              width: 32,
-              height: 30,
-              mb: 0.2,
-              // ml: { xs: 2, md: 0 },
-            }}
-          >
-            <RedoIcon sx={{ fontWeight: 200, fontSize: 20 }} />
-          </IconButton>
-        </Box> */}
       </Box>
-      {/* {openPanel === "template" && ( */}
-      <TemplatePanel
-        sidebarHeight={sidebarHeight}
-        onClose={() => setOpenPanel(null)}
-        isOpen={openPanel === "template"}
-      />
-      {/* )} */}
+      {openPanel === "template" && (
+        <TemplatePanel
+          sidebarHeight={sidebarHeight}
+          onClose={() => setOpenPanel(null)}
+          ref={(el) => registerPanelRef("template", el)}
+        />
+      )}
+
       {openPanel === "text" && (
         <TextEditor
           sidebarHeight={sidebarHeight}
           onClose={() => setOpenPanel(null)}
+        ref={(el) => registerPanelRef("text", el)}
         />
       )}
+
       {openPanel === "media" && (
         <MediaPanel
           sidebarHeight={sidebarHeight}
           onClose={() => setOpenPanel(null)}
+          ref={(el) => registerPanelRef("media", el)}
         />
       )}
+
       {openPanel === "shapes" && (
-        <ShapesPanel
+        <Shapes
           sidebarHeight={sidebarHeight}
           onClose={() => setOpenPanel(null)}
+          ref={(el) => registerPanelRef("shapes", el)}
         />
       )}
     </Box>

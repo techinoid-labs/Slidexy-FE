@@ -1,9 +1,10 @@
 
 import type Konva from "konva";
 
-export const takeStageSnapshot = (
+// Return the canvas element for the stage so callers can create ImageBitmap
+export const getStageCanvas = (
   stageRef: React.RefObject<Konva.Stage | null>
-): string | null => {
+): HTMLCanvasElement | null => {
   const stage = stageRef.current;
 
   if (!stage) {
@@ -12,14 +13,10 @@ export const takeStageSnapshot = (
   }
 
   try {
-    const dataURL = stage.toDataURL({
-      pixelRatio: window.devicePixelRatio || 2,
-      mimeType: "image/png",
-      quality: 1,
-    });
-    return dataURL;
+    const canvas = stage.toCanvas();
+    return canvas;
   } catch (err) {
-    console.error("Failed to take snapshot:", err);
+    console.error("Failed to get stage canvas:", err);
     return null;
   }
 };

@@ -69,40 +69,54 @@ const Page = () => {
   const { user, loading } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [hadSelection, setHadSelection] = useState(false);
+// Fetch presentation slides on mount or when presentationId changes
+useEffect(() => {
+  if (presentationId) {
+    const fetchPresentation = async () => {
+      try {
+        const response = await fetch(`/api/presentations/${presentationId}`);
+        if (response.ok) {
+          const data = await response.json();
+          let fetchedSlides = data.slides || [];
 
-  // Fetch presentation data + generate initial layouts
-  useEffect(() => {
-    if (presentationId && slides.length === 0) {
-      const fetchPresentation = async () => {
-        try {
-          const response = await fetch(`/api/presentations/${presentationId}`);
-          if (response.ok) {
-            const data = await response.json();
-            let fetchedSlides = data.slides || [];
+          // Only generate layouts if slides don't already have them
+          fetchedSlides = fetchedSlides.map((slide: any) => {
+            // If slide already has layouts, keep them
+            if (slide.layouts && slide.layouts.length > 0) {
+              return slide;
+            }
+            
+            // Otherwise generate new layouts
+            const newLayouts = generateSlideVariants(
+              slide, 
+              selectedTheme || { 
+                backgroundColor: '#fff', 
+                primaryColor: '#000', 
+                artPalette: ['#000', '#333', '#000', '#fff', '#fff'] 
+              }
+            );
+            const variant0 = newLayouts[0] || slide;
+            return {
+              ...slide,
+              layouts: newLayouts,
+              currentVariantIndex: 0,
+              slide_title: variant0.slide_title || slide.slide_title,
+              subtitle: variant0.subtitle || slide.subtitle,
+              background: variant0.background || slide.background,
+              elements: variant0.elements || slide.elements,
+            };
+          });
 
-            fetchedSlides = fetchedSlides.map((slide: any) => {
-              const newLayouts = generateSlideVariants(slide, selectedTheme || { backgroundColor: '#fff', primaryColor: '#000', artPalette: ['#000', '#333', '#000', '#fff', '#fff'] });
-              const variant0 = newLayouts[0] || slide;
-              return {
-                ...slide,
-                layouts: newLayouts,
-                currentVariantIndex: 0,
-                slide_title: variant0.slide_title || slide.slide_title,
-                subtitle: variant0.subtitle || slide.subtitle,
-                background: variant0.background || slide.background,
-                elements: variant0.elements || slide.elements,
-              };
-            });
-
-            setSlides(fetchedSlides);
-          }
-        } catch (error) {
-          console.error("Failed to fetch presentation:", error);
+          console.log('Editor: Loaded slides with latest updates:', fetchedSlides.length);
+          setSlides(fetchedSlides);
         }
-      };
-      fetchPresentation();
-    }
-  }, [presentationId, setSlides, selectedTheme]);
+      } catch (error) {
+        console.error("Failed to fetch presentation:", error);
+      }
+    };
+    fetchPresentation();
+  }
+}, [presentationId, setSlides, selectedTheme]);
 
   // Default selectedSlideIndex to 0 on slides load
   useEffect(() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import snapshotsCache from "@/utils/snapshotsCache";
 import {
     Dialog,
     IconButton,
@@ -49,7 +50,24 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
     if (!slides.length) return null;
 
     const current = slides[currentSlide];
-    const snapshot = current.snapshot;
+    const [snapshot, setSnapshot] = useState<string | null>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        const id = current?.slide_id;
+        if (!id) return;
+        const existing = snapshotsCache.getSnapshot(id);
+        if (mounted) setSnapshot(existing);
+
+        const cb = (data?: string | null) => {
+            if (mounted) setSnapshot(data || null);
+        };
+        snapshotsCache.subscribe(id, cb);
+        return () => {
+            mounted = false;
+            snapshotsCache.unsubscribe(id, cb);
+        };
+    }, [current?.slide_id]);
 
     const progress = ((currentSlide + 1) / slides.length) * 100;
 
