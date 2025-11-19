@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -12,6 +12,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useSlides } from "@/app/context/SlidesContext";
+import snapshotsCache from "@/utils/snapshotsCache";
 
 interface SlidePreviewsProps {
   slides: any[];
@@ -40,6 +41,7 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
     selectedSlideIndex,
     setSelectedSlideIndex,
   } = useSlides();
+  const [thumbs, setThumbs] = useState<Record<string, string | null>>({});
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   useEffect(() => {
@@ -47,6 +49,38 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
       setSelectedSlideIndex(selectedIndex);
     }
   }, [selectedIndex]);
+
+  // Populate thumbnails from snapshotsCache and subscribe to updates per-slide
+  useEffect(() => {
+    const map: Record<string, string | null> = {};
+    const unsubscribers: Array<() => void> = [];
+
+    slides.forEach((s: any) => {
+      const id = s.slide_id;
+      try {
+        const snapshot = snapshotsCache.getSnapshot(id);
+        map[id] = snapshot;
+        console.log(`[slidesPreview] Initial snapshot for slide ${id}:`, snapshot ? 'LOADED' : 'PENDING');
+      } catch (e) {
+        console.error(`[slidesPreview] Error getting snapshot for slide ${id}:`, e);
+        map[id] = null;
+      }
+
+      // subscribe to this slide's updates
+      const cb = (data?: string | null) => {
+        console.log(`[slidesPreview] Snapshot updated for slide ${id}:`, data ? 'LOADED' : 'CLEARED');
+        setThumbs((prev) => ({ ...prev, [id]: data || null }));
+      };
+      snapshotsCache.subscribe(id, cb);
+      unsubscribers.push(() => snapshotsCache.unsubscribe(id, cb));
+    });
+
+    setThumbs(map);
+
+    return () => {
+      unsubscribers.forEach((u) => u());
+    };
+  }, [slides]);
 
   const handleSelect = (index: number) => {
     onSelect(index);
@@ -78,146 +112,205 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
   return (
     <Box
       sx={{
-        width: slide_width,
-        // height: slide_height,
+        width: "100%",
         overflowX: "auto",
-        overflowY: "auto",
-        backgroundColor: "#f5f5fa",
-        borderRadius: 1,
-        my: 1,
+        overflowY: "hidden",
+        backgroundColor: "#fafbfc",
+        borderTop: "1px solid #e5e7eb",
+        borderRadius: 0,
+        my: 0,
         px: 2,
-        py: 1,
-        mt: { xs: -75, sm: 0, lg: 0 },
+        py: 2,
+        mt: 0,
+        "&::-webkit-scrollbar": {
+          height: "6px",
+        },
+        "&::-webkit-scrollbar-track": {
+          background: "#f0f0f0",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          background: "#d0d0d0",
+          borderRadius: "3px",
+          "&:hover": {
+            background: "#999",
+          },
+        },
       }}
     >
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 2,
+          gap: 1.5,
           minWidth: "max-content",
           flexWrap: "nowrap",
-          overflowX: "auto",
-          flexGrow: "row",
-          transform: `scale(${scale})`,
+          px: 1,
         }}
       >
         {slides.map((slide: any, index: number) => {
           const isSelected = index === selectedSlideIndex;
+          const thumb = thumbs[slide.slide_id];
 
           return (
             <Box
               key={slide.slide_id}
+              onClick={() => handleSelect(index)}
               sx={{
                 position: "relative",
-                width: isMobile ? 340 : 200,
-                height: isMobile ? 150 : 120,
-                borderLeft: isSelected
-                  ? "4px solid #6941c6"
-                  : "1px solid #e5e5ef",
-                borderRight: "1px solid #e5e5ef",
-                borderTop: "1px solid #e5e5ef",
-                borderBottom: "1px solid #e5e5ef",
-                borderRadius: 1,
-                backgroundColor: isSelected ? "#f5f3ff" : "#ffffff",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "flex-start",
-                px: 2,
-                py: 1.5,
+                width: "120px",
+                height: "90px",
+                minWidth: "120px",
+                borderRadius: "6px",
+                border: isSelected ? "3px solid #1976d2" : "2px solid #d1d5db",
+                backgroundColor: "#ffffff",
                 cursor: "pointer",
-                boxShadow: isSelected ? "4px 0 0 0 #e9d7fe" : "none",
-                flex: "0 0 auto",
-                "&:hover .delete-button": { opacity: 1 },
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s ease",
+                boxShadow: isSelected
+                  ? "0 4px 12px rgba(25, 118, 210, 0.25)"
+                  : "0 1px 3px rgba(0, 0, 0, 0.1)",
+                "&:hover": {
+                  borderColor: "#1976d2",
+                  boxShadow: "0 4px 12px rgba(25, 118, 210, 0.15)",
+                  transform: "translateY(-1px)",
+                },
+                flexShrink: 0,
               }}
-              onClick={() => handleSelect(index)}
             >
-              <Typography
-                variant="subtitle2"
-                fontWeight={600}
-                //fontSize={12}
-                sx={{
-                  display: "block",
-                  fontSize: { xs: 20 },
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  maxWidth: "100%",
-                }}
-              >
-                {(slide.slide_title?.text || "New Slide Title").trim()}
-              </Typography>
-              <Typography
-                variant="caption"
-                color="#667085"
-                sx={{
-                  display: "block",
-                  overflow: "hidden",
-                  fontSize: { xs: 20 },
-                  fontWeight: { xs: 500 },
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  maxWidth: "100%",
-                }}
-              >
-                {/* Find the first bullet_point or text element */}
-                {(() => {
-                  const firstBullet = slide.elements.find((el: any) =>
-                    el.element_type === "bullet_point" || el.element_type === "text"
-                  );
-                  return typeof firstBullet?.text === "string"
-                    ? firstBullet.text
-                    : typeof firstBullet?.text?.text === "string"
-                      ? firstBullet.text.text
-                      : "Add description";
-
-                })()}
-              </Typography>
-              {slides.length > 1 && (
-                <Tooltip title="">
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(index);
+              {/* Show actual slide thumbnail image */}
+              {thumb ? (
+                <>
+                  <img
+                    src={thumb}
+                    alt={`Slide ${index + 1}: ${slide.slide_title?.text || "Untitled"}`}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
                     }}
-                    className="delete-button"
-                    size="small"
+                  />
+                  {/* Slide number badge */}
+                  <Box
                     sx={{
                       position: "absolute",
-                      top: 4,
-                      right: 4,
-                      backgroundColor: "#fff",
-                      border: "1px solid #ccc",
-                      opacity: 0,
-                      transition: "opacity 0.2s",
-                      zIndex: 10,
+                      bottom: 4,
+                      left: 4,
+                      backgroundColor: "rgba(0, 0, 0, 0.6)",
+                      color: "#fff",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      padding: "2px 6px",
+                      borderRadius: "3px",
                     }}
                   >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
+                    {index + 1}
+                  </Box>
+                </>
+              ) : (
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#f9fafb",
+                    padding: "8px",
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: "9px",
+                      fontWeight: 600,
+                      color: "#9ca3af",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: "100%",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {(slide.slide_title?.text || `Slide ${index + 1}`).substring(0, 15)}
+                  </Typography>
+                  {!thumb && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: "7px",
+                        color: "#d1d5db",
+                        marginTop: "2px",
+                      }}
+                    >
+                      Loading...
+                    </Typography>
+                  )}
+                </Box>
+              )}
+
+              {/* Delete button - show on hover for selected slide */}
+              {slides.length > 1 && (
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(index);
+                  }}
+                  className="delete-button"
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    top: 2,
+                    right: 2,
+                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                    border: "1px solid #e5e7eb",
+                    width: "24px",
+                    height: "24px",
+                    opacity: isSelected ? 1 : 0,
+                    transition: "opacity 0.2s",
+                    zIndex: 10,
+                    "&:hover": {
+                      backgroundColor: "#fee2e2",
+                      borderColor: "#fca5a5",
+                    },
+                  }}
+                >
+                  <DeleteIcon sx={{ fontSize: "14px", color: "#dc2626" }} />
+                </IconButton>
               )}
             </Box>
           );
         })}
 
-        <IconButton
-          onClick={handleAddSlide}
-          sx={{
-            width: 100,
-            height: isMobile ? 120 : 100,
-            borderRadius: 1,
-            border: "1px dashed #d0d5dd",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#ffffff",
-            flex: "0 0 auto",
-          }}
-        >
-          <AddIcon sx={{ fontSize: 32, color: "#667085" }} />
-        </IconButton>
+        {/* Add new slide button */}
+        <Tooltip title="Add new slide">
+          <IconButton
+            onClick={handleAddSlide}
+            sx={{
+              width: "120px",
+              height: "90px",
+              minWidth: "120px",
+              borderRadius: "6px",
+              border: "2px dashed #d1d5db",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#ffffff",
+              flexShrink: 0,
+              transition: "all 0.2s ease",
+              cursor: "pointer",
+              "&:hover": {
+                borderColor: "#6366f1",
+                backgroundColor: "#f0f9ff",
+              },
+            }}
+          >
+            <AddIcon sx={{ fontSize: 28, color: "#9ca3af" }} />
+          </IconButton>
+        </Tooltip>
       </Box>
     </Box>
   );

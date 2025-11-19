@@ -208,11 +208,12 @@ export default function InfographicPage() {
 
     handleResize();
     window.addEventListener("resize", handleResize);
-    window.addEventListener("orientationchange", () => setTimeout(handleResize, 500));
+    const handleOrientation = () => setTimeout(handleResize, 500);
+    window.addEventListener("orientationchange", handleOrientation);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      window.removeEventListener("orientationchange", handleResize);
+      window.removeEventListener("orientationchange", handleOrientation);
     };
   }, [stageWidth, stageHeight, dimensionsReady, isMobile, orientation]);
 

@@ -272,17 +272,17 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
 
         switch (el.konva_component) {
           case "Konva.Circle":
-            return <Circle key={`shape-${safeShapeId}`} {...commonProps} />;
+            return <Circle key={`shape-${safeShapeId}-${i}`} {...commonProps} />;
           case "Konva.Rect":
-            return <Rect key={`shape-${safeShapeId}`} {...commonProps} />; // Line ~278 fixed
+            return <Rect key={`shape-${safeShapeId}-${i}`} {...commonProps} />; // Line ~278 fixed
           case "Konva.RegularPolygon":
-            return <RegularPolygon key={`shape-${safeShapeId}`} {...commonProps} />;
+            return <RegularPolygon key={`shape-${safeShapeId}-${i}`} {...commonProps} />;
           case "Konva.Star":
-            return <Star key={`shape-${safeShapeId}`} {...commonProps} />;
+            return <Star key={`shape-${safeShapeId}-${i}`} {...commonProps} />;
           case "Konva.Line":
             return (
               <Line
-                key={`shape-${safeShapeId}`}
+                key={`shape-${safeShapeId}-${i}`}
                 points={safeProps.points || []}
                 stroke={safeProps.stroke || safeProps.fill} // ✅ FIXED: Fallback to fill if no stroke (variants use stroke)
                 strokeWidth={safeProps.strokeWidth}
@@ -295,7 +295,7 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
           case "Konva.Arrow":
             return (
               <Arrow
-                key={`shape-${safeShapeId}`}
+                key={`shape-${safeShapeId}-${i}`}
                 points={safeProps.points || []}
                 stroke={safeProps.stroke || safeProps.fill}
                 fill={safeProps.fill || safeProps.stroke}
@@ -303,11 +303,11 @@ const KonvaShapeRenderer: React.FC<KonvaShapeRendererProps> = ({
               />
             );
           case "Konva.Ellipse":
-            return <Ellipse key={`shape-${safeShapeId}`} {...commonProps} />; // Line ~303 fixed
+            return <Ellipse key={`shape-${safeShapeId}-${i}`} {...commonProps} />; // Line ~303 fixed
           case "Konva.Arc":
-            return <Arc key={`shape-${safeShapeId}`} {...commonProps} />;
+            return <Arc key={`shape-${safeShapeId}-${i}`} {...commonProps} />;
           case "Konva.Wedge":
-            return <Wedge key={`shape-${safeShapeId}`} {...commonProps} />;
+            return <Wedge key={`shape-${safeShapeId}-${i}`} {...commonProps} />;
           default:
             console.warn(`Unknown shape type: ${el.konva_component}`); // ✅ FIXED: Add for debug
             return null;

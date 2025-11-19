@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import {
   Box,
@@ -120,6 +120,7 @@ export default function PresentationMaker({
 
   // Progress tracker instance
   const progressTracker = new FrontendProgressTracker();
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
 
  
@@ -369,13 +370,12 @@ export default function PresentationMaker({
     };
 
     // Frontend progress simulation to prevent stuck feeling
-    let frontendProgress = 0;
-    let lastBackendProgress = 0;
-    let progressInterval: NodeJS.Timeout | null = null;
-    let isCompleted = false;
+  let frontendProgress = 0;
+  let lastBackendProgress = 0;
+  let isCompleted = false;
 
     const startProgressSimulation = () => {
-      progressInterval = setInterval(() => {
+      progressIntervalRef.current = setInterval(() => {
         if (!isCompleted && frontendProgress < 85) {
           const increment = Math.random() * 2 + 0.5;
           frontendProgress = Math.min(
@@ -389,9 +389,9 @@ export default function PresentationMaker({
     };
 
     const stopProgressSimulation = () => {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
       }
     };
 
@@ -518,13 +518,12 @@ export default function PresentationMaker({
       userData: user,
     };
 
-    let frontendProgress = 0;
-    let lastBackendProgress = 0;
-    let progressInterval: NodeJS.Timeout | null = null;
-    let isCompleted = false;
+  let frontendProgress = 0;
+  let lastBackendProgress = 0;
+  let isCompleted = false;
 
     const startProgressSimulation = () => {
-      progressInterval = setInterval(() => {
+      progressIntervalRef.current = setInterval(() => {
         if (!isCompleted && frontendProgress < 85) {
           const increment = Math.random() * 2 + 0.5;
           frontendProgress = Math.min(
@@ -538,9 +537,9 @@ export default function PresentationMaker({
     };
 
     const stopProgressSimulation = () => {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
       }
     };
 
@@ -648,6 +647,16 @@ export default function PresentationMaker({
 
       router.replace(newUrl, { scroll: false });
     }
+  }, []);
+
+  // Cleanup on unmount: clear any active progress interval
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+    };
   }, []);
 
   return (

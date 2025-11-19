@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { forwardRef } from "react";
 import { Box, Button, Typography, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
@@ -11,10 +11,8 @@ interface TextEditorProps {
   onClose?: () => void;
 }
 
-const TextEditor: React.FC<TextEditorProps> = ({
-  sidebarHeight = "100vh",
-  onClose,
-}) => {
+const TextEditor =  forwardRef<HTMLDivElement, TextEditorProps>(
+  ({ sidebarHeight = "100vh", onClose }, ref) => {
   const { addText } = useSlides();
 
   const handleAddTextElement = (
@@ -39,6 +37,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
 
   return (
     <Box
+    ref ={ref}
       sx={{
         width: 300,
         bgcolor: "#fff",
@@ -173,6 +172,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
       </Box>
     </Box>
   );
-};
+}
+);
 
 export default TextEditor;

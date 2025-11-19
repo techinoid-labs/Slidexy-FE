@@ -20,20 +20,20 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
 
   const {
     slides,
+    selectedShapeId,
     selectedShapeIndex,
     selectedSlideIndex,
     setSlides,
   } = useSlides();
   const { setPrimaryColor } = useSlideThemeContext();
 
-  // Extract shape object
-  const parsed = selectedShapeIndex !== null ? `el-${selectedSlideIndex}-${selectedShapeIndex}` : null;
+  // Extract shape object using shape_id (more reliable than index)
   const slideIndex = selectedSlideIndex;
   const elementIndex = selectedShapeIndex;
 
-  // ✅ FIXED: Read from current variant slide, not original
+  // ✅ FIXED: Use shape_id to find shape reliably across variant slides
   let shapeObj: any = null;
-  if (slideIndex !== -1 && slides[slideIndex] && elementIndex !== null) {
+  if (slideIndex !== -1 && slides[slideIndex] && selectedShapeId) {
     const originalSlide = slides[slideIndex];
     
     // Get the current variant slide (what's actually being rendered)
@@ -48,8 +48,14 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
     
     const currentSlide = getCurrentVariantSlide(originalSlide);
     
-    if (currentSlide.elements?.[elementIndex]) {
-      shapeObj = currentSlide.elements[elementIndex];
+    // Find shape by ID instead of index (works across variants)
+    if (currentSlide.elements) {
+      shapeObj = currentSlide.elements.find((el: any) => el.shape_id === selectedShapeId);
+    }
+    
+    // Fallback: try to find in original slide
+    if (!shapeObj && originalSlide.elements) {
+      shapeObj = originalSlide.elements.find((el: any) => el.shape_id === selectedShapeId);
     }
   }
 
@@ -60,25 +66,31 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
   const opacity = rawProps.opacity ?? 1;
 
   const updateShapeProperty = (prop: string, value: any) => {
-    if (!shapeObj || slideIndex === -1 || elementIndex === null) return;
+    if (!shapeObj || slideIndex === -1 || !selectedShapeId) return;
     
-    // ✅ FIXED: Update variant slide, not original
+    // ✅ FIXED: Update shape using shape_id (works across variants)
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
     
     if (originalSlide.layouts && originalSlide.layouts.length > 0) {
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
       const variant = originalSlide.layouts[variantIndex];
-      if (variant && variant.elements?.[elementIndex]) {
-        variant.elements[elementIndex].properties[prop] = value;
-        // Also update original for consistency
-        if (originalSlide.elements?.[elementIndex]) {
-          originalSlide.elements[elementIndex].properties[prop] = value;
+      if (variant && variant.elements) {
+        // Find and update shape by ID in variant
+        const variantShape = variant.elements.find((el: any) => el.shape_id === selectedShapeId);
+        if (variantShape) {
+          if (!variantShape.properties) variantShape.properties = {};
+          variantShape.properties[prop] = value;
         }
       }
-    } else {
-      if (originalSlide.elements?.[elementIndex]) {
-        originalSlide.elements[elementIndex].properties[prop] = value;
+    }
+    
+    // Also update original slide for consistency
+    if (originalSlide.elements) {
+      const originalShape = originalSlide.elements.find((el: any) => el.shape_id === selectedShapeId);
+      if (originalShape) {
+        if (!originalShape.properties) originalShape.properties = {};
+        originalShape.properties[prop] = value;
       }
     }
     
@@ -86,50 +98,42 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
   };
 
   const setShapeFillAndDisableTheme = (color: string) => {
-    // Add proper null checks before using elementIndex as an array index
-    if (slideIndex === -1 || elementIndex === null) return;
+    // Check that we have shape_id selected
+    if (slideIndex === -1 || !selectedShapeId) return;
 
-    // ✅ FIXED: Update variant slide, not original
+    // ✅ FIXED: Update shape using shape_id (works across variants)
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
 
-    // Ensure the slide exists
     if (!originalSlide) return;
 
     if (originalSlide.layouts && originalSlide.layouts.length > 0) {
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
       const variant = originalSlide.layouts[variantIndex];
       
-      if (variant && variant.elements?.[elementIndex]) {
-        const el = variant.elements[elementIndex];
-        if (!el.properties) {
-          el.properties = {};
-        }
-        el.properties.fill = color;
-        el.useThemeColor = false;
-        
-        // Also update original for consistency
-        if (originalSlide.elements?.[elementIndex]) {
-          const originalEl = originalSlide.elements[elementIndex];
-          if (!originalEl.properties) {
-            originalEl.properties = {};
+      if (variant && variant.elements) {
+        // Find and update shape by ID in variant
+        const variantShape = variant.elements.find((el: any) => el.shape_id === selectedShapeId);
+        if (variantShape) {
+          if (!variantShape.properties) {
+            variantShape.properties = {};
           }
-          originalEl.properties.fill = color;
-          originalEl.useThemeColor = false;
+          variantShape.properties.fill = color;
+          variantShape.useThemeColor = false;
         }
       }
-    } else {
-      // Ensure the element exists at the specified index
-      const el = originalSlide.elements?.[elementIndex];
-      if (!el) return;
-
-      // Update properties
-      if (!el.properties) {
-        el.properties = {};
+    }
+    
+    // Also update original slide for consistency
+    if (originalSlide.elements) {
+      const originalShape = originalSlide.elements.find((el: any) => el.shape_id === selectedShapeId);
+      if (originalShape) {
+        if (!originalShape.properties) {
+          originalShape.properties = {};
+        }
+        originalShape.properties.fill = color;
+        originalShape.useThemeColor = false;
       }
-
-      el.properties.fill = color;
-      el.useThemeColor = false;
     }
     
     setSlides(updatedSlides);

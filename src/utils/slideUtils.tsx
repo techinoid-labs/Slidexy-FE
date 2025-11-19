@@ -70,8 +70,9 @@ export const getSlideDimensions = () => {
   const windowHeight = typeof window !== "undefined" ? window.innerHeight : 540;
   // const SLIDE_WIDTH = Math.min(windowWidth * 0.8, 960); // 90% of window width, capped at 500
   // const SLIDE_HEIGHT = Math.min(windowHeight * 0.6, 540); // 60% of window height, capped at 400
-  const SLIDE_WIDTH = 960; // 90% of window width, capped at 500
-  const SLIDE_HEIGHT = 540; // 60% of window height, capped at 400
+  // Restored original fixed slide dimensions to preserve stage layout
+  const SLIDE_WIDTH = 960;
+  const SLIDE_HEIGHT = 540;
   const LEFT_PADDING = 20;
   const IMAGE_WIDTH = 380;
   const IMAGE_HEIGHT = 320;
