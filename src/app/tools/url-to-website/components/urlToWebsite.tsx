@@ -1,168 +1,162 @@
 "use client";
-
 import {
     Box,
     Typography,
     Button,
     TextField,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
     IconButton,
     Chip,
     Stack,
     Alert,
     AlertTitle,
+    CircularProgress,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function UrlToWebsite() {
-    const { setInfographicId } = useTemplateSlides();
-    const [goal, setGoal] = useState("pitch");
-    const [orientation, setOrientation] = useState("landscape");
-    const [description, setDescription] = useState("");
-
+    const [url, setUrl] = useState("");
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
     const [currentMessage, setCurrentMessage] = useState("");
     const [currentDetail, setCurrentDetail] = useState("");
     const [error, setError] = useState("");
-
     const router = useRouter();
-    const abortControllerRef = useRef<AbortController | null>(null);
+    const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Smooth progress simulation
+    const startProgressSimulation = () => {
+        setProgress(0);
+        let currentProgress = 0;
+
+        progressIntervalRef.current = setInterval(() => {
+            currentProgress += Math.random() * 3; // Increment by 1-3% randomly
+            
+            // Cap at 90% until actual completion
+            if (currentProgress >= 90) {
+                currentProgress = 90;
+                if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                }
+            }
+            
+            setProgress(Math.min(currentProgress, 90));
+
+            // Update messages based on progress
+            if (currentProgress < 20) {
+                setCurrentMessage("Analyzing URL...");
+                setCurrentDetail("Fetching website content...");
+            } else if (currentProgress < 40) {
+                setCurrentMessage("Scraping website content...");
+                setCurrentDetail("Extracting text, images, and structure...");
+            } else if (currentProgress < 60) {
+                setCurrentMessage("Processing with AI...");
+                setCurrentDetail("Generating HTML, CSS, and JavaScript...");
+            } else if (currentProgress < 80) {
+                setCurrentMessage("Creating files...");
+                setCurrentDetail("Building website structure...");
+            } else {
+                setCurrentMessage("Finalizing website...");
+                setCurrentDetail("Almost done, preparing your files...");
+            }
+        }, 200); // Update every 200ms for smooth animation
+    };
+
+    const stopProgressSimulation = () => {
+        if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+            progressIntervalRef.current = null;
+        }
+    };
+
+    useEffect(() => {
+        // Cleanup on unmount
+        return () => {
+            stopProgressSimulation();
+        };
+    }, []);
 
     const handleSubmit = async () => {
-        if (!description.trim()) {
-            setError("Please enter a description for the infographic.");
+        if (!url.trim()) {
+            setError("Please enter a website URL.");
+            return;
+        }
+
+        // Basic URL validation
+        const urlPattern = /^(https?:\/\/)?(www\.)?[\w\-]+(\.[\w\-]+)+[/#?]?.*$/;
+        if (!urlPattern.test(url)) {
+            setError("Please enter a valid URL (e.g., www.example.com or https://example.com)");
             return;
         }
 
         setLoading(true);
         setError("");
-        setProgress(0);
-        setCurrentMessage("Starting AI generation...");
-        setCurrentDetail("");
-
-        abortControllerRef.current = new AbortController();
-        const payload = {
-            prompt: description,
-            viewMode: orientation,
-            useReferences: true,
-        };
+        startProgressSimulation(); // Start smooth progress
 
         try {
-            const res = await fetch(`${API_BASE_URL}/generate-poster-template`, {
+            // Add https:// if not present
+            let formattedUrl = url.trim();
+            if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+                formattedUrl = 'https://' + formattedUrl;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/website-generator/generate`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Accept: "text/event-stream",
                 },
-                body: JSON.stringify(payload),
-                signal: abortControllerRef.current.signal,
+                body: JSON.stringify({ url: formattedUrl }),
             });
 
-            if (!res.ok) {
-                const msg = await res.text();
-                throw new Error(msg || "Failed to start infographic generation");
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to generate website");
             }
 
-            if (!res.body) throw new Error("No response body received.");
+            const responseData = await response.json();
 
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder("utf-8");
-            let done = false;
+            // Stop simulation and jump to 100%
+            stopProgressSimulation();
+            setProgress(100);
+            setCurrentMessage("✅ Website generated successfully!");
+            setCurrentDetail("Redirecting to editor...");
 
-            while (!done) {
-                const { value, done: readerDone } = await reader.read();
-                done = readerDone;
-                if (value) {
-                    const chunk = decoder.decode(value, { stream: true });
-                    const lines = chunk.split("\n").filter((line) => line.trim() !== "" && !line.startsWith(":"));
-
-                    for (const line of lines) {
-                        if (line === "data: [DONE]") {
-                            done = true;
-                            break;
-                        }
-
-                        if (line.startsWith("data: ")) {
-                            try {
-                                const event = JSON.parse(line.replace("data: ", ""));
-                                if (event.error) {
-                                    setError(event.error);
-                                    setLoading(false);
-                                    return;
-                                }
-
-                                if (event.percent) setProgress(event.percent);
-                                if (event.message) setCurrentMessage(event.message);
-                                if (event.detail) setCurrentDetail(event.detail);
-                            } catch {
-                                console.warn("Invalid SSE event:", line);
-                            }
-                        }
-                    }
-                }
-            }
-
-            setCurrentMessage("Finalizing infographic...");
-            setCurrentDetail("Saving your generated infographic...");
-
-            const saveRes = await fetch(`${API_BASE_URL}/api/dynamicInfographic`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: description, viewMode: orientation }),
-            });
-
-            if (!saveRes.ok) throw new Error(`Failed to save infographic (${saveRes.status})`);
-
-            const saveData = await saveRes.json();
-
-            if (saveData?.success && saveData?.infographic?._id) {
-                setCurrentMessage("✅ Infographic successfully created!");
-                setCurrentDetail("Redirecting to your infographic...");
-                setInfographicId(saveData.infographic._id);
-                router.push(`/infographic/${saveData.infographic._id}`);
+            const presentationId = responseData.data?.id || responseData.data?.presentationId || responseData.presentationId;
+            
+            if (presentationId) {
+                setTimeout(() => {
+                    router.push(`/tools/url-to-website/editor?id=${presentationId}`);
+                }, 1000);
             } else {
-                throw new Error("Invalid response from save endpoint");
+                throw new Error("No presentation ID received");
             }
+
         } catch (err: any) {
-            console.error("Infographic generation error:", err);
-            if (err.name === "AbortError") {
-                setError("Infographic generation was cancelled.");
-            } else {
-                setError(err.message || "Something went wrong during generation.");
-            }
+            console.error("Website generation error:", err);
+            stopProgressSimulation();
+            setError(err.message || "Something went wrong during generation.");
+            setProgress(0);
+            setCurrentMessage("");
+            setCurrentDetail("");
         } finally {
-            setLoading(false);
-            abortControllerRef.current = null;
+            setTimeout(() => {
+                if (!error) {
+                    setLoading(false);
+                }
+            }, 1500);
         }
-    };
-
-    const cancelGeneration = () => {
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
-            abortControllerRef.current = null;
-        }
-        setLoading(false);
-        setProgress(0);
-        setCurrentMessage("");
-        setCurrentDetail("");
     };
 
     const quickPrompts = [
-        "Creativity at Work",
-        "Responsive design principles",
-        "Healthy diet",
-        "UX UI guidelines",
-        "Accessibility best practices",
-        "Design system components",
+        "www.techinoid.com",
+        "nodejs.org/en/download",
+        "github.com",
+        "stripe.com",
+        "vercel.com",
+        "tailwindcss.com",
     ];
 
     return (
@@ -193,6 +187,7 @@ export default function UrlToWebsite() {
                     <source src="/services-background.mp4" type="video/mp4" />
                 </video>
             </Box>
+
             <Box
                 sx={{
                     width: "100%",
@@ -204,10 +199,9 @@ export default function UrlToWebsite() {
                     px: { xs: 2, md: 6 },
                 }}
             >
-                <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, color: "rgba(26, 26, 26, 1) ", fontSize: "60px" }}>
+                <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, color: "rgba(26, 26, 26, 1)", fontSize: "60px" }}>
                     Url-to-Website
                 </Typography>
-
                 <Typography sx={{
                     color: "rgba(109, 109, 109, 1)", maxWidth: 580, mb: 6, fontSize: { xs: "16px", md: "18px" },
                     textAlign: "center"
@@ -227,30 +221,29 @@ export default function UrlToWebsite() {
                         border: "1px solid rgba(232, 228, 255, 1)",
                         p: { xs: 3, md: 4 },
                     }}>
-                 
+
                     <TextField
                         fullWidth
                         multiline
                         minRows={4}
                         placeholder="Paste the website link here e.g., www.techinoid.com"
                         variant="outlined"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        disabled={loading}
                         sx={{
-                          mt: -3,  
-                          mb: 15,
+                            mt: -3,
+                            mb: 15,
                             "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                            // borderBottom: "1px solid rgba(242, 240, 255, 1)",
                         }}
                     />
 
                     <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center" justifyContent="flex-end">
-
                         <Button
                             variant="contained"
                             onClick={handleSubmit}
                             disabled={loading}
-                            startIcon={<AutoAwesome />}
+                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesome />}
                             sx={{
                                 backgroundColor: "#6C2BD9",
                                 color: "#fff",
@@ -263,16 +256,11 @@ export default function UrlToWebsite() {
                                 boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
                                 alignSelf: { xs: "stretch", md: "center" },
                                 "&:hover": { backgroundColor: "#5B21B6" },
+                                "&:disabled": { backgroundColor: "#9E9E9E" },
                             }}
                         >
-                            {loading ? "Generating..." : "Search"}
+                            {loading ? "Generating..." : "Generate"}
                         </Button>
-
-                        {loading && (
-                            <Button color="error" onClick={cancelGeneration}>
-                                Cancel
-                            </Button>
-                        )}
                     </Stack>
 
                     {error && (
@@ -294,6 +282,7 @@ export default function UrlToWebsite() {
                 {loading && (
                     <Box
                         sx={{
+                            mt: 4,
                             p: 3,
                             borderRadius: 2,
                             bgcolor: "white",
@@ -309,9 +298,22 @@ export default function UrlToWebsite() {
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                             {currentDetail}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Progress: {Math.round(progress)}%
-                        </Typography>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                            <Box sx={{ flex: 1, bgcolor: "#f0f0f0", borderRadius: 1, height: 8 }}>
+                                <Box
+                                    sx={{
+                                        width: `${progress}%`,
+                                        height: "100%",
+                                        bgcolor: "#8E2DE2",
+                                        borderRadius: 1,
+                                        transition: "width 0.3s ease",
+                                    }}
+                                />
+                            </Box>
+                            <Typography variant="body2" color="text.secondary">
+                                {Math.round(progress)}%
+                            </Typography>
+                        </Box>
                     </Box>
                 )}
 
@@ -321,11 +323,13 @@ export default function UrlToWebsite() {
                             <Chip
                                 key={i}
                                 label={prompt}
-                                onClick={() => setDescription(prompt)}
+                                onClick={() => !loading && setUrl(prompt)}
+                                disabled={loading}
                                 sx={{
                                     border: "1px solid rgba(246, 246, 246, 1)",
                                     bgcolor: "rgba(248, 248, 248, 0.14)",
-                                    "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" }
+                                    "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
+                                    cursor: loading ? "not-allowed" : "pointer",
                                 }}
                             />
                         ))}

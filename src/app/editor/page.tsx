@@ -32,6 +32,8 @@ import { useUser } from "../context/AuthContext";
 import { getContrastingBackground } from "@/utils/colorUtils";
 import { getRandomSlide } from "@/utils/slideUtils";
 import { generateSlideVariants } from "@/utils/variantGenerator";
+import snapshotsCache from "@/utils/snapshotsCache";
+
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
@@ -47,6 +49,7 @@ const Page = () => {
     selectedImageIndex,
     selectedImage,
     selectedShapeIndex,
+    setSelectedShapeId,
     setSelectedImageIndex,
     setSelectedImage,
     isMobileImageSelected,
@@ -57,7 +60,7 @@ const Page = () => {
   const { presentationId } = useTemplateSlides();
   const dispatch = useDispatch();
   const router = useRouter();
-  const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
+  const stageRefs = useRef<any[]>([]);
   const [initialSlides] = useState(() => slides);
   const [isMobileTextSelected, setIsMobileTextSelected] = useState(false);
   const [showRightPanel, setShowRightPanel] = useState(true);
@@ -69,63 +72,59 @@ const Page = () => {
   const { user, loading } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [hadSelection, setHadSelection] = useState(false);
-// Fetch presentation slides on mount or when presentationId changes
-useEffect(() => {
-  if (presentationId) {
-    const fetchPresentation = async () => {
-      try {
-        const response = await fetch(`/api/presentations/${presentationId}`);
-        if (response.ok) {
-          const data = await response.json();
-          let fetchedSlides = data.slides || [];
 
-          // Only generate layouts if slides don't already have them
-          fetchedSlides = fetchedSlides.map((slide: any) => {
-            // If slide already has layouts, keep them
-            if (slide.layouts && slide.layouts.length > 0) {
-              return slide;
-            }
-            
-            // Otherwise generate new layouts
-            const newLayouts = generateSlideVariants(
-              slide, 
-              selectedTheme || { 
-                backgroundColor: '#fff', 
-                primaryColor: '#000', 
-                artPalette: ['#000', '#333', '#000', '#fff', '#fff'] 
+  // Fetch presentation slides on mount or when presentationId changes
+  useEffect(() => {
+    if (presentationId) {
+      const fetchPresentation = async () => {
+        try {
+          const response = await fetch(`/api/presentations/${presentationId}`);
+          if (response.ok) {
+            const data = await response.json();
+            let fetchedSlides = data.slides || [];
+
+            fetchedSlides = fetchedSlides.map((slide: any) => {
+              if (slide.layouts && slide.layouts.length > 0) {
+                return slide;
               }
-            );
-            const variant0 = newLayouts[0] || slide;
-            return {
-              ...slide,
-              layouts: newLayouts,
-              currentVariantIndex: 0,
-              slide_title: variant0.slide_title || slide.slide_title,
-              subtitle: variant0.subtitle || slide.subtitle,
-              background: variant0.background || slide.background,
-              elements: variant0.elements || slide.elements,
-            };
-          });
 
-          console.log('Editor: Loaded slides with latest updates:', fetchedSlides.length);
-          setSlides(fetchedSlides);
+              const newLayouts = generateSlideVariants(
+                slide,
+                selectedTheme || {
+                  backgroundColor: '#fff',
+                  primaryColor: '#000',
+                  artPalette: ['#000', '#333', '#000', '#fff', '#fff']
+                }
+              );
+              const variant0 = newLayouts[0] || slide;
+              return {
+                ...slide,
+                layouts: newLayouts,
+                currentVariantIndex: 0,
+                slide_title: variant0.slide_title || slide.slide_title,
+                subtitle: variant0.subtitle || slide.subtitle,
+                background: variant0.background || slide.background,
+                elements: variant0.elements || slide.elements,
+              };
+            });
+
+            console.log('Editor: Loaded slides with latest updates:', fetchedSlides.length);
+            setSlides(fetchedSlides);
+          }
+        } catch (error) {
+          console.error("Failed to fetch presentation:", error);
         }
-      } catch (error) {
-        console.error("Failed to fetch presentation:", error);
-      }
-    };
-    fetchPresentation();
-  }
-}, [presentationId, setSlides, selectedTheme]);
+      };
+      fetchPresentation();
+    }
+  }, [presentationId, setSlides, selectedTheme]);
 
-  // Default selectedSlideIndex to 0 on slides load
   useEffect(() => {
     if (slides.length > 0 && (selectedSlideIndex === undefined || selectedSlideIndex === -1)) {
       setSelectedSlideIndex(0);
     }
   }, [slides.length, selectedSlideIndex, setSelectedSlideIndex]);
 
-  // ✅ FIXED: Close theme panel when any element is selected
   useEffect(() => {
     const hasSelection = selectedTextId !== null || selectedImageIndex !== null || selectedShapeIndex !== null;
     if (hasSelection) {
@@ -340,7 +339,6 @@ useEffect(() => {
     }
   };
 
-  // ✅ FIXED: Updated logic to properly determine panel states
   const isTextSelected =
     selectedTextId !== null &&
     selectedTextId !== "" &&
@@ -369,7 +367,6 @@ useEffect(() => {
   };
 
   const handleOpenThemePanel = () => {
-    // ✅ FIXED: Clear all selections when opening theme panel
     setSelectedTextId(null);
     setSelectedImageIndex(null);
     setSelectedImage(null);
@@ -397,8 +394,27 @@ useEffect(() => {
       setShowRightPanel(true);
     }
   };
-
-  // Track previous selection to open theme only after deselect
+const deselectAllRef = useRef<(() => void) | null>(null);
+   const handlePreviewOpen = () => {
+    // Call the SlideEditor's deselectAll function
+    if (deselectAllRef.current) {
+      deselectAllRef.current();
+    }
+    
+    // Also clear all parent component states
+    setSelectedTextId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+    setSelectedShapeIndex(null);
+    setSelectedShapeId(null);
+    setIsMobileTextSelected(false);
+    setIsMobileImageSelected(false);
+    
+    // Open preview after state updates
+    setTimeout(() => {
+      setPreviewOpen(true);
+    }, 100);
+  };
   useEffect(() => {
     const hasSelection = !!selectedTextId || selectedImageIndex !== null || selectedShapeIndex !== null;
     if (hasSelection) {
@@ -437,7 +453,7 @@ useEffect(() => {
               onExportPDF={handleExportPDF}
               onExportPPT={handleExportPPTX}
               onClearCanvas={handleClearCanvas}
-              onPreview={() => setPreviewOpen(true)}
+              onPreview={handlePreviewOpen}
               onOpenThemePanel={handleOpenThemePanel}
               isThemePanelOpen={isThemePanelOpen}
               showAuthModal={showAuthModal}
@@ -449,9 +465,9 @@ useEffect(() => {
             onExportPDF={handleExportPDF}
             onExportPPT={handleExportPPTX}
             onClearCanvas={handleClearCanvas}
-            onPreview={() => setPreviewOpen(true)}
+            onPreview={handlePreviewOpen}
             onOpenThemePanel={handleOpenThemePanel}
-            isThemePanelOpen={isThemePanelOpen}   
+            isThemePanelOpen={isThemePanelOpen}
             showAuthModal={showAuthModal}
             setShowAuthModal={setShowAuthModal}
           />
@@ -469,6 +485,8 @@ useEffect(() => {
                 open={previewOpen}
                 onClose={() => setPreviewOpen(false)}
                 theme={selectedTheme}
+                forceCleanPreview={previewOpen} 
+                key={previewOpen ? "clean" : "normal"} 
               />
               {isMobileTextSelected && !isShapeSelected && (
                 <TextSettingsPanelMobile
@@ -522,12 +540,14 @@ useEffect(() => {
                 className="flex-1 overflow-auto z-0"
                 style={{ marginTop: 12 }}
               >
-                <SlideEditor slides={slides} stageRefs={stageRefs} onDeselect={handleDeselect} slideCount={slides.length} />
+                <SlideEditor slides={slides} stageRefs={stageRefs} onDeselect={handleDeselect} slideCount={slides.length} deselectAllRef={deselectAllRef} />
                 <SlideShowPlayer
                   slides={slides}
                   theme={selectedTheme}
                   open={previewOpen}
                   onClose={() => setPreviewOpen(false)}
+                  forceCleanPreview={previewOpen}   
+                  key={previewOpen ? "clean" : "normal"}  
                 />
               </div>
               <div

@@ -17,7 +17,6 @@ import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
 import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
 import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
 import { useSlides } from "@/app/context/SlidesContext";
-import { useSlideThemeContext } from "@/app/context/ThemeContext";
 
 const fontOptions = ["Raleway", "Roboto", "Arial"];
 
@@ -42,28 +41,24 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   const {
     slides,
     selectedTextId,
-    setSelectedTextId,  // ✅ FIXED: Ensure this is used for deselect
-    selectedShapeIndex,
+    setSelectedTextId,
     selectedSlideIndex,
     setSlides,
   } = useSlides();
+
+  // ✅ FIX: Parse selectedTextId to handle title, subtitle, and elements
   const parsed = selectedTextId
-    ? selectedTextId.match(/(?:title|el)-(\d+)(?:-(\d+))?/)
+    ? selectedTextId.match(/(?:title|subtitle|el)-(\d+)(?:-(\d+))?/)
     : null;
 
   const slideIndex = parsed ? parseInt(parsed[1], 10) : selectedSlideIndex;
+  const elementIndex = parsed?.[2] ? parseInt(parsed[2], 10) : null;
 
-  // ✅ FIXED: Default to null (not -1) to avoid invalid indexing; remove shape fallback for text panel
-  const elementIndex = parsed?.[2]
-    ? parseInt(parsed[2], 10)
-    : null;
-
-  // ✅ FIXED: Read from current variant slide, not original
+  // ✅ FIX: Get text object from current variant slide
   let textObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex]) {
     const originalSlide = slides[slideIndex];
     
-    // Get the current variant slide (what's actually being rendered)
     const getCurrentVariantSlide = (slide: any) => {
       if (!slide.layouts || slide.layouts.length === 0) {
         return slide;
@@ -75,16 +70,17 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     
     const currentSlide = getCurrentVariantSlide(originalSlide);
     
+    // ✅ FIX: Handle title, subtitle, and regular elements
     if (selectedTextId?.startsWith("title")) {
       textObj = currentSlide.slide_title;
+    } else if (selectedTextId?.startsWith("subtitle")) {
+      textObj = currentSlide.subtitle;
     } else if (elementIndex !== null && currentSlide.elements?.[elementIndex]) {
       textObj = currentSlide.elements[elementIndex];
     }
   }
 
-  // ✅ FIXED: Always render panel shell; disable interactions if no textObj
   const hasValidText = !!textObj;
-
   const rawProps = textObj?.properties || {};
 
   const fontSize = rawProps.fontSize ?? 24;
@@ -97,38 +93,32 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     : "normal";
   const align = rawProps.align ?? "left";
   const opacity = rawProps.opacity ?? 1;
-  const verticalAlign = rawProps.verticalAlign ?? "top";
 
+  // ✅ FIX: Update text property in both original and variant
   const updateTextProperty = (prop: string, value: any) => {
     if (!textObj || slideIndex === -1) return;
     
-    // ✅ FIXED: Update BOTH original AND current variant + init properties
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
     
-    const getCurrentVariantSlide = (slide: any) => {
-      if (!slide.layouts || slide.layouts.length === 0) {
-        return slide;
-      }
-      const variantIndex = slide.currentVariantIndex ?? 0;
-      const variant = slide.layouts[variantIndex];
-      return variant || slide;
-    };
-    
     const isTitle = selectedTextId?.startsWith("title");
-    const targetPath = isTitle ? 'slide_title' : 'elements';
-    const targetIndex = isTitle ? null : elementIndex;
-
-    // Update original
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
+    
+    // Update original slide
     if (isTitle) {
       originalSlide.slide_title = originalSlide.slide_title || {};
       originalSlide.slide_title.properties = originalSlide.slide_title.properties || {};
       originalSlide.slide_title.properties[prop] = value;
-    } else if (targetIndex !== null && targetIndex >= 0 && originalSlide.elements?.[targetIndex]) {
-      const el = originalSlide.elements[targetIndex];
+    } else if (isSubtitle) {
+      originalSlide.subtitle = originalSlide.subtitle || {};
+      originalSlide.subtitle.properties = originalSlide.subtitle.properties || {};
+      originalSlide.subtitle.properties[prop] = value;
+    } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements?.[elementIndex]) {
+      const el = originalSlide.elements[elementIndex];
       el.properties = el.properties || {};
       el.properties[prop] = value;
     }
+    
     // Update current variant (if exists)
     if (originalSlide.layouts && originalSlide.layouts.length > 0) {
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
@@ -138,32 +128,39 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           variant.slide_title = variant.slide_title || {};
           variant.slide_title.properties = variant.slide_title.properties || {};
           variant.slide_title.properties[prop] = value;
-        } else if (targetIndex !== null && targetIndex >= 0 && variant.elements?.[targetIndex]) {
-          const variantEl = variant.elements[targetIndex];
+        } else if (isSubtitle) {
+          variant.subtitle = variant.subtitle || {};
+          variant.subtitle.properties = variant.subtitle.properties || {};
+          variant.subtitle.properties[prop] = value;
+        } else if (elementIndex !== null && elementIndex >= 0 && variant.elements?.[elementIndex]) {
+          const variantEl = variant.elements[elementIndex];
           variantEl.properties = variantEl.properties || {};
           variantEl.properties[prop] = value;
         }
       }
     }
     
-    // ✅ FIXED: Move setSlides outside all conditional blocks
     setSlides(updatedSlides);
   };
 
+  // ✅ FIX: Update text content in both original and variant
   const updateTextContent = (value: string) => {
     if (!textObj || slideIndex === -1) return;
     
-    // ✅ FIXED: Update BOTH original AND current variant
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
     
     const isTitle = selectedTextId?.startsWith("title");
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
 
     // Update original
     if (isTitle) {
       originalSlide.slide_title = originalSlide.slide_title || {};
       originalSlide.slide_title.text = value;
-    } else if (elementIndex !== null && elementIndex >= 0) {  // ✅ FIXED: Guard >= 0
+    } else if (isSubtitle) {
+      originalSlide.subtitle = originalSlide.subtitle || {};
+      originalSlide.subtitle.text = value;
+    } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements?.[elementIndex]) {
       originalSlide.elements[elementIndex].text = value;
     }
 
@@ -175,7 +172,10 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         if (isTitle) {
           variant.slide_title = variant.slide_title || {};
           variant.slide_title.text = value;
-        } else if (elementIndex !== null && elementIndex >= 0 && variant.elements?.[elementIndex]) {  // ✅ FIXED: Guard
+        } else if (isSubtitle) {
+          variant.subtitle = variant.subtitle || {};
+          variant.subtitle.text = value;
+        } else if (elementIndex !== null && elementIndex >= 0 && variant.elements?.[elementIndex]) {
           variant.elements[elementIndex].text = value;
         }
       }
@@ -184,18 +184,23 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     setSlides(updatedSlides);
   };
 
+  // ✅ FIX: Update color and disable theme color
   const setTextFillAndDisableTheme = (color: string) => {
     if (slideIndex === -1) return;
     
-    // ✅ FIXED: Update BOTH original AND current variant + init
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
     
     const isTitle = selectedTextId?.startsWith("title");
-    const targetIndex = isTitle ? null : elementIndex;
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
 
     // Update original
-    let el = isTitle ? originalSlide.slide_title : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements[elementIndex] : null);  // ✅ FIXED: Guard
+    let el = isTitle 
+      ? originalSlide.slide_title 
+      : isSubtitle 
+        ? originalSlide.subtitle 
+        : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
+    
     if (el) {
       el.properties = el.properties || {};
       el.properties.fill = color;
@@ -207,7 +212,12 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
-        let variantEl = isTitle ? variant.slide_title : (elementIndex !== null && elementIndex >= 0 ? variant.elements?.[elementIndex] : null);  // ✅ FIXED: Guard
+        let variantEl = isTitle 
+          ? variant.slide_title 
+          : isSubtitle 
+            ? variant.subtitle 
+            : (elementIndex !== null && elementIndex >= 0 ? variant.elements?.[elementIndex] : null);
+        
         if (variantEl) {
           variantEl.properties = variantEl.properties || {};
           variantEl.properties.fill = color;
@@ -219,33 +229,40 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     setSlides(updatedSlides);
   };
 
+  // ✅ FIX: Duplicate text properly
   const handleDuplicateText = () => {
     if (!textObj || slideIndex === -1) return;
 
-    // ✅ FIXED: Clone to BOTH original AND current variant elements (titles become body texts)
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
     
     const isTitle = selectedTextId?.startsWith("title");
-    const originalElement = isTitle ? originalSlide.slide_title : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements[elementIndex] : null);  // ✅ FIXED: Guard
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
+    
+    const originalElement = isTitle 
+      ? originalSlide.slide_title 
+      : isSubtitle 
+        ? originalSlide.subtitle 
+        : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
 
     if (!originalElement) return;
 
+    // ✅ FIX: Create new text element with proper structure
     const newTextElement = {
       konva_component: "Konva.Text",
       element_type: "text",
-      text: originalElement.text,
+      text: originalElement.text || "",
       properties: {
         ...structuredClone(originalElement.properties || {}),
         x: (originalElement.properties?.x || 0) + 20,
         y: (originalElement.properties?.y || 0) + 20,
       },
-      useThemeColor: originalElement.useThemeColor || false,
+      useThemeColor: originalElement.useThemeColor !== undefined ? originalElement.useThemeColor : false,
     };
 
-    // Update original: Push to elements
+    // Update original: Add to elements array
     originalSlide.elements = originalSlide.elements || [];
-    const insertIndex = isTitle ? 0 : (elementIndex! + 1);  // Titles insert at start
+    const insertIndex = (isTitle || isSubtitle) ? 0 : (elementIndex! + 1);
     originalSlide.elements.splice(insertIndex, 0, newTextElement);
 
     // Update current variant (if exists)
@@ -254,24 +271,26 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
         variant.elements = variant.elements || [];
-        variant.elements.splice(insertIndex, 0, newTextElement);
+        variant.elements.splice(insertIndex, 0, structuredClone(newTextElement));
       }
     }
 
     setSlides(updatedSlides);
-    // Select the new element
+    
+    // Select the new duplicated element
     const newId = `el-${slideIndex}-${insertIndex}`;
     setSelectedTextId(newId);
   };
 
+  // ✅ FIX: Delete text properly
   const handleDeleteText = () => {
     if (slideIndex === -1) return;
 
-    // ✅ FIXED: Remove/clear from BOTH original AND current variant
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
     
     const isTitle = selectedTextId?.startsWith("title");
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
 
     // Update original
     if (isTitle) {
@@ -279,20 +298,22 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         konva_component: "Konva.Text",
         text: "",
         properties: {
-          fontSize: 14,
-          fontWeight: "normal",
-          fontFamily: "Roboto",
-          fill: "#444",
+          fontSize: 36,
+          fontWeight: "700",
+          fontFamily: "Raleway",
+          fill: "#000",
           fontStyle: "normal",
-          align: "left",
-          x: 0,
-          y: 25,
-          width: 220,
+          align: "center",
+          x: 25,
+          y: 40,
+          width: 800,
           height: 0,
         },
-        useThemeColor: false,
+        useThemeColor: true,
       };
-    } else if (elementIndex !== null && elementIndex >= 0) {  // ✅ FIXED: Guard
+    } else if (isSubtitle) {
+      originalSlide.subtitle = undefined;
+    } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements) {
       originalSlide.elements.splice(elementIndex, 1);
     }
 
@@ -302,34 +323,21 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
         if (isTitle) {
-          variant.slide_title = {
-            ...originalSlide.slide_title,  // Mirror reset
-          };
-        } else if (elementIndex !== null && elementIndex >= 0 && variant.elements) {  // ✅ FIXED: Guard
+          variant.slide_title = structuredClone(originalSlide.slide_title);
+        } else if (isSubtitle) {
+          variant.subtitle = undefined;
+        } else if (elementIndex !== null && elementIndex >= 0 && variant.elements) {
           variant.elements.splice(elementIndex, 1);
         }
       }
     }
 
     setSlides(updatedSlides);
-    // Deselect
     setSelectedTextId(null);
   };
 
-  // Helper function to get the current element identifier
-  const getCurrentElementId = () => {
-    if (selectedTextId) {
-      return selectedTextId;
-    }
-    return selectedShapeIndex;
-  };
-
-  // Check if we have a valid element to work with
-  const hasValidElement = selectedTextId || selectedShapeIndex !== null;
-
   return (
     <Box className="w-[300px] min-w-[250px] md:min-w-[250px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
-      {/* Tabs */}
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 3, mt: 3 }}>
           <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
@@ -342,14 +350,16 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           onChange={(e) => hasValidText && updateTextContent(e.target.value)}
           fullWidth
           disabled={!hasValidText}
+          multiline
           sx={{
             mb: 1,
             borderRadius: 2,
             bgcolor: !hasValidText ? "#F0F0F0" : "#F8F8FA",
             fontWeight: 500,
             fontSize: 15,
-            height: 44,
+            minHeight: 44,
             px: 2,
+            py: 1.5,
             opacity: hasValidText ? 1 : 0.6,
           }}
         />
@@ -393,7 +403,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
               opacity: hasValidText ? 1 : 0.6,
             }}
           >
-            {[16, 18, 20, 24, 28, 32, 36].map((size) => (
+            {[12, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48].map((size) => (
               <MenuItem key={size} value={size}>
                 {size}
               </MenuItem>
@@ -446,26 +456,24 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
       <Divider sx={{ my: 2 }} />
 
-      {/* Color */}
       <Box sx={{ px: 3, mb: 2 }}>
         <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1 }}>
           Color
         </Typography>
-        <Box className="w-12 h-12 rounded-full">
+        <Box className="flex items-center gap-2">
           <input
             type="color"
             value={fill}
-            className="w-12 h-12 rounded-full"
-            onChange={(e) => hasValidText && (updateTextProperty("fill", e.target.value), setTextFillAndDisableTheme(e.target.value))}
+            className="w-12 h-12 rounded-full cursor-pointer"
+            onChange={(e) => hasValidText && setTextFillAndDisableTheme(e.target.value)}
             disabled={!hasValidText}
           />
-          <Typography sx={{ fontSize: 14 }}>{fill.toUpperCase()}</Typography>
+          <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{fill.toUpperCase()}</Typography>
         </Box>
       </Box>
 
       <Divider sx={{ my: 2 }} />
 
-      {/* Effects */}
       <Box sx={{ px: 2, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography sx={{ fontWeight: 500, fontSize: 16, flex: 1 }}>
@@ -475,7 +483,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Slider
             value={Math.round(opacity * 100)}
-            onChange={(_, v) => hasValidText && updateTextProperty("opacity", Number(v) / 100)}  // ✅ FIXED: Now guarded, works
+            onChange={(_, v) => hasValidText && updateTextProperty("opacity", Number(v) / 100)}
             disabled={!hasValidText}
             sx={{ color: "#7B4AE2", flex: 1, fontSize: 12, opacity: hasValidText ? 1 : 0.6 }}
           />
@@ -495,17 +503,16 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           />
         </Box>
       </Box>
+      
       <Divider sx={{ my: 2 }} />
 
-      {/* Layer Order and Actions */}
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
-            Layer Order & Actions
+            Actions
           </Typography>
         </Box>
 
-        {/* Duplicate / Delete in one line */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"

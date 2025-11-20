@@ -18,7 +18,9 @@ interface SlideShowPlayerProps {
     slides: any[];
     open: boolean;
     onClose: () => void;
-    theme?: any | null; // <-- add theme (make optional or typed as your Theme)
+    theme?: any | null; 
+    forceCleanPreview?: boolean;
+    
 }
 
 const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
@@ -26,12 +28,26 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
     open,
     onClose,
     theme,
+    forceCleanPreview,
 }) => {
     const [currentSlide, setCurrentSlide] = useState(0);
 
     useEffect(() => {
         if (open) setCurrentSlide(0);
     }, [open]);
+    useEffect(() => {
+    if (!open || !forceCleanPreview) return;
+
+    const timer = setTimeout(() => {
+      const slide = slides[currentSlide];
+      if (!slide?.slide_id) return;
+
+      // Delete the old (dirty) snapshot → forces regeneration without transformer
+      snapshotsCache.setSnapshot(slide.slide_id, null);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [open, currentSlide, forceCleanPreview]);
 
     const goNext = () => setCurrentSlide((i) => (i + 1) % slides.length);
     const goPrev = () => setCurrentSlide((i) => (i - 1 + slides.length) % slides.length);

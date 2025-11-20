@@ -12,7 +12,7 @@ const tools = [
     { label: "Prompt-to-eBook", tag: "New", route: "/tools/prompt-to-ebook" },
     { label: "Text-to-Infographics", tag: "New", route: "/tools/text-to-infographics" },
     { label: "Prompt-to-Template", tag: "New", route: "/tools/prompt-to-template" },
-    { label: "Prompt-to-Website", tag: "New", route: "/tools/url-to-website" },
+    { label: "Link-to-Website", tag: "New", route: "/tools/url-to-website" },
 ];
 
 export default function Services() {
@@ -188,7 +188,6 @@ export default function Services() {
                         gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
                         gap: { xs: 3, md: 2 },
                         width: "100%",
-                        ml: { xs: 0, md: 40 },
                         justifyItems: "center",
                     }}
                 >

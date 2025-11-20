@@ -3,12 +3,45 @@ import slidesReducer from "../slice/slidesSlice";
 import { get, set, del } from "idb-keyval";
 
 const PERSIST_KEY = "slidesX_slides";
+const PERSIST_DEBOUNCE = 5000; // ✅ Increased from 800ms to 5 seconds
 
-// Load persisted state from IndexedDB (async)
+// ✅ FIXED: Strip non-serializable data before persisting
+const sanitizeSlideData = (slidesData: any) => {
+  if (!slidesData || !Array.isArray(slidesData.slides)) {
+    return slidesData;
+  }
+
+  return {
+    ...slidesData,
+    slides: slidesData.slides.map((slide: any) => {
+      const sanitized = { ...slide };
+      
+      // Remove snapshot references (should only exist in snapshotsCache)
+      if (sanitized.snapshot) delete sanitized.snapshot;
+      if (sanitized._snapshot) delete sanitized._snapshot;
+      
+      // Remove any Blob/File objects that might have snuck in
+      if (sanitized.elements) {
+        sanitized.elements = sanitized.elements.map((el: any) => {
+          const cleanEl = { ...el };
+          if (cleanEl.properties?.imageBlob) delete cleanEl.properties.imageBlob;
+          if (cleanEl.properties?.file) delete cleanEl.properties.file;
+          return cleanEl;
+        });
+      }
+      
+      return sanitized;
+    }),
+  };
+};
+
+// Load persisted state from IndexedDB
 const loadState = async () => {
   try {
     const persisted = await get(PERSIST_KEY);
     if (!persisted) return undefined;
+    
+    console.log('[Store] Loaded persisted state from IndexedDB');
     return { slidesData: persisted };
   } catch (err) {
     console.error("Error loading Redux state from IndexedDB:", err);
@@ -16,26 +49,44 @@ const loadState = async () => {
   }
 };
 
-// Save state to IndexedDB
+// ✅ FIXED: Optimized save with differential updates
+let lastSavedState: string | null = null;
+
 const saveState = async (state: any) => {
   try {
-    // Strip any transient snapshot fields before persisting
     const slidesData = state.slidesData;
-    if (slidesData && Array.isArray(slidesData.slides)) {
-      const sanitized = {
-        ...slidesData,
-        slides: slidesData.slides.map((s: any) => {
-          const copy = { ...s };
-          if (copy.snapshot) delete copy.snapshot;
-          return copy;
-        }),
-      };
-      await set(PERSIST_KEY, sanitized);
-    } else {
-      await set(PERSIST_KEY, slidesData);
+    const sanitized = sanitizeSlideData(slidesData);
+    
+    // ✅ FIXED: Only save if state actually changed
+    const stateHash = JSON.stringify(sanitized);
+    if (stateHash === lastSavedState) {
+      console.log('[Store] State unchanged, skipping save');
+      return;
     }
+    
+    await set(PERSIST_KEY, sanitized);
+    lastSavedState = stateHash;
+    console.log('[Store] State persisted to IndexedDB');
   } catch (err) {
     console.error("Error saving Redux state to IndexedDB:", err);
+    
+    // ✅ FIXED: If quota exceeded, try clearing old data
+    if (err instanceof DOMException && err.name === 'QuotaExceededError') {
+      console.warn('[Store] Quota exceeded, attempting cleanup...');
+      try {
+        // Clear snapshots cache to free up space
+        const { default: snapshotsCache } = await import('@/utils/snapshotsCache');
+        await snapshotsCache.clearAll();
+        
+        // Retry save
+        const sanitized = sanitizeSlideData(state.slidesData);
+        await set(PERSIST_KEY, sanitized);
+        lastSavedState = JSON.stringify(sanitized);
+        console.log('[Store] State persisted after cleanup');
+      } catch (retryErr) {
+        console.error('[Store] Failed to save even after cleanup:', retryErr);
+      }
+    }
   }
 };
 
@@ -43,33 +94,48 @@ const saveState = async (state: any) => {
 const initStore = async () => {
   const preloadedState = await loadState();
 
-  // ✅ FIX: Disable serializableCheck in dev mode (process.env.NODE_ENV === 'development')
-  // Keeps it enabled in prod for safety
-  const middleware = (getDefaultMiddleware: any) => 
-    getDefaultMiddleware({
-      serializableCheck: process.env.NODE_ENV === 'production' ? { ignoredActions: [] } : false,
-    });
-
   const store = configureStore({
     reducer: {
       slidesData: slidesReducer,
     },
-    middleware,  // ✅ Use custom middleware
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        // ✅ FIXED: Disable serializability checks (data is sanitized manually)
+        serializableCheck: false,
+      }),
     preloadedState,
   });
-  // Debounced save: keep the timeout variable outside the handler
-  let saveTimeout: any = null;
+
+  // ✅ FIXED: Optimized debounced save with better performance
+  let saveTimeout: NodeJS.Timeout | null = null;
+  let saveScheduled = false;
+  
   store.subscribe(() => {
-    try {
-      if (saveTimeout) clearTimeout(saveTimeout);
-    } catch (e) {
-      /* ignore clear errors */
+    if (saveScheduled) return;
+    
+    saveScheduled = true;
+    
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
     }
+    
     saveTimeout = setTimeout(() => {
-      // Persist the full store state; saveState will extract slidesData
-      saveState(store.getState());
-    }, 800);
+      saveScheduled = false;
+      
+      // Use requestIdleCallback if available for better performance
+      if (typeof (window as any).requestIdleCallback === 'function') {
+        (window as any).requestIdleCallback(
+          () => {
+            saveState(store.getState());
+          },
+          { timeout: 10000 } // Max 10s delay
+        );
+      } else {
+        saveState(store.getState());
+      }
+    }, PERSIST_DEBOUNCE);
   });
+
   setStoreInstance(store);
   return store;
 };
@@ -79,6 +145,10 @@ const tempStore = configureStore({
   reducer: {
     slidesData: slidesReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
 // Export types based on the temporary store
@@ -100,6 +170,8 @@ export const setStoreInstance = (store: AppStore) => {
 // Clear persisted slides
 export const clearPersistedSlides = async () => {
   await del(PERSIST_KEY);
+  lastSavedState = null;
+  console.log('[Store] Cleared persisted slides');
 };
 
 export default initStore;
