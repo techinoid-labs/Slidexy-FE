@@ -242,7 +242,7 @@ export default function PromptToDeck() {
             fontWeight: 700,
             mb: 1,
             color: "rgba(26, 26, 26, 1)",
-            fontSize: { xs: "16px", md: "18px" },
+            fontSize: { xs: "16px", md: "60px" },
           }}
         >
           Prompt-to-Deck
