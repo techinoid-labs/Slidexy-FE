@@ -17,6 +17,7 @@ import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
 import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
 import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
 import { useSlides } from "@/app/context/SlidesContext";
+import { getContrastTextColor } from "@/utils/colorUtils";
 
 const fontOptions = ["Raleway", "Roboto", "Arial"];
 
@@ -58,7 +59,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   let textObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex]) {
     const originalSlide = slides[slideIndex];
-    
+
     const getCurrentVariantSlide = (slide: any) => {
       if (!slide.layouts || slide.layouts.length === 0) {
         return slide;
@@ -67,9 +68,9 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variant = slide.layouts[variantIndex];
       return variant || slide;
     };
-    
+
     const currentSlide = getCurrentVariantSlide(originalSlide);
-    
+
     // ✅ FIX: Handle title, subtitle, and regular elements
     if (selectedTextId?.startsWith("title")) {
       textObj = currentSlide.slide_title;
@@ -87,7 +88,11 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   const fontFamily = fontOptions.includes(rawProps.fontFamily)
     ? rawProps.fontFamily
     : "Roboto";
-  const fill = rawProps.fill ?? "#000000";
+  const selectedTheme = slides[selectedSlideIndex]?.theme || null;
+  // Update the fill variable definition:
+  const fill = rawProps.fill ?? (textObj?.useThemeColor !== false
+    ? getContrastTextColor(selectedTheme?.backgroundColor || "#ffffff")
+    : "#000000");
   const fontWeight = weightOptions.some((w) => w.value === rawProps.fontWeight)
     ? rawProps.fontWeight
     : "normal";
@@ -97,16 +102,16 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   // ✅ FIX: Update text property in both original and variant
   const updateTextProperty = (prop: string, value: any) => {
     if (!textObj || slideIndex === -1) return;
-    
+
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
-    
+
     const isTitle = selectedTextId?.startsWith("title");
     const isSubtitle = selectedTextId?.startsWith("subtitle");
-    
+
     // Update original slide
     if (isTitle) {
-      originalSlide.slide_title = originalSlide.slide_title ;
+      originalSlide.slide_title = originalSlide.slide_title;
       originalSlide.slide_title.properties = originalSlide.slide_title.properties || {};
       originalSlide.slide_title.properties[prop] = value;
     } else if (isSubtitle) {
@@ -118,14 +123,14 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       el.properties = el.properties || {};
       el.properties[prop] = value;
     }
-    
+
     // Update current variant (if exists)
     if (originalSlide.layouts && originalSlide.layouts.length > 0) {
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
         if (isTitle) {
-          variant.slide_title = variant.slide_title ;
+          variant.slide_title = variant.slide_title;
           variant.slide_title.properties = variant.slide_title.properties || {};
           variant.slide_title.properties[prop] = value;
         } else if (isSubtitle) {
@@ -139,23 +144,23 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         }
       }
     }
-    
+
     setSlides(updatedSlides);
   };
 
   // ✅ FIX: Update text content in both original and variant
   const updateTextContent = (value: string) => {
     if (!textObj || slideIndex === -1) return;
-    
+
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
-    
+
     const isTitle = selectedTextId?.startsWith("title");
     const isSubtitle = selectedTextId?.startsWith("subtitle");
 
     // Update original
     if (isTitle) {
-      originalSlide.slide_title = originalSlide.slide_title ;
+      originalSlide.slide_title = originalSlide.slide_title;
       originalSlide.slide_title.text = value;
     } else if (isSubtitle) {
       originalSlide.subtitle = originalSlide.subtitle || {};
@@ -170,7 +175,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
         if (isTitle) {
-          variant.slide_title = variant.slide_title ;
+          variant.slide_title = variant.slide_title;
           variant.slide_title.text = value;
         } else if (isSubtitle) {
           variant.subtitle = variant.subtitle || {};
@@ -180,27 +185,27 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         }
       }
     }
-    
+
     setSlides(updatedSlides);
   };
 
   // ✅ FIX: Update color and disable theme color
   const setTextFillAndDisableTheme = (color: string) => {
     if (slideIndex === -1) return;
-    
+
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
-    
+
     const isTitle = selectedTextId?.startsWith("title");
     const isSubtitle = selectedTextId?.startsWith("subtitle");
 
     // Update original
-    let el = isTitle 
-      ? originalSlide.slide_title 
-      : isSubtitle 
-        ? originalSlide.subtitle 
+    let el = isTitle
+      ? originalSlide.slide_title
+      : isSubtitle
+        ? originalSlide.subtitle
         : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
-    
+
     if (el) {
       el.properties = el.properties || {};
       el.properties.fill = color;
@@ -212,12 +217,12 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
-        let variantEl = isTitle 
-          ? variant.slide_title 
-          : isSubtitle 
-            ? variant.subtitle 
+        let variantEl = isTitle
+          ? variant.slide_title
+          : isSubtitle
+            ? variant.subtitle
             : (elementIndex !== null && elementIndex >= 0 ? variant.elements?.[elementIndex] : null);
-        
+
         if (variantEl) {
           variantEl.properties = variantEl.properties || {};
           variantEl.properties.fill = color;
@@ -235,14 +240,14 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
-    
+
     const isTitle = selectedTextId?.startsWith("title");
     const isSubtitle = selectedTextId?.startsWith("subtitle");
-    
-    const originalElement = isTitle 
-      ? originalSlide.slide_title 
-      : isSubtitle 
-        ? originalSlide.subtitle 
+
+    const originalElement = isTitle
+      ? originalSlide.slide_title
+      : isSubtitle
+        ? originalSlide.subtitle
         : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
 
     if (!originalElement) return;
@@ -276,7 +281,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     }
 
     setSlides(updatedSlides);
-    
+
     // Select the new duplicated element
     const newId = `el-${slideIndex}-${insertIndex}`;
     setSelectedTextId(newId);
@@ -288,7 +293,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
-    
+
     const isTitle = selectedTextId?.startsWith("title");
     const isSubtitle = selectedTextId?.startsWith("subtitle");
 
@@ -468,7 +473,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             onChange={(e) => hasValidText && setTextFillAndDisableTheme(e.target.value)}
             disabled={!hasValidText}
           />
-          <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{fill.toUpperCase()}</Typography>
+          {/* <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{fill.toUpperCase()}</Typography> */}
         </Box>
       </Box>
 
@@ -503,7 +508,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           />
         </Box>
       </Box>
-      
+
       <Divider sx={{ my: 2 }} />
 
       <Box sx={{ px: 3, mb: 2 }}>

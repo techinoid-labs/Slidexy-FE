@@ -35,7 +35,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
   let shapeObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex] && selectedShapeId) {
     const originalSlide = slides[slideIndex];
-    
+
     // Get the current variant slide (what's actually being rendered)
     const getCurrentVariantSlide = (slide: any) => {
       if (!slide.layouts || slide.layouts.length === 0) {
@@ -45,14 +45,14 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
       const variant = slide.layouts[variantIndex];
       return variant || slide;
     };
-    
+
     const currentSlide = getCurrentVariantSlide(originalSlide);
-    
+
     // Find shape by ID instead of index (works across variants)
     if (currentSlide.elements) {
       shapeObj = currentSlide.elements.find((el: any) => el.shape_id === selectedShapeId);
     }
-    
+
     // Fallback: try to find in original slide
     if (!shapeObj && originalSlide.elements) {
       shapeObj = originalSlide.elements.find((el: any) => el.shape_id === selectedShapeId);
@@ -62,16 +62,51 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
   if (!shapeObj || shapeObj.element_type !== "shape") return null;
 
   const rawProps = shapeObj.properties || {};
-  const fill = rawProps.fill ?? "#000000";
   const opacity = rawProps.opacity ?? 1;
 
+  // Smart color resolution: prefer explicit fill → stroke → fall back to black
+  let displayColor = "#000000";
+
+  if (rawProps.fill && rawProps.fill !== "transparent") {
+    displayColor = rawProps.fill;
+  } else if (rawProps.stroke && rawProps.stroke !== "transparent") {
+    displayColor = rawProps.stroke;
+  }
+
+  // Optional: If shape uses theme color, try to resolve it
+  if (shapeObj.useThemeColor !== false) {
+    const theme = useSlideThemeContext().selectedTheme;
+    if (theme?.primaryColor) {
+      displayColor = theme.primaryColor;
+    }
+  }
+
+  // Ensure it's a valid hex color (some colors might be rgba/named)
+  const ensureHex = (color: string): string => {
+    if (color.startsWith("#") && color.length === 7) return color;
+    if (color.startsWith("#") && color.length === 9) return color.slice(0, 7); // strip alpha
+
+    // Convert rgb/rgba to hex
+    if (color.startsWith("rgb")) {
+      const match = color.match(/\d+/g);
+      if (match) {
+        const [r, g, b] = match.map(Number);
+        return "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0")).join("");
+      }
+    }
+
+    // Fallback
+    return "#000000";
+  };
+
+  const resolvedColor = ensureHex(displayColor);
   const updateShapeProperty = (prop: string, value: any) => {
     if (!shapeObj || slideIndex === -1 || !selectedShapeId) return;
-    
+
     // ✅ FIXED: Update shape using shape_id (works across variants)
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
-    
+
     if (originalSlide.layouts && originalSlide.layouts.length > 0) {
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
       const variant = originalSlide.layouts[variantIndex];
@@ -84,7 +119,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
         }
       }
     }
-    
+
     // Also update original slide for consistency
     if (originalSlide.elements) {
       const originalShape = originalSlide.elements.find((el: any) => el.shape_id === selectedShapeId);
@@ -93,7 +128,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
         originalShape.properties[prop] = value;
       }
     }
-    
+
     setSlides(updatedSlides);
   };
 
@@ -110,7 +145,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
     if (originalSlide.layouts && originalSlide.layouts.length > 0) {
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
       const variant = originalSlide.layouts[variantIndex];
-      
+
       if (variant && variant.elements) {
         // Find and update shape by ID in variant
         const variantShape = variant.elements.find((el: any) => el.shape_id === selectedShapeId);
@@ -123,7 +158,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
         }
       }
     }
-    
+
     // Also update original slide for consistency
     if (originalSlide.elements) {
       const originalShape = originalSlide.elements.find((el: any) => el.shape_id === selectedShapeId);
@@ -135,7 +170,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
         originalShape.useThemeColor = false;
       }
     }
-    
+
     setSlides(updatedSlides);
   };
 
@@ -169,11 +204,17 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
         <Box className="w-12 h-12 rounded-full">
           <input
             type="color"
-            value={fill}
-            className="w-12 h-12 rounded-full"
+            value={resolvedColor}
+            className="w-12 h-12 rounded-full cursor-pointer"
             onChange={(e) => {
-              updateShapeProperty("fill", e.target.value);
-              setShapeFillAndDisableTheme(e.target.value);
+              const newColor = e.target.value;
+
+              // Update both fill AND stroke to be safe
+              updateShapeProperty("fill", newColor);
+              updateShapeProperty("stroke", newColor);
+
+              // Disable theme color usage
+              setShapeFillAndDisableTheme(newColor);
             }}
           />
           {/* <Typography sx={{ fontSize: 14 }}>{fill.toUpperCase()}</Typography> */}
@@ -186,7 +227,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
-            Effects
+            Opacity
           </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

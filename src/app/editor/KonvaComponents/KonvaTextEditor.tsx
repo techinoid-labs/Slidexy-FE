@@ -182,43 +182,50 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   );
 
 
-  const handleTransformEnd = useCallback(() => {
-    const node = textRef.current;
-    if (!node) return;
+const handleTransformEnd = useCallback(() => {
+  const node = textRef.current;
+  if (!node) return;
 
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
-    node.scaleX(1);
-    node.scaleY(1);
+  // 1. Get current scale from transformer
+  const scaleX = node.scaleX();
+  const scaleY = node.scaleY();
 
-    const newWidth = Math.max(30, node.width() * scaleX);
-    const newHeight = Math.max(20, node.height() * scaleY);
-    node.width(newWidth);
-    node.height(newHeight);
+  // 2. Reset scale (prevents letter stretching)
+  node.scaleX(1);
+  node.scaleY(1);
 
-    const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
-      node,
-      getSlideDimensions().SLIDE_WIDTH,
-      getSlideDimensions().SLIDE_HEIGHT
-    );
+  // 3. Apply new width (this triggers wrapping)
+  const newWidth = Math.max(60, node.width() * scaleX);  // minimum readable width
+  node.width(newWidth);
 
-    node.position({ x: newX, y: newY });
-    setIsAtBoundary(isAtBoundary);
+  // 4. THIS IS THE MAGIC: Let Konva measure the real height of wrapped text
+  const contentHeight = node.getTextHeight(); // ← measures wrapped text perfectly
+  const padding = 24; // your padding (12 top + 12 bottom)
+  const newHeight = Math.max(40, contentHeight + padding);
 
-    updateSlides(text, {
-      x: newX,
-      y: newY,
-      width: newWidth,
-      height: newHeight,
-      fontSize,
-      fontFamily,
-      fontWeight,
-      fontStyle,
-      align,
-    });
-  }, [text, fontSize, fontFamily, fontWeight, fontStyle, align, updateSlides, setIsAtBoundary]);
+  // 5. Apply auto-calculated height
+  node.height(newHeight);
 
+  // 6. Optional: Keep within canvas bounds
+  const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
+    node,
+    getSlideDimensions().SLIDE_WIDTH,
+    getSlideDimensions().SLIDE_HEIGHT
+  );
+  node.position({ x: newX, y: newY });
+  setIsAtBoundary(isAtBoundary);
 
+  // 7. Save new width + auto height
+  updateSlides(text, {
+    x: newX,
+    y: newY,
+    width: newWidth,
+    height: newHeight,        // ← Auto height saved
+  });
+
+  // 8. Redraw
+  node.getLayer()?.batchDraw();
+}, [text, updateSlides, setIsAtBoundary]);
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -230,6 +237,15 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [isEditing]);
+
+  useEffect(() => {
+    if (isSelected && textRef.current && trRef.current) {
+      // Force transformer to update when width/height changes
+      trRef.current.nodes([textRef.current]);
+      trRef.current.forceUpdate();
+      trRef.current.getLayer()?.batchDraw();
+    }
+  }, [isSelected, width, height]);
 
   return (
     <>
@@ -250,60 +266,55 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
         text={text}
         x={x}
         y={y}
-        zIndex={zIndex || 10}
+        width={width || 300}           
+        height={height}
         fontSize={fontSize}
-        // height={50}
         fill={fill}
-        verticalAlign={verticalAlign}
         fontFamily={fontFamily?.trim() || selectedTheme?.font || "Raleway"}
-        fontStyle={fontWeight || "normal"}
+        fontStyle={fontStyle || "normal"}
         fontWeight={fontWeight || "normal"}
-        shadowColor="rgba(0, 0, 0, 0.1)"
         align={align}
+        wrap="char"                    
+        ellipsis={true}
         padding={12}
         opacity={opacity}
-        width={width}
-        wrap={wrap}
         draggable={draggable}
         visible={!isEditing}
         onDragEnd={handleDragEnd}
         onTransformEnd={handleTransformEnd}
+        perfectDrawEnabled={false}
       />
-      {isSelected && (
-        <Transformer
-          ref={trRef}
-          keepRatio={true}
-          boundBoxFunc={(oldBox, newBox) => {
-            if (!textRef.current) return oldBox;
+     {isSelected && (
+  <Transformer
+    ref={trRef}
+    rotateEnabled={false}
+    // DO NOT use keepRatio
+    // DO NOT use centeredScaling (bad for text)
 
-            const node = textRef.current;
+    enabledAnchors={[
+      "top-left",
+      "top-center",
+      "top-right",
+      "middle-left",     // ← These make width resize feel natural
+      "middle-right",    // ← This is what you want!
+      "bottom-left",
+      "bottom-center",
+      "bottom-right",
+    ]}
 
-            // Temporarily apply new box dimensions for boundary check
-            node.width(newBox.width);
-            node.height(newBox.height);
-            node.x(newBox.x);
-            node.y(newBox.y);
+    // Prevent tiny boxes
+    boundBoxFunc={(oldBox, newBox) => {
+      newBox.width = Math.max(60, newBox.width);
+      newBox.height = Math.max(40, newBox.height);
+      return newBox;
+    }}
 
-            // Check with rotation-aware boundaries
-            const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(node);
-
-            // Re-apply corrected position
-            node.position({ x: newX, y: newY });
-
-            setIsAtBoundary(isAtBoundary);
-
-            return {
-              ...newBox,
-              x: newX,
-              y: newY,
-              width: Math.max(30, newBox.width),
-              height: Math.max(20, newBox.height),
-            };
-          }}
-          enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
-        />
-
-      )}
+    // This is the KEY: ignore height changes from dragging bottom handle
+    // Let our handleTransformEnd recalculate height instead
+    ignoreStroke={true}
+    padding={0}
+  />
+)}
       {isEditing && textRef.current && (
         <Html>
           <textarea
