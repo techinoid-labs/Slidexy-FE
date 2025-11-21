@@ -106,7 +106,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     
     // Update original slide
     if (isTitle) {
-      originalSlide.slide_title = originalSlide.slide_title || {};
+      originalSlide.slide_title = originalSlide.slide_title ;
       originalSlide.slide_title.properties = originalSlide.slide_title.properties || {};
       originalSlide.slide_title.properties[prop] = value;
     } else if (isSubtitle) {
@@ -125,7 +125,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
         if (isTitle) {
-          variant.slide_title = variant.slide_title || {};
+          variant.slide_title = variant.slide_title ;
           variant.slide_title.properties = variant.slide_title.properties || {};
           variant.slide_title.properties[prop] = value;
         } else if (isSubtitle) {
@@ -155,7 +155,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
     // Update original
     if (isTitle) {
-      originalSlide.slide_title = originalSlide.slide_title || {};
+      originalSlide.slide_title = originalSlide.slide_title ;
       originalSlide.slide_title.text = value;
     } else if (isSubtitle) {
       originalSlide.subtitle = originalSlide.subtitle || {};
@@ -170,7 +170,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
         if (isTitle) {
-          variant.slide_title = variant.slide_title || {};
+          variant.slide_title = variant.slide_title ;
           variant.slide_title.text = value;
         } else if (isSubtitle) {
           variant.subtitle = variant.subtitle || {};

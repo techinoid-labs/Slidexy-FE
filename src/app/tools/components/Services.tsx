@@ -9,7 +9,7 @@ const tools = [
     { label: "Prompt-to-Deck", tag: "Free", route: "/tools/prompt-to-deck" },
     { label: "Video-to-Deck", tag: "New", route: "/tools/video-to-deck" },
     { label: "Web-to-Deck", tag: "New", route: "/tools/web-to-deck" },
-    { label: "Prompt-to-eBook", tag: "New", route: "/tools/prompt-to-ebook" },
+    //{ label: "Prompt-to-eBook", tag: "New", route: "/tools/prompt-to-ebook" },
     { label: "Text-to-Infographics", tag: "New", route: "/tools/text-to-infographics" },
     { label: "Prompt-to-Template", tag: "New", route: "/tools/prompt-to-template" },
     { label: "Link-to-Website", tag: "New", route: "/tools/url-to-website" },
@@ -186,7 +186,7 @@ export default function Services() {
                     sx={{
                         display: "flex",
                         gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                        gap: { xs: 3, md: 2 },
+                        gap: { xs: 3, md: 4.1 },
                         width: "100%",
                         justifyItems: "center",
                     }}
