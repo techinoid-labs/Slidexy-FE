@@ -83,9 +83,9 @@ export default function InfographicPage() {
     try {
       setError(null);
       console.log("Fetching infographic with ID:", id);
-      console.log("API URL:", `${API_BASE_URL}/api/dynamicInfographic/${id}`);
+      console.log("API URL:", `${API_BASE_URL}/api/infographic/${id}`);
       
-      const res = await fetch(`${API_BASE_URL}/api/dynamicInfographic/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/infographic/${id}`);
       console.log("Response status:", res.status);
       
       if (!res.ok) {

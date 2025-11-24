@@ -120,7 +120,7 @@ export default function TextToInfographics() {
             setCurrentMessage("Finalizing infographic...");
             setCurrentDetail("Saving your generated infographic...");
 
-            const saveRes = await fetch(`${API_BASE_URL}/api/dynamicInfographic`, {
+            const saveRes = await fetch(`${API_BASE_URL}/api/infographic`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt: description, viewMode: orientation }),
