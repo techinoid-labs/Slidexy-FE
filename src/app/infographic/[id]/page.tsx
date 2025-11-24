@@ -2,7 +2,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Stage, Layer } from "react-konva";
 import { Html } from "react-konva-utils";
-import DOMPurify from "dompurify";
 import { useTemplateSlides } from "../../context/TemplateSlidesContext";
 import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
 import StepIndicator from "@/app/components/shared/StepsIndicatorInfographics";
@@ -138,8 +137,8 @@ export default function InfographicPage() {
 
     const timer = setTimeout(() => {
       if (tempDivRef.current) {
-        const sanitizedHtml = DOMPurify.sanitize(infographicData.infographic.html);
-        tempDivRef.current.innerHTML = sanitizedHtml;
+const rawHtml = infographicData.infographic.html;
+tempDivRef.current.innerHTML = rawHtml;
 
         // Force a reflow to ensure dimensions are calculated
         tempDivRef.current.offsetHeight;
@@ -351,7 +350,7 @@ export default function InfographicPage() {
     );
   }
 
-  const sanitizedHtml = DOMPurify.sanitize(infographicData.infographic.html);
+const rawHtml = infographicData.infographic.html;
 
   // Format generated date
   const formattedGeneratedDate = (() => {
@@ -389,7 +388,7 @@ export default function InfographicPage() {
           boxSizing: "border-box",
           whiteSpace: "normal",
         }}
-        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+        dangerouslySetInnerHTML={{ __html: rawHtml  }}
       />
 
       <Box
@@ -506,7 +505,7 @@ export default function InfographicPage() {
                       }}
                     >
                       <div
-                        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+                        dangerouslySetInnerHTML={{ __html: rawHtml  }}
                         aria-label={`Infographic: ${infographicData.infographic.title}`}
                         style={{
                           width: `${stageWidth}px`,
