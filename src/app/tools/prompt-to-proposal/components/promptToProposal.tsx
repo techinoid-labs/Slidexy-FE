@@ -1,5 +1,4 @@
 "use client";
-
 import {
   Box,
   Typography,
@@ -9,75 +8,48 @@ import {
   Chip,
   Stack,
   Alert,
-  LinearProgress,
   Paper,
+  CircularProgress,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_Proposal_API_BASE_URL;
 
-interface GenerationStage {
-  message: string;
-  detail: string;
-  progress: number;
-}
-
-const generationStages: GenerationStage[] = [
-  { message: "Initializing AI Engine", detail: "Setting up the proposal generation pipeline...", progress: 5 },
-  { message: "Analyzing Your Prompt", detail: "Understanding requirements and context...", progress: 15 },
-  { message: "Generating Content Structure", detail: "Creating proposal outline and sections...", progress: 30 },
-  { message: "Writing Proposal Content", detail: "Generating detailed content for each section...", progress: 50 },
-  { message: "Formatting Document", detail: "Applying professional styling and layout...", progress: 70 },
-  { message: "Optimizing PDF", detail: "Finalizing document structure...", progress: 85 },
-  { message: "Completing Generation", detail: "Preparing your proposal for download...", progress: 95 },
+const loadingMessages = [
+  "Analyzing your prompt and extracting key requirements...",
+  "Understanding context and identifying proposal objectives...",
+  "Generating comprehensive proposal structure and outline...",
+  "Researching relevant information and gathering insights...",
+  "Writing executive summary and introduction sections...",
+  "Crafting detailed content for methodology and approach...",
+  "Developing timeline, deliverables, and project scope...",
+  "Creating budget breakdown and resource allocation...",
+  "Writing conclusion and call-to-action sections...",
+  "Applying professional formatting and styling...",
+  "Optimizing document layout and visual hierarchy...",
+  "Adding final touches and quality enhancements...",
+  "Finalizing your professional proposal document...",
 ];
 
 export default function PromptToProposal() {
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentStage, setCurrentStage] = useState(0);
-
+  const [loadingMessage, setLoadingMessage] = useState("");
   const router = useRouter();
-  const animationRef = useRef<number | null>(null);
 
-  const startFakeProgress = (onComplete: () => void) => {
-    const DURATION = 18000; // 18s max — feels fast & premium
-    const START = Date.now();
+  const cycleLoadingMessages = () => {
+    let index = 0;
+    setLoadingMessage(loadingMessages[0]);
+    
+    const interval = setInterval(() => {
+      index = (index + 1) % loadingMessages.length;
+      setLoadingMessage(loadingMessages[index]);
+    }, 5000); // Change message every 5 seconds
 
-    const tick = () => {
-      const elapsed = Date.now() - START;
-      const ratio = Math.min(elapsed / DURATION, 1);
-      const easeOutQuint = (t: number) => 1 - Math.pow(1 - t, 5);
-      const eased = easeOutQuint(ratio);
-      const fake = Math.min(eased * 98, 98); // Cap at 98%
-
-      // Map to stages
-      const thresholds = [5, 15, 30, 50, 70, 85, 95];
-      let stage = 0;
-      for (let i = 0; i < thresholds.length; i++) {
-        if (fake >= thresholds[i]) stage = i;
-      }
-
-      setProgress(fake);
-      setCurrentStage(stage);
-
-      if (ratio < 1) {
-        animationRef.current = requestAnimationFrame(tick);
-      }
-    };
-
-    tick();
-
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-      setProgress(100);
-      setCurrentStage(generationStages.length - 1);
-      onComplete();
-    };
+    return interval;
   };
 
   const handleSubmit = async () => {
@@ -88,10 +60,8 @@ export default function PromptToProposal() {
 
     setLoading(true);
     setError("");
-    setProgress(0);
-    setCurrentStage(0);
-
-    const completeProgress = startFakeProgress(() => {});
+    
+    const messageInterval = cycleLoadingMessages();
 
     try {
       const res = await fetch(`${API_BASE_URL}/generate-proposal`, {
@@ -105,15 +75,13 @@ export default function PromptToProposal() {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
 
-      completeProgress();
-
-      setTimeout(() => {
-        sessionStorage.setItem("proposalPrompt", description);
-        sessionStorage.setItem("proposalPdfUrl", url);
-        router.push("/tools/prompt-to-proposal/viewer");
-      }, 600);
+      clearInterval(messageInterval);
+      
+      sessionStorage.setItem("proposalPrompt", description);
+      sessionStorage.setItem("proposalPdfUrl", url);
+      router.push("/tools/prompt-to-proposal/viewer");
     } catch (err: any) {
-      completeProgress();
+      clearInterval(messageInterval);
       setError(err.message || "Something went wrong.");
       setLoading(false);
     }
@@ -140,7 +108,6 @@ export default function PromptToProposal() {
         <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, color: "#1a1a1a", fontSize: { xs: "40px", md: "60px" }, textAlign: "center" }}>
           Prompt-to-Proposal
         </Typography>
-
         <Typography sx={{ color: "#6d6d6d", textAlign: "center", maxWidth: 520, mb: 6, fontSize: { xs: "16px", md: "18px" } }}>
           Elevate your presentations with our AI-powered tool—create polished, professional proposals in seconds.
         </Typography>
@@ -164,7 +131,6 @@ export default function PromptToProposal() {
               minHeight: 224,
             }}
           />
-
           <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
             <Button
               variant="contained"
@@ -181,7 +147,6 @@ export default function PromptToProposal() {
                 fontWeight: 600,
                 boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
                 "&:hover": { bgcolor: "#5B21B6" },
-                "&:disabled": { bgcolor: "rgba(108,43,217,0.5)" },
               }}
             >
               {loading ? "Generating..." : "Generate"}
@@ -195,35 +160,18 @@ export default function PromptToProposal() {
           )}
         </Box>
 
-        {/* Beautiful Loading State */}
         {loading && (
           <Paper elevation={0} sx={{ width: "100%", maxWidth: "926px", p: 4, borderRadius: 2, border: "1px solid #e8e4ff", bgcolor: "white", mb: 4 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: "#6C2BD9" }}>
-              {generationStages[currentStage]?.message || "Finalizing..."}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#6d6d6d", mb: 3 }}>
-              {generationStages[currentStage]?.detail || "Almost done!"}
-            </Typography>
-
-            <LinearProgress
-              variant="determinate"
-              value={progress}
-              sx={{
-                height: 10,
-                borderRadius: 5,
-                mb: 2,
-                bgcolor: "#e8e4ff",
-                "& .MuiLinearProgress-bar": { bgcolor: "#6C2BD9", borderRadius: 5 },
-              }}
-            />
-
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Typography variant="body2" sx={{ color: "#6C2BD9", fontWeight: 600 }}>
-                {Math.round(progress)}% Complete
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#8b6fbf", fontWeight: 500 }}>
-                Polishing your proposal...
-              </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+              <CircularProgress size={40} sx={{ color: "#6C2BD9" }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#6C2BD9" }}>
+                  {loadingMessage}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#6d6d6d" }}>
+                  This usually takes 20-30 seconds
+                </Typography>
+              </Box>
             </Box>
           </Paper>
         )}
