@@ -277,7 +277,7 @@ export default function VideoToDeck() {
             fontWeight: 700,
             mb: 1,
             color: "rgba(26, 26, 26, 1)",
-            fontSize : "60px",
+            fontSize: "60px",
           }}
         >
           Video-to-Deck
@@ -302,7 +302,7 @@ export default function VideoToDeck() {
             width: "100%",
             maxWidth: "926px",
             maxHeight: { xs: "50%", md: "340px" },
-            backgroundColor: "rgba(251, 250, 255, 1)",
+            bgcolor: "rgba(251, 250, 255, 0.5)",
             borderRadius: 1,
             boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
             border: "1px solid rgba(232, 228, 255, 1)",
@@ -321,7 +321,7 @@ export default function VideoToDeck() {
             <FormControl
               variant="outlined"
               sx={{
-                backgroundColor: " rgba(255, 255, 255, 1)",
+                background: "rgba(255, 255, 255, 1)",
                 width: "142px",
                 height: "44px",
                 borderRadius: "10px",

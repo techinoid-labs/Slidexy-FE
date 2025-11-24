@@ -9,10 +9,12 @@ const tools = [
     { label: "Prompt-to-Deck", tag: "Free", route: "/tools/prompt-to-deck" },
     { label: "Video-to-Deck", tag: "New", route: "/tools/video-to-deck" },
     { label: "Web-to-Deck", tag: "New", route: "/tools/web-to-deck" },
-    //{ label: "Prompt-to-eBook", tag: "New", route: "/tools/prompt-to-ebook" },
+    { label: "Prompt-to-eBook", tag: "New", route: "/tools/prompt-to-ebook" },
     { label: "Text-to-Infographics", tag: "New", route: "/tools/text-to-infographics" },
     { label: "Prompt-to-Template", tag: "New", route: "/tools/prompt-to-template" },
     { label: "Url-to-Website", tag: "New", route: "/tools/url-to-website" },
+    { label: "Prompt-to-Proposal", tag: "New", route: "/tools/prompt-to-proposal" },
+    { label: "Prompt-to-Video", tag: "New", route: "/tools/prompt-to-video" },
 ];
 
 export default function Services() {
@@ -63,7 +65,7 @@ export default function Services() {
                     opacity: 0.25, // 👈 more subtle blend with white background
                     mixBlendMode: "multiply", // 👈 visually merges with background
                     pointerEvents: "none",
-                    width: { xs: 300, md: 600 }, // slightly larger to fill top area
+                    width: { xs: 300, md: 550 }, // slightly larger to fill top area
                     height: { xs: 220, md: 500 },
                     zIndex: 0, // stays behind content
                 }}
@@ -96,13 +98,12 @@ export default function Services() {
                 <Box
                     sx={{
                         display: "grid",
-                        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr" },
+                        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
                         gap: { xs: 3, md: 2 },
-                        width: "100%",
                         justifyItems: "center",
                     }}
                 >
-                    {tools.slice(0, 3).map((tool, i) => (
+                    {tools.slice(0, 4).map((tool, i) => (
                         <Box
                             key={i}
                             onClick={() => router.push(tool.route)}
@@ -191,7 +192,7 @@ export default function Services() {
                         justifyItems: "center",
                     }}
                 >
-                    {tools.slice(3, 7).map((tool, i) => (
+                    {tools.slice(4, 8).map((tool, i) => (
                         <Box
                             key={i + 3}
                             onClick={() => router.push(tool.route)}

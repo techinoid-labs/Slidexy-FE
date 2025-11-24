@@ -224,7 +224,7 @@ export default function TextToInfographics() {
                     sx={{
                         width: "100%",
                         maxWidth: "926px",
-                        bgcolor: "rgba(251, 250, 255, 1)",
+                        bgcolor: "rgba(251, 250, 255, 0.5)",
                         borderRadius: 1,
                         boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
                         border: "1px solid rgba(232, 228, 255, 1)",
@@ -232,21 +232,56 @@ export default function TextToInfographics() {
                         mb: 4,
                     }}
                 >
-                    <FormControl
+
+                    <Box
                         sx={{
-                            mb: 2,
-                            width: "142px",
-                            backgroundColor: "white",
-                            "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                            display: "flex",
+                            justifyContent: "flex-start",
+                            mb: 1,
                         }}
                     >
-                        <InputLabel>Select Goal</InputLabel>
-                        <Select value={goal} onChange={(e) => setGoal(e.target.value)} disabled={loading}>
-                            <MenuItem value="pitch">Pitch Deck</MenuItem>
-                            <MenuItem value="education">Educational Deck</MenuItem>
-                            <MenuItem value="marketing">Marketing Presentation</MenuItem>
-                        </Select>
-                    </FormControl>
+                        <FormControl
+                            variant="outlined"
+                            sx={{
+                                backgroundColor: " rgba(255, 255, 255, 1)",
+                                width: "142px",
+                                height: "44px",
+                                borderRadius: "10px",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+                                "& .MuiOutlinedInput-notchedOutline": {
+                                    border: "none",
+                                },
+                                "& .MuiSelect-select": {
+                                    py: "8px",
+                                },
+                            }}
+                        >
+                            <InputLabel
+                                sx={{
+                                    fontSize: "14px",
+                                    fontFamily: "Raleway",
+                                }}
+                            >
+                                Select Goal
+                            </InputLabel>
+                            <Select
+                                value={goal}
+                                label="Select Goal"
+                                onChange={(e) => setGoal(e.target.value)}
+                                disabled={loading}
+                                sx={{
+                                    backgroundColor: "#fff",
+                                    height: "44px",
+                                    fontSize: "14px",
+                                }}
+                            >
+                                <MenuItem value="pitch">Pitch Deck</MenuItem>
+                                <MenuItem value="education">Educational Deck</MenuItem>
+                                <MenuItem value="marketing">Marketing Presentation</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+
 
                     <TextField
                         fullWidth

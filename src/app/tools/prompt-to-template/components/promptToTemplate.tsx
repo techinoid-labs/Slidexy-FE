@@ -355,7 +355,7 @@ export default function PromptToTemplate() {
           sx={{
             width: "100%",
             maxWidth: "926px",
-            backgroundColor: "rgba(251, 250, 255, 1)",
+            bgcolor: "rgba(251, 250, 255, 0.5)",
             borderRadius: 1,
             boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
             border: "1px solid rgba(232, 228, 255, 1)",
