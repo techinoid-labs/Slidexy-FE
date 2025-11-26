@@ -47,7 +47,7 @@ export default function PromptToProposal() {
     const interval = setInterval(() => {
       index = (index + 1) % loadingMessages.length;
       setLoadingMessage(loadingMessages[index]);
-    }, 5000); // Change message every 5 seconds
+    }, 5000);
 
     return interval;
   };
@@ -70,16 +70,29 @@ export default function PromptToProposal() {
         body: JSON.stringify({ prompt: description }),
       });
 
-      if (!res.ok) throw new Error("Failed to generate proposal.");
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to generate proposal.");
+      }
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      // Parse JSON response instead of blob
+      const data = await res.json();
 
       clearInterval(messageInterval);
       
-      sessionStorage.setItem("proposalPrompt", description);
-      sessionStorage.setItem("proposalPdfUrl", url);
-      router.push("/tools/prompt-to-proposal/viewer");
+      // Check if generation was successful
+      if (data.success && data.pdfUrl) {
+        // Store the necessary data
+        sessionStorage.setItem("proposalPrompt", description);
+        sessionStorage.setItem("proposalPdfUrl", data.pdfUrl);
+        sessionStorage.setItem("proposalId", data.proposalId);
+        sessionStorage.setItem("proposalTitle", data.title);
+        
+        // Navigate to viewer
+        router.push("/tools/prompt-to-proposal/viewer");
+      } else {
+        throw new Error(data.error || "Failed to generate proposal.");
+      }
     } catch (err: any) {
       clearInterval(messageInterval);
       setError(err.message || "Something went wrong.");
@@ -169,7 +182,7 @@ export default function PromptToProposal() {
                   {loadingMessage}
                 </Typography>
                 <Typography variant="body2" sx={{ color: "#6d6d6d" }}>
-                  This usually takes 20-30 seconds
+                  Please be patient AI is crafting your proposal...
                 </Typography>
               </Box>
             </Box>
