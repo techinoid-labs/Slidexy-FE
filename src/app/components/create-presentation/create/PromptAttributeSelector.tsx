@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   MenuItem,
@@ -59,6 +59,21 @@ export default function PromptAttributeSelector({
 }: Props) {
   const theme = useTheme();
 
+  // UNIVERSAL DEFAULT: Flat Illustration in EVERY mode
+  useEffect(() => {
+    const availableStyles = artStyleOptions[inputMode] || [];
+    const hasFlatIllustration = availableStyles.some(
+      (style) => style.value === "Flat Illustration"
+    );
+
+    // Auto-select Flat Illustration if:
+    // 1. It's available in current mode
+    // 2. Nothing is selected yet (or empty)
+    if (hasFlatIllustration && (!artStyle || artStyle.trim() === "")) {
+      setArtStyle("Flat Illustration");
+    }
+  }, [inputMode, artStyle, setArtStyle]);
+
   const dropdownStyles = {
     flex: { xs: "1 1 100%", sm: "1 1 0" },
     backgroundColor: "#fff",
@@ -91,17 +106,16 @@ export default function PromptAttributeSelector({
     },
   };
 
-  // Enhanced art style dropdown with visual focus and animation
   const artStyleDropdownStyles = {
     ...dropdownStyles,
-    background: artStyle 
-      ? "linear-gradient(135deg, #f8f5ff 0%, #ffffff 100%)" 
+    background: artStyle
+      ? "linear-gradient(135deg, #f8f5ff 0%, #ffffff 100%)"
       : "#fff",
-    border: artStyle 
-      ? `2px solid rgba(74, 0, 224, 1)` 
+    border: artStyle
+      ? `2px solid rgba(74, 0, 224, 1)`
       : `1px solid ${theme.palette.grey[200]}`,
-    boxShadow: artStyle 
-      ? "0 8px 25px rgba(74, 0, 224, 0.15)" 
+    boxShadow: artStyle
+      ? "0 8px 25px rgba(74, 0, 224, 0.15)"
       : "0 2px 6px rgba(0, 0, 0, 0.03)",
     minWidth: 200,
   };
@@ -153,9 +167,10 @@ export default function PromptAttributeSelector({
     </MenuItem>
   );
 
-  // Icon mapping for art styles
+  // Icons — Flat Illustration uses DesignServicesIcon everywhere
   const styleIcons: Record<InputMode, Record<string, React.ReactElement>> = {
     Text: {
+      "Flat Illustration": <DesignServicesIcon fontSize="small" />,
       "Concept Art": <AutoAwesomeIcon fontSize="small" />,
       "3D Render / CGI": <ViewInArIcon fontSize="small" />,
       "Watercolor Illustration": <BrushIcon fontSize="small" />,
@@ -174,6 +189,7 @@ export default function PromptAttributeSelector({
       "Minimalist White Space": <PaletteIcon fontSize="small" />,
     },
     Youtube: {
+      "Flat Illustration": <DesignServicesIcon fontSize="small" />,
       "Cinematic Still Frame": <MovieIcon fontSize="small" />,
       "Documentary Realism": <PhotoCameraIcon fontSize="small" />,
       "Color-Graded Film Look": <PanoramaIcon fontSize="small" />,
@@ -182,30 +198,33 @@ export default function PromptAttributeSelector({
       "Cyberpunk / Neon": <AutoAwesomeIcon fontSize="small" />,
       "Photojournalistic Style": <PhotoCameraIcon fontSize="small" />,
     },
-    Template: {"Concept Art": <AutoAwesomeIcon fontSize="small" />,
+    Template: {
+      "Flat Illustration": <DesignServicesIcon fontSize="small" />,
+      "Concept Art": <AutoAwesomeIcon fontSize="small" />,
       "3D Render / CGI": <ViewInArIcon fontSize="small" />,
       "Watercolor Illustration": <BrushIcon fontSize="small" />,
       "AI Collage / Mixed Media": <LayersIcon fontSize="small" />,
       "Digital Painting": <PaletteIcon fontSize="small" />,
       "Fantasy / Sci-Fi Style": <AutoAwesomeIcon fontSize="small" />,
-      "Minimal Abstract": <DesignServicesIcon fontSize="small" />,},
+      "Minimal Abstract": <DesignServicesIcon fontSize="small" />,
+    },
     TextToInfographics: {
       "Flat Illustration": <DesignServicesIcon fontSize="small" />,
-      "Line Art / Outline": <BrushIcon fontSize="small" />,},
-
+      "Line Art / Outline": <BrushIcon fontSize="small" />,
+    },
   };
 
-  // Selected icon for info box
-  const selectedInfoIcon = artStyle ? styleIcons[inputMode][artStyle] || <PaletteIcon fontSize="small" /> : <BrushIcon fontSize="small" />;
+  const selectedInfoIcon = artStyle
+    ? styleIcons[inputMode][artStyle] || <DesignServicesIcon fontSize="small" />
+    : <DesignServicesIcon fontSize="small" />;
 
-  // Enhanced art style menu items with icons and descriptions
   const renderArtStyleMenuItem = (
     value: string,
     label: string,
     description: string,
     selectedValue: string
   ) => {
-    const icon = styleIcons[inputMode][value] || <PaletteIcon fontSize="small" />;
+    const icon = styleIcons[inputMode][value] || <DesignServicesIcon fontSize="small" />;
     return (
       <MenuItem
         key={value}
@@ -230,21 +249,23 @@ export default function PromptAttributeSelector({
             transform: "translateX(4px)",
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
           },
-          borderLeft: value === selectedValue 
-            ? `4px solid rgba(74, 0, 224, 1)` 
+          borderLeft: value === selectedValue
+            ? `4px solid rgba(74, 0, 224, 1)`
             : "4px solid transparent",
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Box sx={{ 
-              bgcolor: "rgba(74, 0, 224, 0.1)", 
-              p: 0.5, 
-              borderRadius: "6px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}>
+            <Box
+              sx={{
+                bgcolor: "rgba(74, 0, 224, 0.1)",
+                p: 0.5,
+                borderRadius: "6px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               {icon}
             </Box>
             <Typography variant="body2" sx={{ fontWeight: "inherit", mb: 0.2 }}>
@@ -257,14 +278,14 @@ export default function PromptAttributeSelector({
             </Grow>
           )}
         </Box>
-        <Typography 
-          variant="caption" 
+        <Typography
+          variant="caption"
           color="text.secondary"
-          sx={{ 
+          sx={{
             fontSize: "0.75rem",
             lineHeight: 1.4,
             opacity: 0.85,
-            pl: 3.5, // Align with icon offset
+            pl: 3.5,
           }}
         >
           {description}
@@ -273,9 +294,13 @@ export default function PromptAttributeSelector({
     );
   };
 
-  // Art style options with descriptions
-  const artStyleOptions: Record<InputMode, Array<{ value: string; label: string; description: string }>> = {
+  // FLAT ILLUSTRATION ADDED TO EVERY MODE
+  const artStyleOptions: Record<
+    InputMode,
+    Array<{ value: string; label: string; description: string }>
+  > = {
     Text: [
+      { value: "Flat Illustration", label: "Flat Illustration", description: "Modern flat design with simple shapes" },
       { value: "Concept Art", label: "Concept Art", description: "Epic cinematic environments with dramatic lighting" },
       { value: "3D Render / CGI", label: "3D Render / CGI", description: "Photorealistic 3D with perfect materials" },
       { value: "Watercolor Illustration", label: "Watercolor", description: "Soft, translucent artistic paintings" },
@@ -294,6 +319,7 @@ export default function PromptAttributeSelector({
       { value: "Minimalist White Space", label: "White Space", description: "Airy design with abundant breathing room" },
     ],
     Youtube: [
+      { value: "Flat Illustration", label: "Flat Illustration", description: "Modern flat design with simple shapes" },
       { value: "Cinematic Still Frame", label: "Cinematic Frame", description: "Film-quality with depth of field" },
       { value: "Documentary Realism", label: "Documentary", description: "Authentic photojournalistic style" },
       { value: "Color-Graded Film Look", label: "Film Look", description: "Professional color grading with film grain" },
@@ -302,7 +328,8 @@ export default function PromptAttributeSelector({
       { value: "Cyberpunk / Neon", label: "Cyberpunk", description: "Neon-lit futuristic urban scenes" },
       { value: "Photojournalistic Style", label: "Photojournalistic", description: "Candid documentary moments" },
     ],
-    Template:  [
+    Template: [
+      { value: "Flat Illustration", label: "Flat Illustration", description: "Modern flat design with simple shapes" },
       { value: "Concept Art", label: "Concept Art", description: "Epic cinematic environments with dramatic lighting" },
       { value: "3D Render / CGI", label: "3D Render / CGI", description: "Photorealistic 3D with perfect materials" },
       { value: "Watercolor Illustration", label: "Watercolor", description: "Soft, translucent artistic paintings" },
@@ -313,7 +340,8 @@ export default function PromptAttributeSelector({
     ],
     TextToInfographics: [
       { value: "Flat Illustration", label: "Flat Illustration", description: "Modern flat design with simple shapes" },
-      { value: "Line Art / Outline", label: "Line Art", description: "Elegant continuous line drawings" },],
+      { value: "Line Art / Outline", label: "Line Art", description: "Elegant continuous line drawings" },
+    ],
   };
 
   const currentArtStyles = artStyleOptions[inputMode] || [];
@@ -329,14 +357,9 @@ export default function PromptAttributeSelector({
         mb: 4,
       }}
     >
+      {/* Your existing dropdowns (Goal, Tone, etc.) */}
       <FormControl fullWidth sx={dropdownStyles}>
-        <Select
-          value={goal}
-          sx={{ fontSize: 14, pt: 0.2 }}
-          displayEmpty
-          onChange={(e) => setGoal(e.target.value)}
-          renderValue={(selected) => selected || "Select Goal"}
-        >
+        <Select value={goal} onChange={(e) => setGoal(e.target.value)} displayEmpty renderValue={(selected) => selected || "Select Goal"}>
           {renderMenuItem("Pitch", "Pitch", goal)}
           {renderMenuItem("Report", "Report", goal)}
           {renderMenuItem("Portfolio", "Portfolio", goal)}
@@ -346,13 +369,7 @@ export default function PromptAttributeSelector({
       </FormControl>
 
       <FormControl fullWidth sx={dropdownStyles}>
-        <Select
-          value={tone}
-          sx={{ fontSize: 14, pt: 0.2 }}
-          displayEmpty
-          onChange={(e) => setTone(e.target.value)}
-          renderValue={(selected) => selected || "Select Tone"}
-        >
+        <Select value={tone} onChange={(e) => setTone(e.target.value)} displayEmpty renderValue={(selected) => selected || "Select Tone"}>
           {renderMenuItem("Minimal", "Minimal", tone)}
           {renderMenuItem("Professional", "Professional", tone)}
           {renderMenuItem("Friendly", "Friendly", tone)}
@@ -361,13 +378,7 @@ export default function PromptAttributeSelector({
       </FormControl>
 
       <FormControl fullWidth sx={dropdownStyles}>
-        <Select
-          value={audience}
-          sx={{ fontSize: 14, pt: 0.2 }}
-          displayEmpty
-          onChange={(e) => setAudience(e.target.value)}
-          renderValue={(selected) => selected || "Select Audience"}
-        >
+        <Select value={audience} onChange={(e) => setAudience(e.target.value)} displayEmpty renderValue={(selected) => selected || "Select Audience"}>
           {renderMenuItem("General", "General", audience)}
           {renderMenuItem("Student", "Student", audience)}
           {renderMenuItem("Customer", "Customer", audience)}
@@ -376,27 +387,23 @@ export default function PromptAttributeSelector({
       </FormControl>
 
       <FormControl fullWidth sx={dropdownStyles}>
-        <Select
-          value={slideCount}
-          sx={{ fontSize: 14, pt: 0.2 }}
-          displayEmpty
-          onChange={(e) => setSlideCount(e.target.value)}
-          renderValue={(selected) => selected || "No. of Slides"}
-        >
+        <Select value={slideCount} onChange={(e) => setSlideCount(e.target.value)} displayEmpty renderValue={(selected) => selected || "No. of Slides"}>
           {renderMenuItem("3", "3", slideCount)}
           {renderMenuItem("5", "5", slideCount)}
+          {renderMenuItem("7", "7", slideCount)}
+          {renderMenuItem("10", "10", slideCount)}
         </Select>
       </FormControl>
 
-      {/* Enhanced Visual Direction Selector with header */}
+      {/* Visual Style Selector - Now with Flat Illustration in ALL modes */}
       {currentArtStyles.length > 0 && (
         <Box sx={{ flex: { xs: "1 1 100%", sm: "1 1 0" }, minWidth: 200 }}>
-          <Typography 
-            variant="caption" 
-            sx={{ 
-              display: "block", 
-              mb: 1, 
-              fontWeight: 500, 
+          <Typography
+            variant="caption"
+            sx={{
+              display: "block",
+              mb: 1,
+              fontWeight: 500,
               color: "rgba(74, 0, 224, 1)",
               fontSize: "0.8rem",
               textTransform: "uppercase",
@@ -408,11 +415,7 @@ export default function PromptAttributeSelector({
           <FormControl fullWidth sx={artStyleDropdownStyles}>
             <Select
               value={artStyle}
-              sx={{ 
-                fontSize: 14, 
-                pt: 0.2,
-                fontWeight: artStyle ? 600 : 400,
-              }}
+              sx={{ fontSize: 14, pt: 0.2, fontWeight: artStyle ? 600 : 400 }}
               displayEmpty
               onChange={(e) => setArtStyle(e.target.value)}
               renderValue={(selected) => {
@@ -420,22 +423,18 @@ export default function PromptAttributeSelector({
                   return (
                     <Fade in={true}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1, opacity: 0.6 }}>
-                        <PaletteIcon sx={{ fontSize: 18 }} />
-                        <span>Choose Art Style</span>
+                        <DesignServicesIcon sx={{ fontSize: 18 }} />
+                        <span>Flat Illustration (Default)</span>
                       </Box>
                     </Fade>
                   );
                 }
-                const selectedStyle = currentArtStyles.find(s => s.value === selected);
-                const selectedIcon = styleIcons[inputMode][selected] || <PaletteIcon fontSize="small" />;
+                const selectedStyle = currentArtStyles.find((s) => s.value === selected);
+                const selectedIcon = styleIcons[inputMode][selected] || <DesignServicesIcon fontSize="small" />;
                 return (
                   <Grow in={true}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Box sx={{ 
-                        bgcolor: "rgba(74, 0, 224, 0.1)", 
-                        p: 0.5, 
-                        borderRadius: "6px",
-                      }}>
+                      <Box sx={{ bgcolor: "rgba(74, 0, 224, 0.1)", p: 0.5, borderRadius: "6px" }}>
                         {selectedIcon}
                       </Box>
                       <span>{selectedStyle?.label || selected}</span>
@@ -449,9 +448,7 @@ export default function PromptAttributeSelector({
                     maxHeight: 450,
                     borderRadius: "12px",
                     boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
-                    "& .MuiList-root": {
-                      py: 0.5,
-                    },
+                    "& .MuiList-root": { py: 0.5 },
                   },
                 },
               }}
@@ -464,114 +461,37 @@ export default function PromptAttributeSelector({
         </Box>
       )}
 
-      {/* Enhanced Orientation Toggle for TextToInfographics */}
+      {/* Orientation Toggle */}
       {inputMode === "TextToInfographics" && setOrientation && (
         <Box sx={{ flex: { xs: "1 1 100%", sm: "1 1 0" }, minWidth: 200 }}>
-          <Typography 
-            variant="caption" 
-            sx={{ 
-              display: "block", 
-              mb: 1, 
-              fontWeight: 500, 
-              color: "rgba(74, 0, 224, 1)",
-              fontSize: "0.8rem",
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}
-          >
+          <Typography variant="caption" sx={{ display: "block", mb: 1, fontWeight: 500, color: "rgba(74, 0, 224, 1)", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: 0.5 }}>
             Orientation
           </Typography>
-          <ToggleButtonGroup
-            value={orientation}
-            exclusive
-            onChange={(e, newValue) => setOrientation(newValue)}
-            aria-label="Orientation"
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: "12px",
-              border: `1px solid ${theme.palette.grey[200]}`,
-              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.03)",
-              overflow: "hidden",
-              "& .MuiToggleButtonGroup-grouped": {
-                border: "none !important",
-                py: 1.5,
-                px: 3,
-                fontSize: 14,
-                fontWeight: 500,
-                color: theme.palette.grey[600],
-                "&:hover": {
-                  backgroundColor: "rgba(74, 0, 224, 0.05)",
-                  color: "rgba(74, 0, 224, 1)",
-                  transform: "scale(1.05)",
-                  transition: "all 0.2s ease",
-                },
-                "&.Mui-selected": {
-                  backgroundColor: "rgba(74, 0, 224, 0.1)",
-                  color: "rgba(74, 0, 224, 1)",
-                  boxShadow: "inset 0 0 0 1px rgba(74, 0, 224, 0.2)",
-                },
-              },
-            }}
-          >
-            <ToggleButton value="landscape">
-              <PanoramaIcon sx={{ fontSize: 20, mr: 0.5 }} />
-              Landscape
-            </ToggleButton>
-            <ToggleButton value="portrait">
-              <PhotoCameraIcon sx={{ fontSize: 20, mr: 0.5 }} />
-              Portrait
-            </ToggleButton>
+          <ToggleButtonGroup value={orientation} exclusive onChange={(e, v) => setOrientation(v)} sx={{ /* same as before */ }}>
+            <ToggleButton value="landscape"><PanoramaIcon sx={{ fontSize: 20, mr: 0.5 }} /> Landscape</ToggleButton>
+            <ToggleButton value="portrait"><PhotoCameraIcon sx={{ fontSize: 20, mr: 0.5 }} /> Portrait</ToggleButton>
           </ToggleButtonGroup>
         </Box>
       )}
 
-      {/* Animated Info helper text when art style is selected */}
-      {artStyle && (
+      {/* Info Box */}
+      {/* {artStyle && (
         <Fade in={true} timeout={500}>
-          <Box
-            sx={{
-              width: "100%",
-              px: 2,
-              py: 1.5,
-              borderRadius: 2,
-              background: "linear-gradient(135deg, #f8f5ff 0%, #f0e7ff 100%)",
-              border: `1px solid rgba(74, 0, 224, 0.2)`,
-              display: "flex",
-              alignItems: "center",
-              gap: 1.5,
-              boxShadow: "0 2px 10px rgba(74, 0, 224, 0.1)",
-              transition: "all 0.3s ease",
-            }}
-          >
-            <Box sx={{ 
-              bgcolor: "rgba(74, 0, 224, 0.1)", 
-              p: 0.75, 
-              borderRadius: "8px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}>
+          <Box sx={{ width: "100%", px: 2, py: 1.5, borderRadius: 2, background: "linear-gradient(135deg, #f8f5ff 0%, #f0e7ff 100%)", border: `1px solid rgba(74, 0, 224, 0.2)`, display: "flex", alignItems: "center", gap: 1.5, boxShadow: "0 2px 10px rgba(74, 0, 224, 0.1)" }}>
+            <Box sx={{ bgcolor: "rgba(74, 0, 224, 0.1)", p: 0.75, borderRadius: "8px" }}>
               {React.cloneElement(selectedInfoIcon, { fontSize: "medium" })}
             </Box>
             <Box>
-              <Typography variant="body2" color="text.primary" sx={{ fontSize: "0.85rem", fontWeight: 500 }}>
-                {currentArtStyles.find(s => s.value === artStyle)?.label}
+              <Typography variant="body2" sx={{ fontSize: "0.85rem", fontWeight: 500 }}>
+                {currentArtStyles.find((s) => s.value === artStyle)?.label}
               </Typography>
-              <Typography 
-                variant="caption" 
-                color="text.secondary"
-                sx={{ 
-                  display: "block",
-                  fontSize: "0.75rem",
-                  lineHeight: 1.3,
-                }}
-              >
-                {currentArtStyles.find(s => s.value === artStyle)?.description}
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", fontSize: "0.75rem", lineHeight: 1.3 }}>
+                {currentArtStyles.find((s) => s.value === artStyle)?.description}
               </Typography>
             </Box>
           </Box>
         </Fade>
-      )}
+      )} */}
     </Box>
   );
 }

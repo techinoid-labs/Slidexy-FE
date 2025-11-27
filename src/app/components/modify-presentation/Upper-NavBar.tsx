@@ -20,6 +20,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
 import PaletteIcon from "@mui/icons-material/Palette";
+import EditIcon from "@mui/icons-material/Edit";
 import { useRouter } from "next/navigation";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
@@ -43,6 +44,7 @@ const UpperNavBar: React.FC<{
   onClearCanvas?: () => void;
   onPreview: () => void;
   onOpenThemePanel: () => void;
+  isThemePanelOpen?: boolean;
   showAuthModal?: any;
   setShowAuthModal?: any;
 }> = ({
@@ -51,6 +53,7 @@ const UpperNavBar: React.FC<{
   onClearCanvas,
   onPreview,
   onOpenThemePanel,
+  isThemePanelOpen = false,
   showAuthModal,
   setShowAuthModal,
 }) => {
@@ -87,33 +90,56 @@ const UpperNavBar: React.FC<{
     setMobileMenuAnchor(null);
   };
 
-  // File name
-  const [fileName, setFileName] = React.useState("Untitled");
+  // File name state
+  const [fileName, setFileName] = React.useState("Untitled Presentation");
   const [editing, setEditing] = React.useState(false);
-  const [error, setError] = React.useState(false);
+  const [tempFileName, setTempFileName] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  // Load saved file name on mount
   React.useEffect(() => {
     const saved = localStorage.getItem("fileName");
     if (saved) setFileName(saved);
   }, []);
 
-  const handleBlur = () => {
-    const trimmed = fileName.trim();
-    if (trimmed.length < 3) {
-      setError(true);
-      const saved = localStorage.getItem("fileName");
-      setFileName(saved || "Untitled");
-    } else {
-      setError(false);
-      localStorage.setItem("fileName", trimmed);
+  // Focus input when editing starts
+  React.useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const handleStartEdit = () => {
+    setTempFileName(fileName);
+    setEditing(true);
+  };
+
+  const handleSave = () => {
+    const trimmed = tempFileName.trim();
+    if (trimmed.length >= 1) {
       setFileName(trimmed);
+      localStorage.setItem("fileName", trimmed);
     }
     setEditing(false);
   };
 
+  const handleCancel = () => {
+    setTempFileName(fileName);
+    setEditing(false);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") inputRef.current?.blur();
+    if (e.key === "Enter") {
+      handleSave();
+    } else if (e.key === "Escape") {
+      handleCancel();
+    }
+  };
+
+  const handleExportWithFileName = (exportFn: () => void) => {
+    // You can pass fileName to export functions if needed
+    exportFn();
   };
 
   return (
@@ -155,54 +181,92 @@ const UpperNavBar: React.FC<{
                 height={20}
               />
             </IconButton>
+            
+            {/* Google Docs Style File Name Editor */}
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
+                alignItems: "center",
+                gap: 0.5,
                 ml: 1,
               }}
             >
               {editing ? (
-                <input
-                  ref={inputRef}
-                  value={fileName}
-                  onChange={(e) => setFileName(e.target.value)}
-                  onBlur={handleBlur}
-                  onKeyDown={handleKeyDown}
-                  autoFocus
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 600,
-                    border: error ? "1px solid red" : "none",
-                    outline: "none",
-                    background: "transparent",
-                    maxWidth: 200,
-                  }}
-                />
-              ) : (
-                <Typography
-                  variant="subtitle1"
-                  onClick={() => setEditing(true)}
+                <Box
                   sx={{
-                    fontWeight: 600,
-                    fontSize: 16,
-                    cursor: "pointer",
-                    "&:hover": { textDecoration: "underline" },
-                    maxWidth: 200,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
+                    display: "flex",
+                    alignItems: "center",
+                    bgcolor: "#f8f9fa",
+                    border: "2px solid #1a73e8",
+                    borderRadius: "4px",
+                    px: 1,
+                    py: 0.5,
+                    minWidth: 200,
+                    maxWidth: 400,
                   }}
                 >
-                  {fileName}
-                </Typography>
+                  <input
+                    ref={inputRef}
+                    value={tempFileName}
+                    onChange={(e) => setTempFileName(e.target.value)}
+                    onBlur={handleSave}
+                    onKeyDown={handleKeyDown}
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 500,
+                      border: "none",
+                      outline: "none",
+                      background: "transparent",
+                      width: "100%",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                </Box>
+              ) : (
+                <Box
+                  onClick={handleStartEdit}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      bgcolor: "#f8f9fa",
+                      "& .edit-icon": {
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 500,
+                      fontSize: 16,
+                      color: "#202124",
+                      maxWidth: 300,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {fileName}
+                  </Typography>
+                  <EditIcon
+                    className="edit-icon"
+                    sx={{
+                      fontSize: 16,
+                      color: "#5f6368",
+                      opacity: 0,
+                      transition: "opacity 0.2s ease",
+                    }}
+                  />
+                </Box>
               )}
-              <Typography
-                variant="caption"
-                sx={{ color: "#888", fontSize: 12 }}
-              >
-                File Type
-              </Typography>
             </Box>
           </Box>
 
@@ -215,10 +279,26 @@ const UpperNavBar: React.FC<{
             }}
           >
             {/* Undo / Redo */}
-            <IconButton onClick={undo} disabled={!canUndo}>
+            <IconButton 
+              onClick={undo} 
+              disabled={!canUndo}
+              sx={{
+                "&:disabled": {
+                  opacity: 0.4,
+                },
+              }}
+            >
               <UndoIcon />
             </IconButton>
-            <IconButton onClick={redo} disabled={!canRedo}>
+            <IconButton 
+              onClick={redo} 
+              disabled={!canRedo}
+              sx={{
+                "&:disabled": {
+                  opacity: 0.4,
+                },
+              }}
+            >
               <RedoIcon />
             </IconButton>
 
@@ -240,7 +320,7 @@ const UpperNavBar: React.FC<{
               />
             </IconButton>
 
-            {/* Theme */}
+            {/* Theme Button with Pressed Effect */}
             <IconButton
               onClick={() => {
                 setSelectedImage(null);
@@ -249,15 +329,41 @@ const UpperNavBar: React.FC<{
                 setSelectedTextId(null);
                 onOpenThemePanel();
               }}
+              sx={{
+                position: "relative",
+                bgcolor: isThemePanelOpen ? "rgba(142, 45, 226, 0.1)" : "transparent",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  bgcolor: isThemePanelOpen 
+                    ? "rgba(142, 45, 226, 0.15)" 
+                    : "rgba(0, 0, 0, 0.04)",
+                },
+                "&::before": isThemePanelOpen ? {
+                  content: '""',
+                  position: "absolute",
+                  bottom: 0,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "70%",
+                  height: "3px",
+                  bgcolor: "#8E2DE2",
+                  borderRadius: "3px 3px 0 0",
+                } : {},
+              }}
             >
-              <PaletteIcon />
+              <PaletteIcon 
+                sx={{ 
+                  color: isThemePanelOpen ? "#8E2DE2" : "inherit",
+                  transition: "color 0.2s ease",
+                }} 
+              />
             </IconButton>
 
             {/* Export Buttons (desktop only) */}
             {!isMobile && (
               <>
                 <Box
-                  onClick={onExportPDF}
+                  onClick={() => handleExportWithFileName(onExportPDF)}
                   sx={{
                     bgcolor: "#18181B",
                     background:
@@ -269,13 +375,21 @@ const UpperNavBar: React.FC<{
                     cursor: "pointer",
                     fontSize: 14,
                     fontWeight: 600,
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 4px 12px rgba(142, 45, 226, 0.3)",
+                    },
+                    "&:active": {
+                      transform: "translateY(0)",
+                    },
                   }}
                 >
                   Export as PDF
                 </Box>
                 {onExportPPT && (
                   <Box
-                    onClick={onExportPPT}
+                    onClick={() => handleExportWithFileName(onExportPPT)}
                     sx={{
                       bgcolor: "#18181B",
                       background:
@@ -287,6 +401,14 @@ const UpperNavBar: React.FC<{
                       cursor: "pointer",
                       fontSize: 14,
                       fontWeight: 600,
+                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 4px 12px rgba(142, 45, 226, 0.3)",
+                      },
+                      "&:active": {
+                        transform: "translateY(0)",
+                      },
                     }}
                   >
                     Export as PPTX
@@ -305,6 +427,14 @@ const UpperNavBar: React.FC<{
                     cursor: "pointer",
                     fontSize: 14,
                     fontWeight: 600,
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 4px 12px rgba(142, 45, 226, 0.3)",
+                    },
+                    "&:active": {
+                      transform: "translateY(0)",
+                    },
                   }}
                 >
                   Clear Canvas
@@ -326,18 +456,24 @@ const UpperNavBar: React.FC<{
           </Box>
         </Toolbar>
 
-        {/* Mobile Menu (no profile here anymore) */}
+        {/* Mobile Menu */}
         <Menu
           anchorEl={mobileMenuAnchor}
           open={Boolean(mobileMenuAnchor)}
           onClose={handleMobileMenuClose}
         >
-          <MenuItem onClick={onExportPDF}>Export as PDF</MenuItem>
+          <MenuItem onClick={() => { handleExportWithFileName(onExportPDF); handleMobileMenuClose(); }}>
+            Export as PDF
+          </MenuItem>
           {onExportPPT && (
-            <MenuItem onClick={onExportPPT}>Export as PPTX</MenuItem>
+            <MenuItem onClick={() => { handleExportWithFileName(onExportPPT); handleMobileMenuClose(); }}>
+              Export as PPTX
+            </MenuItem>
           )}
           {onClearCanvas && (
-            <MenuItem onClick={onClearCanvas}>Clear Canvas</MenuItem>
+            <MenuItem onClick={() => { onClearCanvas(); handleMobileMenuClose(); }}>
+              Clear Canvas
+            </MenuItem>
           )}
           <Divider />
           <MenuItem

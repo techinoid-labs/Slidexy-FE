@@ -4,6 +4,7 @@ import React from "react";
 import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
 import { renderSlideElements } from "../../../utils/renderSlideElements";
 import useImage from "use-image";
+import { getSlideDimensions } from "../../../utils/slideUtils";
 
 const SlideRenderer = ({
   slide,
@@ -17,34 +18,34 @@ const SlideRenderer = ({
     font?: string;
   };
 }) => {
-  const { elements, slide_title } = slide;
-  const [bgImage] = useImage(theme?.image_url || "");
-
-  const SLIDE_WIDTH = 960;
-  const SLIDE_HEIGHT = 700;
-
+  const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
+  const { elements, slide_title, background } = slide;
   const titleProps = slide_title?.properties || {};
+
+  const bgUrl = background?.type === "image" ? background.url : theme?.image_url || "";
+  const [bgImage] = useImage(bgUrl);
 
   return (
     <Stage width={SLIDE_WIDTH} height={SLIDE_HEIGHT}>
       <Layer>
         {/* Background */}
-        {theme?.image_url && bgImage ? (
-          <KonvaImage
-            image={bgImage}
-            x={0}
-            y={0}
+        {bgUrl && bgImage ? (
+          <KonvaImage image={bgImage} width={SLIDE_WIDTH} height={SLIDE_HEIGHT} />
+        ) : background?.type === "linear" && background.gradient ? (
+          <Rect
             width={SLIDE_WIDTH}
             height={SLIDE_HEIGHT}
+            fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+            fillLinearGradientEndPoint={{ x: SLIDE_WIDTH, y: SLIDE_HEIGHT }}
+            fillLinearGradientColorStops={
+              background.gradient.stops || [0, background.gradient.start, 1, background.gradient.end]
+            }
           />
         ) : (
           <Rect
-            name="background"
-            x={0}
-            y={0}
             width={SLIDE_WIDTH}
             height={SLIDE_HEIGHT}
-            fill={theme?.backgroundColor || "#fff"}
+            fill={background?.color || theme?.backgroundColor || "#ffffff"}
           />
         )}
 
@@ -68,10 +69,7 @@ const SlideRenderer = ({
                 fill: slide_title.useThemeColor
                   ? theme?.primaryColor || "#000"
                   : titleProps.fill || "#000",
-                fontFamily:
-                  theme?.font ||
-                  titleProps.fontFamily ||
-                  "Arial",
+                fontFamily: theme?.font || titleProps.fontFamily || "Arial",
               },
             },
           ])}
@@ -84,13 +82,8 @@ const SlideRenderer = ({
               ...el,
               properties: {
                 ...props,
-                fill: el.useThemeColor
-                  ? theme?.primaryColor || "#000"
-                  : props.fill || "#000",
-                fontFamily:
-                  theme?.font ||
-                  props.fontFamily ||
-                  "Arial",
+                fill: el.useThemeColor ? theme?.primaryColor || "#000" : props.fill || "#000",
+                fontFamily: theme?.font || props.fontFamily || "Arial",
               },
             };
           })

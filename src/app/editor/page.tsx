@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useRef, useState, useEffect } from "react";
 import SideNavBar from "../components/modify-presentation/Side-NavBar";
 import UpperNavBar from "../components/modify-presentation/Upper-NavBar";
@@ -32,41 +31,106 @@ import { useTemplateSlides } from "../context/TemplateSlidesContext";
 import { useUser } from "../context/AuthContext";
 import { getContrastingBackground } from "@/utils/colorUtils";
 import { getRandomSlide } from "@/utils/slideUtils";
+import { generateSlideVariants } from "@/utils/variantGenerator";
+import snapshotsCache from "@/utils/snapshotsCache";
+
 
 const Page = () => {
   const [showTemplatePanel, setShowTemplatePanel] = useState(false);
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
+
   const {
     slides,
     selectedSlideIndex,
     setSlides,
+    setSelectedSlideIndex,
     setSelectedTextId,
     selectedTextId,
     selectedImageIndex,
     selectedImage,
     selectedShapeIndex,
+    setSelectedShapeId,
     setSelectedImageIndex,
     setSelectedImage,
     isMobileImageSelected,
     setIsMobileImageSelected,
     setSelectedShapeIndex,
   } = useSlides();
-  const { selectedTheme } = useSlideThemeContext();
+  const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const { presentationId } = useTemplateSlides();
   const dispatch = useDispatch();
   const router = useRouter();
-  const stageRefs = useRef<(HTMLCanvasElement | null)[]>([]);
+  const stageRefs = useRef<any[]>([]);
   const [initialSlides] = useState(() => slides);
   const [isMobileTextSelected, setIsMobileTextSelected] = useState(false);
-  const [showRightPanel, setShowRightPanel] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(true);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
   const [previewOpen, setPreviewOpen] = useState(false);
   const { data: session } = useSession();
   const { user, loading } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  // FIXED: State to track if there was a selection before deselect
   const [hadSelection, setHadSelection] = useState(false);
+
+  // Fetch presentation slides on mount or when presentationId changes
+  useEffect(() => {
+    if (presentationId) {
+      const fetchPresentation = async () => {
+        try {
+          const response = await fetch(`/api/presentations/${presentationId}`);
+          if (response.ok) {
+            const data = await response.json();
+            let fetchedSlides = data.slides || [];
+
+            fetchedSlides = fetchedSlides.map((slide: any) => {
+              if (slide.layouts && slide.layouts.length > 0) {
+                return slide;
+              }
+
+              const newLayouts = generateSlideVariants(
+                slide,
+                selectedTheme || {
+                  backgroundColor: '#fff',
+                  primaryColor: '#000',
+                  artPalette: ['#000', '#333', '#000', '#fff', '#fff']
+                }
+              );
+              const variant0 = newLayouts[0] || slide;
+              return {
+                ...slide,
+                layouts: newLayouts,
+                currentVariantIndex: 0,
+                slide_title: variant0.slide_title || slide.slide_title,
+                subtitle: variant0.subtitle || slide.subtitle,
+                background: variant0.background || slide.background,
+                elements: variant0.elements || slide.elements,
+              };
+            });
+
+            console.log('Editor: Loaded slides with latest updates:', fetchedSlides.length);
+            setSlides(fetchedSlides);
+          }
+        } catch (error) {
+          console.error("Failed to fetch presentation:", error);
+        }
+      };
+      fetchPresentation();
+    }
+  }, [presentationId, setSlides, selectedTheme]);
+
+  useEffect(() => {
+    if (slides.length > 0 && (selectedSlideIndex === undefined || selectedSlideIndex === -1)) {
+      setSelectedSlideIndex(0);
+    }
+  }, [slides.length, selectedSlideIndex, setSelectedSlideIndex]);
+
+  useEffect(() => {
+    const hasSelection = selectedTextId !== null || selectedImageIndex !== null || selectedShapeIndex !== null;
+    if (hasSelection) {
+      setIsThemePanelOpen(false);
+    }
+  }, [selectedTextId, selectedImageIndex, selectedShapeIndex]);
 
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
@@ -82,34 +146,55 @@ const Page = () => {
   const handleClearCanvas = () => {
     if (selectedSlideIndex < 0 || selectedSlideIndex >= slides.length) return;
 
-    const newSlides = [...slides];
-    newSlides[selectedSlideIndex] = {
-      ...newSlides[selectedSlideIndex],
+    console.log('[ClearCanvas] Starting canvas clear...');
+
+    const newSlides = structuredClone(slides);
+    const currentSlide = newSlides[selectedSlideIndex];
+
+    const blankSlide = {
+      ...currentSlide,
       slide_title: {
         konva_component: "Konva.Text",
         text: "",
         properties: {
-          fontSize: 14,
-          fontWeight: "normal",
-          fontFamily: "Roboto",
-          fill: "#444",
+          fontSize: 36,
+          fontWeight: "700",
+          fontFamily: "Raleway",
+          fill: selectedTheme?.primaryColor || "#000",
           fontStyle: "normal",
-          align: "left",
-          x: 0,
-          y: 25,
-          width: 220,
+          align: "center",
+          x: 25,
+          y: 40,
+          width: 800,
           height: 0,
-          radius: 0,
-          numPoints: 0,
-          innerRadius: 0,
-          outerRadius: 0,
         },
       },
+      subtitle: undefined,
       elements: [],
       image_url: "",
+      image_placeholder: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      },
     };
 
+    const freshLayouts = generateSlideVariants(blankSlide, selectedTheme);
+    blankSlide.layouts = freshLayouts;
+    blankSlide.currentVariantIndex = 0;
+
+    newSlides[selectedSlideIndex] = blankSlide;
     setSlides(newSlides);
+
+    setSelectedTextId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+    setSelectedShapeIndex(null);
+    setIsMobileTextSelected(false);
+    setIsMobileImageSelected(false);
+
+    console.log('[ClearCanvas] Canvas cleared successfully');
   };
 
   const handleExportPPTX = () => {
@@ -118,17 +203,13 @@ const Page = () => {
     if (session?.user || user) {
       setShowAuthModal(false);
 
-      // FIXED: Enhanced structuring for PPT export to include gradients and backgrounds properly
       const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
         const elements: StructuredSlide["elements"] = [];
 
-        // FIXED: Handle background gradient explicitly
         const background = slide.elements.find((el: any) => el.element_type === "background");
-        // Do not push a "background" element_type, just extract properties for later use
-        // If needed, pass background info via a separate property below
 
         slide.elements?.forEach((el: any) => {
-          if (el.element_type === "background") return; // Already handled
+          if (el.element_type === "background") return;
 
           const { element_type, text, properties = {}, konva_component } = el;
           const {
@@ -144,7 +225,6 @@ const Page = () => {
             fontStyle,
             fontWeight,
             imageSrc,
-            // FIXED: Include shape-specific props for better export
             stroke,
             strokeWidth,
             radius,
@@ -238,18 +318,17 @@ const Page = () => {
           slide_id: slide.slide_id,
           slide_title: slideTitle
             ? {
-                text: slideTitle,
-                properties: {
-                  fontSize: slideTitleProps.fontSize,
-                  fill: slideTitleProps.fill?.replace("#", ""),
-                  fontStyle: slideTitleProps.fontStyle,
-                  fontFamily: slideTitleProps.fontFamily,
-                },
-              }
+              text: slideTitle,
+              properties: {
+                fontSize: slideTitleProps.fontSize,
+                fill: slideTitleProps.fill?.replace("#", ""),
+                fontStyle: slideTitleProps.fontStyle,
+                fontFamily: slideTitleProps.fontFamily,
+              },
+            }
             : undefined,
           elements,
           image_url: slide.image_url,
-          // FIXED: Pass theme/gradient info for slide background
           backgroundGradient: background?.properties?.gradientColors || [],
         };
       });
@@ -263,12 +342,18 @@ const Page = () => {
   const isTextSelected =
     selectedTextId !== null &&
     selectedTextId !== "" &&
-    !selectedImageIndex &&
-    !selectedShapeIndex;
+    selectedImageIndex === null &&
+    selectedShapeIndex === null;
+
   const isShapeSelected =
-    selectedShapeIndex !== null && !selectedTextId && !selectedImageIndex;
+    selectedShapeIndex !== null &&
+    selectedTextId === null &&
+    selectedImageIndex === null;
+
   const isImageSelected =
-    selectedImageIndex !== null && !selectedTextId && !selectedShapeIndex;
+    selectedImageIndex !== null &&
+    selectedTextId === null &&
+    selectedShapeIndex === null;
 
   const handleExportPDF = () => {
     if (loading) return;
@@ -282,49 +367,54 @@ const Page = () => {
   };
 
   const handleOpenThemePanel = () => {
-    setIsThemePanelOpen(true);
-    setIsMobileTextSelected(false);
-    setIsMobileImageSelected(false);
     setSelectedTextId(null);
     setSelectedImageIndex(null);
     setSelectedImage(null);
     setSelectedShapeIndex(null);
+    setIsMobileTextSelected(false);
+    setIsMobileImageSelected(false);
+    setIsThemePanelOpen(true);
   };
 
   const handleCloseThemePanel = () => {
     setIsThemePanelOpen(false);
   };
 
-const handleDeselect = () => {
-  setSelectedTextId(null);
-  setSelectedImageIndex(null);
-  setSelectedImage(null);
-  setSelectedShapeIndex(null);
-  setIsMobileTextSelected(false);
-  setIsMobileImageSelected(false);
-  
-  if (isMobile) {
-    setIsThemePanelOpen(true);
-  } else {
-    setShowRightPanel(true); // IMPORTANT: Add this line
-  }
-};
+  const handleDeselect = () => {
+    setSelectedTextId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+    setSelectedShapeIndex(null);
+    setIsMobileTextSelected(false);
+    setIsMobileImageSelected(false);
 
-// In your SlideEditor section, modify the onDeselect handling:
-<SlideEditor 
-  slides={slides} 
-  stageRefs={stageRefs} 
-  onDeselect={handleDeselect}
-  slideCount={slides.length}
-/>
-
-// The right panel will automatically show ThemePanel when nothing is selected
-// because of this condition in your JSX:
-{!isTextSelected && !isImageSelected && !isShapeSelected && (
-  <ThemePanel parsedSlides={slides} resetAll={resetAll} />
-)}
-
-  // FIXED: Track previous selection to open theme only after deselect
+    if (isMobile) {
+      setIsThemePanelOpen(true);
+    } else {
+      setShowRightPanel(true);
+    }
+  };
+const deselectAllRef = useRef<(() => void) | null>(null);
+   const handlePreviewOpen = () => {
+    // Call the SlideEditor's deselectAll function
+    if (deselectAllRef.current) {
+      deselectAllRef.current();
+    }
+    
+    // Also clear all parent component states
+    setSelectedTextId(null);
+    setSelectedImageIndex(null);
+    setSelectedImage(null);
+    setSelectedShapeIndex(null);
+    setSelectedShapeId(null);
+    setIsMobileTextSelected(false);
+    setIsMobileImageSelected(false);
+    
+    // Open preview after state updates
+    setTimeout(() => {
+      setPreviewOpen(true);
+    }, 100);
+  };
   useEffect(() => {
     const hasSelection = !!selectedTextId || selectedImageIndex !== null || selectedShapeIndex !== null;
     if (hasSelection) {
@@ -333,9 +423,7 @@ const handleDeselect = () => {
       setIsThemePanelOpen(true);
       setHadSelection(false);
     }
-  }, [selectedTextId, selectedImageIndex, selectedShapeIndex]);
-
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  }, [selectedTextId, selectedImageIndex, selectedShapeIndex, hadSelection, isMobile]);
 
   return (
     <>
@@ -365,8 +453,9 @@ const handleDeselect = () => {
               onExportPDF={handleExportPDF}
               onExportPPT={handleExportPPTX}
               onClearCanvas={handleClearCanvas}
-              onPreview={() => setPreviewOpen(true)}
+              onPreview={handlePreviewOpen}
               onOpenThemePanel={handleOpenThemePanel}
+              isThemePanelOpen={isThemePanelOpen}
               showAuthModal={showAuthModal}
               setShowAuthModal={setShowAuthModal}
             />
@@ -376,8 +465,9 @@ const handleDeselect = () => {
             onExportPDF={handleExportPDF}
             onExportPPT={handleExportPPTX}
             onClearCanvas={handleClearCanvas}
-            onPreview={() => setPreviewOpen(true)}
+            onPreview={handlePreviewOpen}
             onOpenThemePanel={handleOpenThemePanel}
+            isThemePanelOpen={isThemePanelOpen}
             showAuthModal={showAuthModal}
             setShowAuthModal={setShowAuthModal}
           />
@@ -392,9 +482,11 @@ const handleDeselect = () => {
               <SlideEditorMobile slides={slides} stageRefs={stageRefs} onDeselect={handleDeselect} />
               <SlideShowPlayer
                 slides={slides}
-                theme={selectedTheme}
                 open={previewOpen}
                 onClose={() => setPreviewOpen(false)}
+                theme={selectedTheme}
+                forceCleanPreview={previewOpen} 
+                key={previewOpen ? "clean" : "normal"} 
               />
               {isMobileTextSelected && !isShapeSelected && (
                 <TextSettingsPanelMobile
@@ -448,23 +540,24 @@ const handleDeselect = () => {
                 className="flex-1 overflow-auto z-0"
                 style={{ marginTop: 12 }}
               >
-                <SlideEditor slides={slides} stageRefs={stageRefs} onDeselect={handleDeselect} slideCount={slides.length} />
+                <SlideEditor slides={slides} stageRefs={stageRefs} onDeselect={handleDeselect} slideCount={slides.length} deselectAllRef={deselectAllRef} />
                 <SlideShowPlayer
                   slides={slides}
                   theme={selectedTheme}
                   open={previewOpen}
                   onClose={() => setPreviewOpen(false)}
+                  forceCleanPreview={previewOpen}   
+                  key={previewOpen ? "clean" : "normal"}  
                 />
               </div>
               <div
                 className={`
                   ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
-                  bg-white shadow-md transition-all duration-300 ease-in-out flex
-                  ${
-                    !isLGScreen && showRightPanel
-                      ? "w-96"
-                      : isLGScreen
-                      ? "w-[375px]"
+                  bg-white shadow-md transition-all duration-300 ease-in-out flex scrollbar-hide 
+                  ${!isLGScreen && showRightPanel
+                    ? "w-96"
+                    : isLGScreen
+                      ? "w-[310px]"
                       : "w-0"
                   }
                 `}
@@ -486,11 +579,10 @@ const handleDeselect = () => {
                   </div>
                 )}
                 <div
-                  className={`transition-opacity duration-300 ease-in-out overflow-auto w-full ${
-                    !showRightPanel && !isLGScreen
-                      ? "opacity-0 pointer-events-none"
-                      : "opacity-100"
-                  }`}
+                  className={`transition-opacity duration-300 ease-in-out overflow-auto w-full scrollbar-hide ${!showRightPanel && !isLGScreen
+                    ? "opacity-0 pointer-events-none"
+                    : "opacity-100"
+                    }`}
                 >
                   {isTextSelected && !isShapeSelected && (
                     <TextSettingsPanel resetAll={resetAll} />

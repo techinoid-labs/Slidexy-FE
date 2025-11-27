@@ -26,18 +26,14 @@ export default function HeroSection() {
   const theme = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const handleRedirect = () => {
-    const encodedQuery = encodeURIComponent(inputValue.trim());
-
     analyticsEvent("get_started_click", {
       category: "engagement",
-      label: "home_page_to_slide_generation",
+      label: "home_page_to_tools", // updated label for clarity
     });
 
-    router.push(
-      `/presentation/create${encodedQuery ? `?prompt=${encodedQuery}` : ""}`
-    );
+    // Navigate to /tools
+    router.push("/tools");
   };
 
   useEffect(() => {

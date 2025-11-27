@@ -12,7 +12,7 @@ export interface Theme {
   artPalette?: string[];
 }
 
-type LayoutType = -1 | 0 | 1 | 2 | 3 | 4 | 5;
+type LayoutType = -1 | 0 | 1 | 2 | 3 | 4 | 5|6 |7 |8 |9 |10 |11;
 
 interface ThemeContextType {
   selectedTheme: Theme | null;
@@ -21,7 +21,15 @@ interface ThemeContextType {
   setSelectedLayout: React.Dispatch<React.SetStateAction<LayoutType>>;
   setPrimaryColor: (color: string) => void;
 }
-
+const DEFAULT_THEME: Theme = {
+  font: "Inter",
+  primaryColor: "#000000",
+  secondaryColor: "#666666",
+  backgroundColor: "#ffffff",
+  image_url: "",
+  titleColor: "#000000",
+  artPalette: ["#000000", "#333333", "#000000", "#ffffff", "#ffffff"],
+};
 const ThemeContext = createContext<ThemeContextType>({
   selectedTheme: null,
   setSelectedTheme: () => {},
@@ -31,7 +39,7 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
+const [selectedTheme, setSelectedTheme] = useState<Theme | null>(DEFAULT_THEME);
   const [selectedLayout, setSelectedLayout] = useState<LayoutType>(0);
 
   const setPrimaryColor = (color: string) => {

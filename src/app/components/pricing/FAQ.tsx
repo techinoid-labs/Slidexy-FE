@@ -11,7 +11,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 export default function FAQSection() {
- const [expanded, setExpanded] = useState<string[]>([]);
+  const [expanded, setExpanded] = useState<string[]>([]);
 
   const handleChange =
     (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -24,33 +24,38 @@ export default function FAQSection() {
     {
       id: "q1",
       question: "What is the Slidexy?",
-      answer: "Slidexy is an AI-powered presentation tool that helps you instantly turn your ideas into professional slides with minimal effort.",
+      answer:
+        "SlideXy is an AI-powered presentation tool that helps users create well-designed, branded decks from text, voice, or video content.",
     },
     {
       id: "q2",
       question: "What is the AI Voice Assistant for presentations?",
       answer:
-        "You can chat with or send a voice note to the built-in AI assistant. It will follow your instructions—such as “make a pitch deck on renewable energy” or “add an infographic to slide 4”—and update your deck in real time.",
+        "It converts spoken ideas into presentation slides automatically. You speak, SlideXy builds.",
     },
     {
       id: "q3",
       question: "Is there a free version available?",
-      answer: "Yes! Slidexy offers a free plan with basic features so you can try it out before upgrading to our premium plans for advanced functionality.",
+      answer:
+        "Yes. You can start with a free version that includes limited daily deck creation to try the platform before subscribing.",
     },
     {
       id: "q4",
       question: "Can I create a presentation from a video?",
-      answer: "Yes! Just upload your video, and our AI will analyze its content to generate a tailored presentation complete with slides, images, and text.",
+      answer:
+        "Yes. SlideXy supports generating slides from video sources like YouTube by analyzing and extracting content.",
     },
     {
       id: "q5",
       question: "Can I edit the generated slides?",
-      answer: "Yes, absolutely! While AI generates the initial draft, you can fully edit, style, and personalize slides to match your needs.",
+      answer:
+        "Yes. Every slide deck is editable. You can adjust layout, text, images, and formatting.",
     },
     {
       id: "q6",
       question: "How fast can I create a presentation with this tool?",
-      answer: "With Slidexy, you can create a complete presentation in just a few minutes, depending on the complexity of your content and the number of slides you need.",
+      answer:
+        "You can generate a fully structured and branded presentation in under five minutes using SlideXy’s AI.",
     },
   ];
 
@@ -84,7 +89,7 @@ export default function FAQSection() {
       {faqs.map((faq) => (
         <Accordion
           key={faq.id}
-        expanded={expanded.includes(faq.id)}
+          expanded={expanded.includes(faq.id)}
           onChange={handleChange(faq.id)}
           disableGutters
           sx={{
@@ -104,7 +109,9 @@ export default function FAQSection() {
           <AccordionSummary
             expandIcon={
               <ExpandMoreIcon
-                sx={{ color: expanded.includes(faq.id) ? "#7C3AED" : "inherit" }}
+                sx={{
+                  color: expanded.includes(faq.id) ? "#7C3AED" : "inherit",
+                }}
               />
             }
             sx={{

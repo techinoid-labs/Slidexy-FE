@@ -1,11 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { forwardRef } from "react";
 import { Box, Typography, IconButton, InputBase } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import { useSlides } from "@/app/context/SlidesContext";
 import { v4 as uuidv4 } from "uuid";
+import { useClickOutsideToClose } from "../hooks/useClickOutsideToClose";
+import { useRef } from "react";
 const shapes = [
   {
     name: "Circle",
@@ -219,120 +221,138 @@ interface ShapedProps {
   sidebarHeight: string;
   onClose: () => void;
 }
+const Shapes = forwardRef<HTMLDivElement, ShapedProps>(
+  ({ sidebarHeight = "100vh", onClose }, ref) => {
+    const panelRef = useRef<HTMLDivElement>(null);
+    const { slides, setSlides, selectedSlideIndex } = useSlides();
+    const handleShapeClick = (shape: any) => {
+      const shapeId = uuidv4();
+      const newShape = {
+        konva_component: shape.konva_component,
+        element_type: "shape",
+        properties: shape.defaultProps,
+        shape_id: shapeId,
+      };
+      console.log('[Shapes] Adding shape:', newShape);
 
-const Shapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
-  const { slides, setSlides, selectedSlideIndex } = useSlides();
+      const updatedSlides = [...slides];
+      const currentSlide = { ...updatedSlides[selectedSlideIndex] };
 
-  const handleShapeClick = (shape: any) => {
-    const newShape = {
-      konva_component: shape.konva_component,
-      element_type: "shape",
-      properties: shape.defaultProps,
-      element_id: uuidv4(),
+      // 🔧 FIX: Add to BOTH original elements AND current variant
+      const updatedElements = [...(currentSlide.elements || []), newShape];
+
+      // Also add to current variant if layouts exist
+      if (currentSlide.layouts && currentSlide.layouts.length > 0) {
+        const variantIndex = currentSlide.currentVariantIndex ?? 0;
+        const updatedLayouts = [...currentSlide.layouts];
+        updatedLayouts[variantIndex] = {
+          ...updatedLayouts[variantIndex],
+          elements: [...(updatedLayouts[variantIndex].elements || []), newShape]
+        };
+        currentSlide.layouts = updatedLayouts;
+      }
+
+      updatedSlides[selectedSlideIndex] = {
+        ...currentSlide,
+        elements: updatedElements,
+      };
+
+      setSlides(updatedSlides);
+      onClose();
     };
 
-    const updatedSlides = [...slides];
-    const currentSlide = { ...updatedSlides[selectedSlideIndex] };
-    const updatedElements = [...(currentSlide.elements || []), newShape];
-    updatedSlides[selectedSlideIndex] = {
-      ...currentSlide,
-      elements: updatedElements,
-    };
-
-    setSlides(updatedSlides);
-    onClose();
-  };
-
-  return (
-    <Box
-      sx={{
-        width: 320,
-        bgcolor: "#fff",
-        height: sidebarHeight,
-        position: "absolute",
-        left: 80,
-        top: 0,
-        borderRight: "1px solid #E0E0E0",
-        zIndex: 10,
-        boxShadow: 2,
-        display: "flex",
-        flexDirection: "column",
-        p: 0,
-        overflowY: "auto",
-      }}
-    >
+    return (
       <Box
+        ref={ref}
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          p: 3,
-          pb: 2,
-          mb: 2,
-          borderBottom: "1px solid #E0E0E0",
-          flexShrink: 0,
+          width: 290,
           bgcolor: "#fff",
-          position: "sticky",
+          height: sidebarHeight,
+          position: "absolute",
+          left: 80,
           top: 0,
-          zIndex: 1,
+          borderRight: "1px solid #E0E0E0",
+          zIndex: 10,
+          boxShadow: 2,
+          display: "flex",
+          flexDirection: "column",
+          p: 0,
+          overflowY: "auto",
         }}
       >
-        <Typography sx={{ fontWeight: 600, fontSize: 20 }}>Shapes</Typography>
-        <IconButton size="small" onClick={onClose}>
-          <CloseIcon />
-        </IconButton>
-      </Box>
-
-      <Box sx={{ px: 3, mb: 2 }}>
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            bgcolor: "#F8F8FA",
-            borderRadius: 8,
-            px: 2,
-            height: 40,
-            border: "2px solid #E5DFFF",
+            justifyContent: "space-between",
+            p: 3,
+            pb: 2,
+            mb: 2,
+            borderBottom: "1px solid #E0E0E0",
+            flexShrink: 0,
+            bgcolor: "#fff",
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
           }}
         >
-          <SearchIcon sx={{ color: "#B0AEB8", mr: 1 }} />
-          <InputBase placeholder="Search..." sx={{ flex: 1, fontSize: 15 }} />
+          <Typography sx={{ fontWeight: 600, fontSize: 20 }}>Shapes</Typography>
+          <IconButton size="small" onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
         </Box>
-      </Box>
 
-      <Box sx={{ px: 3, pb: 2 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1 }}>
-          Essentials
-        </Typography>
-        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-          {shapes.map((shape, idx) => (
-            <Box
-              key={idx}
-              onClick={() => handleShapeClick(shape)}
-              sx={{
-                bgcolor: "#F8F8FA",
-                borderRadius: 3,
-                p: 2,
-                minHeight: 80,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "none",
-                border: "1px solid #ECECEC",
-                cursor: "pointer",
-                "&:hover": {
-                  borderColor: "#7B4AE2",
-                  boxShadow: "0 2px 8px 0 #7B4AE222",
-                },
-              }}
-            >
-              {shape.svg}
-            </Box>
-          ))}
+        <Box sx={{ px: 3, mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              bgcolor: "#F8F8FA",
+              borderRadius: 8,
+              px: 2,
+              height: 40,
+              border: "2px solid #E5DFFF",
+            }}
+          >
+            <SearchIcon sx={{ color: "#B0AEB8", mr: 1 }} />
+            <InputBase placeholder="Search..." sx={{ flex: 1, fontSize: 15 }} />
+          </Box>
+        </Box>
+
+        <Box sx={{ px: 3, pb: 2 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1 }}>
+            Essentials
+          </Typography>
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+            {shapes.map((shape, idx) => (
+              <Box
+                key={idx}
+                onClick={() => handleShapeClick(shape)}
+                sx={{
+                  bgcolor: "#F8F8FA",
+                  borderRadius: 3,
+                  p: 2,
+                  minHeight: 80,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "none",
+                  border: "1px solid #ECECEC",
+                  cursor: "pointer",
+                  "&:hover": {
+                    borderColor: "#7B4AE2",
+                    boxShadow: "0 2px 8px 0 #7B4AE222",
+                  },
+                }}
+              >
+                {shape.svg}
+              </Box>
+            ))}
+          </Box>
         </Box>
       </Box>
-    </Box>
-  );
-};
+    );
+  }
+);
 
 export default Shapes;

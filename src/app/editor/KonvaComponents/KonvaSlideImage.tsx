@@ -4,6 +4,7 @@ import useImage from "use-image";
 import { useSlides } from "@/app/context/SlidesContext";
 import { constrainImageToCanvas, getSlideDimensions } from "../../../utils/slideUtils";
 import { v4 as uuidv4 } from "uuid";
+
 interface SlideImageProps {
   image_id: string;
   url?: string;
@@ -38,10 +39,7 @@ const SlideImage: React.FC<SlideImageProps> = ({
   const imageOpacity = opacity ?? 1;
   const imageShadow = shadow ?? { offsetX: 0, offsetY: 0, blur: 0, color: "#000000" };
   const imageBorderRadius = borderRadius ?? 0;
-
-
-const [image] = useImage(imageSrc || url || "", "anonymous");
-
+  const [image] = useImage(imageSrc || url || "", "anonymous");
   const imageRef = useRef<any>(null);
   const trRef = useRef<any>(null);
   const { slides, setSlides, selectedSlideIndex, setSelectedImage, setIsAtBoundary, setSelectedImageIndex } = useSlides();
@@ -91,31 +89,25 @@ const [image] = useImage(imageSrc || url || "", "anonymous");
         target.tagName === "TEXTAREA" ||
         target.isContentEditable;
       if (isTyping) return;
-
       if ((e.key === "Delete" || e.key === "Backspace") && isSelected) {
         if (!slides?.length || selectedSlideIndex < 0) return;
-
         const newSlides = structuredClone(slides);
         const currentSlide = newSlides[selectedSlideIndex];
         if (!currentSlide) return;
-
         if (url && !imageSrc) {
           currentSlide.image_url = null;
         }
-
         if (imageSrc && image_id) {
-          currentSlide.elements = currentSlide.elements.filter(
-            (el: any) => el.properties.image_id !== image_id
-          );
+          currentSlide.elements = currentSlide.elements?.filter(
+            (el: any) => el.properties?.image_id !== image_id
+          ) || [];
         }
-
         setSlides(newSlides);
         console.log("this is new slides", newSlides);
         setSelectedImage(null);
         setSelectedImageIndex(null);
       }
     };
-
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isSelected, slides, url, imageSrc, image_id, selectedSlideIndex, setSlides, setSelectedImage, setSelectedImageIndex]);
@@ -132,21 +124,20 @@ const [image] = useImage(imageSrc || url || "", "anonymous");
       image_id?: string;
     }) => {
       if (!slides?.length || selectedSlideIndex < 0) return;
-
       const newSlides = structuredClone(slides);
       const currentSlide = newSlides[selectedSlideIndex];
       if (!currentSlide) return;
-
       const updatedOpacity = newProps.opacity !== undefined ? newProps.opacity : imageOpacity;
       const updatedShadow = newProps.shadow !== undefined ? newProps.shadow : imageShadow;
       const updatedBorderRadius = newProps.borderRadius !== undefined ? newProps.borderRadius : imageBorderRadius;
       const effectiveImageId = image_id || uuidv4(); // Generate if missing
-
+      // ✅ FIX: Always initialize elements array to prevent undefined errors/duplicates
+      currentSlide.elements = currentSlide.elements || [];
       if (imageSrc && effectiveImageId) {
+        // ✅ FIX: Safe findIndex with optional chaining
         const imageElementIndex = currentSlide.elements.findIndex(
-          (el: any) => el.properties.image_id === effectiveImageId
+          (el: any) => el?.properties?.image_id === effectiveImageId
         );
-
         if (imageElementIndex !== -1) {
           const element = currentSlide.elements[imageElementIndex];
           element.properties = {
@@ -167,6 +158,8 @@ const [image] = useImage(imageSrc || url || "", "anonymous");
             properties: { ...element.properties },
           });
         } else {
+          // ✅ IMPROVE: Log for debugging (remove in prod if no issues)
+          console.warn(`[SlideImage] Image not found by ID ${effectiveImageId}, adding new (potential race—check addImage sync)`);
           const imageProperties = {
             image_id: effectiveImageId,
             imageSrc,
@@ -178,7 +171,6 @@ const [image] = useImage(imageSrc || url || "", "anonymous");
             shadow: updatedShadow,
             borderRadius: updatedBorderRadius,
           };
-
           currentSlide.elements.push({
             element_type: "image",
             konva_component: "Konva.Image",
@@ -201,7 +193,6 @@ const [image] = useImage(imageSrc || url || "", "anonymous");
         currentSlide.shadow = updatedShadow;
         currentSlide.borderRadius = updatedBorderRadius;
       }
-
       setSlides(newSlides);
       setDimensions({ width: newProps.width, height: newProps.height });
       console.log("[KonvaSlideImage] Updated slide with new image properties:", newProps, "effective image_id:", effectiveImageId);
@@ -212,34 +203,28 @@ const [image] = useImage(imageSrc || url || "", "anonymous");
   const handleDragEnd = useCallback(() => {
     const node = imageRef.current;
     if (!node) return;
-
     const { x, y, isAtBoundary } = constrainImageToCanvas(node, SLIDE_WIDTH, SLIDE_HEIGHT, padding);
     node.position({ x, y });
     setLastValidPos({ x, y });
     setIsAtBoundary(isAtBoundary);
-
     updateSlideImage({ x, y, width: node.width(), height: node.height() });
   }, [updateSlideImage, SLIDE_WIDTH, SLIDE_HEIGHT, padding]);
 
   const handleTransformEnd = useCallback(() => {
     const node = imageRef.current;
     if (!node) return;
-
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
     node.scaleX(1);
     node.scaleY(1);
-
     const newWidth = Math.max(minSize.width, node.width() * scaleX);
     const newHeight = Math.max(minSize.height, node.height() * scaleY);
     node.width(newWidth);
     node.height(newHeight);
-
     const { x, y, isAtBoundary } = constrainImageToCanvas(node, SLIDE_WIDTH, SLIDE_HEIGHT, padding);
     node.position({ x, y });
     setLastValidPos({ x, y });
     setIsAtBoundary(isAtBoundary);
-
     updateSlideImage({ x, y, width: newWidth, height: newHeight });
   }, [updateSlideImage, SLIDE_WIDTH, SLIDE_HEIGHT, padding, minSize]);
 

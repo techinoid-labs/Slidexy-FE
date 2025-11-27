@@ -1,151 +1,166 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
-import { Dialog, IconButton, Box } from "@mui/material";
+import snapshotsCache from "@/utils/snapshotsCache";
+import {
+    Dialog,
+    IconButton,
+    Box,
+    Typography,
+    LinearProgress,
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import SlideRenderer from "../../editor/KonvaComponents/KonvaSlideRenderer";
-import { getSlideDimensions } from "../../../utils/slideUtils";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
-const getDynamicConstants = () => {
-    const { SLIDE_WIDTH, SLIDE_HEIGHT, LEFT_PADDING, SLIDE_HEIGHT_MOBILE, SLIDE_WIDTH_MOBILE } =
-        getSlideDimensions();
-    const IMAGE_WIDTH = 400;
-    const IMAGE_PADDING = 40;
-    const textMaxWidth = SLIDE_WIDTH - IMAGE_WIDTH - IMAGE_PADDING - LEFT_PADDING;
-    const textMaxHeight = SLIDE_HEIGHT;
-    return {
-        SLIDE_WIDTH,
-        SLIDE_HEIGHT,
-        LEFT_PADDING,
-        IMAGE_WIDTH,
-        IMAGE_PADDING,
-        SLIDE_HEIGHT_MOBILE,
-        SLIDE_WIDTH_MOBILE,
-        textMaxWidth,
-        textMaxHeight,
-    };
-};
+// ✅ Define a proper prop type
+interface SlideShowPlayerProps {
+    slides: any[];
+    open: boolean;
+    onClose: () => void;
+    theme?: any | null; 
+    forceCleanPreview?: boolean;
+    
+}
 
-const SlideShowPlayer = ({ slides, open, onClose, theme }: any) => {
+const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
+    slides,
+    open,
+    onClose,
+    theme,
+    forceCleanPreview,
+}) => {
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [scale, setScale] = useState(1);
 
     useEffect(() => {
-        const updateScale = () => {
-            const slideWidth = getDynamicConstants().SLIDE_WIDTH;
-            const margin = 32;
-            const availableWidth = window.innerWidth - margin;
-            const newScale = availableWidth / slideWidth;
-            setScale(Math.min(1, newScale)); // max 1x scale
+        if (open) setCurrentSlide(0);
+    }, [open]);
+    useEffect(() => {
+    if (!open || !forceCleanPreview) return;
+
+    const timer = setTimeout(() => {
+      const slide = slides[currentSlide];
+      if (!slide?.slide_id) return;
+
+      // Delete the old (dirty) snapshot → forces regeneration without transformer
+      snapshotsCache.setSnapshot(slide.slide_id, null);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [open, currentSlide, forceCleanPreview]);
+
+    const goNext = () => setCurrentSlide((i) => (i + 1) % slides.length);
+    const goPrev = () => setCurrentSlide((i) => (i - 1 + slides.length) % slides.length);
+
+    useEffect(() => {
+        const handleKey = (e: KeyboardEvent) => {
+            if (!open) return;
+            if (e.key === "ArrowRight" || e.key === " ") goNext();
+            if (e.key === "ArrowLeft") goPrev();
+            if (e.key === "Escape") onClose();
         };
-
-        updateScale();
-        window.addEventListener("resize", updateScale);
-        return () => window.removeEventListener("resize", updateScale);
-    }, []);
-
-    useEffect(() => {
-        if (!open) return;
-        setCurrentSlide(0); // reset to first slide on open
+        window.addEventListener("keydown", handleKey);
+        return () => window.removeEventListener("keydown", handleKey);
     }, [open]);
 
-    const handleNext = () => {
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
-    };
-
-    const handlePrevious = () => {
-        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-    };
-
-    // Keyboard navigation
-    useEffect(() => {
-        if (!open) return;
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "ArrowRight") {
-                handleNext();
-            } else if (e.key === "ArrowLeft") {
-                handlePrevious();
-            } else if (e.key === "Escape") {
-                onClose();
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [open, slides.length]);
-
     if (!slides.length) return null;
+
+    const current = slides[currentSlide];
+    const [snapshot, setSnapshot] = useState<string | null>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        const id = current?.slide_id;
+        if (!id) return;
+        const existing = snapshotsCache.getSnapshot(id);
+        if (mounted) setSnapshot(existing);
+
+        const cb = (data?: string | null) => {
+            if (mounted) setSnapshot(data || null);
+        };
+        snapshotsCache.subscribe(id, cb);
+        return () => {
+            mounted = false;
+            snapshotsCache.unsubscribe(id, cb);
+        };
+    }, [current?.slide_id]);
+
+    const progress = ((currentSlide + 1) / slides.length) * 100;
 
     return (
         <Dialog open={open} onClose={onClose} fullScreen>
             <Box
                 sx={{
-                    position: "relative",
+                    bgcolor: "#000",
                     width: "100vw",
                     height: "100vh",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
                     alignItems: "center",
-                    background: "#000000",
+                    position: "relative",
+                    background: "radial-gradient(circle at center, #16213e 0%, #0f0f1a 100%)",
+                    overflow: "hidden",
                 }}
             >
-                <IconButton
-                    onClick={onClose}
-                    sx={{ position: "absolute", top: 20, right: 20, color: "#fff" }}
-                >
-                    <CloseIcon />
+                {/* Close & Counter */}
+                <IconButton onClick={onClose} sx={{ position: "absolute", top: 24, right: 24, color: "white", bgcolor: "rgba(255,255,255,0.1)", "&:hover": { bgcolor: "rgba(255,255,255,0.2)" } }}>
+                    <CloseIcon fontSize="large" />
                 </IconButton>
 
-                {/* Slide Box */}
+                <Typography sx={{ position: "absolute", top: 32, left: 32, color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>
+                    {currentSlide + 1} / {slides.length}
+                </Typography>
+
+                {/* Snapshot Image */}
                 <Box
                     sx={{
-                        width: `${getDynamicConstants().SLIDE_WIDTH}px`,
-                        height: `${getDynamicConstants().SLIDE_HEIGHT}px`,
-                        transform: `scale(${scale})`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "black",
+                        width: "90vw",
+                        maxWidth: "1100px",
+                        height: "70vh",
+                        maxHeight: "800px",
+                        borderRadius: 4,
+                        overflow: "hidden",
+                        boxShadow: "0 35px 80px rgba(0,0,0,0.8)",
+                        bgcolor: "#fff",
+                        backgroundImage: snapshot ? `url(${snapshot})` : "none",
+                        backgroundSize: "contain",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                        animation: "popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1)",
+                        "@keyframes popIn": {
+                            "0%": { transform: "scale(0.8)", opacity: 0 },
+                            "100%": { transform: "scale(1)", opacity: 1 },
+                        },
                     }}
                 >
-                    <SlideRenderer slide={slides[currentSlide]} theme={theme} />
+                    {!snapshot && (
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#999" }}>
+                            <Typography>Loading slide...</Typography>
+                        </Box>
+                    )}
                 </Box>
 
-                {/* Navigation Buttons Below */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 4,
-                        marginTop: 3, // space between slide and buttons
-                    }}
-                >
-                    <IconButton
-                        onClick={handlePrevious}
-                        sx={{
-                            color: "#fff",
-                            "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" },
-                        }}
-                        disabled={slides.length <= 1}
-                    >
-                        <ArrowBackIcon />
-                    </IconButton>
+                {/* Navigation */}
+                {slides.length > 1 && (
+                    <>
+                        <IconButton onClick={goPrev} sx={{ position: "absolute", left: 40, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(255,255,255,0.15)", color: "white", width: 70, height: 70, "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}>
+                            <ArrowBackIosNewIcon sx={{ fontSize: 32 }} />
+                        </IconButton>
+                        <IconButton onClick={goNext} sx={{ position: "absolute", right: 40, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(255,255,255,0.15)", color: "white", width: 70, height: 70, "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}>
+                            <ArrowForwardIosIcon sx={{ fontSize: 32 }} />
+                        </IconButton>
+                    </>
+                )}
 
-                    <IconButton
-                        onClick={handleNext}
-                        sx={{
-                            color: "#fff",
-                            "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" },
-                        }}
-                        disabled={slides.length <= 1}
-                    >
-                        <ArrowForwardIcon />
-                    </IconButton>
+                {/* Progress Bar */}
+                <Box sx={{ position: "absolute", bottom: 40, width: "50%", left: "50%", transform: "translateX(-50%)" }}>
+                    <LinearProgress variant="determinate" value={progress} sx={{ height: 8, borderRadius: 4, bgcolor: "rgba(255,255,255,0.2)", "& .MuiLinearProgress-bar": { bgcolor: "#00ff99" } }} />
                 </Box>
+
+                <Typography sx={{ position: "absolute", bottom: 16, color: "rgba(255,255,255,0.5)", fontSize: "0.9rem" }}>
+                    ← → or Space • ESC to exit
+                </Typography>
             </Box>
         </Dialog>
     );

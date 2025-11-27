@@ -62,7 +62,7 @@ export default function PricingSection() {
         pt: { xs: 6, md: "80px" },
         px: { xs: 2, md: "162px" },
         pb: { xs: 6, md: "80px" },
-        gap: "28px",
+        gap: "10px",
         boxSizing: "border-box",
         mx: "auto",
       }}
@@ -113,15 +113,15 @@ export default function PricingSection() {
 
       <Typography
         sx={{
-          fontWeight: 400,
+          fontWeight: 700,
           fontSize: { xs: "18px", md: "18px" },
           color: "#6D6D6D",
-          mb: 1,
+          // mb: 1,
           textAlign: "center",
         }}
       >
-        Test the AI magic for free, then take it to the next level with scalable
-        plans.
+        Unlock the power of AI — start free, then upgrade to a plan that fits
+        your goals.
       </Typography>
 
       <Typography
@@ -130,9 +130,12 @@ export default function PricingSection() {
           fontSize: "1rem",
           mb: 4,
           textAlign: "center",
+          maxWidth: "40rem",
         }}
       >
-        100% Secure payment plan with money back guarantee.
+        Test SlideXy's intelligent slide generation for free. When you're ready,
+        choose a scalable plan with more features, flexibility, and export
+        control. Secure payments with a 7-day money-back guarantee.{" "}
       </Typography>
 
       {/* Pricing Cards / Loader */}

@@ -9,14 +9,14 @@ export default function CommunitySection() {
       sx={{
         width: "100%",
         maxWidth: "100vw",
-        background: "#723AFF",
+        background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%);",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
 
-        pt: { xs: 8, md: "96px" },
-        pb: { xs: 8, md: "96px" },
+        pt: { xs: 0, md: "96px" },
+        pb: { xs: 4, md: "96px" },
         px: { xs: 3, md: "112px" },
         gap: { xs: 6, md: "80px" },
         boxSizing: "border-box",
@@ -50,7 +50,7 @@ export default function CommunitySection() {
         sx={{
           color: "white",
           fontWeight: 600,
-          fontSize: { xs: "40px", md: "40px" },
+          fontSize: { xs: "28px", md: "40px" },
           textAlign: "center",
           mt: { xs: 8, md: "40px" },
         }}
@@ -66,7 +66,7 @@ export default function CommunitySection() {
           fontSize: { xs: "1rem", md: "1.18rem" },
           textAlign: "center",
           maxWidth: 524,
-          mt: { xs: 0, md: -10 },
+          mt: { xs: -5, md: -10 },
         }}
       >
         Join the waitlist today and let AI-powered innovation reach you before
@@ -87,7 +87,7 @@ export default function CommunitySection() {
             fontWeight: 600,
             whiteSpace: "nowrap",
 
-            mt: { xs: 0, md: -10 },
+            mt: { xs: -5, md: -10 },
           }}
         >
           Join Waitlist

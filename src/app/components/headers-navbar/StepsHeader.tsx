@@ -34,7 +34,7 @@ export default function StepsHeader() {
     if (pathname === "/editor") {
       router.push("/presentation/outline");
     } else if (pathname === "/presentation/outline") {
-      router.push("/presentation/create");
+      router.push("/tools");
     } else if (pathname === "/presentation/create") {
       router.push("/");
     } else {

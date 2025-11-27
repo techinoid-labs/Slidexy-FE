@@ -221,26 +221,16 @@ interface ShapedProps {
 }
 
 const Shapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
-  const { slides, setSlides, selectedSlideIndex } = useSlides();
+  const { addShape } = useSlides();
 
   const handleShapeClick = (shape: any) => {
-    const elementIndex = slides[selectedSlideIndex].elements.length;
-    const newShape = {
+    // ✅ FIXED: Use addShape from context which handles variants correctly
+    addShape({
       konva_component: shape.konva_component,
-      element_type: "shape",
-      properties: { ...shape.defaultProps, zIndex: elementIndex },
-      element_id: uuidv4(),
-    };
-
-    const updatedSlides = [...slides];
-    const currentSlide = { ...updatedSlides[selectedSlideIndex] };
-    const updatedElements = [...(currentSlide.elements || []), newShape];
-    updatedSlides[selectedSlideIndex] = {
-      ...currentSlide,
-      elements: updatedElements,
-    };
-
-    setSlides(updatedSlides);
+      properties: {
+        ...shape.defaultProps,
+      },
+    });
     onClose();
   };
 

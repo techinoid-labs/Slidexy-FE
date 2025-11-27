@@ -40,6 +40,7 @@ export default function Header() {
 
   const navigationItems = [
     { label: "Home", hasDropdown: false, link: "/" },
+    { label: "Tools", hasDropdown: false, link: "/tools" },
     { label: "Templates", hasDropdown: false, link: "/templates" },
     // { label: "Privacy", hasDropdown: false, link: "/privacy-policy" },
     // { label: "FAQ's", hasDropdown: false, link: "/faqs" },

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, forwardRef} from "react";
 import {
   Box,
   IconButton,
@@ -23,16 +23,20 @@ interface Theme {
   backgroundColor: string;
   image_url: string;
 }
-
+interface TemplateProps {
+  sidebarHeight : string;
+  onClose: () => void;
+}
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const LOCAL_STORAGE_THEME_KEY = "slidesTheme";
 const INDEXED_DB_THEME_KEY = "slidesThemeIndexed";
 
-const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
+const TemplatePanel = forwardRef<HTMLDivElement, TemplateProps>(
+  ({ sidebarHeight = "100vh", onClose }, ref) => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"ai" | "default">("ai");
+  const [activeTab, setActiveTab] = useState<"ai" | "default">("default");
 
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const { setSlides, slides, aiThemes, setAiThemes } = useSlides();
@@ -60,13 +64,6 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
       secondaryColor: "#F50057",
       backgroundColor: "#F3E5F5",
       image_url: themeImageUrls[1],
-    },
-    {
-      font: "Open Sans",
-      primaryColor: "#ffa",
-      secondaryColor: "#00BCD4",
-      backgroundColor: "#E3F2FD",
-      image_url: themeImageUrls[2],
     },
     {
       font: "Poppins",
@@ -201,17 +198,18 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
 
   return (
     <Box
-      sx={{
+     ref = {ref}
+      sx={{       
         position: "absolute",
         left: 80,
         top: 0,
         height: sidebarHeight,
-        width: 420,
+        width: 300,
         bgcolor: "#fff",
         borderRight: "1px solid #E0E0E0",
         zIndex: 10,
         boxShadow: 3,
-        display: isOpen ? "flex" : "none",
+        display: "flex",
         flexDirection: "column",
       }}
     >
@@ -273,24 +271,15 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
       </Box>
 
       {/* TAB SWITCH */}
-      <Box sx={{ display: "flex", px: 3 }}>
-        <Box
-          onClick={() => setActiveTab("ai")}
-          sx={{
-            flex: 1,
-            cursor: "pointer",
-            bgcolor: activeTab === "ai" ? "#EFE8FF" : "#F9F9F9",
-            color: activeTab === "ai" ? "#7B4AE2" : "#888",
-            fontWeight: activeTab === "ai" ? 600 : 500,
-            borderRadius: 2,
-            textAlign: "center",
-            py: 1,
-            fontSize: 15,
-          }}
-        >
-          From Slide AI
-        </Box>
-        <Box sx={{ width: 8 }} />
+      <Box sx={{ display: "flex", px: 3, gap: 1 }}>
+        {/* Uncomment when AI tab is ready */}
+        {/* <Box
+    onClick={() => setActiveTab("ai")}
+    sx={{ ... }}
+  >
+    From Slide AI
+  </Box> */}
+
         <Box
           onClick={() => setActiveTab("default")}
           sx={{
@@ -350,7 +339,7 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
                 <Typography
                   fontSize={15}
                   fontWeight={500}
-                  // sx={{ color: theme.primaryColor }}
+                // sx={{ color: theme.primaryColor }}
                 >
                   {theme.font}
                 </Typography>
@@ -392,7 +381,8 @@ const TemplatePanel = ({ sidebarHeight = "100vh", onClose, isOpen }: any) => {
       </Box>
     </Box>
   );
-};
+}
+);
 
 export default TemplatePanel;
 
