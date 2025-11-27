@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import ChatButton from "./chatButton";
+import ChatButton from "./ChatButton";
 import ChatPanel from "./ChatPanel";
 
 export default function ChatBotSidebar() {
