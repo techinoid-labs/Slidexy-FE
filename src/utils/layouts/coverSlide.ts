@@ -32,7 +32,6 @@ const getContrastingTextColor = (bgColor: string, primaryColor: string): string 
   const textLum = getLuminance(primaryColor || '#000000');
   const contrast = (Math.max(bgLum, textLum) + 0.05) / (Math.min(bgLum, textLum) + 0.05);
 
-  // If contrast is good, use primaryColor; otherwise use black or white based on background
   return contrast >= 4.5 ? primaryColor : (bgLum > 0.5 ? '#1a1a1a' : '#ffffff');
 };
 
@@ -63,10 +62,68 @@ const createGradientBlob = (
   }
 });
 
+// Helper to render bullets for cover slides
+const createCoverBullets = (
+  bullets: any[], 
+  textColor: string, 
+  startY: number, 
+  SLIDE_WIDTH: number,
+  variant: 'center' | 'left' = 'center'
+) => {
+  if (!bullets || bullets.length === 0) return [];
+  
+  const bulletElements: any[] = [];
+  const baseX = variant === 'center' ? SLIDE_WIDTH / 2 - 300 : 120;
+  const bulletWidth = variant === 'center' ? 600 : 500;
+  
+  bullets.forEach((bullet: any, index: number) => {
+    const yPos = startY + (index * 36);
+    
+    // Bullet dot
+    bulletElements.push({
+      element_type: "shape",
+      konva_component: "Konva.Circle",
+      shape_id: `auto-bullet-dot-${uuidv4()}`,
+      properties: {
+        x: baseX - 15,
+        y: yPos + 10,
+        radius: 3,
+        fill: hexToRgba(textColor, 0.6),
+        zIndex: 4
+      }
+    });
+    
+    // Bullet text
+    bulletElements.push({
+      element_type: "text",
+      konva_component: "Text",
+      text_id: `auto-bullet-${uuidv4()}`,
+      properties: {
+        x: baseX,
+        y: yPos,
+        width: bulletWidth,
+        height: 32,
+        text: bullet.text,
+        fontSize: 16,
+        fontFamily: "Raleway, sans-serif",
+        fontWeight: "400",
+        fill: hexToRgba(textColor, 0.75),
+        align: variant === 'center' ? 'center' : 'left',
+        lineHeight: 1.4,
+        zIndex: 4
+      }
+    });
+  });
+  
+  return bulletElements;
+};
+
 // ==================== COVER SLIDES ====================
 export const createCoverSlide = {
-  // Variant 1: Premium Glassmorphism
+  // Variant 1: Premium Glassmorphism with Bullets
   variant1: (slide: any, colors: any, textColor: string, SLIDE_WIDTH: number = 960, SLIDE_HEIGHT: number = 540) => {
+    const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
+    
     const newElements = [
       // Subtle gradient orbs
       createGradientBlob(140, 80, 280, 240, colors.primary, colors.accent, 0.18),
@@ -88,16 +145,16 @@ export const createCoverSlide = {
         }
       },
       
-      // Modern glass card
+      // Modern glass card - adjusted height for bullets
       {
         element_type: "shape",
         konva_component: "Konva.Rect",
         shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 400,
-          y: 110,
+          y: 90,
           width: 800,
-          height: 300,
+          height: bullets.length > 0 ? 380 : 300,
           fill: hexToRgba("#ffffff", 0.06),
           cornerRadius: 28,
           stroke: hexToRgba("#ffffff", 0.15),
@@ -116,7 +173,7 @@ export const createCoverSlide = {
         shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 60,
-          y: 100,
+          y: 80,
           width: 120,
           height: 5,
           fill: colors.accent,
@@ -127,17 +184,22 @@ export const createCoverSlide = {
       }
     ];
 
+    // Add bullets if present
+    if (bullets.length > 0) {
+      newElements.push(...createCoverBullets(bullets, textColor, 330, SLIDE_WIDTH, 'center'));
+    }
+
     let newSlide = {
       ...slide,
       slide_title: {
-        text: slide.slide_title?.text ,
+        text: slide.slide_title?.text,
         konva_component: "Text",
         properties: {
           x: 80,
-          y: 150,
+          y: 130,
           width: SLIDE_WIDTH - 160,
-          height: 100,
-          fontSize: 52,
+          height: 90,
+          fontSize: 48,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "800",
           fill: textColor,
@@ -155,10 +217,10 @@ export const createCoverSlide = {
         konva_component: "Text",
         properties: {
           x: 100,
-          y: 270,
+          y: 240,
           width: SLIDE_WIDTH - 200,
-          height: 70,
-          fontSize: 22,
+          height: 60,
+          fontSize: 20,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "400",
           fill: hexToRgba(textColor, 0.85),
@@ -167,7 +229,7 @@ export const createCoverSlide = {
           zIndex: 3
         }
       } : undefined,
-      elements: [...(slide.elements || []), ...newElements],
+      elements: [...newElements],
     };
 
     newSlide.background = {
@@ -184,8 +246,10 @@ export const createCoverSlide = {
     return newSlide;
   },
 
-  // Variant 2: Bold Split Design
+  // Variant 2: Bold Split Design with Bullets
   variant2: (slide: any, colors: any, textColor: string, SLIDE_WIDTH: number = 960, SLIDE_HEIGHT: number = 540) => {
+    const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
+    
     const newElements = [
       // Diagonal panel
       {
@@ -244,47 +308,13 @@ export const createCoverSlide = {
           shadowOffsetY: 8,
           zIndex: 2
         }
-      },
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: SLIDE_WIDTH - 170,
-          y: 290,
-          radius: 40,
-          stroke: hexToRgba(colors.primary, 0.65),
-          strokeWidth: 3.5,
-          zIndex: 2
-        }
-      },
-      
-      // Accent dots
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: 290,
-          y: 190,
-          radius: 3,
-          fill: hexToRgba(colors.accent, 0.5),
-          zIndex: 1.2
-        }
-      },
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: 440,
-          y: 340,
-          radius: 4,
-          fill: hexToRgba(colors.secondary, 0.45),
-          zIndex: 1.2
-        }
       }
     ];
+
+    // Add bullets if present
+    if (bullets.length > 0) {
+      newElements.push(...createCoverBullets(bullets, "#ffffff", 380, SLIDE_WIDTH, 'left'));
+    }
 
     let newSlide = {
       ...slide,
@@ -314,9 +344,9 @@ export const createCoverSlide = {
         konva_component: "Text",
         properties: {
           x: 70,
-          y: 350,
+          y: 280,
           width: 450,
-          height: 60,
+          height: 70,
           fontSize: 19,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "400",
@@ -326,7 +356,7 @@ export const createCoverSlide = {
           zIndex: 3
         }
       } : undefined,
-      elements: [...(slide.elements || []), ...newElements],
+      elements: [...newElements],
     };
 
     newSlide.background = { type: "solid", color: colors.background };
@@ -334,8 +364,10 @@ export const createCoverSlide = {
     return newSlide;
   },
 
-  // Variant 3: Layered Cards
+  // Variant 3: Layered Cards with Bullets
   variant3: (slide: any, colors: any, textColor: string, SLIDE_WIDTH: number = 960, SLIDE_HEIGHT: number = 540) => {
+    const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
+    
     const newElements = [
       // Back layer
       {
@@ -387,16 +419,16 @@ export const createCoverSlide = {
         }
       },
       
-      // Front card
+      // Front card - adjusted height for bullets
       {
         element_type: "shape",
         konva_component: "Konva.Rect",
         shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 320,
-          y: SLIDE_HEIGHT / 2 - 150,
+          y: bullets.length > 0 ? SLIDE_HEIGHT / 2 - 180 : SLIDE_HEIGHT / 2 - 150,
           width: 640,
-          height: 280,
+          height: bullets.length > 0 ? 340 : 280,
           fill: hexToRgba(colors.surface || "#ffffff", 0.96),
           cornerRadius: 28,
           stroke: hexToRgba(colors.primary, 0.18),
@@ -415,7 +447,7 @@ export const createCoverSlide = {
         shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 90,
-          y: 155,
+          y: bullets.length > 0 ? 125 : 155,
           width: 180,
           height: 7,
           fill: colors.accent,
@@ -424,21 +456,13 @@ export const createCoverSlide = {
           shadowBlur: 10,
           zIndex: 2.5
         }
-      },
-      
-      // Subtle background line
-      {
-        element_type: "shape",
-        konva_component: "Konva.Line",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          points: [0, SLIDE_HEIGHT / 2, SLIDE_WIDTH, SLIDE_HEIGHT / 2],
-          stroke: hexToRgba(colors.primary, 0.04),
-          strokeWidth: 1,
-          zIndex: 0.2
-        }
       }
     ];
+
+    // Add bullets if present
+    if (bullets.length > 0) {
+      newElements.push(...createCoverBullets(bullets, textColor, 300, SLIDE_WIDTH, 'center'));
+    }
 
     let newSlide = {
       ...slide,
@@ -447,10 +471,10 @@ export const createCoverSlide = {
         konva_component: "Text",
         properties: {
           x: 110,
-          y: 180,
+          y: bullets.length > 0 ? 150 : 180,
           width: SLIDE_WIDTH - 220,
-          height: 85,
-          fontSize: 46,
+          height: 80,
+          fontSize: 44,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "800",
           fill: textColor,
@@ -468,10 +492,10 @@ export const createCoverSlide = {
         konva_component: "Text",
         properties: {
           x: 130,
-          y: 285,
+          y: bullets.length > 0 ? 245 : 285,
           width: SLIDE_WIDTH - 260,
           height: 50,
-          fontSize: 20,
+          fontSize: 18,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "400",
           fill: hexToRgba(textColor, 0.82),
@@ -480,7 +504,7 @@ export const createCoverSlide = {
           zIndex: 4
         }
       } : undefined,
-      elements: [...(slide.elements || []), ...newElements],
+      elements: [...newElements],
     };
 
     newSlide.background = { type: "solid", color: colors.background };
@@ -488,8 +512,10 @@ export const createCoverSlide = {
     return newSlide;
   },
 
-  // Variant 4: Radial Elegance
+  // Variant 4: Radial Elegance with Bullets
   variant4: (slide: any, colors: any, textColor: string, SLIDE_WIDTH: number = 960, SLIDE_HEIGHT: number = 540) => {
+    const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
+    
     const newElements = [
       // Central gradient
       {
@@ -543,64 +569,13 @@ export const createCoverSlide = {
           strokeWidth: 2.5,
           zIndex: 1.5
         }
-      },
-      
-      // Decorative dots
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: SLIDE_WIDTH / 2 + 210,
-          y: SLIDE_HEIGHT / 2 - 95,
-          radius: 13,
-          fill: colors.accent,
-          shadowColor: hexToRgba(colors.accent, 0.45),
-          shadowBlur: 14,
-          zIndex: 2
-        }
-      },
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: SLIDE_WIDTH / 2 - 190,
-          y: SLIDE_HEIGHT / 2 + 115,
-          radius: 16,
-          fill: colors.primary,
-          shadowColor: hexToRgba(colors.primary, 0.45),
-          shadowBlur: 16,
-          zIndex: 2
-        }
-      },
-      
-      // Small accents
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: SLIDE_WIDTH / 2 + 95,
-          y: SLIDE_HEIGHT / 2 - 145,
-          radius: 5,
-          fill: hexToRgba(colors.secondary, 0.55),
-          zIndex: 1.2
-        }
-      },
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: SLIDE_WIDTH / 2 - 145,
-          y: SLIDE_HEIGHT / 2 + 75,
-          radius: 7,
-          fill: hexToRgba(colors.accent, 0.45),
-          zIndex: 1.2
-        }
       }
     ];
+
+    // Add bullets if present
+    if (bullets.length > 0) {
+      newElements.push(...createCoverBullets(bullets, textColor, 350, SLIDE_WIDTH, 'center'));
+    }
 
     let newSlide = {
       ...slide,
@@ -609,10 +584,10 @@ export const createCoverSlide = {
         konva_component: "Text",
         properties: {
           x: 90,
-          y: 185,
+          y: bullets.length > 0 ? 160 : 185,
           width: SLIDE_WIDTH - 180,
           height: 85,
-          fontSize: 52,
+          fontSize: 50,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "900",
           fill: textColor,
@@ -630,10 +605,10 @@ export const createCoverSlide = {
         konva_component: "Text",
         properties: {
           x: 110,
-          y: 300,
+          y: bullets.length > 0 ? 260 : 300,
           width: SLIDE_WIDTH - 220,
           height: 50,
-          fontSize: 20,
+          fontSize: 19,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "400",
           fill: hexToRgba(textColor, 0.84),
@@ -642,7 +617,7 @@ export const createCoverSlide = {
           zIndex: 3
         }
       } : undefined,
-      elements: [...(slide.elements || []), ...newElements],
+      elements: [...newElements],
     };
 
     newSlide.background = { type: "solid", color: colors.background };
@@ -650,8 +625,10 @@ export const createCoverSlide = {
     return newSlide;
   },
 
-  // Variant 5: Vibrant Gradient
+  // Variant 5: Vibrant Gradient with Bullets
   variant5: (slide: any, colors: any, textColor: string, SLIDE_WIDTH: number = 960, SLIDE_HEIGHT: number = 540) => {
+    const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
+    
     const newElements = [
       // Mesh overlay
       {
@@ -677,40 +654,6 @@ export const createCoverSlide = {
         }
       },
       
-      // Organic blobs
-      {
-        element_type: "shape",
-        konva_component: "Konva.Ellipse",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: SLIDE_WIDTH - 140,
-          y: 95,
-          radiusX: 190,
-          radiusY: 150,
-          fill: hexToRgba("#ffffff", 0.1),
-          rotation: -22,
-          shadowColor: hexToRgba("#ffffff", 0.22),
-          shadowBlur: 35,
-          zIndex: 1
-        }
-      },
-      {
-        element_type: "shape",
-        konva_component: "Konva.Ellipse",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: 110,
-          y: SLIDE_HEIGHT - 75,
-          radiusX: 210,
-          radiusY: 170,
-          fill: hexToRgba("#000000", 0.06),
-          rotation: 18,
-          shadowColor: hexToRgba("#000000", 0.12),
-          shadowBlur: 30,
-          zIndex: 1
-        }
-      },
-      
       // Top accent line
       {
         element_type: "shape",
@@ -718,7 +661,7 @@ export const createCoverSlide = {
         shape_id: `auto-${uuidv4()}`,
         properties: {
           x: SLIDE_WIDTH / 2 - 110,
-          y: 142,
+          y: bullets.length > 0 ? 122 : 142,
           width: 220,
           height: 7,
           fill: "#ffffff",
@@ -728,46 +671,13 @@ export const createCoverSlide = {
           shadowBlur: 22,
           zIndex: 2
         }
-      },
-      
-      // Floating particles
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: 190,
-          y: 195,
-          radius: 2,
-          fill: hexToRgba(colors.accent, 0.35),
-          zIndex: 1.5
-        }
-      },
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: 690,
-          y: 295,
-          radius: 3,
-          fill: hexToRgba(colors.primary, 0.28),
-          zIndex: 1.5
-        }
-      },
-      {
-        element_type: "shape",
-        konva_component: "Konva.Circle",
-        shape_id: `auto-${uuidv4()}`,
-        properties: {
-          x: 390,
-          y: 440,
-          radius: 1.5,
-          fill: hexToRgba(colors.secondary, 0.45),
-          zIndex: 1.5
-        }
       }
     ];
+
+    // Add bullets if present (white text for vibrant background)
+    if (bullets.length > 0) {
+      newElements.push(...createCoverBullets(bullets, "#ffffff", 340, SLIDE_WIDTH, 'center'));
+    }
 
     let newSlide = {
       ...slide,
@@ -776,13 +686,13 @@ export const createCoverSlide = {
         konva_component: "Text",
         properties: {
           x: 80,
-          y: 168,
+          y: bullets.length > 0 ? 148 : 168,
           width: SLIDE_WIDTH - 160,
-          height: 105,
-          fontSize: 56,
+          height: 100,
+          fontSize: 54,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "900",
-          fill: textColor,
+          fill: "#ffffff",
           align: "center",
           lineHeight: 1.18,
           shadowColor: "rgba(0,0,0,0.45)",
@@ -797,13 +707,13 @@ export const createCoverSlide = {
         konva_component: "Text",
         properties: {
           x: 100,
-          y: 295,
+          y: bullets.length > 0 ? 260 : 295,
           width: SLIDE_WIDTH - 200,
           height: 60,
-          fontSize: 22,
+          fontSize: 21,
           fontFamily: "Raleway, sans-serif",
           fontWeight: "300",
-          fill: hexToRgba(textColor, 0.93),
+          fill: hexToRgba("#ffffff", 0.93),
           align: "center",
           lineHeight: 1.5,
           shadowColor: "rgba(0,0,0,0.25)",
@@ -811,7 +721,7 @@ export const createCoverSlide = {
           zIndex: 3
         }
       } : undefined,
-      elements: [...(slide.elements || []), ...newElements],
+      elements: [...newElements],
     };
 
     newSlide.background = {
