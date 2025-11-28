@@ -32,9 +32,7 @@ export default function GenerateSlide({ topic, tone = "Professional", style = "M
   useEffect(() => {
     if (!topic.trim()) {
       setError("Please provide a topic.");
-      return;
     }
-
     const generateSlides = async () => {
       setLoading(true);
       setError("");
@@ -126,7 +124,7 @@ export default function GenerateSlide({ topic, tone = "Professional", style = "M
   if (error) return <Typography color="error">{error}</Typography>;
 
   return (
-    <Box sx={{ width: "100%", maxWidth: 600, mx: "auto", mt: 4 }}>
+    <Box sx={{ width: "80%", maxWidth: 600, mx: "auto", mt: 1, alignSelf: "center", pb: 1 }}>
       <Typography variant="h6" sx={{ mb: 1 }}>
         {currentMessage || "Generating slides..."}
       </Typography>

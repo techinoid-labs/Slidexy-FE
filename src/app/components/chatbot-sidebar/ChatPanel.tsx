@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function ChatPanel({ onClose }: Props) {
-  const { messages, input, setInput, loading, sendMessage, chatEndRef, toggleAgentMode, isAgentActive,tone,topic,style } = useChat();
+  const { messages, input, setInput, loading, sendMessage, chatEndRef, toggleAgentMode, isAgentActive,tone,topic,style,autoAnswer} = useChat();
 
   return (
     <Box
@@ -44,7 +44,18 @@ export default function ChatPanel({ onClose }: Props) {
         </IconButton>
       </Box>
 
-      <ChatMessages messages={messages} loading={loading} chatEndRef={chatEndRef} />
+      <ChatMessages 
+      messages={messages} 
+      loading={loading} 
+      chatEndRef={chatEndRef}
+      onSelectOption={(type, value) => {
+    if (type === "tone") {
+      autoAnswer(value); 
+    } else if (type === "style") {
+      autoAnswer(value);
+    }
+  }}
+      />
       {isAgentActive && topic && tone && style && (
   <GenerateSlide topic={topic} tone={tone} style={style} />
 )}
