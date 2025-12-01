@@ -13,7 +13,7 @@ const tools = [
     { label: "Text-to-Infographics", tag: "New", route: "/tools/text-to-infographics" },
     { label: "Prompt-to-Template", tag: "New", route: "/tools/prompt-to-template" },
     { label: "Url-to-Website", tag: "New", route: "/tools/url-to-website" },
-    //{ label: "Prompt-to-Proposal", tag: "New", route: "/tools/prompt-to-proposal" },
+    { label: "Prompt-to-Proposal", tag: "New", route: "/tools/prompt-to-proposal" },
     { label: "Prompt-to-Video", tag: "New", route: "/tools/prompt-to-video" },
 ];
 
