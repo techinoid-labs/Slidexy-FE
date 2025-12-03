@@ -165,7 +165,7 @@ export default function Header() {
                   <NavProfileHandler setAuthModalOpen={setAuthModalOpen} />
 
                   {!isAcountsPage && !user && (
-                    <Link href="/presentation/create" passHref>
+                    <Link href="/tools" passHref>
                       <Button
                         variant="contained"
                         sx={{
