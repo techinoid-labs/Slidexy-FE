@@ -9,7 +9,7 @@ const tools = [
     { label: "Prompt-to-Deck", tag: "Free", route: "/tools/prompt-to-deck" },
     { label: "Video-to-Deck", tag: "New", route: "/tools/video-to-deck" },
     { label: "Web-to-Deck", tag: "New", route: "/tools/web-to-deck" },
-    { label: "Prompt-to-eBook", tag: "New", route: "/tools/prompt-to-ebook" },
+    //{ label: "Prompt-to-eBook", tag: "New", route: "/tools/prompt-to-ebook" },
     { label: "Text-to-Infographics", tag: "New", route: "/tools/text-to-infographics" },
     { label: "Prompt-to-Template", tag: "New", route: "/tools/prompt-to-template" },
     { label: "Url-to-Website", tag: "New", route: "/tools/url-to-website" },
@@ -24,7 +24,7 @@ export default function Services() {
             sx={{
                 width: "100%",
                 background: "#fff",
-                py: { xs: 6, md: 10 },
+                py: { xs: 6, md: 18 },
                 position: "relative",
                 overflow: "hidden",
                 display: "flex",

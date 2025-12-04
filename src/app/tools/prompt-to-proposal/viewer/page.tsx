@@ -62,11 +62,14 @@ interface PromptHistory {
   prompt: string;
   timestamp: number;
   pdfUrl?: string;
+  proposalId?: string;
+  title?: string;
 }
 
 export default function ViewerPage() {
   const [prompt, setPrompt] = useState("");
   const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
+  const [proposalTitle, setProposalTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [error, setError] = useState("");
@@ -82,6 +85,7 @@ export default function ViewerPage() {
   useEffect(() => {
     const storedPrompt = sessionStorage.getItem("proposalPrompt");
     const storedPdfUrl = sessionStorage.getItem("proposalPdfUrl");
+    const storedTitle = sessionStorage.getItem("proposalTitle");
     const storedHistory = localStorage.getItem("proposalHistory");
 
     if (!storedPrompt) {
@@ -92,15 +96,18 @@ export default function ViewerPage() {
     setPrompt(storedPrompt);
     setEditedPrompt(storedPrompt);
     if (storedPdfUrl) setGeneratedPdfUrl(storedPdfUrl);
+    if (storedTitle) setProposalTitle(storedTitle);
     if (storedHistory) setPromptHistory(JSON.parse(storedHistory));
   }, [router]);
 
-  const saveToHistory = (promptText: string, pdfUrl?: string) => {
+  const saveToHistory = (promptText: string, pdfUrl?: string, proposalId?: string, title?: string) => {
     const newEntry: PromptHistory = {
       id: Date.now().toString(),
       prompt: promptText,
       timestamp: Date.now(),
       pdfUrl,
+      proposalId,
+      title,
     };
     const updatedHistory = [newEntry, ...promptHistory].slice(0, 10);
     setPromptHistory(updatedHistory);
@@ -110,7 +117,7 @@ export default function ViewerPage() {
   const cycleLoadingMessages = () => {
     let index = 0;
     setLoadingMessage(loadingMessages[0]);
-    
+
     const interval = setInterval(() => {
       index = (index + 1) % loadingMessages.length;
       setLoadingMessage(loadingMessages[index]);
@@ -123,7 +130,7 @@ export default function ViewerPage() {
   const generateProposal = async (promptText: string) => {
     setLoading(true);
     setError("");
-    
+
     const messageInterval = cycleLoadingMessages();
 
     try {
@@ -133,19 +140,33 @@ export default function ViewerPage() {
         body: JSON.stringify({ prompt: promptText }),
       });
 
-      if (!res.ok) throw new Error("Failed to generate proposal.");
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to generate proposal.");
+      }
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      // Parse JSON response instead of blob
+      const data = await res.json();
 
       clearInterval(messageInterval);
-      
-      setGeneratedPdfUrl(url);
-      setLoading(false);
-      sessionStorage.setItem("proposalPdfUrl", url);
-      sessionStorage.setItem("proposalPrompt", promptText);
-      setPrompt(promptText);
-      saveToHistory(promptText, url);
+
+      if (data.success && data.pdfUrl) {
+        // Use the S3 URL directly
+        setGeneratedPdfUrl(data.pdfUrl);
+        setProposalTitle(data.title);
+        setLoading(false);
+
+        // Update session storage
+        sessionStorage.setItem("proposalPdfUrl", data.pdfUrl);
+        sessionStorage.setItem("proposalPrompt", promptText);
+        sessionStorage.setItem("proposalId", data.proposalId);
+        sessionStorage.setItem("proposalTitle", data.title);
+
+        setPrompt(promptText);
+        saveToHistory(promptText, data.pdfUrl, data.proposalId, data.title);
+      } else {
+        throw new Error(data.error || "Failed to generate proposal.");
+      }
     } catch (err: any) {
       clearInterval(messageInterval);
       setError(err.message || "Something went wrong.");
@@ -164,7 +185,13 @@ export default function ViewerPage() {
     if (historyItem.pdfUrl) {
       setGeneratedPdfUrl(historyItem.pdfUrl);
     }
+    if (historyItem.title) {
+      setProposalTitle(historyItem.title);
+    }
     sessionStorage.setItem("proposalPrompt", historyItem.prompt);
+    if (historyItem.pdfUrl) {
+      sessionStorage.setItem("proposalPdfUrl", historyItem.pdfUrl);
+    }
     setHistoryExpanded(false);
   };
 
@@ -246,8 +273,10 @@ export default function ViewerPage() {
               <Button
                 variant="contained"
                 startIcon={<Download />}
+                component="a"
                 href={generatedPdfUrl}
-                download="proposal.pdf"
+                target="_blank"
+                download={`${proposalTitle || 'proposal'}.pdf`}
                 sx={{
                   bgcolor: "#6C2BD9",
                   fontWeight: 600,
@@ -310,6 +339,16 @@ export default function ViewerPage() {
               >
                 {prompt}
               </Typography>
+              {proposalTitle && (
+                <Box sx={{ mt: 2, p: 2, bgcolor: "#f8f9ff", borderRadius: 2 }}>
+                  <Typography variant="caption" sx={{ color: "#6d6d6d", fontWeight: 600 }}>
+                    Generated Title:
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#1a1a1a", fontWeight: 500, mt: 0.5 }}>
+                    {proposalTitle}
+                  </Typography>
+                </Box>
+              )}
             </Paper>
 
             <Paper
@@ -350,7 +389,7 @@ export default function ViewerPage() {
                 />
                 {historyExpanded ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
-             
+
               <Collapse in={historyExpanded}>
                 <Divider />
                 <List sx={{ maxHeight: "400px", overflowY: "auto", p: 0 }}>
@@ -452,21 +491,21 @@ export default function ViewerPage() {
                     </Typography>
                   </Box>
                 </Box>
-                <Box sx={{ 
-                  p: 2.5, 
-                  bgcolor: "#fafbfc", 
-                  borderRadius: 2, 
+                <Box sx={{
+                  p: 2.5,
+                  bgcolor: "#fafbfc",
+                  borderRadius: 2,
                   border: "1px solid #f0f0f5",
                 }}>
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
                     <Typography variant="body2" sx={{ color: "#4a4a4a", fontWeight: 600 }}>
                       ⏱️ Estimated completion time
                     </Typography>
-                    <Chip 
-                      label="20-30 seconds" 
+                    <Chip
+                      label="20-30 seconds"
                       size="small"
-                      sx={{ 
-                        bgcolor: "rgba(108, 43, 217, 0.1)", 
+                      sx={{
+                        bgcolor: "rgba(108, 43, 217, 0.1)",
                         color: "#6C2BD9",
                         fontWeight: 600
                       }}
@@ -618,11 +657,13 @@ export default function ViewerPage() {
             )}
 
             {generatedPdfUrl && !loading && (
-              <iframe
-                src={generatedPdfUrl}
-                style={{ width: "100%", height: "100%", border: "none", minHeight: "calc(100vh - 200px)" }}
-                title="Proposal"
-              />
+              <Box sx={{ width: "100%", height: "100%", minHeight: "calc(100vh - 200px)" }}>
+                <iframe
+                  src={`https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(generatedPdfUrl)}#zoom=page-fit`}
+                  style={{ width: "100%", height: "100%", border: "none" }}
+                  title="PDF Viewer"
+                />
+              </Box>
             )}
           </Paper>
         </Box>

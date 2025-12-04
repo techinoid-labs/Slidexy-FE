@@ -294,7 +294,11 @@ const SlideRenderer = React.memo<SlideRendererProps & { index: number; originalS
                   el.element_type === "quote" ||
                   el.element_type === "author" ||
                   el.element_type === "context"
-                ) {
+                )
+                  if (el.text_id?.startsWith('auto-bullet-') || el.shape_id?.startsWith('auto-bullet-dot-')) {
+                    return null; // Skip auto-generated cover bullets — they're already rendered as shapes
+                  }
+                {
                   return (
                     <AnimatedKonvaText
                       key={`${el.id || `el-${index}-${i}`}`}
