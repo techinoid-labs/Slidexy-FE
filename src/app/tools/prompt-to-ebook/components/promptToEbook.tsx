@@ -17,8 +17,10 @@ import {
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
-const API_URL = "https://aaa-saving-indexes-view.trycloudflare.com/api/v1";
+
+const API_URL = process.env.NEXT_PUBLIC_EBOOK_API_BASE_URL;
 
 export default function PromptToEbook() {
   const [topic, setTopic] = useState("");
@@ -27,6 +29,7 @@ export default function PromptToEbook() {
   const [progress, setProgress] = useState(0);
   const [currentMessage, setCurrentMessage] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -151,8 +154,9 @@ export default function PromptToEbook() {
       // Preview URL for iframe
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
+      sessionStorage.setItem("ebookPdfUrl", url);
 
-      setCurrentMessage("eBook Preview Ready Below.");
+      router.push(`/tools/prompt-to-ebook/viewer?title=${topic}`);
     } catch (err) {
       console.error(err);
       setError("Failed to download eBook.");
@@ -224,45 +228,74 @@ export default function PromptToEbook() {
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             sx={{
-              borderBottom: "1px solid rgba(242, 240, 255, 1)",
-              mb: 2,
+              mt: -3,
+              mb: 1.5,
+              "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+              borderBottom: "1px solid #f2f0ff",
+              "& .MuiInputBase-input": { fontSize: "15px", lineHeight: 1.6 },
+              minHeight: 224,
             }}
           />
 
-          {/* Genre Selector */}
-          <FormControl
-            fullWidth
+          {/* Genre + Generate Row */}
+          <Box
             sx={{
               mt: 2,
-              background: "#fff",
-              borderRadius: 1,
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
             }}
           >
-            <InputLabel>Genre</InputLabel>
-            <Select value={genre} label="Genre" onChange={(e) => setGenre(e.target.value)}>
-              <MenuItem value="technology">Technology</MenuItem>
-              <MenuItem value="business">Business</MenuItem>
-              <MenuItem value="education">Education</MenuItem>
-            </Select>
-          </FormControl>
+            {/* Genre Selector */}
+            <FormControl
+              sx={{
+                display: "flex",
+                width: { xs: "100%", sm: "130px", md: "160px" },
+                height: "44px",
+                borderRadius: "4px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                backgroundColor: " rgba(255, 255, 255, 1)",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                "& .MuiSelect-select": {
+                  py: "8px",
+                },
+              }}
+            >
+              <InputLabel>Genre</InputLabel>
+              <Select
+                value={genre}
+                label="Genre"
+                onChange={(e) => setGenre(e.target.value)}
+              >
+                <MenuItem value="technology">Technology</MenuItem>
+                <MenuItem value="business">Business</MenuItem>
+                <MenuItem value="education">Education</MenuItem>
+              </Select>
+            </FormControl>
 
-          {/* Generate Button */}
-          <Button
-            variant="contained"
-            disabled={loading}
-            onClick={handleSubmit}
-            sx={{
-              mt: 3,
-              backgroundColor: "#6C2BD9",
-              color: "#fff",
-              borderRadius: "32px",
-              px: 4,
-              py: 1.2,
-            }}
-            startIcon={<AutoAwesome />}
-          >
-            Generate
-          </Button>
+            {/* Generate Button */}
+            <Button
+              variant="contained"
+              disabled={loading}
+              onClick={handleSubmit}
+              sx={{
+                backgroundColor: "#6C2BD9",
+                color: "#fff",
+                borderRadius: "32px",
+                px: 4,
+                py: 1.2,
+                whiteSpace: "nowrap",
+                height: "56px",
+              }}
+              startIcon={<AutoAwesome />}
+            >
+              Generate
+            </Button>
+          </Box>
 
           {error && (
             <Alert
@@ -284,7 +317,6 @@ export default function PromptToEbook() {
         {loading && (
           <Box
             sx={{
-              p: 3,
               borderRadius: 2,
               bgcolor: "white",
               boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
@@ -299,43 +331,6 @@ export default function PromptToEbook() {
             <Typography variant="body2" sx={{ mt: 1 }}>
               Progress: {progress}%
             </Typography>
-          </Box>
-        )}
-
-        {/* PDF Preview + Download */}
-        {pdfUrl && !loading && (
-          <Box
-            sx={{
-              mt: 4,
-              width: "100%",
-              maxWidth: 900,
-              bgcolor: "white",
-              p: 2,
-              borderRadius: 2,
-              boxShadow: "0 5px 25px rgba(0,0,0,0.1)",
-            }}
-          >
-            <Typography variant="h5" sx={{ mb: 2 }}>
-              📘 eBook Preview
-            </Typography>
-
-            <iframe
-              src={pdfUrl}
-              style={{ width: "100%", height: "600px", border: "1px solid #ddd" }}
-            ></iframe>
-
-            <Button
-              variant="contained"
-              sx={{ mt: 2, borderRadius: "30px" }}
-              onClick={() => {
-                const a = document.createElement("a");
-                a.href = pdfUrl;
-                a.download = "ebook.pdf";
-                a.click();
-              }}
-            >
-              Download PDF
-            </Button>
           </Box>
         )}
 
