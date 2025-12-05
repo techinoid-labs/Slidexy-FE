@@ -9,3 +9,4 @@ export { LinkedInShareDialog } from "./LinkedInShareDialog";
 export { LinkedInCallbackHandler } from "./LinkedInCallbackHandler";
 export { LinkedInShareMenu } from "./LinkedInShareMenu";
 export { LinkedInShareButton } from "./LinkedInShareButton";
+export { LinkedInProfileCard } from "./LinkedInProfileCard";

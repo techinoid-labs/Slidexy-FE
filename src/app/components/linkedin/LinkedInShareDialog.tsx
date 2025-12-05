@@ -14,6 +14,8 @@ import {
   Typography,
   FormControlLabel,
   Checkbox,
+  Avatar,
+  Divider,
 } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
 import { useLinkedIn } from "@/app/context/LinkedInContext";
@@ -39,11 +41,11 @@ export const LinkedInShareDialog: React.FC<LinkedInShareDialogProps> = ({
   slideThumbnail,
   slideTitle = "Check out this presentation!",
 }) => {
-  const { shareSlide, shareCustomContent, connectionLoading, connectionError } =
+  const { shareSlide, shareCustomContent, connectionLoading, connectionError, connectionStatus } =
     useLinkedIn();
 
   const [message, setMessage] = useState(
-    `Just created this amazing slide using Neuro Engine! 🚀`
+    `Just created this amazing slide using Slidexy! 🚀`
   );
   const [isSharing, setIsSharing] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
@@ -77,7 +79,7 @@ export const LinkedInShareDialog: React.FC<LinkedInShareDialogProps> = ({
       if (result.success) {
         setShareSuccess(true);
         setMessage(
-          `Just created this amazing slide using Neuro Engine! 🚀`
+          `Just created this amazing slide using Slidexy! 🚀`
         );
         // Auto-close after 2 seconds
         setTimeout(() => {
@@ -96,7 +98,7 @@ export const LinkedInShareDialog: React.FC<LinkedInShareDialogProps> = ({
 
   const handleClose = () => {
     if (!isSharing) {
-      setMessage(`Just created this amazing slide using Neuro Engine! 🚀`);
+      setMessage(`Just created this amazing slide using Slidexy! 🚀`);
       setShareError(null);
       setShareSuccess(false);
       onClose();
@@ -113,6 +115,40 @@ export const LinkedInShareDialog: React.FC<LinkedInShareDialogProps> = ({
       </DialogTitle>
 
       <DialogContent sx={{ py: 2 }}>
+        {/* Profile Preview */}
+        {connectionStatus?.profile && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              p: 2,
+              mb: 2,
+              backgroundColor: "#f0f7ff",
+              borderRadius: 1,
+              border: "1px solid #0A66C2",
+            }}
+          >
+            <Avatar
+              src={connectionStatus.profile.picture}
+              alt={connectionStatus.profile.name}
+              sx={{
+                width: 40,
+                height: 40,
+                border: "2px solid #0A66C2",
+              }}
+            />
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {connectionStatus.profile.name}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Posting to your LinkedIn
+              </Typography>
+            </Box>
+          </Box>
+        )}
+
         {/* Error messages */}
         {connectionError && (
           <Alert severity="error" sx={{ mb: 2 }}>
