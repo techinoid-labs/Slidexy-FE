@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import CssBaseline from "@mui/material/CssBaseline";
 import initStore, { getStore } from "@/app/store/store"; // Adjust path
 import { TemplateSlidesProvider } from "../context/TemplateSlidesContext";
+import { LinkedInProvider } from "../context/LinkedInContext";
 import StripeProvider from "@/lib/StripeProvider";
 
 import { Box, Typography } from "@mui/material";
@@ -45,11 +46,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <Provider store={store}>
       <ThemeProvider>
         <CssBaseline />
-        <TemplateSlidesProvider>
-          <SlidesProvider>
-            <StripeProvider>{children}</StripeProvider>
-          </SlidesProvider>
-        </TemplateSlidesProvider>
+        <LinkedInProvider>
+          <TemplateSlidesProvider>
+            <SlidesProvider>
+              <StripeProvider>{children}</StripeProvider>
+            </SlidesProvider>
+          </TemplateSlidesProvider>
+        </LinkedInProvider>
       </ThemeProvider>
     </Provider>
   );
