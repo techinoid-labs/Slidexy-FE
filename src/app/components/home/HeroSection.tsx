@@ -290,7 +290,7 @@ export default function HeroSection() {
                       },
                     }}
                   >
-                    Get Started
+                    Join the Waitlist
                   </Button>
                 </Box>
               </Box>
