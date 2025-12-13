@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
         pathname: "/images/**",
       },
       {
+        protocol: "http",
+        hostname: "localhost",
+        port: "5001",
+        pathname: "/**", // Allow all paths from 5001 (uploads, images)
+      },
+      {
         protocol: "https",
         hostname: "dev.slidexy.net",
         port: "5000",
@@ -43,6 +49,14 @@ const nextConfig: NextConfig = {
       "slidexy.sfo3.digitaloceanspaces.com",
       "assets.slidexy.net",
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: 'http://localhost:5001/uploads/:path*', // Proxy to backend
+      },
+    ];
   },
 };
 

@@ -9,6 +9,9 @@ import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import DownloadIcon from "@mui/icons-material/Download";
+import AIEditorPanel from './AIEditorPanel';
+import { useAIEditor } from './useAIEditor';
+import { CLICK_LISTENER_SCRIPT } from './clickInjector';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -39,6 +42,70 @@ export default function RightPanel({ presentationId }: EditorProps) {
     const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
     const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(["root"]));
     const [fullPreview, setFullPreview] = useState(false);
+    const [selectionMode, setSelectionMode] = useState(false); // Default OFF
+    const iframeWindowRef = React.useRef<Window | null>(null); // Store active iframe window from handshake
+
+    // AI Editor Hook
+    const {
+        loading: aiLoading,
+        history,
+        clickedElementId,
+        setClickedElementId,
+        editWebsite,
+        handleIframeMessage
+    } = useAIEditor({
+        presentationId,
+        onSuccess: (newFiles) => {
+            // Optimistically update file content if returned, or re-fetch
+            if (newFiles && newFiles.length > 0) {
+                // We need to merge new files into existing websiteData
+                setWebsiteData(prev => {
+                    if (!prev) return null;
+                    return { ...prev, files: newFiles };
+                });
+                // Also update selected file if it was modified
+                if (selectedFile) {
+                    const updated = newFiles.find((f: FileData) => f.type === selectedFile.type);
+                    if (updated) setSelectedFile(updated);
+                }
+            } else {
+                fetchWebsiteData();
+            }
+        }
+    });
+
+    // Listen for iframe messages (Click-to-Edit & Handshake)
+    useEffect(() => {
+        const onMessage = (event: MessageEvent) => {
+            // Handshake: If iframe script says it's ready, send current mode
+            if (event.data && event.data.type === 'NEURO_EDITOR_READY') {
+                console.log("⚡ Iframe Ready received. Syncing Selection Mode:", selectionMode);
+                // Store the window reference for future toggles
+                iframeWindowRef.current = event.source as Window;
+                // Reply immediately
+                iframeWindowRef.current?.postMessage({ type: 'TOGGLE_SELECTION', enabled: selectionMode }, '*');
+            }
+            // Delegate other messages to the hook logic
+            handleIframeMessage(event);
+        };
+
+        window.addEventListener('message', onMessage);
+        return () => window.removeEventListener('message', onMessage);
+    }, [handleIframeMessage, selectionMode]);
+
+    // Sync Selection Mode with Iframe (User Toggles)
+    useEffect(() => {
+        if (iframeWindowRef.current) {
+            console.log("⚡ Sending Toggle to tracked iframe window:", selectionMode);
+            iframeWindowRef.current.postMessage({ type: 'TOGGLE_SELECTION', enabled: selectionMode }, '*');
+        } else {
+            // Fallback to DOM query if handshake missed (e.g. reload)
+            const iframe = document.querySelector('iframe');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage({ type: 'TOGGLE_SELECTION', enabled: selectionMode }, '*');
+            }
+        }
+    }, [selectionMode]);
 
     useEffect(() => {
         if (presentationId) {
@@ -49,8 +116,10 @@ export default function RightPanel({ presentationId }: EditorProps) {
     const fetchWebsiteData = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/api/website-generator/website/${presentationId}`);
-            
+            // Try fetching from the Website Generator endpoint (CEO New Feature) first
+            // If that fails, we could try dynamic-website, but for now let's switch to the one the generator uses.
+            const response = await fetch(`${API_BASE_URL}/api/website-generator/${presentationId}`);
+
             if (!response.ok) {
                 throw new Error("Failed to fetch website data");
             }
@@ -63,7 +132,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
             }
 
             setWebsiteData(actualData);
-            
+
             const htmlFile = actualData.files.find((f: FileData) => f.type === "html");
             if (htmlFile) {
                 setSelectedFile(htmlFile);
@@ -86,7 +155,37 @@ export default function RightPanel({ presentationId }: EditorProps) {
 
         if (!htmlFile) return "";
 
-        let html = htmlFile.content;
+        let htmlContent = htmlFile.content;
+
+        // --- DETERMINISTIC ID INJECTION (Frontend Match) ---
+        // We must apply the EXACT same logic as the backend to ensure IDs match.
+        // Backend: websiteEditorService.js -> cheerio
+        // Frontend: DOMParser
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, "text/html");
+            let idCounter = 1;
+
+            // Selector MUST match backend exactly:
+            // 'section, div, header, footer, nav, main, article, aside, h1, h2, h3, h4, h5, h6, p, ul, ol, li, form, table, img, span, a, button, i, strong, em, svg, path'
+            const tags = ['section', 'div', 'header', 'footer', 'nav', 'main', 'article', 'aside', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li', 'form', 'table', 'img', 'span', 'a', 'button', 'i', 'strong', 'em', 'svg', 'path'];
+            const selector = tags.join(', ');
+
+            const elements = doc.querySelectorAll(selector);
+            elements.forEach((el) => {
+                if (!el.id) {
+                    const tagName = el.tagName.toLowerCase();
+                    el.id = `neuro-${tagName}-${idCounter++}`;
+                }
+            });
+
+            htmlContent = doc.documentElement.outerHTML;
+        } catch (e) {
+            console.warn("Frontend ID injection failed, falling back to raw HTML", e);
+        }
+        // ---------------------------------------------------
+
+        let html = htmlContent;
 
         // Inject CSS inline
         if (cssFile) {
@@ -102,6 +201,15 @@ export default function RightPanel({ presentationId }: EditorProps) {
                 '<script src="app.js"></script>',
                 `<script>${jsFile.content}</script>`
             );
+        }
+
+        // Inject Click Listener Script for AI Editing
+        if (selected === 'preview' || fullPreview) {
+            if (html.includes('</body>')) {
+                html = html.replace('</body>', CLICK_LISTENER_SCRIPT + '</body>');
+            } else {
+                html += CLICK_LISTENER_SCRIPT;
+            }
         }
 
         return html;
@@ -167,7 +275,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
             <Typography variant="subtitle1" fontWeight={600} mb={2}>
                 Explorer
             </Typography>
-            
+
             {loading ? (
                 <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
                     <CircularProgress size={30} />
@@ -190,7 +298,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
                             <FolderIcon fontSize="small" sx={{ mx: 0.5, color: "#FDB800" }} />
                             <Typography fontWeight={600}>{websiteData.topic || "website"}</Typography>
                         </Box>
-                        
+
                         {expandedFolders.has("root") && (
                             <Box sx={{ pl: 3, mt: 1 }}>
                                 {websiteData.files.map((file, index) => (
@@ -528,6 +636,16 @@ export default function RightPanel({ presentationId }: EditorProps) {
                     )}
                 </Box>
             </Paper>
+            {/* AI Editor Panel */}
+            <AIEditorPanel
+                history={history}
+                isLoading={aiLoading}
+                clickedElementId={clickedElementId}
+                onClearSelection={() => setClickedElementId(null)}
+                onSubmit={(prompt, image) => editWebsite(prompt, image)}
+                selectionMode={selectionMode}
+                onToggleSelection={() => setSelectionMode(!selectionMode)}
+            />
         </Box>
     );
 }
