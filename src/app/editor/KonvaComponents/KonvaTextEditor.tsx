@@ -182,50 +182,50 @@ const KonvaTextEditor: React.FC<KonvaTextEditorProps> = ({
   );
 
 
-const handleTransformEnd = useCallback(() => {
-  const node = textRef.current;
-  if (!node) return;
+  const handleTransformEnd = useCallback(() => {
+    const node = textRef.current;
+    if (!node) return;
 
-  // 1. Get current scale from transformer
-  const scaleX = node.scaleX();
-  const scaleY = node.scaleY();
+    // 1. Get current scale from transformer
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
 
-  // 2. Reset scale (prevents letter stretching)
-  node.scaleX(1);
-  node.scaleY(1);
+    // 2. Reset scale (prevents letter stretching)
+    node.scaleX(1);
+    node.scaleY(1);
 
-  // 3. Apply new width (this triggers wrapping)
-  const newWidth = Math.max(60, node.width() * scaleX);  // minimum readable width
-  node.width(newWidth);
+    // 3. Apply new width (this triggers wrapping)
+    const newWidth = Math.max(60, node.width() * scaleX);  // minimum readable width
+    node.width(newWidth);
 
-  // 4. THIS IS THE MAGIC: Let Konva measure the real height of wrapped text
-  const contentHeight = node.getTextHeight(); // ← measures wrapped text perfectly
-  const padding = 24; // your padding (12 top + 12 bottom)
-  const newHeight = Math.max(40, contentHeight + padding);
+    // 4. THIS IS THE MAGIC: Let Konva measure the real height of wrapped text
+    const contentHeight = node.getTextHeight(); // ← measures wrapped text perfectly
+    const padding = 24; // your padding (12 top + 12 bottom)
+    const newHeight = Math.max(40, contentHeight + padding);
 
-  // 5. Apply auto-calculated height
-  node.height(newHeight);
+    // 5. Apply auto-calculated height
+    node.height(newHeight);
 
-  // 6. Optional: Keep within canvas bounds
-  const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
-    node,
-    getSlideDimensions().SLIDE_WIDTH,
-    getSlideDimensions().SLIDE_HEIGHT
-  );
-  node.position({ x: newX, y: newY });
-  setIsAtBoundary(isAtBoundary);
+    // 6. Optional: Keep within canvas bounds
+    const { x: newX, y: newY, isAtBoundary } = constrainToCanvas(
+      node,
+      getSlideDimensions().SLIDE_WIDTH,
+      getSlideDimensions().SLIDE_HEIGHT
+    );
+    node.position({ x: newX, y: newY });
+    setIsAtBoundary(isAtBoundary);
 
-  // 7. Save new width + auto height
-  updateSlides(text, {
-    x: newX,
-    y: newY,
-    width: newWidth,
-    height: newHeight,        // ← Auto height saved
-  });
+    // 7. Save new width + auto height
+    updateSlides(text, {
+      x: newX,
+      y: newY,
+      width: newWidth,
+      height: newHeight,        // ← Auto height saved
+    });
 
-  // 8. Redraw
-  node.getLayer()?.batchDraw();
-}, [text, updateSlides, setIsAtBoundary]);
+    // 8. Redraw
+    node.getLayer()?.batchDraw();
+  }, [text, updateSlides, setIsAtBoundary]);
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -266,7 +266,7 @@ const handleTransformEnd = useCallback(() => {
         text={text}
         x={x}
         y={y}
-        width={width || 300}           
+        width={width || 300}
         height={height}
         fontSize={fontSize}
         fill={fill}
@@ -274,7 +274,7 @@ const handleTransformEnd = useCallback(() => {
         fontStyle={fontStyle || "normal"}
         fontWeight={fontWeight || "normal"}
         align={align}
-        wrap="char"                    
+        wrap="char"
         ellipsis={true}
         padding={12}
         opacity={opacity}
@@ -284,53 +284,41 @@ const handleTransformEnd = useCallback(() => {
         onTransformEnd={handleTransformEnd}
         perfectDrawEnabled={false}
       />
-     {isSelected && (
-  <Transformer
-    ref={trRef}
-    rotateEnabled={false}
-    // DO NOT use keepRatio
-    // DO NOT use centeredScaling (bad for text)
+      {isSelected && (
+        <Transformer
+          ref={trRef}
+          rotateEnabled={false}
+          // DO NOT use keepRatio
+          // DO NOT use centeredScaling (bad for text)
 
-    enabledAnchors={[
-      "top-left",
-      "top-center",
-      "top-right",
-      "middle-left",     // ← These make width resize feel natural
-      "middle-right",    // ← This is what you want!
-      "bottom-left",
-      "bottom-center",
-      "bottom-right",
-    ]}
+          enabledAnchors={[
+            "top-left",
+            "top-center",
+            "top-right",
+            "middle-left",     // ← These make width resize feel natural
+            "middle-right",    // ← This is what you want!
+            "bottom-left",
+            "bottom-center",
+            "bottom-right",
+          ]}
 
-    // Prevent tiny boxes
-    boundBoxFunc={(oldBox, newBox) => {
-      newBox.width = Math.max(60, newBox.width);
-      newBox.height = Math.max(40, newBox.height);
-      return newBox;
-    }}
+          // Prevent tiny boxes
+          boundBoxFunc={(oldBox, newBox) => {
+            newBox.width = Math.max(60, newBox.width);
+            newBox.height = Math.max(40, newBox.height);
+            return newBox;
+          }}
 
-    // This is the KEY: ignore height changes from dragging bottom handle
-    // Let our handleTransformEnd recalculate height instead
-    ignoreStroke={true}
-    padding={0}
-  />
-)}
+          // This is the KEY: ignore height changes from dragging bottom handle
+          // Let our handleTransformEnd recalculate height instead
+          ignoreStroke={true}
+          padding={0}
+        />
+      )}
       {isEditing && textRef.current && (
         <Html>
-          <textarea
-            autoFocus
-            ref={textareaRef}
-            value={inputValue}
-            onChange={(e) => {
-              const target = e.target;
-              caretRef.current = target.selectionStart;
-              setInputValue(e.target.value);
-              if (textareaRef.current) {
-                textareaRef.current.style.height = "auto";
-                textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-              }
-            }}
-            onBlur={commitEdit}
+          <div
+            className="editor-text-overlay"
             style={{
               position: "absolute",
               top: (() => {
@@ -347,34 +335,45 @@ const handleTransformEnd = useCallback(() => {
                   slideDimensions.SLIDE_WIDTH - textRef.current.width();
                 return Math.max(0, Math.min(nodePos.x, maxX));
               })(),
-              fontSize: `${fontSize}px`,
-              fontFamily: fontFamily?.trim() || selectedTheme?.font || "Ralway",
-              fontStyle: fontWeight || "normal",
-              fontWeight: fontWeight || "normal",
-              padding: "12px",
-
-              outline: "none",
-              // background: "white",
-              // border: "1px solid #ccc",
-              paddingLeft: "10px",
-              lineHeight: 0.9,
-              resize: "none",
-              transform: `rotate(${textRef.current.rotation()}deg)`,
               width: (() => {
                 const slideDimensions = getSlideDimensions();
                 const maxWidth =
                   slideDimensions.SLIDE_WIDTH - textRef.current.x();
                 return Math.min(textRef.current.width(), maxWidth);
               })(),
-              height: (() => {
+              minHeight: (() => {
                 const slideDimensions = getSlideDimensions();
                 const maxHeight =
                   slideDimensions.SLIDE_HEIGHT - textRef.current.y();
                 return Math.min(textRef.current.height(), maxHeight);
               })(),
-              zIndex,
             }}
-          />
+          >
+            <textarea
+              autoFocus
+              ref={textareaRef}
+              value={inputValue}
+              onChange={(e) => {
+                const target = e.target;
+                caretRef.current = target.selectionStart;
+                setInputValue(e.target.value);
+                if (textareaRef.current) {
+                  textareaRef.current.style.height = "auto";
+                  textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+                }
+              }}
+              onBlur={commitEdit}
+              style={{
+                fontSize: `${fontSize}px`,
+                fontFamily: fontFamily?.trim() || selectedTheme?.font || "Raleway",
+                fontStyle: fontWeight || "normal",
+                fontWeight: fontWeight || "normal",
+                color: fill,
+                lineHeight: 1.2,
+                transform: `rotate(${textRef.current.rotation()}deg)`,
+              }}
+            />
+          </div>
         </Html>
       )}
     </>

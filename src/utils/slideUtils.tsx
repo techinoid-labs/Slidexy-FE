@@ -16,25 +16,28 @@ export const restrictShapeBounds = (
   let width = properties.width || MIN_SIZE;
   let height = properties.height || MIN_SIZE;
 
+  // Normalize shapeType so callers can pass either "Konva.Rect" or "Rect"
+  const comp = (shapeType || "").replace(/^Konva\./, "");
+
   // Handle size for specific shape types
-  if (shapeType === "Konva.Circle") {
+  if (comp === "Circle") {
     const radius = Math.max(properties.radius || MIN_SIZE / 2, MIN_SIZE / 2);
     width = height = radius * 2;
-  } else if (shapeType === "Konva.Star") {
+  } else if (comp === "Star") {
     const outerRadius = Math.max(
       properties.outerRadius || MIN_SIZE / 2,
       MIN_SIZE / 2
     );
     width = height = outerRadius * 2;
-  } else if (shapeType === "Konva.RegularPolygon") {
+  } else if (comp === "RegularPolygon") {
     const radius = Math.max(properties.radius || MIN_SIZE / 2, MIN_SIZE / 2);
     width = height = radius * 2;
-  } else if (shapeType === "Konva.Ellipse") {
+  } else if (comp === "Ellipse") {
     const radiusX = Math.max(properties.radiusX || MIN_SIZE / 2, MIN_SIZE / 2);
     const radiusY = Math.max(properties.radiusY || MIN_SIZE / 2, MIN_SIZE / 2);
     width = radiusX * 2;
     height = radiusY * 2;
-  } else if (shapeType === "Konva.Line" || shapeType === "Konva.Arrow") {
+  } else if (comp === "Line" || comp === "Arrow") {
     const points = properties.points || [0, 0, 100, 100];
     const xs = points.filter((_: any, idx: number) => idx % 2 === 0);
     const ys = points.filter((_: any, idx: number) => idx % 2 !== 0);
@@ -49,7 +52,7 @@ export const restrictShapeBounds = (
   const padding = 10;
   const maxX = canvasWidth - width - padding + 50;
   const maxY =
-    shapeType === "Konva.Line" || shapeType === "Konva.Arrow"
+    comp === "Line" || comp === "Arrow"
       ? canvasHeight - height - padding
       : canvasHeight - height - padding + 50;
 

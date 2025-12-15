@@ -10,7 +10,6 @@ import { setSlides as setSlidesAction } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import { exportSlidesAsPDF } from "@/utils/exportSlides";
 import { exportSlidesAsPPT } from "@/utils/exportSlidesAsPPT";
-import type { StructuredSlide } from "@/utils/exportSlidesAsPPT";
 import SettingsIcon from "@mui/icons-material/Settings";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
@@ -48,10 +47,12 @@ const Page = () => {
     selectedTextId,
     selectedImageIndex,
     selectedImage,
+    selectedImageId,
     selectedShapeIndex,
     setSelectedShapeId,
     setSelectedImageIndex,
     setSelectedImage,
+    setSelectedImageId,
     isMobileImageSelected,
     setIsMobileImageSelected,
     setSelectedShapeIndex,
@@ -83,6 +84,7 @@ const Page = () => {
             const data = await response.json();
             let fetchedSlides = data.slides || [];
 
+            // Only generate variants for slides that don't have them
             fetchedSlides = fetchedSlides.map((slide: any) => {
               if (slide.layouts && slide.layouts.length > 0) {
                 return slide;
@@ -117,7 +119,7 @@ const Page = () => {
       };
       fetchPresentation();
     }
-  }, [presentationId, setSlides, selectedTheme]);
+  }, [presentationId]); // Only depend on presentationId to avoid infinite loops
 
   useEffect(() => {
     if (slides.length > 0 && (selectedSlideIndex === undefined || selectedSlideIndex === -1)) {
@@ -202,165 +204,40 @@ const Page = () => {
 
     if (session?.user || user) {
       setShowAuthModal(false);
-
-      const structuredSlides: StructuredSlide[] = slides.map((slide: any) => {
-        const elements: StructuredSlide["elements"] = [];
-
-        const background = slide.elements.find((el: any) => el.element_type === "background");
-
-        slide.elements?.forEach((el: any) => {
-          if (el.element_type === "background") return;
-
-          const { element_type, text, properties = {}, konva_component } = el;
-          const {
-            x = 0,
-            y = 0,
-            width,
-            height,
-            w,
-            h,
-            fontSize = 18,
-            fill = "#444444",
-            fontFamily,
-            fontStyle,
-            fontWeight,
-            imageSrc,
-            stroke,
-            strokeWidth,
-            radius,
-            radiusX,
-            radiusY,
-            innerRadius,
-            outerRadius,
-            angle,
-            points,
-            sides,
-          } = properties;
-
-          const xIn = x / 100;
-          const yIn = y / 100;
-          const wIn = (width || w || 400) / 100;
-          const hIn = (height || h || 200) / 100;
-
-          if (element_type === "bullet_point") {
-            elements.push({
-              element_type: "bullet_point",
-              text,
-              properties: {
-                x: xIn,
-                y: yIn,
-                w: wIn,
-                h: hIn,
-                fontSize,
-                fill: fill.replace("#", ""),
-                fontFamily,
-                fontStyle,
-                fontWeight,
-              },
-            });
-          } else if (element_type === "image" && imageSrc) {
-            elements.push({
-              element_type: "image",
-              src: slide.image_url || undefined,
-              properties: {
-                imageSrc,
-                x: xIn,
-                y: yIn,
-                w: wIn,
-                h: hIn,
-              },
-            });
-          } else if (element_type === "text" && text) {
-            elements.push({
-              element_type: "text",
-              text,
-              properties: {
-                x: xIn,
-                y: yIn,
-                w: wIn,
-                h: hIn,
-                fontSize,
-                fill: fill.replace("#", ""),
-                fontFamily,
-                fontStyle,
-                fontWeight,
-              },
-            });
-          } else if (element_type === "shape") {
-            elements.push({
-              element_type: "shape",
-              text: konva_component,
-              properties: {
-                x: xIn,
-                y: yIn,
-                w: wIn,
-                h: hIn,
-                fill: fill.replace("#", "") || "cccccc",
-                stroke: stroke ? stroke.replace("#", "") : undefined,
-                strokeWidth,
-                radius,
-                radiusX,
-                radiusY,
-                innerRadius,
-                outerRadius,
-                angle,
-                points,
-                sides,
-              },
-            });
-          }
-        });
-
-        const slideTitleProps: any = slide.slide_title?.properties || {};
-        const slideTitle = slide.slide_title?.text;
-
-        return {
-          slide_id: slide.slide_id,
-          slide_title: slideTitle
-            ? {
-              text: slideTitle,
-              properties: {
-                fontSize: slideTitleProps.fontSize,
-                fill: slideTitleProps.fill?.replace("#", ""),
-                fontStyle: slideTitleProps.fontStyle,
-                fontFamily: slideTitleProps.fontFamily,
-              },
-            }
-            : undefined,
-          elements,
-          image_url: slide.image_url,
-          backgroundGradient: background?.properties?.gradientColors || [],
-        };
-      });
-
-      exportSlidesAsPPT(structuredSlides);
+      // Use image-based export for WYSIWYG results
+      exportSlidesAsPPT(slides.length);
     } else {
       setShowAuthModal(true);
     }
   };
 
+  // Improved panel visibility logic - more robust checks
   const isTextSelected =
     selectedTextId !== null &&
     selectedTextId !== "" &&
     selectedImageIndex === null &&
+    selectedImage === null &&
+    selectedShapeIndex === null;
+
+  const isImageSelected =
+    (selectedImageIndex !== null || selectedImage !== null || selectedImageId !== null) &&
+    selectedTextId === null &&
     selectedShapeIndex === null;
 
   const isShapeSelected =
     selectedShapeIndex !== null &&
     selectedTextId === null &&
-    selectedImageIndex === null;
+    selectedImageIndex === null &&
+    selectedImage === null;
 
-  const isImageSelected =
-    selectedImageIndex !== null &&
-    selectedTextId === null &&
-    selectedShapeIndex === null;
+  const hasElementSelected = isTextSelected || isImageSelected || isShapeSelected;
 
   const handleExportPDF = () => {
     if (loading) return;
 
     if (session?.user || user) {
       setShowAuthModal(false);
-      exportSlidesAsPDF(stageRefs.current);
+      exportSlidesAsPDF(slides.length);
     } else {
       setShowAuthModal(true);
     }
@@ -394,13 +271,13 @@ const Page = () => {
       setShowRightPanel(true);
     }
   };
-const deselectAllRef = useRef<(() => void) | null>(null);
-   const handlePreviewOpen = () => {
+  const deselectAllRef = useRef<(() => void) | null>(null);
+  const handlePreviewOpen = () => {
     // Call the SlideEditor's deselectAll function
     if (deselectAllRef.current) {
       deselectAllRef.current();
     }
-    
+
     // Also clear all parent component states
     setSelectedTextId(null);
     setSelectedImageIndex(null);
@@ -409,7 +286,7 @@ const deselectAllRef = useRef<(() => void) | null>(null);
     setSelectedShapeId(null);
     setIsMobileTextSelected(false);
     setIsMobileImageSelected(false);
-    
+
     // Open preview after state updates
     setTimeout(() => {
       setPreviewOpen(true);
@@ -485,8 +362,8 @@ const deselectAllRef = useRef<(() => void) | null>(null);
                 open={previewOpen}
                 onClose={() => setPreviewOpen(false)}
                 theme={selectedTheme}
-                forceCleanPreview={previewOpen} 
-                key={previewOpen ? "clean" : "normal"} 
+                forceCleanPreview={previewOpen}
+                key={previewOpen ? "clean" : "normal"}
               />
               {isMobileTextSelected && !isShapeSelected && (
                 <TextSettingsPanelMobile
@@ -546,8 +423,8 @@ const deselectAllRef = useRef<(() => void) | null>(null);
                   theme={selectedTheme}
                   open={previewOpen}
                   onClose={() => setPreviewOpen(false)}
-                  forceCleanPreview={previewOpen}   
-                  key={previewOpen ? "clean" : "normal"}  
+                  forceCleanPreview={previewOpen}
+                  key={previewOpen ? "clean" : "normal"}
                 />
               </div>
               <div

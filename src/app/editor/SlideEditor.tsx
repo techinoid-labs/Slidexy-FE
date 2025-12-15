@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 import { Box } from "@mui/material";
@@ -6,13 +6,16 @@ import SlideImage from "./KonvaComponents/KonvaSlideImage";
 import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor";
 import AnimatedKonvaText from "./KonvaComponents/AnimatedKonvaText";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
+import SlidePreviews from "./slidesPreview";
 import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import HorizontalSlidesCarousel from "@/app/components/editor/HorizontalSlidesCarousel";
 import { useSlides } from "../context/SlidesContext";
 import { getSlideDimensions } from "../../utils/slideUtils";
 import { generateSlideVariants } from "../../utils/variantGenerator";
+import { getStageCanvas } from "../../utils/snapShotUtils";
 import snapshotsCache from "@/utils/snapshotsCache";
 import { getContrastTextColor } from "../../utils/colorUtils";
+import { HTMLSlideRenderer } from "../components/editor/HTMLSlideRenderer";
 
 type SelectedElement = {
   id: string;
@@ -49,81 +52,262 @@ interface SlideRendererProps {
   onSetSlides: (slides: any[]) => void;
 }
 
-// ✅ FIXED: Memoized SlideRenderer to prevent unnecessary re-renders
-const SlideRenderer = React.memo<SlideRendererProps & { index: number; originalSlide: any }>(
-  ({
-    slides,
-    selectedSlideIndex,
-    stageRefs,
-    selectedImageIndex,
-    selectedShapeId,
-    selectedTextId,
-    selectedImageId,
-    selectedShapeIndex,
-    selectedElements,
-    selectedTheme,
-    scale,
-    openPanel,
-    onDeselect,
-    onHandleSelect,
-    onSetSelectedShapeId,
-    onSetSelectedImageIndex,
-    onSetSelectedImage,
-    onSetSelectedImageId,
-    onSetSelectedTextId,
-    onSetSelectedShapeIndex,
-    onSetSlides,
-    index,
-    originalSlide,
-  }) => {
-    const getCurrentVariantSlide = (slide: any) => {
-      if (!slide.layouts || slide.layouts.length === 0) return slide;
-
-      const variantIndex = slide.currentVariantIndex ?? 0;
-      const variant = slide.layouts[variantIndex];
-
-      if (!variant) return slide;
-
-      const variantElements = variant.elements || [];
-      const originalElements = slide.elements || [];
-      const userShapes = originalElements.filter(
-        (el: any) => el.element_type === "shape" && el.shape_id
-      );
-
-      return {
-        ...variant,
-        elements: [...variantElements, ...userShapes],
-      };
-    };
-
-    const slide = getCurrentVariantSlide(originalSlide);
-    const title = slide.slide_title;
-    const titleProps = title?.properties || {};
-
-    let renderBgUrl = "";
-    if (slide.background?.type === "image" && slide.background.url) {
-      renderBgUrl = slide.background.url;
-    } else if (selectedTheme?.image_url) {
-      renderBgUrl = selectedTheme.image_url;
+/**
+ * Renders a single slide's Konva stage with all elements
+ */
+const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlide: any }> = ({
+  slides,
+  selectedSlideIndex,
+  stageRefs,
+  selectedImageIndex,
+  selectedShapeId,
+  selectedTextId,
+  selectedImageId,
+  selectedShapeIndex,
+  selectedElements,
+  selectedTheme,
+  scale,
+  openPanel,
+  onDeselect,
+  onHandleSelect,
+  onSetSelectedShapeId,
+  onSetSelectedImageIndex,
+  onSetSelectedImage,
+  onSetSelectedImageId,
+  onSetSelectedTextId,
+  onSetSelectedShapeIndex,
+  onSetSlides,
+  index,
+  originalSlide,
+}) => {
+  /**
+  * Returns the currently active variant of a slide.
+  * Always uses the variant stored in slide.layouts[currentVariantIndex]
+  * Preserves user-added custom shapes (that have shape_id)
+  */
+  const getCurrentVariantSlide = (slide: any) => {
+    // If no layouts exist at all → return the slide as-is
+    if (!slide.layouts || slide.layouts.length === 0) {
+      return slide;
     }
 
-    const [bgImage] = useImage(renderBgUrl);
+    const variantIndex = slide.currentVariantIndex ?? 0;
+    const variant = slide.layouts[variantIndex];
 
-    return (
+    // Safety: if variant is missing (corrupted data), fall back to first layout
+    if (!variant) {
+      console.warn(`[getCurrentVariantSlide] Variant ${variantIndex} not found, falling back to index 0`);
+      const fallbackVariant = slide.layouts[0];
+      return {
+        ...slide,
+        ...fallbackVariant,
+        elements: [...(fallbackVariant.elements || []), ...extractUserShapes(slide)],
+      };
+    }
+
+    // Extract user-added shapes (ones the user drew manually, not part of any layout)
+    const userShapes = extractUserShapes(slide);
+
+    // Merge: variant wins on everything except user-added shapes
+    return {
+      ...slide,                           // Keep original slide props (slide_id, etc.)
+      ...variant,                         // Override with variant data (layout_type, title, elements, etc.)
+      elements: [...(variant.elements || []), ...userShapes], // Append user shapes on top
+      currentVariantIndex: variantIndex,  // Keep track of active variant
+    };
+  };
+
+  /**
+   * Helper: extracts only user-drawn shapes (not part of generated layouts)
+   */
+  const extractUserShapes = (slide: any): any[] => {
+    if (!slide.elements || !Array.isArray(slide.elements)) return [];
+
+    return slide.elements.filter((el: any) =>
+      el.element_type === "shape" &&
+      el.shape_id &&
+      typeof el.shape_id === "string" &&
+      el.shape_id.startsWith("user-") // optional: enforce your naming convention
+    );
+  };
+
+  const slide = getCurrentVariantSlide(originalSlide);
+  const title = slide.slide_title;
+  const titleProps = title?.properties || {};
+
+  let renderBgUrl = "";
+  if (slide.background?.type === "image" && slide.background.url) {
+    renderBgUrl = slide.background.url;
+  } else if (selectedTheme?.image_url) {
+    renderBgUrl = selectedTheme.image_url;
+  }
+
+  const [bgImage] = useImage(renderBgUrl);
+
+  const handleElementClickFromHTML = (
+    elementId: string,
+    elementType: string,
+    elementIndex?: number
+  ) => {
+    // Clear cross-type selections
+    onSetSelectedShapeId(null);
+    onSetSelectedImageId(null);
+    onSetSelectedImageIndex(null);
+    onSetSelectedShapeIndex(null);
+    onSetSelectedTextId(null);
+
+    if (elementType === "text") {
+      const textId =
+        elementId ||
+        (typeof elementIndex === "number"
+          ? `el-${index}-${elementIndex}`
+          : `title-${index}`);
+      onSetSelectedTextId(textId);
+    } else if (elementType === "image") {
+      // Find image element in slide
+      const imgEl = slide.elements?.find((el: any) =>
+        el.element_type === "image" &&
+        (el.image_id === elementId || el.properties?.image_id === elementId ||
+          typeof elementIndex === "number" && slide.elements.indexOf(el) === elementIndex)
+      ) || slide.elements?.find((el: any) => el.element_type === "image");
+
+      const finalIndex = typeof elementIndex === "number"
+        ? elementIndex
+        : imgEl ? slide.elements?.indexOf(imgEl) ?? null : null;
+
+      const finalId = elementId || imgEl?.image_id || imgEl?.properties?.image_id || `image-${index}-${finalIndex ?? 0}`;
+
+      onSetSelectedImageId(finalId);
+      onSetSelectedImageIndex(finalIndex);
+
+      if (imgEl) {
+        onSetSelectedImage({
+          ...imgEl,
+          image_id: finalId,
+          konva_component: imgEl.konva_component || "Konva.Image",
+          element_type: "image",
+          properties: {
+            ...imgEl.properties,
+            image_id: finalId,
+          },
+        });
+      }
+    } else if (elementType === "shape") {
+      const shapeId = elementId || `shape-${index}-${elementIndex ?? 0}`;
+      onHandleSelect({ id: shapeId, type: "shape", index: elementIndex ?? 0 });
+      onSetSelectedShapeId(shapeId);
+      onSetSelectedShapeIndex(elementIndex ?? null);
+    }
+  };
+
+  return (
+    <Box
+      key={originalSlide.slide_id}
+      data-slide-index={index}
+      id={`slide-node-${index}`}
+      sx={{
+        border: "1px solid #939393ff",
+        backgroundColor: "#fff",
+        position: "absolute",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        // Render all slides but only show the selected one
+        // Hidden slides are positioned off-screen so snapshots can be generated
+        visibility: index === selectedSlideIndex ? "visible" : "hidden",
+        opacity: index === selectedSlideIndex ? 1 : 0,
+        pointerEvents: index === selectedSlideIndex ? "auto" : "none",
+        transform: `scale(${scale})`,
+        left: index === selectedSlideIndex ? 0 : -99999,
+        width: getDynamicConstants().SLIDE_WIDTH,
+        height: getDynamicConstants().SLIDE_HEIGHT,
+      }}
+    >
+      {/* HTML Overlay for editing - visible and interactive */}
       <Box
-        key={originalSlide.slide_id}
         sx={{
-          border: "1px solid #939393ff",
-          backgroundColor: "#fff",
           position: "absolute",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          visibility: index === selectedSlideIndex ? "visible" : "hidden",
-          opacity: index === selectedSlideIndex ? 1 : 0,
-          pointerEvents: index === selectedSlideIndex ? "auto" : "none",
-          transform: `scale(${scale})`,
-          left: index === selectedSlideIndex ? 0 : -99999,
-          width: getDynamicConstants().SLIDE_WIDTH,
-          height: getDynamicConstants().SLIDE_HEIGHT,
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 10,
+          pointerEvents: openPanel ? "none" : "auto",
+        }}
+      >
+        <HTMLSlideRenderer
+          slide={slide}
+          theme={selectedTheme}
+          isEditing={true}
+          slideIndex={index}
+          onElementClick={handleElementClickFromHTML}
+          onSlideUpdate={(updatedSlide) => {
+            // Merge updates from HTML renderer into the original slide/variant
+            // Don't replace the whole slide object (that would wipe `layouts` etc.)
+            const updatedSlides = structuredClone(slides);
+            const originalSlide = updatedSlides[index];
+            if (!originalSlide) return;
+
+            // Preserve variant index
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+
+            // Update common slide-level fields
+            if (updatedSlide.slide_title) {
+              originalSlide.slide_title = updatedSlide.slide_title;
+            }
+            if (updatedSlide.subtitle) {
+              originalSlide.subtitle = updatedSlide.subtitle;
+            }
+            if (updatedSlide.background) {
+              originalSlide.background = updatedSlide.background;
+            }
+            if (typeof updatedSlide.image_url !== "undefined") {
+              originalSlide.image_url = updatedSlide.image_url;
+            }
+
+            // If this slide has layouts/variants, map back into the current variant
+            if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+              const currentVariant = originalSlide.layouts[variantIndex] || { elements: [] };
+              const variantCount = (currentVariant.elements || []).length;
+
+              // The HTML renderer provides elements as [ ...variant.elements, ...userShapes ]
+              if (Array.isArray(updatedSlide.elements)) {
+                // Split updated elements into variant part and user-shapes part
+                const newVariantElements = updatedSlide.elements.slice(0, variantCount);
+                const newUserShapes = updatedSlide.elements.slice(variantCount);
+
+                // Apply to variant and original slide elements
+                currentVariant.elements = newVariantElements;
+                originalSlide.layouts[variantIndex] = currentVariant;
+
+                // Compose original elements as variant elements + user shapes
+                originalSlide.elements = [...newVariantElements, ...newUserShapes];
+              }
+            } else {
+              // No variants: replace top-level elements
+              if (Array.isArray(updatedSlide.elements)) {
+                originalSlide.elements = updatedSlide.elements;
+              }
+            }
+
+            // Keep track of the active variant
+            originalSlide.currentVariantIndex = variantIndex;
+
+            updatedSlides[index] = originalSlide;
+            onSetSlides(updatedSlides);
+          }}
+        />
+      </Box>
+
+      {/* Konva Stage - hidden but used for export */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          visibility: "hidden",
+          pointerEvents: "none",
+          zIndex: 0,
         }}
       >
         <Box
@@ -294,11 +478,7 @@ const SlideRenderer = React.memo<SlideRendererProps & { index: number; originalS
                   el.element_type === "quote" ||
                   el.element_type === "author" ||
                   el.element_type === "context"
-                )
-                  if (el.text_id?.startsWith('auto-bullet-') || el.shape_id?.startsWith('auto-bullet-dot-')) {
-                    return null; // Skip auto-generated cover bullets — they're already rendered as shapes
-                  }
-                {
+                ) {
                   return (
                     <AnimatedKonvaText
                       key={`${el.id || `el-${index}-${i}`}`}
@@ -390,29 +570,9 @@ const SlideRenderer = React.memo<SlideRendererProps & { index: number; originalS
           </Stage>
         </Box>
       </Box>
-    );
-  },
-  // ✅ FIXED: Optimized comparison to prevent unnecessary re-renders
-  (prevProps, nextProps) => {
-    const isSelected = nextProps.index === nextProps.selectedSlideIndex;
-    const wasSelected = prevProps.index === prevProps.selectedSlideIndex;
-
-    // Always re-render if selection state changed
-    if (isSelected !== wasSelected) return false;
-
-    // If currently selected, check for content changes
-    if (isSelected) {
-      return (
-        prevProps.originalSlide === nextProps.originalSlide &&
-        prevProps.selectedElements === nextProps.selectedElements &&
-        prevProps.selectedTheme === nextProps.selectedTheme
-      );
-    }
-
-    // If not selected, don't re-render unless slide content changed
-    return prevProps.originalSlide === nextProps.originalSlide;
-  }
-);
+    </Box>
+  );
+};
 
 const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAllRef }: any) => {
   const {
@@ -440,125 +600,96 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
 
   const layoutsInitializedRef = useRef(false);
   const lastThemeRef = useRef<any>(null);
-  const lastSnapshotTimeRef = useRef(0);
 
-  // ✅ FIXED: Generate snapshots ONLY for mounted stages on initial load
+  // Snapshot generation - generate for all slides to show in carousel immediately
   useEffect(() => {
     if (slides.length === 0) return;
 
-    let cancelled = false;
+    // Wait a bit for stages to render, then generate snapshots
     const timer = setTimeout(() => {
-      const generateInitialSnapshots = async () => {
-        // Only generate for visible slides (selected +/- 1)
-        const start = Math.max(0, selectedSlideIndex - 1);
-        const end = Math.min(slides.length - 1, selectedSlideIndex + 1);
-
-        for (let i = start; i <= end; i++) {
-          if (cancelled) return;
-
+      const generateAllSnapshots = async () => {
+        // Generate snapshots for all slides
+        for (let i = 0; i < slides.length; i++) {
           const slide = slides[i];
           const stage = stageRefs.current[i];
 
-          if (!stage) continue;
-
-          // Check if snapshot already exists
-          try {
-            const existing = snapshotsCache.getSnapshot(slide.slide_id);
-            if (existing) continue; // Skip if already cached
-          } catch (e) {
-            // Snapshot doesn't exist, generate it
+          if (!stage) {
+            console.warn(`[SlideEditor] No stage ref for slide index ${i}`);
+            continue;
           }
 
           try {
             const canvas = stage.toCanvas ? stage.toCanvas() : null;
-            if (!canvas) continue;
-
-            if (typeof (window as any).requestIdleCallback === "function") {
-              (window as any).requestIdleCallback(() => {
-                snapshotsCache.generateFromCanvas(slide.slide_id, canvas).catch((err) => {
-                  console.warn(`Failed to generate initial snapshot for slide ${slide.slide_id}:`, err);
-                });
-              }, { timeout: 2000 });
-            } else {
-              await new Promise((res) => setTimeout(res, 200));
-              await snapshotsCache.generateFromCanvas(slide.slide_id, canvas);
+            if (!canvas) {
+              console.warn(`[SlideEditor] Failed to get canvas for slide ${slide.slide_id}`);
+              continue;
             }
+
+            await snapshotsCache.generateFromCanvas(slide.slide_id, canvas)
+              .catch((err) => {
+                console.warn(`[SlideEditor] generateFromCanvas failed for slide ${slide.slide_id}:`, err);
+              });
           } catch (err) {
-            console.error(`Error generating initial snapshot for slide ${slide.slide_id}:`, err);
+            console.error(`[SlideEditor] Error generating snapshot for slide ${slide.slide_id}:`, err);
           }
+
+          // Small delay between slides to avoid blocking
+          await new Promise(resolve => setTimeout(resolve, 50));
         }
       };
 
-      void generateInitialSnapshots();
-    }, 800); // Wait for stages to render
+      generateAllSnapshots();
+    }, 500); // Wait 500ms for stages to mount and render
 
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [slides.length]); // ✅ Only run on mount or slide count change
+    return () => clearTimeout(timer);
+  }, [slides]);
 
-  // ✅ FIXED: Debounced snapshot regeneration (only for selected slide after user stops editing)
+  // Periodic snapshot regeneration for ALL slides while editing
   useEffect(() => {
-    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
-    if (selectedSlideIndex < 0 || !slides[selectedSlideIndex]) return;
+    const lastSnapshotAt = { value: 0 } as { value: number };
+    const MIN_SNAPSHOT_INTERVAL = 1500; // Regenerate every 1.5s while editing
 
-    const now = Date.now();
-    const MIN_SNAPSHOT_INTERVAL = 3000; // ✅ Increased to 3 seconds
+    const updateAllSnapshots = async () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
 
-    // Debounce: Only regenerate if enough time has passed since last snapshot
-    if (now - lastSnapshotTimeRef.current < MIN_SNAPSHOT_INTERVAL) return;
+      const now = Date.now();
+      if (now - lastSnapshotAt.value < MIN_SNAPSHOT_INTERVAL) return;
+      lastSnapshotAt.value = now;
 
-    let cancelled = false;
-    const timer = setTimeout(() => {
-      if (cancelled) return;
+      // Regenerate snapshots for ALL slides, not just the selected one
+      // This ensures carousel shows updated variants even before selection
+      for (let i = 0; i < slides.length; i++) {
+        const slide = slides[i];
+        const stage = stageRefs.current[i];
 
-      const regenerateCurrentSlide = async () => {
-        const slide = slides[selectedSlideIndex];
-        const stage = stageRefs.current[selectedSlideIndex];
-
-        if (!slide || !stage) return;
+        if (!stage) continue;
 
         try {
           const canvas = stage.toCanvas ? stage.toCanvas() : null;
-          if (!canvas) return;
+          if (!canvas) continue;
 
-          if (typeof (window as any).requestIdleCallback === "function") {
-            (window as any).requestIdleCallback(() => {
-              snapshotsCache.generateFromCanvas(slide.slide_id, canvas).catch((err) => {
-                console.warn(`Failed to regenerate snapshot for slide ${slide.slide_id}:`, err);
-              });
-            }, { timeout: 2000 });
-          } else {
-            await snapshotsCache.generateFromCanvas(slide.slide_id, canvas);
-          }
-
-          lastSnapshotTimeRef.current = Date.now();
+          await snapshotsCache.generateFromCanvas(slide.slide_id, canvas).catch((err) => {
+            console.warn(`[SlideEditor] Snapshot regeneration failed for slide ${slide.slide_id}:`, err);
+          });
         } catch (err) {
-          console.error(`Error regenerating snapshot for slide ${selectedSlideIndex}:`, err);
+          console.error(`[SlideEditor] Error regenerating snapshot for slide ${i}:`, err);
         }
-      };
 
-      void regenerateCurrentSlide();
-    }, MIN_SNAPSHOT_INTERVAL); // ✅ Only trigger after 3s of inactivity
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
+        // Small delay between slides to avoid blocking
+        await new Promise(resolve => setTimeout(resolve, 30));
+      }
     };
-  }, [slides[selectedSlideIndex], selectedSlideIndex]); // ✅ Only watch current slide
 
-  // ✅ FIXED: Optimized theme and variant generation
+    const timer = setTimeout(updateAllSnapshots, 500);
+    return () => clearTimeout(timer);
+  }, [slides, selectedSlideIndex]);
+
+  // Theme changes and variant generation
   useEffect(() => {
     if (!selectedTheme || slides.length === 0) return;
 
-    // ✅ Compare theme by ID/hash instead of JSON.stringify
-    const themeId = `${selectedTheme.backgroundColor}-${selectedTheme.primaryColor}-${selectedTheme.font}`;
-    const lastThemeId = lastThemeRef.current
-      ? `${lastThemeRef.current.backgroundColor}-${lastThemeRef.current.primaryColor}-${lastThemeRef.current.font}`
-      : null;
-
-    const themeChanged = themeId !== lastThemeId;
+    const themeChanged =
+      JSON.stringify(lastThemeRef.current) !== JSON.stringify(selectedTheme);
 
     const needsRegeneration =
       !layoutsInitializedRef.current ||
@@ -568,49 +699,53 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
       return;
     }
 
-    // ✅ Use requestIdleCallback for non-blocking variant generation
-    const generateVariants = () => {
-      const updatedSlides = slides.map((slide: any) => {
-        if (slide.layouts && slide.layouts.length > 0 && !themeChanged) {
-          return slide;
+    const updatedSlides = slides.map((slide: any) => {
+      if (slide.layouts && slide.layouts.length > 0 && !themeChanged) {
+        return slide;
+      }
+
+      const newLayouts = generateSlideVariants(slide, selectedTheme);
+      const currentVariantIndex = slide.currentVariantIndex ?? 0;
+
+      return {
+        ...slide,
+        layouts: newLayouts,
+        currentVariantIndex,
+      };
+    });
+
+    setSlides(updatedSlides);
+    layoutsInitializedRef.current = true;
+    lastThemeRef.current = selectedTheme;
+
+    // CRITICAL: Regenerate snapshots after variants are applied
+    // This ensures carousel shows actual slides with variants applied
+    setTimeout(() => {
+      const regenerateSnapshots = async () => {
+        for (let i = 0; i < updatedSlides.length; i++) {
+          const slide = updatedSlides[i];
+          const stage = stageRefs.current[i];
+
+          if (!stage) continue;
+
+          try {
+            const canvas = stage.toCanvas ? stage.toCanvas() : null;
+            if (!canvas) continue;
+
+            await snapshotsCache.generateFromCanvas(slide.slide_id, canvas).catch((err) => {
+              console.warn(`[SlideEditor] Snapshot regeneration after variant failed:`, err);
+            });
+          } catch (err) {
+            console.error(`[SlideEditor] Error regenerating snapshot after variant:`, err);
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 50));
         }
+      };
 
-        const newLayouts = generateSlideVariants(slide, selectedTheme);
-        const currentVariantIndex = slide.currentVariantIndex ?? 0;
-
-        return {
-          ...slide,
-          layouts: newLayouts,
-          currentVariantIndex,
-        };
-      });
-
-      setSlides(updatedSlides);
-      layoutsInitializedRef.current = true;
-      lastThemeRef.current = selectedTheme;
-
-      // Regenerate snapshot for selected slide only
-      setTimeout(() => {
-        const slide = updatedSlides[selectedSlideIndex || 0];
-        const stage = stageRefs.current[selectedSlideIndex || 0];
-
-        if (!slide || !stage) return;
-
-        const canvas = stage.toCanvas ? stage.toCanvas() : null;
-        if (!canvas) return;
-
-        snapshotsCache.generateFromCanvas(slide.slide_id, canvas).catch((err) => {
-          console.warn(`Failed to regenerate snapshot after theme change:`, err);
-        });
-      }, 200);
-    };
-
-    if (typeof (window as any).requestIdleCallback === "function") {
-      (window as any).requestIdleCallback(generateVariants, { timeout: 3000 });
-    } else {
-      setTimeout(generateVariants, 100);
-    }
-  }, [selectedTheme?.backgroundColor, selectedTheme?.primaryColor, selectedTheme?.font]); // ✅ Watch specific theme properties
+      regenerateSnapshots();
+    }, 100); // Small delay to let Stage render the variant
+  }, [selectedTheme, slides]);
 
   useEffect(() => {
     const preservedThemeData = localStorage.getItem("slidesTheme");
@@ -628,7 +763,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  const deselectAll = useCallback(() => {
+  const deselectAll = () => {
     setSelectedElements([]);
     setSelectedTextId(null);
     setSelectedImageId(null);
@@ -637,12 +772,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
     setSelectedImage(null);
     setSelectedShapeIndex(null);
     if (onDeselect) onDeselect();
-  }, [setSelectedElements, setSelectedTextId, setSelectedImageId, setSelectedShapeId, setSelectedImageIndex, setSelectedImage, setSelectedShapeIndex, onDeselect]);
-  useEffect(() => {
-    if (deselectAllRef) {
-      deselectAllRef.current = deselectAll;
-    }
-  }, [deselectAll, deselectAllRef]);
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -697,7 +827,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [slides, selectedSlideIndex, selectedElements, setSlides, undo, redo]);
 
-  const handleSelect = useCallback((el: SelectedElement, multi = false) => {
+  const handleSelect = (el: SelectedElement, multi = false) => {
     if (multi) {
       setSelectedElements((prev) =>
         prev.find((p) => p.id === el.id)
@@ -707,7 +837,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
     } else {
       setSelectedElements([el]);
     }
-  }, []);
+  };
 
   return (
     <HorizontalSlidesCarousel
@@ -728,44 +858,34 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
           overflow: "hidden",
         }}
       >
-        {(() => {
-          // ✅ FIXED: Only render selected slide (reduce to 0 for maximum performance)
-          const RENDER_WINDOW = 1; // Keep at 1 for smooth navigation
-          return slides.map((originalSlide: any, index: number) => {
-            if (Math.abs(index - selectedSlideIndex) <= RENDER_WINDOW) {
-              return (
-                <SlideRenderer
-                  key={originalSlide.slide_id}
-                  slides={slides}
-                  selectedSlideIndex={selectedSlideIndex}
-                  stageRefs={stageRefs}
-                  selectedImageIndex={selectedImageIndex}
-                  selectedShapeId={selectedShapeId}
-                  selectedTextId={selectedTextId}
-                  selectedImageId={selectedImageId}
-                  selectedShapeIndex={selectedShapeIndex}
-                  selectedElements={selectedElements}
-                  selectedTheme={selectedTheme}
-                  scale={scale}
-                  openPanel={openPanel}
-                  onDeselect={onDeselect}
-                  onHandleSelect={handleSelect}
-                  onSetSelectedShapeId={setSelectedShapeId}
-                  onSetSelectedImageIndex={setSelectedImageIndex}
-                  onSetSelectedImage={setSelectedImage}
-                  onSetSelectedImageId={setSelectedImageId}
-                  onSetSelectedTextId={setSelectedTextId}
-                  onSetSelectedShapeIndex={setSelectedShapeIndex}
-                  onSetSlides={setSlides}
-                  index={index}
-                  originalSlide={originalSlide}
-                />
-              );
-            }
-
-            return null; // ✅ Don't render placeholder boxes - saves memory
-          });
-        })()}
+        {slides.map((originalSlide: any, index: number) => (
+          <SlideRenderer
+            key={`${originalSlide.slide_id}-variant-${originalSlide.currentVariantIndex}`}
+            slides={slides}
+            selectedSlideIndex={selectedSlideIndex}
+            stageRefs={stageRefs}
+            selectedImageIndex={selectedImageIndex}
+            selectedShapeId={selectedShapeId}
+            selectedTextId={selectedTextId}
+            selectedImageId={selectedImageId}
+            selectedShapeIndex={selectedShapeIndex}
+            selectedElements={selectedElements}
+            selectedTheme={selectedTheme}
+            scale={scale}
+            openPanel={openPanel}
+            onDeselect={onDeselect}
+            onHandleSelect={handleSelect}
+            onSetSelectedShapeId={setSelectedShapeId}
+            onSetSelectedImageIndex={setSelectedImageIndex}
+            onSetSelectedImage={setSelectedImage}
+            onSetSelectedImageId={setSelectedImageId}
+            onSetSelectedTextId={setSelectedTextId}
+            onSetSelectedShapeIndex={setSelectedShapeIndex}
+            onSetSlides={setSlides}
+            index={index}
+            originalSlide={originalSlide}
+          />
+        ))}
       </Box>
     </HorizontalSlidesCarousel>
   );
