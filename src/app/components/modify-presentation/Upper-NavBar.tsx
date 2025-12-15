@@ -26,6 +26,7 @@ import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useUser } from "@/app/context/AuthContext";
 import NavProfileHandler from "../auth/NavProfileHandler";
+import { LinkedInShareButton } from "../linkedin/LinkedInShareButton";
 
 // helper: extract readable name from email
 const extractNameFromEmail = (email: string): string => {
@@ -362,6 +363,9 @@ const UpperNavBar: React.FC<{
             {/* Export Buttons (desktop only) */}
             {!isMobile && (
               <>
+                {/* LinkedIn Share Button */}
+                <LinkedInShareButton sx={{ mr: 1 }} />
+
                 <Box
                   onClick={() => handleExportWithFileName(onExportPDF)}
                   sx={{
@@ -475,6 +479,10 @@ const UpperNavBar: React.FC<{
               Clear Canvas
             </MenuItem>
           )}
+          <Divider />
+          <MenuItem sx={{ py: 1, px: 2 }} disableRipple>
+            <LinkedInShareButton />
+          </MenuItem>
           <Divider />
           <MenuItem
             onClick={() => {
