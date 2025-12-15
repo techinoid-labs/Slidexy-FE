@@ -45,32 +45,41 @@ export default function RightPanel({ presentationId }: EditorProps) {
             fetchWebsiteData();
         }
     }, [presentationId]);
-
+    // Corrected fetchWebsiteData function (copy-paste this)
     const fetchWebsiteData = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/api/website-generator/website/${presentationId}`);
-            
+            setError("");
+
+            // Try Static first
+            let response = await fetch(`${API_BASE_URL}/api/website-generator/${presentationId}`);
+
+            // If not found → try Dynamic
+            if (!response.ok && response.status === 404) {
+                console.log("Not found in static, trying dynamic...");
+                response = await fetch(`${API_BASE_URL}/api/dynamic-website/${presentationId}`);
+            }
+
             if (!response.ok) {
-                throw new Error("Failed to fetch website data");
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `Website not found (Status: ${response.status})`);
             }
 
             const result = await response.json();
             const actualData = result.data || result;
 
             if (!actualData.files || !Array.isArray(actualData.files)) {
-                throw new Error("Invalid website data: missing files");
+                throw new Error("Invalid response: missing files");
             }
 
             setWebsiteData(actualData);
-            
+
             const htmlFile = actualData.files.find((f: FileData) => f.type === "html");
-            if (htmlFile) {
-                setSelectedFile(htmlFile);
-            }
+            if (htmlFile) setSelectedFile(htmlFile);
+
         } catch (err: any) {
-            console.error("Error fetching website data:", err);
-            setError(err.message || "Failed to load website data");
+            console.error("Failed to load website:", err);
+            setError(err.message || "Website not found or inaccessible");
         } finally {
             setLoading(false);
         }
@@ -167,7 +176,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
             <Typography variant="subtitle1" fontWeight={600} mb={2}>
                 Explorer
             </Typography>
-            
+
             {loading ? (
                 <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
                     <CircularProgress size={30} />
@@ -190,7 +199,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
                             <FolderIcon fontSize="small" sx={{ mx: 0.5, color: "#FDB800" }} />
                             <Typography fontWeight={600}>{websiteData.topic || "website"}</Typography>
                         </Box>
-                        
+
                         {expandedFolders.has("root") && (
                             <Box sx={{ pl: 3, mt: 1 }}>
                                 {websiteData.files.map((file, index) => (
@@ -241,6 +250,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
                     bottom: 0,
                     bgcolor: "#000",
                     zIndex: 9999,
+                    height: "100vh",
                 }}
             >
                 {/* Full Preview Header */}
@@ -253,14 +263,14 @@ export default function RightPanel({ presentationId }: EditorProps) {
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        p: 2,
+                        p: 1,
                         bgcolor: "rgba(0, 0, 0, 0.8)",
                         backdropFilter: "blur(10px)",
                         borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
                         zIndex: 10000,
                     }}
                 >
-                    <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: "18px" }}>
+                    <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: "12px" }}>
                         Full Preview Mode
                     </Typography>
                     <Button
@@ -269,7 +279,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
                             color: "#fff",
                             textTransform: "none",
                             fontWeight: 600,
-                            fontSize: "16px",
+                            fontSize: "12px",
                             "&:hover": {
                                 bgcolor: "rgba(255, 255, 255, 0.1)",
                             },
