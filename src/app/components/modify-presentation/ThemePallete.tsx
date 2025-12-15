@@ -115,7 +115,16 @@ const getContrastingTextColor = (bgColor: string, preferredText: string): string
   const textLum = getLuminance(preferredText || '#000000');
   const contrast = (Math.max(bgLum, textLum) + 0.05) / (Math.min(bgLum, textLum) + 0.05);
 
-  return contrast >= 4.5 ? preferredText : (bgLum > 0.5 ? '#1a1a1a' : '#ffffff');
+  // Make text darker and more visible - use higher contrast threshold
+  // For light backgrounds, use very dark text (#000000 or #0a0a0a)
+  // For dark backgrounds, use white (#ffffff)
+  if (bgLum > 0.5) {
+    // Light background - use very dark text for better visibility
+    return contrast >= 7 ? preferredText : '#0a0a0a';
+  } else {
+    // Dark background - use white
+    return contrast >= 7 ? preferredText : '#ffffff';
+  }
 };
 
 const paletteToTheme = (palette: string[]) => ({
@@ -153,8 +162,14 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
   const [isApplying, setIsApplying] = useState(false);
 
   const isApplyingRef = useRef(false);
+  const variantTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // Clear any pending timeout
+    if (variantTimeoutRef.current) {
+      clearTimeout(variantTimeoutRef.current);
+    }
+
     if (isApplyingRef.current) {
       console.log('[ThemePanel] Skipping variant generation - applying in progress');
       return;
@@ -162,108 +177,116 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
 
     if (selectedSlideIndex >= 0 && slides[selectedSlideIndex]) {
       const currentSlide = slides[selectedSlideIndex];
+      
+      // Debounce variant generation to prevent performance issues
+      variantTimeoutRef.current = setTimeout(() => {
+        console.log('[ThemePanel] Generating fresh layouts for theme/slide update');
+        const freshLayouts = generateSlideVariants(currentSlide, selectedTheme);
+        setCurrentVariants(freshLayouts);
 
-      console.log('[ThemePanel] Generating fresh layouts for theme/slide update');
-      const freshLayouts = generateSlideVariants(currentSlide, selectedTheme);
-      setCurrentVariants(freshLayouts);
+        const currentIndex = currentSlide.currentVariantIndex ?? 0;
+        setLocalVariantIndex(Math.min(currentIndex, freshLayouts.length - 1));
+        console.log('[ThemePanel] Synced localVariantIndex to', currentIndex);
 
-      const currentIndex = currentSlide.currentVariantIndex ?? 0;
-      setLocalVariantIndex(currentIndex);
-      console.log('[ThemePanel] Synced localVariantIndex to', currentIndex);
-
-      if (!currentSlide.layouts || currentSlide.layouts.length === 0) {
-        const updatedSlides = structuredClone(slides);
-        updatedSlides[selectedSlideIndex].layouts = freshLayouts;
-        setSlides(updatedSlides);
-        console.log('[ThemePanel] Initialized slide layouts');
-      }
+        // Only update slide layouts if they don't exist or are empty
+        if (!currentSlide.layouts || currentSlide.layouts.length === 0) {
+          const updatedSlides = structuredClone(slides);
+          updatedSlides[selectedSlideIndex].layouts = freshLayouts;
+          setSlides(updatedSlides);
+          console.log('[ThemePanel] Initialized slide layouts');
+        }
+      }, 300); // Debounce 300ms to prevent rapid re-generation
     } else {
       setCurrentVariants([]);
       setLocalVariantIndex(0);
     }
-  }, [selectedSlideIndex, selectedTheme]);
 
- const applyVariant = (variantIndex: number) => {
-  if (selectedSlideIndex < 0 || !currentVariants[variantIndex]) {
-    console.log('[ThemePanel] Skipping apply - invalid state');
-    return;
-  }
-
-  if (isApplying) {
-    console.log('[ThemePanel] Skipping apply - debounce active');
-    return;
-  }
-
-  console.log('[ThemePanel] Applying variant', variantIndex, 'with theme:', selectedTheme?.backgroundColor);
-
-  setIsApplying(true);
-  isApplyingRef.current = true;
-
-  setLocalVariantIndex(variantIndex);
-
-  const updatedSlides = structuredClone(slides);
-  const originalSlide = structuredClone(updatedSlides[selectedSlideIndex]);
-  const currentSlide = updatedSlides[selectedSlideIndex];
-  const selectedVariant = currentVariants[variantIndex];
-
-  // ✅ CRITICAL FIX: Always use variant elements, never fall back to original (prevents stacking)
-  // If variant has elements, use them. If not, use empty array to completely clear slide.
-  currentSlide.elements = selectedVariant.elements 
-    ? structuredClone(selectedVariant.elements)
-    : [];
-
-  // Also update the variant in layouts array to keep it in sync
-  if (!currentSlide.layouts) {
-    currentSlide.layouts = [];
-  }
-  if (!currentSlide.layouts[variantIndex]) {
-    currentSlide.layouts[variantIndex] = selectedVariant;
-  } else {
-    currentSlide.layouts[variantIndex] = {
-      ...currentSlide.layouts[variantIndex],
-      elements: structuredClone(selectedVariant.elements || []),
+    return () => {
+      if (variantTimeoutRef.current) {
+        clearTimeout(variantTimeoutRef.current);
+      }
     };
-  }
+  }, [selectedSlideIndex, selectedTheme, slides]);
 
-  currentSlide.currentVariantIndex = variantIndex;
+  const applyVariant = (variantIndex: number) => {
+    if (selectedSlideIndex < 0 || !currentVariants || !currentVariants[variantIndex]) {
+      console.error('[ThemePanel] Invalid variant apply attempt:', { selectedSlideIndex, variantIndex, variantCount: currentVariants?.length });
+      return;
+    }
 
-  if (selectedVariant.image_url !== undefined) {
-    currentSlide.image_url = selectedVariant.image_url;
-  }
+    if (isApplying) {
+      console.log('[ThemePanel] Skipping apply - debounce active');
+      return;
+    }
 
-  if (selectedVariant.background) {
-    currentSlide.background = structuredClone(selectedVariant.background);
-  }
+    console.log('[ThemePanel] Applying variant', variantIndex, 'from', currentVariants.length, 'variants');
 
-  if (selectedVariant.slide_title) {
-    currentSlide.slide_title = structuredClone(selectedVariant.slide_title);
-  }
+    setIsApplying(true);
+    isApplyingRef.current = true;
 
-  if (selectedVariant.subtitle) {
-    currentSlide.subtitle = structuredClone(selectedVariant.subtitle);
-  }
+    // Immediately update UI to show selection
+    setLocalVariantIndex(variantIndex);
 
-  setSlides(updatedSlides);
+    // Deep clone to ensure no mutations
+    const updatedSlides = structuredClone(slides);
+    const currentSlide = updatedSlides[selectedSlideIndex];
+    const selectedVariant = structuredClone(currentVariants[variantIndex]);
 
-  // ✅ CRITICAL: Clear all selections after applying variant to prevent stale state
-  setTimeout(() => {
-    setSelectedTextId(null);
-    setSelectedImageId(null);
-    setSelectedImageIndex(null);
-    setSelectedImage(null);
-    setSelectedShapeIndex(null);
-    setSelectedShapeId(null);
-  }, 100);
+    if (!currentSlide) {
+      console.error('[ThemePanel] Slide not found at index', selectedSlideIndex);
+      setIsApplying(false);
+      isApplyingRef.current = false;
+      return;
+    }
 
-  setIsApplying(false);
-  isApplyingRef.current = false;
+    // ✅ CRITICAL: Replace entire slide properties with variant
+    currentSlide.elements = selectedVariant.elements ? structuredClone(selectedVariant.elements) : [];
+    currentSlide.layout_type = selectedVariant.layout_type || currentSlide.layout_type;
+    currentSlide.slide_title = selectedVariant.slide_title ? structuredClone(selectedVariant.slide_title) : currentSlide.slide_title;
+    currentSlide.subtitle = selectedVariant.subtitle ? structuredClone(selectedVariant.subtitle) : currentSlide.subtitle;
+    currentSlide.background = selectedVariant.background ? structuredClone(selectedVariant.background) : currentSlide.background;
+    
+    if (selectedVariant.image_url !== undefined) {
+      currentSlide.image_url = selectedVariant.image_url;
+    }
 
-  try {
-    localStorage.setItem(`slide-variant-${selectedSlideIndex}`, String(variantIndex));
-  } catch (e) {
-    console.warn('[ThemePanel] Failed to save variant index to localStorage:', e);
-  }
-};
+    // Track which variant is active
+    currentSlide.currentVariantIndex = variantIndex;
+
+    // Update layouts array
+    if (!currentSlide.layouts) {
+      currentSlide.layouts = currentVariants;
+    } else {
+      currentSlide.layouts[variantIndex] = selectedVariant;
+    }
+
+    console.log('[ThemePanel] Updated slide with variant:', { layout_type: currentSlide.layout_type, elementCount: currentSlide.elements.length });
+
+    // Apply changes - triggers SlideEditor re-render
+    setSlides(updatedSlides);
+
+    // Clear selections to prevent stale state
+    const clearSelections = () => {
+      setSelectedTextId(null);
+      setSelectedImageId(null);
+      setSelectedImageIndex(null);
+      setSelectedImage(null);
+      setSelectedShapeIndex(null);
+      setSelectedShapeId(null);
+      setIsApplying(false);
+      isApplyingRef.current = false;
+    };
+
+    // Batch clearance to avoid flickering
+    setTimeout(clearSelections, 150);
+
+    // Persist variant choice
+    try {
+      localStorage.setItem(`slide-variant-${selectedSlideIndex}`, String(variantIndex));
+    } catch (e) {
+      console.warn('[ThemePanel] Failed to save variant index to localStorage:', e);
+    }
+  };
 
   const handlePaletteClick = (palette: string[], index: number) => {
     const theme = paletteToTheme(palette);
@@ -344,7 +367,7 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
 
   return (
     <Box className="w-[300px] min-w-[250px] md:min-w-[250px] bg-white flex-col border-r border-gray-200 shadow-sm"
-    sx={{
+      sx={{
         '&::-webkit-scrollbar': {
           display: 'none',
         },
@@ -399,7 +422,7 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
         {selectedSlideIndex >= 0 && currentVariants.length > 0 ? (
           <>
             <Typography variant="caption" sx={{ mb: 1.5, color: "#888", fontSize: 12 }}>
-              Slide {selectedSlideIndex + 1} 
+              Slide {selectedSlideIndex + 1}
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
               {currentVariants.map((variant: any, i: number) => (

@@ -252,15 +252,22 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
     if (!originalElement) return;
 
-    // ✅ FIX: Create new text element with proper structure
+    // ✅ FIX: Create new text element with proper structure and mark as userAdded
     const newTextElement = {
       konva_component: "Konva.Text",
       element_type: "text",
       text: originalElement.text || "",
       properties: {
         ...structuredClone(originalElement.properties || {}),
-        x: (originalElement.properties?.x || 0) + 20,
-        y: (originalElement.properties?.y || 0) + 20,
+        userAdded: true, // ✅ Mark as user-added so UserElementsRenderer picks it up
+        x: (originalElement.properties?.x || 100) + 30,
+        y: (originalElement.properties?.y || 100) + 30,
+        width: originalElement.properties?.width || 300,
+        fontSize: originalElement.properties?.fontSize || 24,
+        fontFamily: originalElement.properties?.fontFamily || "Roboto",
+        fill: originalElement.properties?.fill || "#000000",
+        fontWeight: originalElement.properties?.fontWeight || "normal",
+        align: originalElement.properties?.align || "left",
       },
       useThemeColor: originalElement.useThemeColor !== undefined ? originalElement.useThemeColor : false,
     };

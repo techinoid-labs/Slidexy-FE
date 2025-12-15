@@ -9,7 +9,8 @@ import {
   Ellipse,
   Arc,
   Wedge,
-  Transformer, Text, Image
+  Text,
+  Image,
 } from "react-konva";
 import useImage from "use-image";
 
@@ -23,37 +24,31 @@ export function renderSlideElements(elements: any[]) {
   return elements.map((el, index) => {
     const { element_type, text, properties = {}, src } = el;
     const {
-      x = 100,
-      y = 100,
-      w = 300,
-      iw = 100,
-      ih = 100,
-      h = 50,
-      sw = 2,
-      sh = 2,
-      radius,
-      radiusX,
-      radiusY,
-      points,
-      width, 
-      height,
-      fontSize,
-      fontWeight,
-      fontFamily = "Arial",
-      fill = "#000000",
-      stroke,
-      strokeWidth,
+      x = 0,
+      y = 0,
+      width = properties.width ?? properties.w ?? 0,
+      height = properties.height ?? properties.h ?? 0,
+      radius = properties.radius,
+      radiusX = properties.radiusX,
+      radiusY = properties.radiusY,
+      points = properties.points,
+      fontSize = properties.fontSize,
+      fontWeight = properties.fontWeight,
+      fontFamily = properties.fontFamily ?? "Arial",
+      fill = properties.fill ?? "#000000",
+      stroke = properties.stroke,
+      strokeWidth = properties.strokeWidth,
+      cornerRadius = properties.cornerRadius || properties.corner_radii || 0,
+      shadowColor = properties.shadowColor,
+      shadowBlur = properties.shadowBlur,
+      shadowOffsetY = properties.shadowOffsetY,
+      fillLinearGradientStartPoint = properties.fillLinearGradientStartPoint,
+      fillLinearGradientEndPoint = properties.fillLinearGradientEndPoint,
+      fillLinearGradientColorStops = properties.fillLinearGradientColorStops,
     } = properties;
 
-    const baseProps = {
-      x,
-      y,
-      width: sw,
-      height: sh,
-      fill,
-      stroke,
-      strokeWidth,
-    };
+    // Normalize konva component string (allow both "Konva.Rect" and "Rect" etc.)
+    const comp = (el.konva_component || "").replace(/^Konva\./, "");
 
     switch (element_type) {
       case "text":
@@ -64,130 +59,169 @@ export function renderSlideElements(elements: any[]) {
             text={text}
             x={x}
             y={y}
-            width={width}
+            width={width || undefined}
+            height={height || undefined}
             fontSize={fontSize}
             fontFamily={fontFamily}
-            fontWeight= {fontWeight}
+            fontStyle={properties.fontStyle}
+            fontWeight={fontWeight}
             fill={fill}
-            lineHeight={1.2}
+            lineHeight={properties.lineHeight || 1.2}
             listening={false}
           />
         );
 
       case "image":
         return (
-          <KonvaImage key={index} src={properties.imageSrc || src} x={x} y={y} w={width} h={height} />
+          <KonvaImage
+            key={index}
+            src={properties.imageSrc || src}
+            x={x}
+            y={y}
+            w={width}
+            h={height}
+          />
         );
 
       case "shape":
-        switch (el.konva_component) {
-          case "Konva.Rect":
-            return <Rect key={index} {...baseProps} />;
-          case "Konva.Circle":
+        switch (comp) {
+          case "Rect":
+            return (
+              <Rect
+                key={index}
+                x={x}
+                y={y}
+                width={width}
+                height={height}
+                fill={fill}
+                stroke={stroke}
+                strokeWidth={strokeWidth}
+                cornerRadius={cornerRadius}
+                shadowColor={shadowColor}
+                shadowBlur={shadowBlur}
+                shadowOffsetY={shadowOffsetY}
+                fillLinearGradientStartPoint={fillLinearGradientStartPoint}
+                fillLinearGradientEndPoint={fillLinearGradientEndPoint}
+                fillLinearGradientColorStops={fillLinearGradientColorStops}
+              />
+            );
+          case "Circle":
             return (
               <Circle
                 key={index}
                 x={x}
                 y={y}
-                radius={radius || w / 2}
+                radius={radius ?? Math.max(width, height) / 2}
                 fill={fill}
                 stroke={stroke}
                 strokeWidth={strokeWidth}
+                shadowColor={shadowColor}
+                shadowBlur={shadowBlur}
               />
             );
-          case "Konva.Ellipse":
+          case "Ellipse":
             return (
               <Ellipse
                 key={index}
                 x={x}
                 y={y}
-                radiusX={radiusX || w / 2}
-                radiusY={radiusY || h / 2}
+                radiusX={radiusX ?? width / 2}
+                radiusY={radiusY ?? height / 2}
                 fill={fill}
                 stroke={stroke}
                 strokeWidth={strokeWidth}
               />
             );
-          case "Konva.Line":
+          case "Line":
             return (
               <Line
                 key={index}
-                points={points}
+                points={points || []}
                 stroke={stroke || fill}
                 strokeWidth={strokeWidth || 2}
-                lineCap="round"
-                lineJoin="round"
+                lineCap={properties.lineCap || "round"}
+                lineJoin={properties.lineJoin || "round"}
+                tension={properties.tension}
               />
             );
-          case "Konva.Arrow":
+          case "Arrow":
             return (
-              <Line
+              <Arrow
                 key={index}
-                points={points}
+                points={points || []}
                 stroke={stroke || fill}
+                fill={fill}
                 strokeWidth={strokeWidth || 2}
-                lineCap="round"
-                lineJoin="round"
               />
             );
-          case "Konva.Star":
+          case "Star":
             return (
               <Star
                 key={index}
                 x={x}
                 y={y}
-                numPoints={5}
-                innerRadius={w / 4}
-                outerRadius={w / 2}
+                numPoints={properties.numPoints || 5}
+                innerRadius={properties.innerRadius ?? width / 4}
+                outerRadius={properties.outerRadius ?? width / 2}
                 fill={fill}
                 stroke={stroke}
                 strokeWidth={strokeWidth}
               />
             );
-          case "Konva.RegularPolygon":
+          case "RegularPolygon":
             return (
               <RegularPolygon
                 key={index}
                 x={x}
                 y={y}
                 sides={properties.sides || 5}
-                radius={radius || w / 2}
+                radius={radius ?? width / 2}
                 fill={fill}
                 stroke={stroke}
                 strokeWidth={strokeWidth}
               />
             );
-          case "Konva.Arc":
+          case "Arc":
             return (
               <Arc
                 key={index}
                 x={x}
                 y={y}
-                innerRadius={properties.innerRadius || w / 4}
-                outerRadius={properties.outerRadius || w / 2}
-                angle={properties.angle || 90}
+                innerRadius={properties.innerRadius ?? width / 4}
+                outerRadius={properties.outerRadius ?? width / 2}
+                angle={properties.angle ?? 90}
                 fill={fill}
                 stroke={stroke}
                 strokeWidth={strokeWidth}
               />
             );
-          case "Konva.Wedge":
+          case "Wedge":
             return (
               <Wedge
                 key={index}
                 x={x}
                 y={y}
-                radius={radius || w / 2}
-                angle={properties.angle || 60}
+                radius={radius ?? width / 2}
+                angle={properties.angle ?? 60}
                 fill={fill}
                 stroke={stroke}
                 strokeWidth={strokeWidth}
               />
             );
           default:
-            return <Rect key={index} {...baseProps} />;
+            return (
+              <Rect
+                key={index}
+                x={x}
+                y={y}
+                width={width}
+                height={height}
+                fill={fill}
+                stroke={stroke}
+                strokeWidth={strokeWidth}
+              />
+            );
         }
-
 
       default:
         return null;
