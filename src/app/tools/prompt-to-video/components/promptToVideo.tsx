@@ -9,6 +9,10 @@ import {
     IconButton,
     Alert,
     AlertTitle,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useEffect } from "react";
@@ -26,6 +30,7 @@ export default function PromptToVideo() {
     const [error, setError] = useState("");
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [downloadName, setDownloadName] = useState<string>("generated_video.mp4");
+    const [colorScheme, setColorScheme] = useState("techBlue");
 
     const { setSlides } = useSlides();
     const { setPresentationId } = useTemplateSlides();
@@ -80,7 +85,7 @@ export default function PromptToVideo() {
         const payload = {
             prompt: prompt.trim(),
             target_duration: DEFAULT_TARGET_DURATION,
-            color_scheme: DEFAULT_COLOR_SCHEME,
+            color_scheme: colorScheme,
             userData: user,
         };
 
@@ -167,7 +172,7 @@ export default function PromptToVideo() {
                     sx={{
                         width: "100%",
                         maxWidth: 926,
-                        backgroundColor: "rgba(251,250,255,1)",
+                        backgroundColor: "rgba(251,250,255,0.5)",
                         borderRadius: 1,
                         boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
                         border: "1px solid rgba(232,228,255,1)",
@@ -190,7 +195,6 @@ export default function PromptToVideo() {
                             "& .MuiInputBase-input": { fontSize: "15px", lineHeight: 1.6 },
                         }}
                     />
-
                     <Box
                         sx={{
                             display: "flex",
@@ -201,8 +205,54 @@ export default function PromptToVideo() {
                             width: "100%",
                         }}
                     >
-                        <Stack direction="row" spacing={1.5} sx={{ flex: 1 }} />
-
+                        <Stack direction="row" spacing={1.5} sx={{ flex: 1,gap: 400 }} />
+                        <FormControl
+                            variant="outlined"
+                            sx={{
+                                display: "flex",
+                                width: { xs: "100%", sm: "130px" },
+                                height: "44px",
+                                borderRadius: "4px",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                                backgroundColor: " rgba(255, 255, 255, 1)",
+                                "& .MuiOutlinedInput-notchedOutline": {
+                                    border: "none",
+                                },
+                                "& .MuiSelect-select": {
+                                    py: "8px",
+                                },
+                            }}
+                        >
+                            <InputLabel
+                                sx={{
+                                    fontSize: "14px",
+                                    fontFamily: "Raleway",
+                                }}
+                            >
+                                Color Scheme
+                            </InputLabel>
+                            <Select
+                                value={colorScheme}
+                                label="Select Color Scheme"
+                                onChange={(e) => setColorScheme(e.target.value)}
+                                disabled={loading}
+                                sx={{
+                                    backgroundColor: "#fff",
+                                    height: "44px",
+                                    fontSize: "14px",
+                                }}
+                            >
+                                <MenuItem value="techBlue">Tech Blue</MenuItem>
+                                <MenuItem value="forestGreen">Forest Green</MenuItem>
+                                <MenuItem value="culinaryRed">Culinary Red</MenuItem>
+                                <MenuItem value="creativeViolet">Creative Violet</MenuItem>
+                                <MenuItem value="travelTeal">Travel Teal</MenuItem>
+                                <MenuItem value="academicYellow">Academic Yellow</MenuItem>
+                                <MenuItem value="scienceBlue">Science Blue</MenuItem>
+                                <MenuItem value="corporateGold">Corporate Gold</MenuItem>
+                                <MenuItem value="medicalBlue">Medical Blue</MenuItem>
+                            </Select>
+                        </FormControl>
                         <Button
                             variant="contained"
                             disabled={loading}

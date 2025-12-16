@@ -339,7 +339,7 @@ export default function PromptToDeck() {
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "none",
               },
-              borderBottom: "1px solid rgba(242, 240, 255, 1)",
+              borderBottom: "1px solid rgba(242, 240, 255, 0.5)",
               "& .MuiInputBase-input": {
                 fontSize: "15px",
                 lineHeight: 1.6,
