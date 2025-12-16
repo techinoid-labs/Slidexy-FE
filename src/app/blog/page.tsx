@@ -553,6 +553,30 @@ export default function BlogPage() {
             </Box>
           )}
 
+                    <Box sx={{ mb: 8, textAlign: "center" }}>
+            <Container maxWidth="lg">
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                flexWrap="wrap"
+              >
+                {categories.map((category) => (
+                  <Chip
+                    key={category}
+                    label={category}
+                    variant="outlined"
+                    sx={{
+                      color: "rgba(26, 26, 26, 1)",
+                      borderColor: "rgba(26, 26, 26, 1)",
+                      fontWeight: 500,
+                    }}
+                  />
+                ))}
+              </Stack>
+            </Container>
+          </Box>
+
           <Box
             sx={{
               background:
@@ -611,29 +635,6 @@ export default function BlogPage() {
             </Link>
           </Box>
 
-          <Box sx={{ mb: 8, textAlign: "center" }}>
-            <Container maxWidth="lg">
-              <Stack
-                direction="row"
-                spacing={2}
-                justifyContent="center"
-                flexWrap="wrap"
-              >
-                {categories.map((category) => (
-                  <Chip
-                    key={category}
-                    label={category}
-                    variant="outlined"
-                    sx={{
-                      color: "rgba(26, 26, 26, 1)",
-                      borderColor: "rgba(26, 26, 26, 1)",
-                      fontWeight: 500,
-                    }}
-                  />
-                ))}
-              </Stack>
-            </Container>
-          </Box>
         </Container>
 
         <Footer />
