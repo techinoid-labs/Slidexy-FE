@@ -15,43 +15,60 @@ import {
     Select,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 import { useUser } from "@/app/context/AuthContext";
+import { useVideoJob } from "@/app/context/ExplainerVideoContext";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_EXPLAINER_API_BASE_URL;
 const DEFAULT_TARGET_DURATION = 10;
-const DEFAULT_COLOR_SCHEME = "techBlue";
 
 export default function PromptToVideo() {
     const [prompt, setPrompt] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [videoUrl, setVideoUrl] = useState<string | null>(null);
+    // const [jobId, setJobId] = useState<string | null>(null);
+    // const [progress, setProgress] = useState<number>(0);
+    // const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [downloadName, setDownloadName] = useState<string>("generated_video.mp4");
     const [colorScheme, setColorScheme] = useState("techBlue");
+    const { jobId, progress, videoUrl, setJobId, setProgress, setVideoUrl, resetJob } = useVideoJob();
+
+    const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
     const { setSlides } = useSlides();
     const { setPresentationId } = useTemplateSlides();
     const { user } = useUser();
 
+    useEffect(() => {
+        const savedUrl = localStorage.getItem("savedVideoUrl");
+        const savedName = localStorage.getItem("savedDownloadName");
+        if (savedUrl) {
+            setVideoUrl(savedUrl);
+            setDownloadName(savedName || "generated_video.mp4");
+        }
+    }, []);
+
+    useEffect(() => {
+        if (videoUrl) {
+            localStorage.setItem("savedVideoUrl", videoUrl);
+            localStorage.setItem("savedDownloadName", downloadName);
+        }
+    }, [videoUrl, downloadName]);
+
     const handleDownload = async () => {
         if (!videoUrl) return;
 
         try {
-            // Fetch the video
             const response = await fetch(videoUrl);
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
 
-            // Clean the filename by removing query params
-            let cleanName = downloadName.split("?")[0];
-
-            // Create download link
+            const cleanName = downloadName.split("?")[0];
             const a = document.createElement("a");
             a.href = url;
-            a.download = cleanName; // use cleaned filename
+            a.download = cleanName;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -61,18 +78,42 @@ export default function PromptToVideo() {
         }
     };
 
-    useEffect(() => {
-        return () => {
-            if (videoUrl) {
-                try {
-                    URL.revokeObjectURL(videoUrl);
-                } catch { }
+    // Poll job status
+    const pollStatus = async (id: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/status/${id}`, {
+                headers: { accept: "application/json" },
+            });
+
+            if (!res.ok) throw new Error("Failed to get status");
+
+            const data = await res.json();
+            setProgress(data.progress || 0);
+
+            if (data.status === "success" && data.video_path) {
+                setVideoUrl(data.video_path);
+                setDownloadName(data.video_path.split("/").pop() || "generated_video.mp4");
+                setLoading(false);
+                if (pollingRef.current) clearInterval(pollingRef.current);
+            } else if (data.status === "failed") {
+                setError(data.message || "Video generation failed");
+                setLoading(false);
+                if (pollingRef.current) clearInterval(pollingRef.current);
             }
-        };
-    }, [videoUrl]);
+        } catch (err: any) {
+            setError(err.message || "Network error");
+            setLoading(false);
+            if (pollingRef.current) clearInterval(pollingRef.current);
+        }
+    };
 
     const handleSubmit = async () => {
+        resetJob();
         setError("");
+        setProgress(0);
+        setVideoUrl(null);
+        localStorage.removeItem("savedVideoUrl");
+        localStorage.removeItem("savedDownloadName");
         if (!prompt.trim()) {
             setError("Please enter a prompt.");
             return;
@@ -80,7 +121,6 @@ export default function PromptToVideo() {
 
         setLoading(true);
         setSlides([]);
-        setVideoUrl(null);
 
         const payload = {
             prompt: prompt.trim(),
@@ -92,34 +132,39 @@ export default function PromptToVideo() {
         try {
             const res = await fetch(`${API_BASE_URL}/generate`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
 
             if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || "Something went wrong");
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || "Failed to start job");
             }
 
             const data = await res.json();
-
-            if (data.status === "success" && data.video_path) {
-                setVideoUrl(data.video_path);
-                setDownloadName(data.video_path.split("/").pop() || "generated_video.mp4");
+            if (data.job_id) {
+                setJobId(data.job_id);
+                // Start polling every 10 seconds
+                if (pollingRef.current) clearInterval(pollingRef.current);
+                pollingRef.current = setInterval(() => pollStatus(data.job_id), 10000);
             } else {
-                throw new Error(data.message || "Video generation failed");
+                throw new Error("Job ID not returned");
             }
         } catch (err: any) {
             setError(err.message || "Network error");
-        } finally {
             setLoading(false);
         }
     };
 
+    useEffect(() => {
+        return () => {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+        };
+    }, []);
+
     return (
         <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
+            {/* Background video */}
             <Box
                 sx={{
                     position: "absolute",
@@ -136,12 +181,7 @@ export default function PromptToVideo() {
                     muted
                     loop
                     playsInline
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        opacity: 0.06,
-                    }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.06 }}
                 >
                     <source src="/services-background.mp4" type="video/mp4" />
                 </video>
@@ -165,7 +205,7 @@ export default function PromptToVideo() {
                 </Typography>
 
                 <Typography sx={{ color: "rgba(109,109,109,1)", maxWidth: 520, mb: 6 }}>
-                    Enter a single prompt and get a short video.
+                    Enter a prompt and get a short video. Progress will be shown while generating.
                 </Typography>
 
                 <Box
@@ -195,6 +235,7 @@ export default function PromptToVideo() {
                             "& .MuiInputBase-input": { fontSize: "15px", lineHeight: 1.6 },
                         }}
                     />
+
                     <Box
                         sx={{
                             display: "flex",
@@ -205,42 +246,23 @@ export default function PromptToVideo() {
                             width: "100%",
                         }}
                     >
-                        <Stack direction="row" spacing={1.5} sx={{ flex: 1,gap: 400 }} />
                         <FormControl
                             variant="outlined"
                             sx={{
-                                display: "flex",
                                 width: { xs: "100%", sm: "130px" },
                                 height: "44px",
                                 borderRadius: "4px",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                                backgroundColor: " rgba(255, 255, 255, 1)",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                    border: "none",
-                                },
-                                "& .MuiSelect-select": {
-                                    py: "8px",
-                                },
+                                backgroundColor: "#fff",
                             }}
                         >
-                            <InputLabel
-                                sx={{
-                                    fontSize: "14px",
-                                    fontFamily: "Raleway",
-                                }}
-                            >
+                            <InputLabel sx={{ fontSize: "14px", fontFamily: "Raleway" }}>
                                 Color Scheme
                             </InputLabel>
                             <Select
                                 value={colorScheme}
-                                label="Select Color Scheme"
                                 onChange={(e) => setColorScheme(e.target.value)}
                                 disabled={loading}
-                                sx={{
-                                    backgroundColor: "#fff",
-                                    height: "44px",
-                                    fontSize: "14px",
-                                }}
+                                sx={{ height: "44px", fontSize: "14px" }}
                             >
                                 <MenuItem value="techBlue">Tech Blue</MenuItem>
                                 <MenuItem value="forestGreen">Forest Green</MenuItem>
@@ -253,6 +275,7 @@ export default function PromptToVideo() {
                                 <MenuItem value="medicalBlue">Medical Blue</MenuItem>
                             </Select>
                         </FormControl>
+
                         <Button
                             variant="contained"
                             disabled={loading}
@@ -263,9 +286,7 @@ export default function PromptToVideo() {
                                 borderRadius: "32px",
                                 width: { xs: "100%", sm: "160px" },
                                 height: "44px",
-                                px: 4,
                                 fontWeight: 600,
-                                boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
                                 "&:hover": { backgroundColor: "#5B21B6" },
                             }}
                             startIcon={<AutoAwesome />}
@@ -273,6 +294,12 @@ export default function PromptToVideo() {
                             Generate
                         </Button>
                     </Box>
+
+                    {loading && (
+                        <Typography variant="body1" sx={{ mt: 2 }}>
+                            Generating video... Progress: {progress}%
+                        </Typography>
+                    )}
 
                     {error && (
                         <Alert
@@ -290,12 +317,6 @@ export default function PromptToVideo() {
                     )}
                 </Box>
 
-                {loading && (
-                    <Typography variant="body1" sx={{ mb: 2 }}>
-                        Generating video...
-                    </Typography>
-                )}
-
                 {videoUrl && (
                     <Box sx={{ width: "100%", maxWidth: 900, mt: 2 }}>
                         <Typography variant="h6" sx={{ mb: 1 }}>
@@ -311,7 +332,6 @@ export default function PromptToVideo() {
                                 >
                                     Download
                                 </Button>
-
                             </Stack>
                         </Box>
                     </Box>

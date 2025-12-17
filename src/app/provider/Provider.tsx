@@ -10,6 +10,7 @@ import initStore, { getStore } from "@/app/store/store"; // Adjust path
 import { TemplateSlidesProvider } from "../context/TemplateSlidesContext";
 import { LinkedInProvider } from "../context/LinkedInContext";
 import { EbookProvider } from "../context/EbookContext";
+import { VideoJobProvider } from "../context/ExplainerVideoContext";
 import StripeProvider from "@/lib/StripeProvider";
 
 import { Box, Typography } from "@mui/material";
@@ -52,7 +53,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <SlidesProvider>
               <StripeProvider>
                 <EbookProvider>
-                  {children}
+                  <VideoJobProvider>
+                    {children}
+                  </VideoJobProvider>
                 </EbookProvider>
               </StripeProvider>
             </SlidesProvider>
