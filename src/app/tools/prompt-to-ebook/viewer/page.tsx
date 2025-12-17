@@ -2,12 +2,14 @@
 import Header from '@/app/components/headers-navbar/Header'
 import { useSearchParams } from "next/navigation";
 import { Box, Button, Typography } from "@mui/material";
+import { useEbook } from '@/app/context/EbookContext';
 
 export default function Viewer() {
     const searchParams = useSearchParams();
     const title = searchParams.get("title") || "Untitled eBook";
-    const pdfUrl = typeof window !== "undefined" ? sessionStorage.getItem("ebookPdfUrl") : null;
+    // const pdfUrl = typeof window !== "undefined" ? sessionStorage.getItem("ebookPdfUrl") : null;
     // const pdfUrl = '/major_ai_companies_ebook.pdf';
+    const { pdfUrl } = useEbook();
 
     return (
         <>

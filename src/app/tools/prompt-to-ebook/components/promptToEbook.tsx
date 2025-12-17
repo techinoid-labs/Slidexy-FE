@@ -18,6 +18,7 @@ import {
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useEbook } from "@/app/context/EbookContext";
 
 
 const API_URL = process.env.NEXT_PUBLIC_EBOOK_API_BASE_URL;
@@ -31,7 +32,7 @@ export default function PromptToEbook() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const {setPdfBlob} = useEbook();
   const [jobId, setJobId] = useState<string | null>(null);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -54,7 +55,7 @@ export default function PromptToEbook() {
     }
 
     setError("");
-    setPdfUrl(null);
+    // setPdfUrl(null);
     setLoading(true);
     setProgress(0);
     setCurrentMessage("Starting eBook generation...");
@@ -153,9 +154,7 @@ export default function PromptToEbook() {
 
       // Preview URL for iframe
       const url = URL.createObjectURL(blob);
-      setPdfUrl(url);
-      sessionStorage.setItem("ebookPdfUrl", url);
-
+      setPdfBlob(blob); 
       router.push(`/tools/prompt-to-ebook/viewer?title=${topic}`);
     } catch (err) {
       console.error(err);
