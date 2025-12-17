@@ -1,163 +1,163 @@
 "use client";
+
 import {
     Box,
     Typography,
     Button,
     TextField,
-    IconButton,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
     Chip,
     Stack,
     Alert,
     AlertTitle,
-    CircularProgress,
+    LinearProgress,
+    IconButton,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const WEB_STYLES = [
+    "Minimal & Clean",
+    "Modern Glassmorphism",
+    "Bold & Colorful",
+    "Corporate Professional",
+    "Dark Mode Elegant",
+    "Creative Agency",
+    "E-commerce Store",
+    "SaaS Landing Page",
+];
+
 export default function UrlToWebsite() {
+    const [mode, setMode] = useState<"static" | "dynamic">("static");
     const [url, setUrl] = useState("");
+    const [prompt, setPrompt] = useState("");
+    const [webStyle, setWebStyle] = useState("Minimal & Clean");
+
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
     const [currentMessage, setCurrentMessage] = useState("");
     const [currentDetail, setCurrentDetail] = useState("");
     const [error, setError] = useState("");
-    const router = useRouter();
-    const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Smooth progress simulation
+    const router = useRouter();
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
     const startProgressSimulation = () => {
         setProgress(0);
-        let currentProgress = 0;
-
-        progressIntervalRef.current = setInterval(() => {
-            currentProgress += Math.random() * 3; // Increment by 1-3% randomly
-            
-            // Cap at 90% until actual completion
-            if (currentProgress >= 90) {
-                currentProgress = 90;
-                if (progressIntervalRef.current) {
-                    clearInterval(progressIntervalRef.current);
-                }
+        let p = 0;
+        intervalRef.current = setInterval(() => {
+            p += Math.random() * 4 + 1;
+            if (p >= 90) {
+                p = 90;
+                if (intervalRef.current) clearInterval(intervalRef.current);
             }
-            
-            setProgress(Math.min(currentProgress, 90));
-
-            // Update messages based on progress
-            if (currentProgress < 20) {
-                setCurrentMessage("Analyzing URL...");
-                setCurrentDetail("Fetching website content...");
-            } else if (currentProgress < 40) {
-                setCurrentMessage("Scraping website content...");
-                setCurrentDetail("Extracting text, images, and structure...");
-            } else if (currentProgress < 60) {
-                setCurrentMessage("Processing with AI...");
-                setCurrentDetail("Generating HTML, CSS, and JavaScript...");
-            } else if (currentProgress < 80) {
-                setCurrentMessage("Creating files...");
-                setCurrentDetail("Building website structure...");
-            } else {
-                setCurrentMessage("Finalizing website...");
-                setCurrentDetail("Almost done, preparing your files...");
-            }
-        }, 200); // Update every 200ms for smooth animation
+            setProgress(Math.min(Math.round(p), 90));
+        }, 600);
     };
 
     const stopProgressSimulation = () => {
-        if (progressIntervalRef.current) {
-            clearInterval(progressIntervalRef.current);
-            progressIntervalRef.current = null;
-        }
+        if (intervalRef.current) clearInterval(intervalRef.current);
     };
 
     useEffect(() => {
-        // Cleanup on unmount
-        return () => {
-            stopProgressSimulation();
-        };
+        return () => stopProgressSimulation();
     }, []);
 
     const handleSubmit = async () => {
-        if (!url.trim()) {
+        if (mode === "static" && !url.trim()) {
             setError("Please enter a website URL.");
             return;
         }
-
-        // Basic URL validation
-        const urlPattern = /^(https?:\/\/)?(www\.)?[\w\-]+(\.[\w\-]+)+[/#?]?.*$/;
-        if (!urlPattern.test(url)) {
-            setError("Please enter a valid URL (e.g., www.example.com or https://example.com)");
+        if (mode === "dynamic" && !url.trim()) {
+            setError("Please enter a website URL.");
             return;
         }
 
         setLoading(true);
         setError("");
-        startProgressSimulation(); // Start smooth progress
+        setProgress(0);
+        setCurrentMessage("Initializing AI engine...");
+        setCurrentDetail("Preparing your website generation...");
+        startProgressSimulation();
 
         try {
-            // Add https:// if not present
-            let formattedUrl = url.trim();
-            if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-                formattedUrl = 'https://' + formattedUrl;
+            let endpoint, body;
+
+            if (mode === "static") {
+                let formattedUrl = url.trim();
+                if (!/^https?:\/\//i.test(formattedUrl)) {
+                    formattedUrl = "https://" + formattedUrl;
+                }
+                endpoint = `${API_BASE_URL}/api/website-generator/generate`;
+                body = { url: formattedUrl };
+            } else {
+                let formattedUrl = url.trim();
+                if (!/^https?:\/\//i.test(formattedUrl)) {
+                    formattedUrl = "https://" + formattedUrl;
+                }
+                endpoint = `${API_BASE_URL}/api/dynamic-website/generate`;
+                body = { url: formattedUrl };
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/website-generator/generate`, {
+            const response = await fetch(endpoint, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ url: formattedUrl }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Failed to generate website");
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || "Generation failed");
             }
 
-            const responseData = await response.json();
+            const data = await response.json();
+            const presentationId =
+                data.data?.id || data.data?.presentationId || data.presentationId || data.id;
 
-            // Stop simulation and jump to 100%
+            if (!presentationId) throw new Error("No website ID returned");
+
             stopProgressSimulation();
             setProgress(100);
-            setCurrentMessage("✅ Website generated successfully!");
+            setCurrentMessage("Website generated successfully!");
             setCurrentDetail("Redirecting to editor...");
 
-            const presentationId = responseData.data?.id || responseData.data?.presentationId || responseData.presentationId;
-            
-            if (presentationId) {
-                setTimeout(() => {
-                    router.push(`/tools/url-to-website/editor?id=${presentationId}`);
-                }, 1000);
-            } else {
-                throw new Error("No presentation ID received");
-            }
-
+            setTimeout(() => {
+                router.push(`/tools/url-to-website/editor?id=${presentationId}`);
+            }, 1200);
         } catch (err: any) {
-            console.error("Website generation error:", err);
             stopProgressSimulation();
-            setError(err.message || "Something went wrong during generation.");
+            setError(err.message || "Something went wrong. Please try again.");
             setProgress(0);
             setCurrentMessage("");
             setCurrentDetail("");
         } finally {
-            setTimeout(() => {
-                if (!error) {
-                    setLoading(false);
-                }
-            }, 1500);
+            setTimeout(() => setLoading(false), 1000);
         }
     };
 
-    const quickPrompts = [
-        "www.techinoid.com",
-        "nodejs.org/en/download",
-        "github.com",
-        "stripe.com",
-        "vercel.com",
-        "tailwindcss.com",
-    ];
+    const quickSuggestions = mode === "static" || "dynamic"
+        ? [
+            "techinoid.com",
+            "stripe.com",
+            "github.com",
+            "vercel.com",
+            "tailwindcss.com",
+            "nextjs.org",
+        ]
+        : [
+            "Modern portfolio with dark mode",
+            "SaaS landing page with pricing",
+            "E-commerce store for sneakers",
+            "Restaurant website with menu",
+            "AI startup hero section",
+            "Personal blog with Tailwind",
+        ];
 
     return (
         <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
@@ -181,7 +181,7 @@ export default function UrlToWebsite() {
                         width: "100%",
                         height: "100%",
                         objectFit: "cover",
-                        opacity: "0.1"
+                        opacity: "0.1",
                     }}
                 >
                     <source src="/services-background.mp4" type="video/mp4" />
@@ -199,137 +199,208 @@ export default function UrlToWebsite() {
                     px: { xs: 2, md: 6 },
                 }}
             >
-                <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, color: "rgba(26, 26, 26, 1)", fontSize: "60px" }}>
-                    Url-to-Website
+                <Typography
+                    variant="h2"
+                    sx={{ fontWeight: 700, mb: 1, color: "rgba(26, 26, 26, 1)", fontSize: "60px" }}
+                >
+                    URL-to-Website
                 </Typography>
-                <Typography sx={{
-                    color: "rgba(109, 109, 109, 1)", maxWidth: 580, mb: 6, fontSize: { xs: "16px", md: "18px" },
-                    textAlign: "center"
-                }}>
-                    Elevate your presentations with our AI-powered tool—create&nbsp;polished,
-                    professional slides in just seconds.
+
+                <Typography
+                    sx={{
+                        color: "rgba(109, 109, 109, 1)",
+                        maxWidth: 580,
+                        mb: 6,
+                        fontSize: { xs: "16px", md: "18px" },
+                        textAlign: "center",
+                    }}
+                >
+                    Generate stunning websites — from any URL or just a description.
                 </Typography>
 
                 <Box
                     sx={{
                         width: "100%",
                         maxWidth: "926px",
-                        height: "340px",
                         bgcolor: "rgba(251, 250, 255, 0.5)",
-                        borderRadius: 1,
-                        boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
+                        borderRadius: 3,
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
                         border: "1px solid rgba(232, 228, 255, 1)",
-                        p: { xs: 3, md: 4 },
-                    }}>
-
+                        p: { xs: 3, md: 5 },
+                        mb: 4,
+                    }}
+                >
                     <TextField
                         fullWidth
                         multiline
-                        minRows={4}
-                        placeholder="Paste the website link here e.g., www.techinoid.com"
+                        minRows={5}
+                        placeholder={
+                            mode === "static"
+                                ? "Paste the website link here e.g., www.techinoid.com"
+                                : "Paste the website link for dynamic website e.g., www.techinoid.com"
+                        }
                         variant="outlined"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                         disabled={loading}
                         sx={{
-                            mt: -3,
-                            mb: 15,
+                            mb: 2,
                             "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                            borderBottom: "1px solid rgba(242, 240, 255, 1)",
+                            "& .MuiInputBase-input": { fontSize: "15px", lineHeight: 1.7 },
                         }}
                     />
+                    {/* Controls Row */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: 2,
+                            mt: 2,
+                        }}
+                    >
+                        {/* ONLY Mode Selector */}
+                        <FormControl
+                            sx={{
+                                minWidth: 220,
+                                height: 55,
+                                backgroundColor: "#fff",
+                                borderRadius: "10px",
+                                boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
+                                "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                            }}
+                        >
+                            <InputLabel
+                                shrink
+                                sx={{
+                                    fontSize: "20px",
+                                    top: "-15px",
+                                }}
+                            >
+                                Select Input Mode
+                            </InputLabel>
 
-                    <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center" justifyContent="flex-end">
+                            <Select
+                                value={mode}
+                                label="Select Input Mode"
+                                onChange={(e) => setMode(e.target.value as "static" | "dynamic")}
+                                disabled={loading}
+                                sx={{ alignItems: "center", height: "200px" }}
+                            >
+                                <MenuItem value="static">Static Website</MenuItem>
+                                <MenuItem value="dynamic">Dynamic Website</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        {/* Generate Button (same row) */}
                         <Button
                             variant="contained"
                             onClick={handleSubmit}
                             disabled={loading}
-                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <AutoAwesome />}
+                            startIcon={<AutoAwesome />}
                             sx={{
                                 backgroundColor: "#6C2BD9",
                                 color: "#fff",
                                 borderRadius: "32px",
-                                width: { xs: "100%", sm: "130px" },
-                                height: "44px",
-                                px: 4,
-                                py: 1.2,
+                                width: "160px",
+                                height: "48px",
                                 fontWeight: 600,
-                                boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
-                                alignSelf: { xs: "stretch", md: "center" },
+                                boxShadow: "0 4px 12px rgba(108,43,217,0.3)",
                                 "&:hover": { backgroundColor: "#5B21B6" },
-                                "&:disabled": { backgroundColor: "#9E9E9E" },
+                                "&:disabled": { backgroundColor: "#ccc" },
                             }}
                         >
                             {loading ? "Generating..." : "Generate"}
                         </Button>
-                    </Stack>
+                    </Box>
+
 
                     {error && (
-                        <Alert
-                            severity="error"
-                            sx={{ mt: 2 }}
-                            action={
-                                <IconButton onClick={() => setError("")} color="inherit">
-                                    <CloseIcon fontSize="small" />
-                                </IconButton>
-                            }
-                        >
+                        <Alert severity="error" sx={{ mt: 2 }} action={
+                            <IconButton size="small" onClick={() => setError("")}><CloseIcon /></IconButton>
+                        }>
                             <AlertTitle>Error</AlertTitle>
                             {error}
                         </Alert>
                     )}
                 </Box>
 
+                {/* Progress Bar */}
                 {loading && (
                     <Box
                         sx={{
-                            mt: 4,
-                            p: 3,
-                            borderRadius: 2,
+                            width: { xs: "95%", md: 800 },
+                            maxWidth: 926,
+                            mx: "auto",
+                            p: 4,
+                            borderRadius: 3,
                             bgcolor: "white",
-                            boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
+                            boxShadow: "0 6px 25px rgba(142, 45, 226, 0.12)",
                             border: "1px solid #f0f0f0",
-                            width: "100%",
-                            maxWidth: 800,
                         }}
                     >
-                        <Typography variant="h6" color="#8E2DE2" sx={{ mb: 1 }}>
-                            {currentMessage}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            {currentDetail}
-                        </Typography>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Box sx={{ flex: 1, bgcolor: "#f0f0f0", borderRadius: 1, height: 8 }}>
-                                <Box
-                                    sx={{
-                                        width: `${progress}%`,
-                                        height: "100%",
-                                        bgcolor: "#8E2DE2",
-                                        borderRadius: 1,
-                                        transition: "width 0.3s ease",
-                                    }}
-                                />
-                            </Box>
-                            <Typography variant="body2" color="text.secondary">
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                            <Box
+                                sx={{
+                                    width: 16,
+                                    height: 16,
+                                    borderRadius: "50%",
+                                    bgcolor: "#8E2DE2",
+                                    animation: "pulse 1.8s infinite",
+                                    "@keyframes pulse": {
+                                        "0%, 100%": { opacity: 0.6 },
+                                        "50%": { opacity: 1 },
+                                    },
+                                }}
+                            />
+                            <Typography variant="h6" sx={{ color: "#8E2DE2", fontWeight: 600, flex: 1 }}>
+                                {currentMessage || "Building your website..."}
+                            </Typography>
+                            <Typography sx={{ color: "#8E2DE2", fontWeight: 600 }}>
                                 {Math.round(progress)}%
                             </Typography>
                         </Box>
+
+                        <LinearProgress
+                            variant="determinate"
+                            value={progress}
+                            sx={{
+                                height: 10,
+                                borderRadius: 5,
+                                bgcolor: "#e8e2ff",
+                                "& .MuiLinearProgress-bar": {
+                                    bgcolor: "#8E2DE2",
+                                    borderRadius: 5,
+                                },
+                            }}
+                        />
+
+                        <Typography sx={{ mt: 2, color: "#666" }}>
+                            {currentDetail || "This usually takes 20–60 seconds..."}
+                        </Typography>
                     </Box>
                 )}
 
-                <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
+                {/* Quick Suggestions */}
+                <Box sx={{ textAlign: "center", maxWidth: 900, mt: 4 }}>
                     <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
-                        {quickPrompts.map((prompt, i) => (
+                        {quickSuggestions.map((item) => (
                             <Chip
-                                key={i}
-                                label={prompt}
-                                onClick={() => !loading && setUrl(prompt)}
+                                key={item}
+                                label={item}
+                                onClick={() => !loading && (mode === "static" ? setUrl(item) : setPrompt(item))}
                                 disabled={loading}
                                 sx={{
-                                    border: "1px solid rgba(246, 246, 246, 1)",
-                                    bgcolor: "rgba(248, 248, 248, 0.14)",
-                                    "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
-                                    cursor: loading ? "not-allowed" : "pointer",
+                                    bgcolor: "rgba(248, 248, 248, 0.2)",
+                                    border: "1px solid rgba(240, 240, 240, 1)",
+                                    borderRadius: "30px",
+                                    fontWeight: 500,
+                                    px: 2,
+                                    py: 2.5,
+                                    cursor: "pointer",
+                                    "&:hover": { bgcolor: "rgba(108, 43, 217, 0.1)" },
                                 }}
                             />
                         ))}
