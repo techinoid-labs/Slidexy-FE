@@ -63,12 +63,7 @@ export const LinkedInShareButton: React.FC<LinkedInShareButtonProps> = ({
         variant="outlined"
         size="medium"
         sx={{
-          borderColor: "#0A66C2",
-          color: "#0A66C2",
-          "&:hover": {
-            borderColor: "#004182",
-            backgroundColor: "rgba(10, 102, 194, 0.04)",
-          },
+          borderRadius: "999px",
           ...sx,
         }}
       />

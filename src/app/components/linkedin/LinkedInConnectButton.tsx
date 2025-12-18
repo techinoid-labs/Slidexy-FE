@@ -70,14 +70,34 @@ export const LinkedInConnectButton: React.FC<LinkedInConnectButtonProps> = ({
           size={size}
           fullWidth={fullWidth}
           sx={{
-            backgroundColor: isConnected ? "#0A66C2" : "#0A66C2",
-            color: "white",
-            "&:hover": {
-              backgroundColor: "#004182",
-            },
+            // Default styles based on variant
+            ...(variant === "contained" && {
+              bgcolor: "#0A66C2",
+              color: "#fff",
+              "&:hover": {
+                bgcolor: "#004182",
+              },
+            }),
+            ...(variant === "outlined" && {
+              borderColor: "#0A66C2",
+              color: "#0A66C2",
+              "&:hover": {
+                bgcolor: "#0A66C2",
+                color: "#fff",
+                borderColor: "#0A66C2",
+              },
+            }),
+            ...(variant === "text" && {
+              color: "#0A66C2",
+              "&:hover": {
+                bgcolor: "rgba(10, 102, 194, 0.08)",
+              },
+            }),
+
             "&:disabled": {
-              backgroundColor: "#9CADC9",
-              color: "white",
+              bgcolor: variant === "contained" ? "#9CADC9" : "transparent",
+              color: "#9CADC9",
+              borderColor: variant === "outlined" ? "#9CADC9" : "transparent",
             },
             ...sx,
           }}
