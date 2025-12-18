@@ -18,172 +18,156 @@ import {
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
+import { useEbook } from "@/app/context/EbookContext";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const TEXT_ART_STYLES = [
-  { value: "Concept Art", label: "Concept Art" },
-  { value: "3D Render / CGI", label: "3D Render / CGI" },
-  { value: "Watercolor Illustration", label: "Watercolor Illustration" },
-  { value: "AI Collage / Mixed Media", label: "AI Collage / Mixed Media" },
-  { value: "Digital Painting", label: "Digital Painting" },
-  { value: "Fantasy / Sci-Fi Style", label: "Fantasy / Sci-Fi Style" },
-  { value: "Minimal Abstract", label: "Minimal Abstract" },
-];
+const API_URL = process.env.NEXT_PUBLIC_EBOOK_API_BASE_URL;
 
 export default function PromptToEbook() {
-  const { setInfographicId } = useTemplateSlides();
-  const [orientation, setOrientation] = useState("landscape");
-  const [description, setDescription] = useState("");
-  const [tone, setTone] = useState("Select Tone");
-  const [visualStyle, setVisualStyle] = useState("Choose Visual Art Style");
-
+  const [topic, setTopic] = useState("");
+  const [genre, setGenre] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentMessage, setCurrentMessage] = useState("");
-  const [currentDetail, setCurrentDetail] = useState("");
   const [error, setError] = useState("");
-
   const router = useRouter();
-  const abortControllerRef = useRef<AbortController | null>(null);
 
+  const {setPdfBlob} = useEbook();
+  const [jobId, setJobId] = useState<string | null>(null);
+
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const quickPrompts = [
+    "Artificial Intelligence",
+    "Healthy Diet",
+    "UX UI Guidelines",
+    "Design Systems",
+    "Cybersecurity",
+  ];
+
+  /** ---------------------------
+   *  Step 1: Generate eBook
+   *  --------------------------*/
   const handleSubmit = async () => {
-    if (!description.trim()) {
-      setError("Please enter a description for the infographic.");
+    if (!topic.trim()) {
+      setError("Please enter a topic for the eBook.");
       return;
     }
 
-    setLoading(true);
     setError("");
+    // setPdfUrl(null);
+    setLoading(true);
     setProgress(0);
-    setCurrentMessage("Starting AI generation...");
-    setCurrentDetail("");
-
-    abortControllerRef.current = new AbortController();
-    const payload = {
-      prompt: description,
-      viewMode: orientation,
-      useReferences: true,
-    };
+    setCurrentMessage("Starting eBook generation...");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/generate-poster-template`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "text/event-stream",
+      const payload = {
+        topic,
+        genre,
+        num_chapters: 4,
+        target_audience: "general",
+        author: "Slidexy.ai",
+        publisher: "Slidexy.ai",
+        length_config: { section_length: "short", chapter_length: "short" },
+        enhancements: {
+          include_exercises: false,
+          include_case_studies: false,
+          include_examples: true,
+          include_summary: true,
         },
-        body: JSON.stringify(payload),
-        signal: abortControllerRef.current.signal,
-      });
+        research_config: {
+          enable_research: true,
+          max_sources: 5,
+          research_depth: "medium",
+        },
+        image_config: {
+          generate_images: true,
+          images_per_chapter: 1,
+          image_style: "professional",
+        },
+        cover_config: {
+          generate_cover: true,
+          cover_style: "professional",
+          background_color: "light grey",
+        },
+        output_format: "pdf",
+        output_filename: "ebook",
+      };
 
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || "Failed to start infographic generation");
-      }
-
-      if (!res.body) throw new Error("No response body received.");
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let done = false;
-
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-        if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n").filter((line) => line.trim() !== "" && !line.startsWith(":"));
-
-          for (const line of lines) {
-            if (line === "data: [DONE]") {
-              done = true;
-              break;
-            }
-
-            if (line.startsWith("data: ")) {
-              try {
-                const event = JSON.parse(line.replace("data: ", ""));
-                if (event.error) {
-                  setError(event.error);
-                  setLoading(false);
-                  return;
-                }
-
-                if (event.percent) setProgress(event.percent);
-                if (event.message) setCurrentMessage(event.message);
-                if (event.detail) setCurrentDetail(event.detail);
-              } catch {
-                console.warn("Invalid SSE event:", line);
-              }
-            }
-          }
-        }
-      }
-
-      // ✅ Save only once after full generation is complete
-      setCurrentMessage("Finalizing infographic...");
-      setCurrentDetail("Saving your generated infographic...");
-
-      const saveRes = await fetch(`${API_BASE_URL}/api/dynamicInfographic`, {
+      const res = await fetch(`${API_URL}/ebook/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: description, viewMode: orientation }),
+        body: JSON.stringify(payload),
       });
 
-      if (!saveRes.ok) throw new Error(`Failed to save infographic (${saveRes.status})`);
+      const data = await res.json();
 
-      const saveData = await saveRes.json();
+      if (!data.job_id) throw new Error("Failed to start job.");
 
-      if (saveData?.success && saveData?.infographic?._id) {
-        setCurrentMessage("✅ Infographic successfully created!");
-        setCurrentDetail("Redirecting to your infographic...");
-        setInfographicId(saveData.infographic._id);
-        router.push(`/infographic/${saveData.infographic._id}`);
-      } else {
-        throw new Error("Invalid response from save endpoint");
-      }
+      setJobId(data.job_id);
+      setCurrentMessage("AI is generating your eBook...");
+
+      /** ---------------------------
+       * Step 2: Poll job status
+       * --------------------------*/
+      intervalRef.current = setInterval(async () => {
+        const jobRes = await fetch(`${API_URL}/jobs/${data.job_id}`);
+        const job = await jobRes.json();
+
+        if (job.progress) setProgress(job.progress);
+        if (job.message) setCurrentMessage(job.message);
+
+        if (job.status === "completed") {
+          clearInterval(intervalRef.current!);
+          setLoading(false);
+          setProgress(100);
+          setCurrentMessage("Your eBook is ready! Preparing preview...");
+
+          await downloadPdf(data.job_id);
+        }
+
+        if (job.status === "failed") {
+          clearInterval(intervalRef.current!);
+          setLoading(false);
+          setError(job.error || "eBook generation failed.");
+        }
+      }, 3000);
     } catch (err: any) {
-      console.error("Infographic generation error:", err);
-      if (err.name === "AbortError") {
-        setError("Infographic generation was cancelled.");
-      } else {
-        setError(err.message || "Something went wrong during generation.");
-      }
-    } finally {
+      setError(err.message);
       setLoading(false);
-      abortControllerRef.current = null;
     }
   };
 
-  const cancelGeneration = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    setLoading(false);
-    setProgress(0);
-    setCurrentMessage("");
-    setCurrentDetail("");
-  };
+  /** ---------------------------
+   * Step 3: Download PDF + Preview
+   * --------------------------*/
+  const downloadPdf = async (job_id: string) => {
+    try {
+      const res = await fetch(`${API_URL}/ebook/download/${job_id}`);
 
-  const quickPrompts = [
-    "Creativity at Work",
-    "Responsive design principles",
-    "Healthy diet",
-    "UX UI guidelines",
-    "Accessibility best practices",
-    "Design system components",
-  ];
+      if (!res.ok) {
+        throw new Error("Server returned an error.");
+      }
+
+      // Fetch PDF as binary (Blob)
+      const blob = await res.blob();
+
+      // Preview URL for iframe
+      const url = URL.createObjectURL(blob);
+      setPdfBlob(blob); 
+      router.push(`/tools/prompt-to-ebook/viewer?title=${topic}`);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to download eBook.");
+    }
+  };
 
   return (
     <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
+      {/* Background */}
       <Box
         sx={{
           position: "absolute",
-          top: 0,
-          left: 0,
           width: "100%",
           height: "100%",
           overflow: "hidden",
@@ -195,16 +179,13 @@ export default function PromptToEbook() {
           muted
           loop
           playsInline
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            opacity: "0.1"
-          }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", opacity: "0.1" }}
         >
           <source src="/services-background.mp4" type="video/mp4" />
         </video>
       </Box>
+
+      {/* Main Content */}
       <Box
         sx={{
           width: "100%",
@@ -212,198 +193,88 @@ export default function PromptToEbook() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          py: { xs: 8, md: 10 },
-          px: { xs: 2, md: 6 },
+          py: 10,
+          px: 6,
         }}
       >
-        <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, color: "rgba(26, 26, 26, 1)", fontSize: "60px" }}>
+        <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, fontSize: "60px" }}>
           Prompt-to-eBook
         </Typography>
 
-        <Typography sx={{
-          color: "rgba(109, 109, 109, 1)", alignSelf: 'center', maxWidth: 520, mb: 6, fontSize: { xs: "16px", md: "18px" },
-
-
-        }}>
-          Elevate your presentations with our AI-powered tool—create polished, professional slides in just seconds.
+        <Typography sx={{ color: "#6d6d6d", maxWidth: 520, mb: 6 }}>
+          Generate fully structured eBooks with AI—fast, clean & professional.
         </Typography>
 
+        {/* Input Box */}
         <Box
           sx={{
             width: "100%",
             maxWidth: "926px",
-            maxHeight: { xs: "50%", md: "340px" },
             bgcolor: "rgba(251, 250, 255, 0.5)",
             borderRadius: 1,
             boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
             border: "1px solid rgba(232, 228, 255, 1)",
-            p: { xs: 3, md: 4 },
+            p: 4,
             mb: 4,
           }}
         >
-          {/* Description Field */}
+          {/* Topic */}
           <TextField
             fullWidth
             multiline
             minRows={4}
-            placeholder="The advantages of Artificial Intelligence"
-            variant="outlined"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter eBook topic..."
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
             sx={{
               mt: -3,
               mb: 1.5,
-              "& .MuiOutlinedInput-notchedOutline": {
-                border: "none",
-              },
-              borderBottom: "1px solid rgba(242, 240, 255, 1)",
-              "& .MuiInputBase-input": {
-                fontSize: "15px",
-                lineHeight: 1.6,
-              },
-              height: 224,
+              "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+              borderBottom: "1px solid #f2f0ff",
+              "& .MuiInputBase-input": { fontSize: "15px", lineHeight: 1.6 },
+              minHeight: 224,
             }}
           />
 
-          {/* Control Row */}
+          {/* Genre + Generate Row */}
           <Box
             sx={{
+              mt: 2,
               display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              justifyContent: { xs: "center", md: "space-between" },
-              alignItems: { xs: "stretch", md: "center" },
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: "center",
+              justifyContent: "space-between",
               gap: 2,
-              width: "100%",
             }}
           >
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              alignItems={{ xs: "stretch", sm: "center" }}
+            {/* Genre Selector */}
+            <FormControl
               sx={{
-                flex: 1,
+                display: "flex",
+                width: { xs: "100%", sm: "130px", md: "160px" },
+                height: "44px",
+                borderRadius: "4px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                backgroundColor: " rgba(255, 255, 255, 1)",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                "& .MuiSelect-select": {
+                  py: "8px",
+                },
               }}
-              spacing={1.5}
             >
-              {/* <IconButton>
-                            <img
-                                src="/images/voice-icon-input.svg"
-                                alt="Custom icon"
-                                style={{ width: 20, height: 20 }}
-                            />
-                        </IconButton>
-                        <IconButton>
-                            <img
-                                src="/images/file-icon.svg"
-                                alt="Custom icon"
-                                style={{ width: 18, height: 18 }}
-                            />
-                        </IconButton> */}
-
-              {/* Tone Selector */}
-              <FormControl
-                variant="outlined"
-                sx={{
-                  display: "flex",
-                  width: "149px",
-                  height: "44px",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                  backgroundColor: " rgba(255, 255, 255, 1)",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "none",
-                  },
-                  "& .MuiSelect-select": {
-                    py: "8px",
-                  },
-                  mb: 4,
-                }}
+              <InputLabel>Genre</InputLabel>
+              <Select
+                value={genre}
+                label="Genre"
+                onChange={(e) => setGenre(e.target.value)}
               >
-                {/* <InputLabel
-                  sx={{
-                    fontSize: "14px",
-                    fontFamily: "Raleway",
-                  }}
-                >
-                  Select Tone
-                </InputLabel> */}
-                <Select
-                  value={tone}
-                  label="Select Tone"
-                  onChange={(e) => setTone(e.target.value)}
-                  disabled={loading}
-
-                  sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        mt: 1.5,
-                        borderRadius: "10px",
-                      },
-                    },
-                  }}
-                >
-                  <MenuItem sx={{ fontSize: "12px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Select Tone" hidden>
-                    Select Tone
-                  </MenuItem>
-                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Professional">Professional</MenuItem>
-                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Casual">Casual</MenuItem>
-                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61 , 1)", width: "147px" }} value="Inspirational">Inspirational</MenuItem>
-                </Select>
-              </FormControl>
-              {/* Visual Style Selector */}
-              <FormControl
-                variant="outlined"
-                sx={{
-                  display: "flex",
-                  width: { xs: "100%", sm: "231px" },
-                  height: "44px",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                  backgroundColor: " rgba(255, 255, 255, 1)",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "none",
-                  },
-                  "& .MuiSelect-select": {
-                    py: "8px",
-                  },
-                }}
-              >
-                <Select
-                  value={visualStyle}
-                  onChange={(e) => setVisualStyle(e.target.value)}
-                  displayEmpty
-                  sx={{
-                    fontSize: "16px",
-                    backgroundColor: "#fff",
-                    height: "44px",
-                    color: "rgba(109, 109, 109, 1)",
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        mt: 0.5,
-                        borderRadius: "10px",
-                        maxHeight: 300,
-                      },
-                    },
-                  }}
-                >
-                  <MenuItem value="Choose Visual Art Style" hidden>
-                    Choose Visual Art Style
-                  </MenuItem>
-
-                  {TEXT_ART_STYLES.map((style) => (
-                    <MenuItem
-                      key={style.value}
-                      value={style.value}
-                      sx={{ fontSize: "16px", color: "rgba(61,61,61,1)" }}
-                    >
-                      {style.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Stack>
+                <MenuItem value="technology">Technology</MenuItem>
+                <MenuItem value="business">Business</MenuItem>
+                <MenuItem value="education">Education</MenuItem>
+              </Select>
+            </FormControl>
 
             {/* Generate Button */}
             <Button
@@ -414,14 +285,10 @@ export default function PromptToEbook() {
                 backgroundColor: "#6C2BD9",
                 color: "#fff",
                 borderRadius: "32px",
-                width: { xs: "100%", sm: "130px" },
-                height: "44px",
                 px: 4,
                 py: 1.2,
-                fontWeight: 600,
-                boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
-                alignSelf: { xs: "stretch", md: "center" },
-                "&:hover": { backgroundColor: "#5B21B6" },
+                whiteSpace: "nowrap",
+                height: "56px",
               }}
               startIcon={<AutoAwesome />}
             >
@@ -431,15 +298,11 @@ export default function PromptToEbook() {
 
           {error && (
             <Alert
-              severity="error"
               sx={{ mt: 2 }}
+              severity="error"
               action={
-                <IconButton
-                  size="small"
-                  onClick={() => setError("")}
-                  color="inherit"
-                >
-                  <CloseIcon fontSize="small" />
+                <IconButton size="small" onClick={() => setError("")}>
+                  <CloseIcon />
                 </IconButton>
               }
             >
@@ -449,10 +312,10 @@ export default function PromptToEbook() {
           )}
         </Box>
 
+        {/* Loading Box */}
         {loading && (
           <Box
             sx={{
-              p: 3,
               borderRadius: 2,
               bgcolor: "white",
               boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
@@ -461,28 +324,26 @@ export default function PromptToEbook() {
               maxWidth: 800,
             }}
           >
-            <Typography variant="h6" color="#8E2DE2" sx={{ mb: 1 }}>
+            <Typography variant="h6" color="#8E2DE2">
               {currentMessage}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {currentDetail}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Progress: {Math.round(progress)}%
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              Progress: {progress}%
             </Typography>
           </Box>
         )}
 
+        {/* Quick Prompts */}
         <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
           <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
-            {quickPrompts.map((prompt, i) => (
+            {quickPrompts.map((text, i) => (
               <Chip
                 key={i}
-                label={prompt}
-                onClick={() => setDescription(prompt)}
+                label={text}
+                onClick={() => setTopic(text)}
                 sx={{
                   border: "1px solid rgba(246, 246, 246, 1)",
-                  bgcolor: "rgba(248, 248, 248, 0.14);",
+                  bgcolor: "rgba(248, 248, 248, 0.14)",
                   "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
                 }}
               />
