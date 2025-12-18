@@ -54,12 +54,12 @@ const tools = [
         route: "/tools/prompt-to-proposal",
         description: "Generate professional business proposals instantly with AI-powered formatting and content."
     },
-    {
-        label: "Prompt-to-Video",
-        icon: "/images/tools/prompt-to-deck.svg",
-        route: "/tools/prompt-to-video",
-        description: "Create engaging videos from simple prompts using AI-driven storytelling and visuals."
-    },
+    // {
+    //     label: "Prompt-to-Video",
+    //     icon: "/images/tools/prompt-to-deck.svg",
+    //     route: "/tools/prompt-to-video",
+    //     description: "Create engaging videos from simple prompts using AI-driven storytelling and visuals."
+    // },
 ];
 
 export default function Services() {
@@ -105,8 +105,8 @@ export default function Services() {
             <Box
                 sx={{
                     position: "absolute",
-    top: "25%",
-    left: "50%",
+                    top: "25%",
+                    left: "50%",
                     transform: "translateX(-50%)",
                     opacity: 0.45,
                     mixBlendMode: "multiply",
@@ -142,22 +142,11 @@ export default function Services() {
             >
                 <Box
                     sx={{
-                        display: "grid",
-                        gridTemplateColumns: {
-                            xs: "1fr",
-                            sm: "repeat(2, 1fr)",
-                            md: "repeat(3, 1fr)",
-                            lg: "repeat(3, 1fr)",
-                        },
+                        display: "flex",
+                        flexWrap: "wrap",
                         gap: { xs: 2, sm: 3, md: 4 },
-                        justifyItems: "center",
+                        justifyContent: "center",
                         alignItems: "center",
-                        justifyContent: {
-                            xs: "center",
-                            sm: "center",
-                            md: "center",
-                            lg: "center",
-                        },
                     }}
                 >
                     {tools.map((tool, i) => (

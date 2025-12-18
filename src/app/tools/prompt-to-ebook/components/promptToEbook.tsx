@@ -25,7 +25,7 @@ const API_URL = process.env.NEXT_PUBLIC_EBOOK_API_BASE_URL;
 
 export default function PromptToEbook() {
   const [topic, setTopic] = useState("");
-  const [genre, setGenre] = useState("");
+  const [genre, setGenre] = useState("Select Genre");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentMessage, setCurrentMessage] = useState("");
@@ -264,16 +264,30 @@ export default function PromptToEbook() {
                 },
               }}
             >
-              <InputLabel>Genre</InputLabel>
+              {/* <InputLabel>Genre</InputLabel> */}
               <Select
                 value={genre}
                 label="Genre"
                 onChange={(e) => setGenre(e.target.value)}
-              >
-                <MenuItem value="technology">Technology</MenuItem>
-                <MenuItem value="business">Business</MenuItem>
-                <MenuItem value="education">Education</MenuItem>
-              </Select>
+                disabled={loading}
+
+                  sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        mt: 1.8,
+                        borderRadius: "10px",
+                      },
+                    },
+                  }}
+                >
+                  <MenuItem sx={{ fontSize: "12px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Select Genre" hidden>
+                    Select Genre
+                  </MenuItem>
+                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Technology">Technology</MenuItem>
+                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Business">Business</MenuItem>
+                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61 , 1)", width: "147px" }} value="Education">Education</MenuItem>
+                </Select>
             </FormControl>
 
             {/* Generate Button */}
