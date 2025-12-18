@@ -21,6 +21,7 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 import { useUser } from "@/app/context/AuthContext";
 import { useVideoJob } from "@/app/context/ExplainerVideoContext";
+import { useRouter } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_EXPLAINER_API_BASE_URL;
 const DEFAULT_TARGET_DURATION = 10;
@@ -29,6 +30,7 @@ export default function PromptToVideo() {
     const [prompt, setPrompt] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const router = useRouter();
     // const [jobId, setJobId] = useState<string | null>(null);
     // const [progress, setProgress] = useState<number>(0);
     // const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -101,6 +103,9 @@ export default function PromptToVideo() {
 
             if (data.status === "success" && data.video_path) {
                 setVideoUrl(data.video_path);
+                setLoading(false);
+
+                router.push(`/tools/prompt-to-video/${id}`);
                 setDownloadName(data.video_path.split("/").pop() || "generated_video.mp4");
                 setLoading(false);
                 if (pollingRef.current) clearInterval(pollingRef.current);
@@ -345,25 +350,25 @@ export default function PromptToVideo() {
                         </Alert>
                     )}
                 </Box>
-                                    {/* Quick Prompts */}
-                    <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
-                        <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
-                            {quickPrompts.map((text, i) => (
-                                <Chip
-                                    key={i}
-                                    label={text}
-                                    onClick={() => setPrompt(text)}
-                                    sx={{
-                                        border: "1px solid rgba(246, 246, 246, 1)",
-                                        bgcolor: "rgba(248, 248, 248, 0.14)",
-                                        "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
-                                    }}
-                                />
-                            ))}
-                        </Stack>
-                    </Box>
+                {/* Quick Prompts */}
+                <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
+                    <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
+                        {quickPrompts.map((text, i) => (
+                            <Chip
+                                key={i}
+                                label={text}
+                                onClick={() => setPrompt(text)}
+                                sx={{
+                                    border: "1px solid rgba(246, 246, 246, 1)",
+                                    bgcolor: "rgba(248, 248, 248, 0.14)",
+                                    "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
+                                }}
+                            />
+                        ))}
+                    </Stack>
+                </Box>
 
-                {videoUrl && (
+                {/* {videoUrl && (
                     <Box sx={{ width: "100%", maxWidth: 900, mt: 2 }}>
                         <Typography variant="h6" sx={{ mb: 1 }}>
                             Generated Video
@@ -381,7 +386,7 @@ export default function PromptToVideo() {
                             </Stack>
                         </Box>
                     </Box>
-                )}
+                )} */}
             </Box>
         </Box>
     );
