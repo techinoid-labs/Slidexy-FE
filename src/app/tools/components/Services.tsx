@@ -54,12 +54,12 @@ const tools = [
         route: "/tools/prompt-to-proposal",
         description: "Generate professional business proposals instantly with AI-powered formatting and content."
     },
-    // {
-    //     label: "Prompt-to-Video",
-    //     icon: "/images/tools/prompt-to-deck.svg",
-    //     route: "/tools/prompt-to-video",
-    //     description: "Create engaging videos from simple prompts using AI-driven storytelling and visuals."
-    // },
+    {
+        label: "Prompt-to-Video",
+        icon: "/images/tools/prompt-to-deck.svg",
+        route: "/tools/prompt-to-video",
+        description: "Create engaging videos from simple prompts using AI-driven storytelling and visuals."
+    },
 ];
 
 export default function Services() {
@@ -142,11 +142,22 @@ export default function Services() {
             >
                 <Box
                     sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
+                        display: "grid",
+                        gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "repeat(2, 1fr)",
+                            md: "repeat(3, 1fr)",
+                            lg: "repeat(3, 1fr)",
+                        },
                         gap: { xs: 2, sm: 3, md: 4 },
-                        justifyContent: "center",
+                        justifyItems: "center",
                         alignItems: "center",
+                        justifyContent: {
+                            xs: "center",
+                            sm: "center",
+                            md: "center",
+                            lg: "center",
+                        },
                     }}
                 >
                     {tools.map((tool, i) => (
