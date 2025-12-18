@@ -105,8 +105,8 @@ export default function Services() {
             <Box
                 sx={{
                     position: "absolute",
-    top: "25%",
-    left: "50%",
+                    top: "25%",
+                    left: "50%",
                     transform: "translateX(-50%)",
                     opacity: 0.45,
                     mixBlendMode: "multiply",
