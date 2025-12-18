@@ -66,7 +66,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     isMobileImageSelected,
     setIsMobileImageSelected,
     // Add missing handlers if needed, assuming useSlides provides them
-    onHandleSelect, // Might need to check if this exists in useSlides or was prop in Web
   } = useSlides();
 
   // Mock onHandleSelect if not in context (Web passed it as prop to SlideRenderer, but here we are the parent)
@@ -362,6 +361,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                   {/* Title */}
                   {title?.text && (
                     <AnimatedKonvaText
+                      id={`title-${index}`}
+                      isSelected={selectedTextId === `title-${index}`}
+                      onSelect={() => setSelectedTextId(`title-${index}`)}
                       text={title.text}
                       x={titleProps.x || 25}
                       y={titleProps.y || 40}
@@ -385,6 +387,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       return (
                         <AnimatedKonvaText
                           key={`mobile-k-el-${index}-${i}`}
+                          id={`el-${index}-${i}`}
+                          isSelected={selectedTextId === `el-${index}-${i}`}
+                          onSelect={() => setSelectedTextId(`el-${index}-${i}`)}
                           text={el.text || ""}
                           x={el.properties?.x || 0}
                           y={el.properties?.y || 0}
@@ -409,6 +414,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           width={el.properties?.width || 200}
                           height={el.properties?.height || 200}
                           image_id={el.image_id}
+                          isSelected={selectedImageId === el.image_id || selectedImageIndex === i}
+                          onSelect={() => {
+                            setSelectedImageId(el.image_id);
+                            setSelectedImageIndex(i);
+                            setSelectedImage(el);
+                            setIsMobileImageSelected(true);
+                          }}
                         />
                       );
                     }
@@ -417,8 +429,12 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
 
                   <KonvaShapeRenderer
                     elements={slide.elements}
-                    selectedShapeId={null}
-                    selectedShapeIndex={null}
+                    selectedShapeId={selectedShapeId}
+                    selectedShapeIndex={selectedShapeIndex}
+                    onSelectShape={(index, shapeId, e) => {
+                      setSelectedShapeIndex(index);
+                      setSelectedShapeId(shapeId);
+                    }}
                   />
                 </Layer>
               </Stage>

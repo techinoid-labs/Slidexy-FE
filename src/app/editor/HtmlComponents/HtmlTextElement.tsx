@@ -10,8 +10,8 @@ interface HTMLTextElementProps {
   text: string;
   x: number;
   y: number;
-  width?: number;
-  height?: number;
+  width?: number | 'auto';
+  height?: number | 'auto';
   fontSize?: number;
   fontFamily?: string;
   fontWeight?: string;
