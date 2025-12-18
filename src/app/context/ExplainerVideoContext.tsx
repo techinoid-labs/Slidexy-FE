@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface VideoJob {
     jobId: string | null;
@@ -19,10 +19,30 @@ export const VideoJobProvider = ({ children }: { children: ReactNode }) => {
     const [progress, setProgress] = useState<number>(0);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
+    // Rehydrate from localStorage on mount
+    useEffect(() => {
+        const savedUrl = localStorage.getItem("savedVideoUrl");
+        const savedProgress = localStorage.getItem("savedVideoProgress");
+        if (savedUrl) setVideoUrl(savedUrl);
+        if (savedProgress) setProgress(Number(savedProgress));
+    }, []);
+
+    // Persist changes to localStorage
+    useEffect(() => {
+        if (videoUrl) localStorage.setItem("savedVideoUrl", videoUrl);
+        else localStorage.removeItem("savedVideoUrl");
+    }, [videoUrl]);
+
+    useEffect(() => {
+        localStorage.setItem("savedVideoProgress", progress.toString());
+    }, [progress]);
+
     const resetJob = () => {
         setJobId(null);
         setProgress(0);
         setVideoUrl(null);
+        localStorage.removeItem("savedVideoUrl");
+        localStorage.removeItem("savedVideoProgress");
     };
 
     return (

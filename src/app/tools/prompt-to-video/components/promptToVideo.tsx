@@ -31,6 +31,7 @@ export default function PromptToVideo() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
+    const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
     // const [jobId, setJobId] = useState<string | null>(null);
     // const [progress, setProgress] = useState<number>(0);
     // const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -51,6 +52,24 @@ export default function PromptToVideo() {
         "Design Systems",
         "Cybersecurity",
     ];
+
+    const loadingMessages = [
+        "Analyzing your prompt",
+        "Generating video scenes",
+        "Designing visual layout",
+        "Rendering animations",
+        "Finalizing your video",
+    ];
+
+    useEffect(() => {
+        if (!loading) return;
+
+        const interval = setInterval(() => {
+            setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+        }, 2500);
+
+        return () => clearInterval(interval);
+    }, [loading]);
 
     useEffect(() => {
         const savedUrl = localStorage.getItem("savedVideoUrl");
@@ -134,7 +153,6 @@ export default function PromptToVideo() {
         }
 
         setLoading(true);
-        setSlides([]);
 
         const payload = {
             prompt: prompt.trim(),
@@ -219,7 +237,7 @@ export default function PromptToVideo() {
                 </Typography>
 
                 <Typography sx={{ color: "rgba(109,109,109,1)", maxWidth: 520, mb: 6 }}>
-                    Enter a prompt and get a short video. Progress will be shown while generating.
+                    Enter a prompt and get video explaining the Topic mentioned.
                 </Typography>
 
                 <Box
@@ -328,28 +346,61 @@ export default function PromptToVideo() {
                             Generate
                         </Button>
                     </Box>
-
-                    {loading && (
-                        <Typography variant="body1" sx={{ mt: 2 }}>
-                            Generating video... Progress: {progress}%
-                        </Typography>
-                    )}
-
-                    {error && (
-                        <Alert
-                            severity="error"
-                            sx={{ mt: 2 }}
-                            action={
-                                <IconButton size="small" onClick={() => setError("")} color="inherit">
-                                    <CloseIcon fontSize="small" />
-                                </IconButton>
-                            }
-                        >
-                            <AlertTitle>Error</AlertTitle>
-                            {error}
-                        </Alert>
-                    )}
                 </Box>
+                {loading && (
+                    <Box
+                        sx={{
+                            mt: -7,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <img
+                            src="/Loader.gif"
+                            alt="Generating..."
+                            style={{ width: 280, height: 230 }}
+                        />
+
+                        {/* rotating message */}
+                        <Typography
+                            sx={{
+                                fontSize: "15px",
+                                fontWeight: 500,
+                                color: "rgba(109,109,109,1)",
+                                mt: -5,
+                            }}
+                        >
+                            {loadingMessages[loadingMessageIndex]}
+                        </Typography>
+
+                        {/* progress */}
+                        <Typography
+                            sx={{
+                                fontSize: "13px",
+                                color: "rgba(140,140,140,1)",
+                                mt: 0.5,
+                            }}
+                        >
+                            {Math.round(progress)}% completed
+                        </Typography>
+                    </Box>
+                )}
+                {error && (
+                    <Alert
+                        severity="error"
+                        sx={{ mt: 2 }}
+                        action={
+                            <IconButton size="small" onClick={() => setError("")} color="inherit">
+                                <CloseIcon fontSize="small" />
+                            </IconButton>
+                        }
+                    >
+                        <AlertTitle>Error</AlertTitle>
+                        {error}
+                    </Alert>
+                )}
                 {/* Quick Prompts */}
                 <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
                     <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
@@ -367,26 +418,6 @@ export default function PromptToVideo() {
                         ))}
                     </Stack>
                 </Box>
-
-                {/* {videoUrl && (
-                    <Box sx={{ width: "100%", maxWidth: 900, mt: 2 }}>
-                        <Typography variant="h6" sx={{ mb: 1 }}>
-                            Generated Video
-                        </Typography>
-                        <Box sx={{ bgcolor: "#fff", p: 2, borderRadius: 2, boxShadow: 2 }}>
-                            <video src={videoUrl} controls style={{ width: "100%", borderRadius: 8 }} />
-                            <Stack direction="row" spacing={2} sx={{ mt: 2, justifyContent: "flex-end" }}>
-                                <Button
-                                    onClick={handleDownload}
-                                    variant="contained"
-                                    sx={{ backgroundColor: "#4A00E0", "&:hover": { backgroundColor: "#3a00b8" } }}
-                                >
-                                    Download
-                                </Button>
-                            </Stack>
-                        </Box>
-                    </Box>
-                )} */}
             </Box>
         </Box>
     );
