@@ -36,6 +36,8 @@ export default function PromptToEbook() {
   const { setInfographicId } = useTemplateSlides();
   const [orientation, setOrientation] = useState("landscape");
   const [description, setDescription] = useState("");
+  const [tone, setTone] = useState("Select Tone");
+  const [visualStyle, setVisualStyle] = useState("Choose Visual Art Style");
 
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -302,9 +304,9 @@ export default function PromptToEbook() {
                 variant="outlined"
                 sx={{
                   display: "flex",
-                  width: { xs: "100%", sm: "130px" },
+                  width: "149px",
                   height: "44px",
-                  borderRadius: "4px",
+                  borderRadius: "8px",
                   boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
                   backgroundColor: " rgba(255, 255, 255, 1)",
                   "& .MuiOutlinedInput-notchedOutline": {
@@ -316,28 +318,36 @@ export default function PromptToEbook() {
                   mb: 4,
                 }}
               >
-                <InputLabel
+                {/* <InputLabel
                   sx={{
                     fontSize: "14px",
                     fontFamily: "Raleway",
                   }}
                 >
                   Select Tone
-                </InputLabel>
+                </InputLabel> */}
                 <Select
-                  //   value={tone}
+                  value={tone}
                   label="Select Tone"
-                  //   onChange={(e) => setTone(e.target.value)}
+                  onChange={(e) => setTone(e.target.value)}
                   disabled={loading}
-                  sx={{
-                    backgroundColor: "#fff",
-                    height: "44px",
-                    fontSize: "14px",
+
+                  sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        mt: 1.5,
+                        borderRadius: "10px",
+                      },
+                    },
                   }}
                 >
-                  <MenuItem value="professional">Professional</MenuItem>
-                  <MenuItem value="casual">Casual</MenuItem>
-                  <MenuItem value="inspirational">Inspirational</MenuItem>
+                  <MenuItem sx={{ fontSize: "12px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Select Tone" hidden>
+                    Select Tone
+                  </MenuItem>
+                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Professional">Professional</MenuItem>
+                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Casual">Casual</MenuItem>
+                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61 , 1)", width: "147px" }} value="Inspirational">Inspirational</MenuItem>
                 </Select>
               </FormControl>
               {/* Visual Style Selector */}
@@ -347,7 +357,7 @@ export default function PromptToEbook() {
                   display: "flex",
                   width: { xs: "100%", sm: "231px" },
                   height: "44px",
-                  borderRadius: "4px",
+                  borderRadius: "8px",
                   boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
                   backgroundColor: " rgba(255, 255, 255, 1)",
                   "& .MuiOutlinedInput-notchedOutline": {
@@ -358,27 +368,36 @@ export default function PromptToEbook() {
                   },
                 }}
               >
-                <InputLabel
-                  sx={{
-                    fontSize: "14px",
-                    fontFamily: "Raleway",
-                  }}
-                >
-                  Select Visual Style
-                </InputLabel>
                 <Select
-                  //   value={visualStyle}
-                  label="Select Visual Style"
-                  //   onChange={(e) => setVisualStyle(e.target.value)}
-                  disabled={loading}
+                  value={visualStyle}
+                  onChange={(e) => setVisualStyle(e.target.value)}
+                  displayEmpty
                   sx={{
+                    fontSize: "16px",
                     backgroundColor: "#fff",
                     height: "44px",
-                    fontSize: "14px",
+                    color: "rgba(109, 109, 109, 1)",
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        mt: 0.5,
+                        borderRadius: "10px",
+                        maxHeight: 300,
+                      },
+                    },
                   }}
                 >
+                  <MenuItem value="Choose Visual Art Style" hidden>
+                    Choose Visual Art Style
+                  </MenuItem>
+
                   {TEXT_ART_STYLES.map((style) => (
-                    <MenuItem key={style.value} value={style.value}>
+                    <MenuItem
+                      key={style.value}
+                      value={style.value}
+                      sx={{ fontSize: "16px", color: "rgba(61,61,61,1)" }}
+                    >
                       {style.label}
                     </MenuItem>
                   ))}
