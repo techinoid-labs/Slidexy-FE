@@ -6,19 +6,65 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const tools = [
-    { label: "Prompt-to-Deck", tag: "Free", route: "/tools/prompt-to-deck" },
-    { label: "Video-to-Deck", tag: "New", route: "/tools/video-to-deck" },
-    { label: "Web-to-Deck", tag: "New", route: "/tools/web-to-deck" },
-    //{ label: "Prompt-to-eBook", tag: "New", route: "/tools/prompt-to-ebook" },
-    { label: "Text-to-Infographics", tag: "New", route: "/tools/text-to-infographics" },
-    { label: "Prompt-to-Template", tag: "New", route: "/tools/prompt-to-template" },
-    { label: "Url-to-Website", tag: "New", route: "/tools/url-to-website" },
-    { label: "Prompt-to-Proposal", tag: "New", route: "/tools/prompt-to-proposal" },
-    //{ label: "Prompt-to-Video", tag: "New", route: "/tools/prompt-to-video" },
+    {
+        label: "Prompt-to-Deck",
+        icon: "/images/tools/prompt-to-deck.svg",
+        route: "/tools/prompt-to-deck",
+        description: "Turn simple prompts into stunning, well-structured slide decks powered by AI in just seconds."
+    },
+    {
+        label: "Video-to-Deck",
+        icon: "/images/tools/video-to-deck.svg",
+        route: "/tools/video-to-deck",
+        description: "Convert videos into clear, engaging presentation slides with AI-driven content extraction."
+    },
+    {
+        label: "Web-to-Deck",
+        icon: "/images/tools/web-to-deck.svg",
+        route: "/tools/web-to-deck",
+        description: "Transform web pages into professional slide decks with AI-curated summaries and visuals."
+    },
+    {
+        label: "Prompt-to-eBook",
+        icon: "/images/tools/prompt-to-ebook.svg",
+        route: "/tools/prompt-to-ebook",
+        description: "Generate well-formatted, high-quality eBooks instantly using AI from simple text prompts."
+    },
+    {
+        label: "Text-to-Infographics",
+        icon: "/images/tools/text-to-infographics.svg",
+        route: "/tools/text-to-infographics",
+        description: "Turn plain text into visually compelling infographics with AI-powered design intelligence."
+    },
+    {
+        label: "Prompt-to-Template",
+        icon: "/images/tools/prompt-to-template.svg",
+        route: "/tools/prompt-to-template",
+        description: "Create ready-to-use, customizable templates instantly using AI from your ideas."
+    },
+    {
+        label: "Url-to-Website",
+        icon: "/images/tools/url-to-website.svg",
+        route: "/tools/url-to-website",
+        description: "Convert any URL into a fully structured, modern website layout using AI."
+    },
+    {
+        label: "Prompt-to-Proposal",
+        icon: "/images/tools/prompt-to-pdf.svg",
+        route: "/tools/prompt-to-proposal",
+        description: "Generate professional business proposals instantly with AI-powered formatting and content."
+    },
+    // {
+    //     label: "Prompt-to-Video",
+    //     icon: "/images/tools/prompt-to-deck.svg",
+    //     route: "/tools/prompt-to-video",
+    //     description: "Create engaging videos from simple prompts using AI-driven storytelling and visuals."
+    // },
 ];
 
 export default function Services() {
     const router = useRouter();
+
     return (
         <Box
             sx={{
@@ -59,15 +105,15 @@ export default function Services() {
             <Box
                 sx={{
                     position: "absolute",
-                    top: { xs: "-80px", md: "-180px" }, // 👈 pushes upward above the section
+                    top: "25%",
                     left: "50%",
                     transform: "translateX(-50%)",
-                    opacity: 0.25, // 👈 more subtle blend with white background
-                    mixBlendMode: "multiply", // 👈 visually merges with background
+                    opacity: 0.45,
+                    mixBlendMode: "multiply",
                     pointerEvents: "none",
-                    width: { xs: 300, md: 550 }, // slightly larger to fill top area
+                    width: { xs: 300, md: 550 },
                     height: { xs: 220, md: 500 },
-                    zIndex: 0, // stays behind content
+                    zIndex: 0,
                 }}
             >
                 <Image
@@ -90,183 +136,88 @@ export default function Services() {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    gap: { xs: 3, md: 2 },
+                    gap: { xs: 3, md: 4 },
                     zIndex: 2,
                 }}
             >
-                {/* First Row - 3 cards */}
                 <Box
                     sx={{
-                        display: "grid",
-                        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
-                        gap: { xs: 3, md: 2 },
-                        justifyItems: "center",
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: { xs: 2, sm: 3, md: 4 },
+                        justifyContent: "center",
+                        alignItems: "center",
                     }}
                 >
-                    {tools.slice(0, 4).map((tool, i) => (
+                    {tools.map((tool, i) => (
                         <Box
                             key={i}
                             onClick={() => router.push(tool.route)}
                             sx={{
                                 position: "relative",
-                                borderRadius: "16px",
-                                background: "rgba(255, 255, 255, 1)",
-                                boxShadow: "5.25px 6px 60.75px 0px rgba(0, 0, 0, 0.05)",
+                                borderRadius: "12px",
+                                background: "#fff",
+                                boxShadow: "5.25px 6px 60.75px rgba(0,0,0,0.05)",
                                 backdropFilter: "blur(8px)",
-                                border: "1px solid rgba(255, 255, 255, 0.4)",
+                                border: "1px solid rgba(232, 228, 255, 1)",
                                 display: "flex",
                                 flexDirection: "column",
-                                justifyContent: "space-between",
-                                p: 3,
-                                height: 100,
-                                width: 361.3333435058594,
+                                gap: "32px",
+                                p: "24px",
+                                height: 220,
+                                width: { xs: "100%", sm: 280, md: 356 },
                                 transition: "all 0.3s ease",
                                 cursor: "pointer",
+                                bgcolor: "rgba(251, 250, 255, 0.6)",
                                 "&:hover": {
                                     transform: "translateY(-5px)",
                                     boxShadow: "0px 10px 25px rgba(123, 97, 255, 0.2)",
                                 },
+
                             }}
                         >
-                            {/* Chip Tag */}
-                            <Chip
-                                label={tool.tag}
-                                size="small"
-                                sx={{
-                                    position: "absolute",
-                                    top: 12,
-                                    left: 12,
-                                    background:
-                                        tool.tag === "Pro"
-                                            ? "rgba(123, 61, 255, 0.1)"
-                                            : tool.tag === "Free"
-                                                ? "rgba(74, 0, 224, 0.08)"
-                                                : "rgba(155, 81, 224, 0.08)",
-                                    color: "rgba(74, 0, 224, 1)",
-                                    fontWeight: 500,
-                                    fontSize: "0.7rem",
-                                    borderRadius: "12px",
-                                }}
+                            <Image
+                                src={tool.icon}
+                                alt="service-icon"
+                                width={25}
+                                height={25}
+                            // style={{
+                            //     objectFit: "contain",
+                            //     width: "100%",
+                            //     height: "100%",
+                            // }}
                             />
-
-                            {/* Card Label */}
-                            <Typography
+                            <Box
                                 sx={{
-                                    fontSize: "1.1rem",
-                                    fontWeight: 600,
-                                    color: "#1A1A1A",
-                                    mt: 3,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "10px", // 👈 exact 10px gap
                                 }}
                             >
-                                {tool.label}
-                            </Typography>
+                                <Typography
+                                    sx={{
+                                        fontFamily: "Raleway",
+                                        fontSize: "24px",
+                                        lineHeight: "32px",
+                                        fontWeight: 700,
+                                        color: "#1A1A1A",
+                                    }}
+                                >
 
-                            {/* Arrow Icon */}
-                            <IconButton
-                                sx={{
-                                    position: "absolute",
-                                    top: 10,
-                                    right: 10,
-                                    color: "#5205e0",
-                                    backgroundColor: "#ffffff",
-                                    border: "1.33px solid rgba(242, 240, 255, 1)",
-                                    borderRadius: "50%",
-                                    "&:hover": {
-                                        backgroundColor: "rgba(123, 97, 255, 0.15)",
-                                    },
-                                }}
-                            >
-                                <ArrowOutward sx={{ fontSize: 18 }} />
-                            </IconButton>
-                        </Box>
-                    ))}
-                </Box>
-
-                {/* Second Row - 2 cards */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                        gap: { xs: 3, md: 4.1 },
-                        width: "100%",
-                        justifyItems: "center",
-                    }}
-                >
-                    {tools.slice(4, 8).map((tool, i) => (
-                        <Box
-                            key={i + 3}
-                            onClick={() => router.push(tool.route)}
-                            sx={{
-                                position: "relative",
-                                borderRadius: "16px",
-                                background: "rgba(255, 255, 255, 1)",
-                                boxShadow: "5.25px 6px 60.75px 0px rgba(0, 0, 0, 0.05)",
-                                backdropFilter: "blur(8px)",
-                                border: "1px solid rgba(255, 255, 255, 0.4)",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between",
-                                p: 3,
-                                height: 100,
-                                width: 361.3333435058594,
-                                transition: "all 0.3s ease",
-                                cursor: "pointer",
-                                "&:hover": {
-                                    transform: "translateY(-5px)",
-                                    boxShadow: "0px 10px 25px rgba(123, 97, 255, 0.2)",
-                                },
-                            }}
-                        >
-                            {/* Chip Tag */}
-                            <Chip
-                                label={tool.tag}
-                                size="small"
-                                sx={{
-                                    position: "absolute",
-                                    top: 12,
-                                    left: 12,
-                                    background:
-                                        tool.tag === "Pro"
-                                            ? "rgba(123, 61, 255, 0.1)"
-                                            : tool.tag === "Free"
-                                                ? "rgba(74, 0, 224, 0.08)"
-                                                : "rgba(155, 81, 224, 0.08)",
-                                    color: "rgba(74, 0, 224, 1)",
-                                    fontWeight: 500,
-                                    fontSize: "0.7rem",
-                                    borderRadius: "12px",
-                                }}
-                            />
-
-                            {/* Card Label */}
-                            <Typography
-                                sx={{
-                                    fontSize: "1.1rem",
-                                    fontWeight: 600,
-                                    color: "#1A1A1A",
-                                    mt: 3,
-                                }}
-                            >
-                                {tool.label}
-                            </Typography>
-
-                            {/* Arrow Icon */}
-                            <IconButton
-                                sx={{
-                                    position: "absolute",
-                                    top: 10,
-                                    right: 10,
-                                    color: "#5205e0",
-                                    backgroundColor: "#ffffff",
-                                    border: "1.33px solid rgba(242, 240, 255, 1)",
-                                    borderRadius: "50%",
-                                    "&:hover": {
-                                        backgroundColor: "rgba(123, 97, 255, 0.15)",
-                                    },
-                                }}
-                            >
-                                <ArrowOutward sx={{ fontSize: 18 }} />
-                            </IconButton>
+                                    {tool.label}
+                                </Typography>
+                                <Typography
+                                    sx={{
+                                        fontFamily: "Raleway",
+                                        fontSize: "14px",
+                                        lineHeight: "20px",
+                                        fontWeight: 400,
+                                        color: "rgba(86, 86, 86, 1)",
+                                    }}
+                                >
+                                    {tool.description}
+                                </Typography>
+                            </Box>
                         </Box>
                     ))}
                 </Box>

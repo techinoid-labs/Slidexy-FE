@@ -9,6 +9,7 @@ import "./globals.css";
 import SessionWrapper from "@/lib/sessionWrapper";
 import { UserProvider } from "./context/AuthContext";
 
+
 import Script from "next/script";
 import AnalyticsTracker from "./components/analytics/AnalyticsTracker";
 

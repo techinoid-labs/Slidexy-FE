@@ -29,8 +29,8 @@ const viewMode = [
 
 export default function TextToInfographics() {
     const { setInfographicId } = useTemplateSlides();
-    const [goal, setGoal] = useState("pitch");
-    const [orientation, setOrientation] = useState("landscape");
+    const [goal, setGoal] = useState("Select Goal");
+    const [orientation, setOrientation] = useState("Choose Orientation");
     const [description, setDescription] = useState("");
 
     const [loading, setLoading] = useState(false);
@@ -252,35 +252,46 @@ export default function TextToInfographics() {
                                     border: "none",
                                 },
                                 "& .MuiSelect-select": {
-                                    py: "8px",
+                                    py: "6px",
                                 },
+                                gap: 4,
                             }}
                         >
-                            <InputLabel
-                                sx={{
-                                    fontSize: "14px",
-                                    fontFamily: "Raleway",
-                                }}
-                            >
-                                Select Goal
-                            </InputLabel>
+                            {/* <InputLabel
+                sx={{
+                  fontSize: "16px",
+                  fontFamily: "Raleway",
+                  top: "-10px",
+                }}
+              >
+                Select Goal
+              </InputLabel> */}
                             <Select
                                 value={goal}
-                                label="Select Goal"
                                 onChange={(e) => setGoal(e.target.value)}
                                 disabled={loading}
-                                sx={{
-                                    backgroundColor: "#fff",
-                                    height: "44px",
-                                    fontSize: "14px",
+                                sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
+                                MenuProps={{
+                                    PaperProps: {
+                                        sx: {
+                                            mt: 0.5,
+                                            borderRadius: "10px",
+                                        },
+                                    },
                                 }}
                             >
-                                <MenuItem value="pitch">Pitch Deck</MenuItem>
-                                <MenuItem value="education">Educational Deck</MenuItem>
-                                <MenuItem value="marketing">Marketing Presentation</MenuItem>
+                                <MenuItem sx={{ fontSize: "12px", color: "rgba(109, 109, 109, 1)" }} value="Select Goal" hidden>
+                                    Select Goal
+                                </MenuItem>
+
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)", }} value="pitch">Pitch Deck</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)" }} value="education">Educational</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)" }} value="marketing">Marketing</MenuItem>
                             </Select>
+
                         </FormControl>
                     </Box>
+
 
 
                     <TextField
@@ -303,9 +314,9 @@ export default function TextToInfographics() {
                             variant="outlined"
                             sx={{
                                 display: "flex",
-                                width: { xs: "100%", sm: "231px" },
+                                width: { xs: "100%", sm: "193px" },
                                 height: "44px",
-                                borderRadius: "4px",
+                                borderRadius: "8px",
                                 boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
                                 backgroundColor: " rgba(255, 255, 255, 1)",
                                 "& .MuiOutlinedInput-notchedOutline": {
@@ -315,8 +326,28 @@ export default function TextToInfographics() {
                                     py: "8px",
                                 },
                             }}>
-                            <InputLabel>Select Orientation</InputLabel>
-                            <Select value={orientation} onChange={(e) => setOrientation(e.target.value)} disabled={loading}>
+                            {/* <InputLabel>Select Orientation</InputLabel> */}
+                            <Select value={orientation} onChange={(e) => setOrientation(e.target.value)} disabled={loading}
+                                displayEmpty
+                                sx={{
+                                    fontSize: "16px",
+                                    backgroundColor: "#fff",
+                                    height: "44px",
+                                    color: "rgba(109, 109, 109, 1)",
+                                }}
+                                MenuProps={{
+                                    PaperProps: {
+                                        sx: {
+                                            mt: 0.5,
+                                            borderRadius: "10px",
+                                            maxHeight: 300,
+                                        },
+                                    },
+                                }}
+                            >
+                                  <MenuItem value="Choose Orientation" hidden>
+                                                    Choose Orientation
+                                                  </MenuItem>
                                 {viewMode.map((v) => (
                                     <MenuItem key={v.value} value={v.value}>
                                         {v.label}

@@ -155,7 +155,12 @@ export const LinkedInProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsConnected(status.connected === true);
       setConnectionError(null);
     } catch (error: any) {
-      console.error("[LinkedIn] Status check error:", error);
+      // 404 is expected if the user has no connection record or the endpoint is missing
+      if (error.response?.status === 404) {
+        // console.log("[LinkedIn] Status check: Not found (404), assuming disconnected.");
+      } else {
+        console.error("[LinkedIn] Status check error:", error);
+      }
       setIsConnected(false);
       setConnectionStatus(null);
       // Don't set error here as status check is optional

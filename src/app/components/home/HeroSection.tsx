@@ -63,6 +63,32 @@ export default function HeroSection() {
           justifyContent: "center",
         }}
       >
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                overflow: "hidden",
+                zIndex: 1,
+              }}
+            >
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  opacity: "0.1"
+                }}
+              >
+                <source src="/services-background.mp4" type="video/mp4" />
+              </video>
+            </Box>
         {/* Decorative Elements */}
         <Box
           sx={{
@@ -135,7 +161,7 @@ export default function HeroSection() {
             sx={{
               display: "flex",
               justifyContent: "center",
-              mt: { xs: 2, md: 7 },
+              mt: { xs: 2, md: 0 },
               mb: 2,
             }}
           >
@@ -149,17 +175,17 @@ export default function HeroSection() {
                   style={{ marginRight: "4px", width: 18, height: 18 }}
                 />
               }
-              label="No sign-up needed for your first AI-generated deck"
+              label="No sign-up needed for the first deck"
               sx={{
                 px: 1.5,
                 py: 0.7,
                 fontSize: { xs: "0.8rem", md: "0.95rem" },
                 height: "auto",
                 borderRadius: "600px",
-                backgroundColor: "#E8E4FF",
+                border: "0.5px solid rgba(232, 228, 255, 1)",
+                backgroundColor: "rgba(255, 255, 255, 0.12);",
                 color: "#4A00E0",
                 boxShadow: "0 2px 6px rgba(0, 0, 0, 0.06)",
-                border: "none",
                 "& .MuiChip-icon": {
                   color: "#4A00E0",
                   marginRight: "6px",
@@ -199,9 +225,8 @@ export default function HeroSection() {
               }}
             >
               <span>
-                Turn ideas, voice, or prompts into polished slides instantly.
-                Use our AI slide generator to build pitch decks, reports, or
-                classroom presentations in seconds.{" "}
+                Turn any thought into a polished, on-brand presentation — 
+                powered by AI, styled by designers.
               </span>
               <Box
                 component="span"
@@ -220,7 +245,7 @@ export default function HeroSection() {
               display: "flex",
               justifyContent: "center",
               mb: 8,
-              mt: { xs: 1, md: -5 },
+              mt: { xs: 1, md: 0 },
             }}
           >
             <Box sx={{ position: "relative", maxWidth: 700, width: "100%" }}>
@@ -231,7 +256,7 @@ export default function HeroSection() {
                   alignItems: "center",
                   mb: 2,
                   mt: 5,
-                  ml: { xs: 0, md: 15 },
+                  ml: { xs: 0, md: 0 },
                   flexDirection: { xs: "column", md: "row" },
                 }}
               >
@@ -241,6 +266,7 @@ export default function HeroSection() {
                     mb: { xs: -6, md: 2 },
                     alignItems: "center",
                     display: "flex",
+                    zIndex: 2
                   }}
                 >
                   <Button
@@ -264,46 +290,8 @@ export default function HeroSection() {
                       },
                     }}
                   >
-                    Get Started
+                    Join the Waitlist
                   </Button>
-                </Box>
-
-                {/* Try for Free Text */}
-                <Box
-                  sx={{
-                    display: { xs: "none", md: "flex" },
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    justifyContent: "center",
-                    ml: 3,
-                    mt: { xs: 0, md: 2 },
-                  }}
-                >
-                  {/* <Typography
-                    variant="body2"
-                    sx={{
-                      fontSize: { xs: "0.875rem", sm: "1rem" },
-                      fontWeight: 500,
-                      color: "#454545",
-                      whiteSpace: "nowrap",
-                      rotate: "10deg",
-                      ml: "40px",
-                    }}
-                  >
-                    Try for Free
-                  </Typography> */}
-
-                  {/* Try for Free Icon */}
-                  <Box sx={{ mt: -5 }}>
-                    <Image
-                      // src="/images/try-for-free-vector.svg"
-                      src="/images/home/Arrow_08.gif"
-                      alt="Arrow under text"
-                      width={190}
-                      height={190}
-                      style={{ maxWidth: "100%", height: "auto" }}
-                    />
-                  </Box>
                 </Box>
               </Box>
             </Box>
@@ -333,6 +321,7 @@ export default function HeroSection() {
                 fontWeight: 450,
                 px: 2,
                 py: 1,
+                zIndex: 2
               }}
             >
               Learn More
