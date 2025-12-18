@@ -13,6 +13,7 @@ import {
     InputLabel,
     MenuItem,
     Select,
+    Chip,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useEffect, useRef } from "react";
@@ -40,6 +41,14 @@ export default function PromptToVideo() {
     const { setSlides } = useSlides();
     const { setPresentationId } = useTemplateSlides();
     const { user } = useUser();
+
+    const quickPrompts = [
+        "Artificial Intelligence",
+        "Healthy Diet",
+        "UX UI Guidelines",
+        "Design Systems",
+        "Cybersecurity",
+    ];
 
     useEffect(() => {
         const savedUrl = localStorage.getItem("savedVideoUrl");
@@ -181,7 +190,7 @@ export default function PromptToVideo() {
                     muted
                     loop
                     playsInline
-                    style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.06 }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.1 }}
                 >
                     <source src="/services-background.mp4" type="video/mp4" />
                 </video>
@@ -211,7 +220,7 @@ export default function PromptToVideo() {
                 <Box
                     sx={{
                         width: "100%",
-                        maxWidth: 926,
+                        maxWidth: "926px",
                         backgroundColor: "rgba(251,250,255,0.5)",
                         borderRadius: 1,
                         boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
@@ -229,10 +238,12 @@ export default function PromptToVideo() {
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         sx={{
+                            mt: -3,
                             mb: 1.5,
                             "& .MuiOutlinedInput-notchedOutline": { border: "none" },
                             borderBottom: "1px solid rgba(242,240,255,1)",
                             "& .MuiInputBase-input": { fontSize: "15px", lineHeight: 1.6 },
+                            minHeight: 224,
                         }}
                     />
 
@@ -247,32 +258,47 @@ export default function PromptToVideo() {
                         }}
                     >
                         <FormControl
-                            variant="outlined"
                             sx={{
-                                width: { xs: "100%", sm: "130px" },
+                                display: "flex",
+                                width: { xs: "100%", sm: "130px", md: "160px" },
                                 height: "44px",
                                 borderRadius: "4px",
-                                backgroundColor: "#fff",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                                backgroundColor: " rgba(255, 255, 255, 1)",
+                                "& .MuiOutlinedInput-notchedOutline": {
+                                    border: "none",
+                                },
+                                "& .MuiSelect-select": {
+                                    py: "8px",
+                                },
                             }}
                         >
-                            <InputLabel sx={{ fontSize: "14px", fontFamily: "Raleway" }}>
+                            <InputLabel sx={{ fontSize: "14px", fontFamily: "Raleway", top: "-12px", }}>
                                 Color Scheme
                             </InputLabel>
                             <Select
                                 value={colorScheme}
                                 onChange={(e) => setColorScheme(e.target.value)}
                                 disabled={loading}
-                                sx={{ height: "44px", fontSize: "14px" }}
+                                sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
+                                MenuProps={{
+                                    PaperProps: {
+                                        sx: {
+                                            mt: 1.8,
+                                            borderRadius: "10px",
+                                        },
+                                    },
+                                }}
                             >
-                                <MenuItem value="techBlue">Tech Blue</MenuItem>
-                                <MenuItem value="forestGreen">Forest Green</MenuItem>
-                                <MenuItem value="culinaryRed">Culinary Red</MenuItem>
-                                <MenuItem value="creativeViolet">Creative Violet</MenuItem>
-                                <MenuItem value="travelTeal">Travel Teal</MenuItem>
-                                <MenuItem value="academicYellow">Academic Yellow</MenuItem>
-                                <MenuItem value="scienceBlue">Science Blue</MenuItem>
-                                <MenuItem value="corporateGold">Corporate Gold</MenuItem>
-                                <MenuItem value="medicalBlue">Medical Blue</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="techBlue">Tech Blue</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="forestGreen">Forest Green</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="culinaryRed">Culinary Red</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="creativeViolet">Creative Violet</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="travelTeal">Travel Teal</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="academicYellow">Academic Yellow</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="scienceBlue">Science Blue</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="corporateGold">Corporate Gold</MenuItem>
+                                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="medicalBlue">Medical Blue</MenuItem>
                             </Select>
                         </FormControl>
 
@@ -285,8 +311,11 @@ export default function PromptToVideo() {
                                 color: "#fff",
                                 borderRadius: "32px",
                                 width: { xs: "100%", sm: "160px" },
-                                height: "44px",
+                                px: 4,
+                                py: 1.2,
+                                height: "56px",
                                 fontWeight: 600,
+                                whiteSpace: "nowrap",
                                 "&:hover": { backgroundColor: "#5B21B6" },
                             }}
                             startIcon={<AutoAwesome />}
@@ -316,6 +345,23 @@ export default function PromptToVideo() {
                         </Alert>
                     )}
                 </Box>
+                                    {/* Quick Prompts */}
+                    <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
+                        <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
+                            {quickPrompts.map((text, i) => (
+                                <Chip
+                                    key={i}
+                                    label={text}
+                                    onClick={() => setPrompt(text)}
+                                    sx={{
+                                        border: "1px solid rgba(246, 246, 246, 1)",
+                                        bgcolor: "rgba(248, 248, 248, 0.14)",
+                                        "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
+                                    }}
+                                />
+                            ))}
+                        </Stack>
+                    </Box>
 
                 {videoUrl && (
                     <Box sx={{ width: "100%", maxWidth: 900, mt: 2 }}>
