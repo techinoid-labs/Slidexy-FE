@@ -51,9 +51,9 @@ const getProgressMessage = (progress: number) => {
 
 export default function WebToDeck() {
   const [count, setCount] = useState(7);
-  const [goal, setGoal] = useState("pitch");
-  const [tone, setTone] = useState("professional");
-  const [visualStyle, setVisualStyle] = useState("Minimal Abstract");
+ const [goal, setGoal] = useState("Select Goal");
+  const [tone, setTone] = useState("Select Tone");
+  const [visualStyle, setVisualStyle] = useState("Choose Visual Art Style");
   const [description, setDescription] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -199,15 +199,14 @@ export default function WebToDeck() {
     setCurrentDetail("");
   };
 
-  const quickPrompts = [
-    "Creativity at Work",
-    "Responsive design principles",
-    "Healthy diet",
-    "UX UI guidelines",
-    "Accessibility best practices",
-    "Design system components",
-    "Responsive design principles",
-  ];
+ const quickPrompts = [
+  "https://www.wikipedia.org",
+  "https://www.bbc.com",
+  "https://www.nationalgeographic.com",
+  "https://www.khanacademy.org",
+  "https://www.coursera.org",
+];
+
 
   return (
     <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
@@ -314,29 +313,37 @@ export default function WebToDeck() {
                 },
               }}
             >
-              <InputLabel
+              {/* <InputLabel
                 sx={{
                   fontSize: "14px",
                   fontFamily: "Raleway",
                 }}
               >
                 Select Goal
-              </InputLabel>
-              <Select
+              </InputLabel> */}
+               <Select
                 value={goal}
-                label="Select Goal"
                 onChange={(e) => setGoal(e.target.value)}
                 disabled={loading}
-                sx={{
-                  backgroundColor: "#fff",
-                  height: "44px",
-                  fontSize: "14px",
+                sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      mt: 0.5,
+                      borderRadius: "10px",
+                    },
+                  },
                 }}
               >
-                <MenuItem value="pitch">Pitch Deck</MenuItem>
-                <MenuItem value="education">Educational Deck</MenuItem>
-                <MenuItem value="marketing">Marketing Presentation</MenuItem>
+                <MenuItem sx={{ fontSize: "12px", color: "rgba(109, 109, 109, 1)" }} value="Select Goal" hidden>
+                  Select Goal
+                </MenuItem>
+
+                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)", }} value="pitch">Pitch Deck</MenuItem>
+                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)" }} value="education">Educational</MenuItem>
+                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)" }} value="marketing">Marketing</MenuItem>
               </Select>
+
             </FormControl>
           </Box>
 
@@ -364,191 +371,214 @@ export default function WebToDeck() {
 
           {/* Control Row */}
           <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              justifyContent: { xs: "center", md: "space-between" },
-              alignItems: { xs: "stretch", md: "center" },
-              gap: 2,
-              width: "100%",
-            }}
-          >
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              alignItems={{ xs: "stretch", sm: "center" }}
-              sx={{
-                flex: 1,
-              }}
-              spacing={1.5}
-            >
-              {/* <IconButton>
-                            <img
-                                src="/images/voice-icon-input.svg"
-                                alt="Custom icon"
-                                style={{ width: 20, height: 20 }}
-                            />
-                        </IconButton>
-                        <IconButton>
-                            <img
-                                src="/images/file-icon.svg"
-                                alt="Custom icon"
-                                style={{ width: 18, height: 18 }}
-                            />
-                        </IconButton> */}
-
-              {/* Counter */}
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  overflow: "hidden",
-                  width: "100px",
-                  height: "44px",
-                  borderRadius: "4px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                  backgroundColor: " rgba(255, 255, 255, 1)",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "none",
-                  },
-                  "& .MuiSelect-select": {
-                    py: "8px",
-                  },
-                }}
-              >
-                <IconButton
-                  size="small"
-                  onClick={() => setCount(Math.max(1, count - 1))}
-                  disabled={loading}
-                >
-                  <Remove />
-                </IconButton>
-                <Typography sx={{ px: 1 }}>{count}</Typography>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    if (count > 9) {
-                      return;
-                    }
-                    setCount(count + 1);
-                  }}
-                  disabled={loading}
-                >
-                  <Add />
-                </IconButton>
-              </Box>
-
-              {/* Tone Selector */}
-              <FormControl
-                variant="outlined"
-                sx={{
-                  display: "flex",
-                  width: { xs: "100%", sm: "130px" },
-                  height: "44px",
-                  borderRadius: "4px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                  backgroundColor: " rgba(255, 255, 255, 1)",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "none",
-                  },
-                  "& .MuiSelect-select": {
-                    py: "8px",
-                  },
-                  mb: 4,
-                }}
-              >
-                <InputLabel
-                  sx={{
-                    fontSize: "14px",
-                    fontFamily: "Raleway",
-                  }}
-                >
-                  Select Tone
-                </InputLabel>
-                <Select
-                  value={tone}
-                  label="Select Tone"
-                  onChange={(e) => setTone(e.target.value)}
-                  disabled={loading}
-                  sx={{
-                    backgroundColor: "#fff",
-                    height: "44px",
-                    fontSize: "14px",
-                  }}
-                >
-                  <MenuItem value="professional">Professional</MenuItem>
-                  <MenuItem value="casual">Casual</MenuItem>
-                  <MenuItem value="inspirational">Inspirational</MenuItem>
-                </Select>
-              </FormControl>
-              {/* Visual Style Selector */}
-              <FormControl
-                variant="outlined"
-                sx={{
-                  display: "flex",
-                  width: { xs: "100%", sm: "231px" },
-                  height: "44px",
-                  borderRadius: "4px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                  backgroundColor: " rgba(255, 255, 255, 1)",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "none",
-                  },
-                  "& .MuiSelect-select": {
-                    py: "8px",
-                  },
-                }}
-              >
-                <InputLabel
-                  sx={{
-                    fontSize: "14px",
-                    fontFamily: "Raleway",
-                  }}
-                >
-                  Select Visual Style
-                </InputLabel>
-                <Select
-                  value={visualStyle}
-                  label="Select Visual Style"
-                  onChange={(e) => setVisualStyle(e.target.value)}
-                  disabled={loading}
-                  sx={{
-                    backgroundColor: "#fff",
-                    height: "44px",
-                    fontSize: "14px",
-                  }}
-                >
-                  {TEXT_ART_STYLES.map((style) => (
-                    <MenuItem key={style.value} value={style.value}>
-                      {style.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Stack>
-
-            {/* Generate Button */}
-            <Button
-              variant="contained"
-              disabled={loading}
-              onClick={handleSubmit}
-              sx={{
-                backgroundColor: "#6C2BD9",
-                color: "#fff",
-                borderRadius: "32px",
-                width: { xs: "100%", sm: "130px" },
-                height: "44px",
-                px: 4,
-                py: 1.2,
-                fontWeight: 600,
-                boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
-                alignSelf: { xs: "stretch", md: "center" },
-                "&:hover": { backgroundColor: "#5B21B6" },
-              }}
-              startIcon={<AutoAwesome />}
-            >
-              Generate
-            </Button>
-          </Box>
+                     sx={{
+                       display: "flex",
+                       flexDirection: { xs: "column", md: "row" },
+                       justifyContent: { xs: "center", md: "space-between" },
+                       alignItems: { xs: "stretch", md: "center" },
+                       gap: 2,
+                       width: "100%",
+                     }}
+                   >
+                     <Stack
+                       direction={{ xs: "column", sm: "row" }}
+                       alignItems={{ xs: "stretch", sm: "center" }}
+                       sx={{
+                         flex: 1,
+                       }}
+                       spacing={1.5}
+                     >
+                       {/* <IconButton>
+                                     <img
+                                         src="/images/voice-icon-input.svg"
+                                         alt="Custom icon"
+                                         style={{ width: 20, height: 20 }}
+                                     />
+                                 </IconButton>
+                                 <IconButton>
+                                     <img
+                                         src="/images/file-icon.svg"
+                                         alt="Custom icon"
+                                         style={{ width: 18, height: 18 }}
+                                     />
+                                 </IconButton> */}
+         
+                       {/* Counter */}
+                       <Box
+                         sx={{
+                           display: "flex",
+                           width: "124px",
+                           height: "44px",
+                           borderRadius: "8px",
+                           boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                           backgroundColor: " rgba(255, 255, 255, 1)",
+                           "& .MuiOutlinedInput-notchedOutline": {
+                             border: "none",
+                           },
+                           "& .MuiSelect-select": {
+                             py: "8px",
+                           },
+                         }}
+                       >
+                         <IconButton
+                           size="small"
+                           onClick={() => setCount(Math.max(1, count - 1))}
+                           disabled={loading}
+                           disableRipple
+                           sx={{ color: "rgba(52, 51, 48, 1)", paddingLeft: "14px", paddingRight: "8px", paddingTop: "8px", paddingBottom: "8px", }}
+         
+                         >
+                           <Remove sx={{ width: "20px", height: "20px", fontWeight: "normal" }} />
+                         </IconButton>
+                         <Typography sx={{ px: 1, marginLeft: "8px", marginRight: "8px", paddingTop: "8px", paddingBottom: "8px" }}>{count}</Typography>
+                         <IconButton
+                           //size= "small"
+         
+                           sx={{ color: "rgba(52, 51, 48, 1)", padding: "8px" }}
+                           onClick={() => {
+                             if (count > 9) {
+                               return;
+                             }
+                             setCount(count + 1);
+                           }}
+                           disabled={loading}
+                           disableRipple
+                         >
+                           <Add sx={{ width: "20px", height: "20px", fontWeight: "normal" }} />
+                         </IconButton>
+                       </Box>
+         
+                       {/* Tone Selector */}
+                       <FormControl
+                         variant="outlined"
+                         sx={{
+                           display: "flex",
+                           width: "149px",
+                           height: "44px",
+                           borderRadius: "8px",
+                           boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                           backgroundColor: " rgba(255, 255, 255, 1)",
+                           "& .MuiOutlinedInput-notchedOutline": {
+                             border: "none",
+                           },
+                           "& .MuiSelect-select": {
+                             py: "8px",
+                           },
+                           mb: 4,
+                         }}
+                       >
+                         {/* <InputLabel
+                           sx={{
+                             fontSize: "14px",
+                             fontFamily: "Raleway",
+                           }}
+                         >
+                           Select Tone
+                         </InputLabel> */}
+                         <Select
+                           value={tone}
+                           label="Select Tone"
+                           onChange={(e) => setTone(e.target.value)}
+                           disabled={loading}
+         
+                           sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
+                           MenuProps={{
+                             PaperProps: {
+                               sx: {
+                                 mt: 1.5,
+                                 borderRadius: "10px",
+                               },
+                             },
+                           }}
+                         >
+                           <MenuItem sx={{ fontSize: "12px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Select Tone" hidden>
+                             Select Tone
+                           </MenuItem>
+                           <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Professional">Professional</MenuItem>
+                           <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Casual">Casual</MenuItem>
+                           <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61 , 1)", width: "147px" }} value="Inspirational">Inspirational</MenuItem>
+                         </Select>
+                       </FormControl>
+                       {/* Visual Style Selector */}
+                       {/* Visual Style Selector */}
+                       <FormControl
+                         variant="outlined"
+                         sx={{
+                           display: "flex",
+                           width: { xs: "100%", sm: "231px" },
+                           height: "44px",
+                           borderRadius: "8px",
+                           boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                           backgroundColor: " rgba(255, 255, 255, 1)",
+                           "& .MuiOutlinedInput-notchedOutline": {
+                             border: "none",
+                           },
+                           "& .MuiSelect-select": {
+                             py: "8px",
+                           },
+                         }}
+                       >
+                         <Select
+                           value={visualStyle}
+                           onChange={(e) => setVisualStyle(e.target.value)}
+                           displayEmpty
+                           sx={{
+                             fontSize: "16px",
+                             backgroundColor: "#fff",
+                             height: "44px",
+                             color: "rgba(109, 109, 109, 1)",
+                           }}
+                           MenuProps={{
+                             PaperProps: {
+                               sx: {
+                                 mt: 0.5,
+                                 borderRadius: "10px",
+                                 maxHeight: 300,
+                               },
+                             },
+                           }}
+                         >
+                           <MenuItem value="Choose Visual Art Style" hidden>
+                             Choose Visual Art Style
+                           </MenuItem>
+         
+                           {TEXT_ART_STYLES.map((style) => (
+                             <MenuItem
+                               key={style.value}
+                               value={style.value}
+                               sx={{ fontSize: "16px", color: "rgba(61,61,61,1)" }}
+                             >
+                               {style.label}
+                             </MenuItem>
+                           ))}
+                         </Select>
+                       </FormControl>
+         
+                     </Stack>
+         
+                     {/* Generate Button */}
+                     <Button
+                       variant="contained"
+                       disabled={loading}
+                       onClick={handleSubmit}
+                       sx={{
+                         backgroundColor: "#6C2BD9",
+                         color: "#fff",
+                         borderRadius: "32px",
+                         width: { xs: "100%", sm: "130px" },
+                         height: "44px",
+                         px: 4,
+                         py: 1.2,
+                         fontWeight: 600,
+                         boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
+                         alignSelf: { xs: "stretch", md: "center" },
+                         "&:hover": { backgroundColor: "#5B21B6" },
+                       }}
+                       startIcon={<AutoAwesome />}
+                     >
+                       Generate
+                     </Button>
+                   </Box>
 
           {error && (
             <Alert

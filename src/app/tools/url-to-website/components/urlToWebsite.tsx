@@ -51,14 +51,31 @@ export default function UrlToWebsite() {
     const startProgressSimulation = () => {
         setProgress(0);
         let p = 0;
+        const startTime = Date.now();
+
         intervalRef.current = setInterval(() => {
-            p += Math.random() * 4 + 1;
-            if (p >= 90) {
-                p = 90;
-                if (intervalRef.current) clearInterval(intervalRef.current);
+            // Asymptotic progress: fast initially, then slows down as it approaches 98%
+            // This ensures it never truly "stops" updating until we hit ~60s+
+            const elapsed = Date.now() - startTime;
+
+            // Formula: p = target * (1 - e^(-elapsed / time_constant))
+            // We aim for 95% at 60 seconds (60000ms)
+            // 0.95 = 1 - e^(-60000 / k) => 0.05 = e^(-60000/k) => ln(0.05) = -60000/k => k = -60000 / ln(0.05) ≈ 20000
+
+            // We can mix a linear component for the start to make it feel responsive
+            if (p < 30) {
+                p += Math.random() * 5 + 2; // Fast start
+            } else if (p < 70) {
+                p += Math.random() * 2 + 0.5; // Medium pace
+            } else if (p < 95) {
+                p += Math.random() * 0.5 + 0.1; // Slow crawl to 95%
+            } else {
+                // Super slow crawl above 95%
+                if (p < 99) p += 0.05;
             }
-            setProgress(Math.min(Math.round(p), 90));
-        }, 600);
+
+            setProgress(Math.min(p, 99));
+        }, 800);
     };
 
     const stopProgressSimulation = () => {
@@ -101,7 +118,7 @@ export default function UrlToWebsite() {
                 if (!/^https?:\/\//i.test(formattedUrl)) {
                     formattedUrl = "https://" + formattedUrl;
                 }
-                endpoint = `${API_BASE_URL}/api/dynamic-website/generate`;
+                endpoint = `${API_BASE_URL}/api/improved-dynamic/generate`;
                 body = { url: formattedUrl };
             }
 
@@ -390,7 +407,7 @@ export default function UrlToWebsite() {
                             <Chip
                                 key={item}
                                 label={item}
-                                onClick={() => !loading && (mode === "static" ? setUrl(item) : setPrompt(item))}
+                                onClick={() => !loading && setUrl(item)}
                                 disabled={loading}
                                 sx={{
                                     bgcolor: "rgba(248, 248, 248, 0.2)",

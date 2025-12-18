@@ -53,9 +53,9 @@ export const applyElementPositioning = (
       updatedSlide.slide_title = {
         ...updatedSlide.slide_title,
         properties: {
-          ...updatedSlide.slide_title.properties,
-          x: updatedSlide.slide_title.properties.x ?? x,
-          y: updatedSlide.slide_title.properties.y ?? y,
+          ...(updatedSlide.slide_title.properties || {}),
+          x: updatedSlide.slide_title.properties?.x ?? x,
+          y: updatedSlide.slide_title.properties?.y ?? y,
         },
       };
     }
@@ -114,7 +114,7 @@ export const applyElementPositioning = (
         return {
           ...el,
           properties: {
-            ...el.properties,
+            ...(el.properties || {}),
             x: el.properties?.x ?? x,
             y: el.properties?.y ?? y,
           },
