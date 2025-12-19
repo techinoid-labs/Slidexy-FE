@@ -15,6 +15,7 @@ import {
   LinearProgress,
   Alert,
   AlertTitle,
+  Backdrop,
 } from "@mui/material";
 import {
   Add,
@@ -623,90 +624,42 @@ export default function VideoToDeck() {
           )}
         </Box>
         {/* ---------- PROGRESS */}
-        {loading && (
-          <Box
-            sx={{
-              mb: { xs: 2, md: 4 },
-              p: { xs: 2, sm: 3, md: 5 },
-              height: { xs: "auto", sm: 250, md: 270 },
-              width: { sx: "auto", md: 800 },
-              mx: "auto",
-              borderRadius: 3,
-              bgcolor: "white",
-              boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
-              border: "1px solid #f0f0f0",
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                alignItems: { xs: "flex-start", sm: "center" },
-                gap: { xs: 1, sm: 0 },
-                mb: 1.5,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 15,
-                  height: 15,
-                  borderRadius: "50%",
-                  bgcolor: "#8E2DE2",
-                  mr: { xs: 0, sm: 2 },
-                  mb: { xs: 1, sm: 0 },
-                  animation: "pulse 1.5s ease-in-out infinite",
-                }}
-              />
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  color: "#8E2DE2",
-                  flexGrow: 1,
-                  fontSize: { xs: "1.25rem", md: "1.5rem" },
-                }}
-              >
-                {currentMessage}
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  mt: { xs: 0.5, sm: 0 },
-                  minWidth: { sm: "50px" },
-                  textAlign: { xs: "right", sm: "left" },
-                }}
-              >
-                {Math.round(progress)}%
-              </Typography>
-            </Box>
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{
-                mb: 2,
-                lineHeight: 1.6,
-                wordBreak: "break-word",
-              }}
-            >
-              {currentDetail}
-            </Typography>
-            {/* <LinearProgress
-            variant="determinate"
-            value={progress}
-            sx={{
-              height: 6,
-              borderRadius: 5,
-              bgcolor: "grey.200",
-              "& .MuiLinearProgress-bar": {
-                borderRadius: 5,
-                background: "linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)",
-                boxShadow: "0 2px 10px rgba(142, 45, 226, 0.3)",
-              },
-            }}
-          /> */}
-          </Box>
-        )}
+
+                        {loading && (
+                            <Backdrop
+                                open={loading}
+                                sx={{
+                                    zIndex: (theme) => theme.zIndex.drawer + 1,
+                                    backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <img
+                                        src="/Loader.gif"
+                                        alt="Generating..."
+                                        style={{ width: 470, height: 160 }}
+                                    />
+        
+                                    <Typography
+                                        sx={{
+                                            fontFamily: "Raleway",
+                                            fontSize: "24px",
+                                            fontWeight: 700,
+                                            color: "#fff",
+                                            mt: 1,
+                                        }}
+                                    >
+                                        {currentMessage}.....
+                                    </Typography>
+                                </Box>
+                            </Backdrop>
+                        )}
 
         {/* Quick Prompt Generator */}
         <Box sx={{ textAlign: "center", maxWidth: 800 }}>

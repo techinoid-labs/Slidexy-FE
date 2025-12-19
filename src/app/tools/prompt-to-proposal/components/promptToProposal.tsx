@@ -10,6 +10,7 @@ import {
   Alert,
   Paper,
   CircularProgress,
+  Backdrop,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState } from "react";
@@ -38,12 +39,13 @@ export default function PromptToProposal() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const router = useRouter();
 
   const cycleLoadingMessages = () => {
     let index = 0;
     setLoadingMessage(loadingMessages[0]);
-    
+
     const interval = setInterval(() => {
       index = (index + 1) % loadingMessages.length;
       setLoadingMessage(loadingMessages[index]);
@@ -60,7 +62,7 @@ export default function PromptToProposal() {
 
     setLoading(true);
     setError("");
-    
+
     const messageInterval = cycleLoadingMessages();
 
     try {
@@ -79,7 +81,7 @@ export default function PromptToProposal() {
       const data = await res.json();
 
       clearInterval(messageInterval);
-      
+
       // Check if generation was successful
       if (data.success && data.pdfUrl) {
         // Store the necessary data
@@ -87,7 +89,7 @@ export default function PromptToProposal() {
         sessionStorage.setItem("proposalPdfUrl", data.pdfUrl);
         sessionStorage.setItem("proposalId", data.proposalId);
         sessionStorage.setItem("proposalTitle", data.title);
-        
+
         // Navigate to viewer
         router.push("/tools/prompt-to-proposal/viewer");
       } else {
@@ -174,19 +176,39 @@ export default function PromptToProposal() {
         </Box>
 
         {loading && (
-          <Paper elevation={0} sx={{ width: "100%", maxWidth: "926px", p: 4, borderRadius: 2, border: "1px solid #e8e4ff", bgcolor: "white", mb: 4 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-              <CircularProgress size={40} sx={{ color: "#6C2BD9" }} />
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: "#6C2BD9" }}>
-                  {loadingMessage}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#6d6d6d" }}>
-                  Please be patient AI is crafting your proposal...
-                </Typography>
-              </Box>
+          <Backdrop
+            open={loading}
+            sx={{
+              zIndex: (theme) => theme.zIndex.drawer + 1,
+              backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src="/Loader.gif"
+                alt="Generating..."
+                style={{ width: 470, height: 160 }}
+              />
+
+              <Typography
+                sx={{
+                  fontFamily: "Raleway",
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#fff",
+                  mt: 1,
+                }}
+              >
+                {loadingMessages[loadingMessageIndex]}.....
+              </Typography>
             </Box>
-          </Paper>
+          </Backdrop>
         )}
 
         {!loading && (

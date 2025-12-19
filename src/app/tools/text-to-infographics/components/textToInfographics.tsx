@@ -14,6 +14,7 @@ import {
     Stack,
     Alert,
     AlertTitle,
+    Backdrop,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef } from "react";
@@ -345,9 +346,9 @@ export default function TextToInfographics() {
                                     },
                                 }}
                             >
-                                  <MenuItem value="Choose Orientation" hidden>
-                                                    Choose Orientation
-                                                  </MenuItem>
+                                <MenuItem value="Choose Orientation" hidden>
+                                    Choose Orientation
+                                </MenuItem>
                                 {viewMode.map((v) => (
                                     <MenuItem key={v.value} value={v.value}>
                                         {v.label}
@@ -378,11 +379,11 @@ export default function TextToInfographics() {
                             {loading ? "Generating..." : "Generate"}
                         </Button>
 
-                        {loading && (
+                        {/* {loading && (
                             <Button color="error" onClick={cancelGeneration}>
                                 Cancel
                             </Button>
-                        )}
+                        )} */}
                     </Stack>
 
                     {error && (
@@ -401,7 +402,7 @@ export default function TextToInfographics() {
                     )}
                 </Box>
 
-                {loading && (
+                {/* {loading && (
                     <Box
                         sx={{
                             p: 3,
@@ -423,7 +424,42 @@ export default function TextToInfographics() {
                             Progress: {Math.round(progress)}%
                         </Typography>
                     </Box>
-                )}
+                )} */}
+                                {loading && (
+                                    <Backdrop
+                                        open={loading}
+                                        sx={{
+                                            zIndex: (theme) => theme.zIndex.drawer + 1,
+                                            backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
+                                        }}
+                                    >
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            <img
+                                                src="/Loader.gif"
+                                                alt="Generating..."
+                                                style={{ width: 470, height: 160 }}
+                                            />
+                
+                                            <Typography
+                                                sx={{
+                                                    fontFamily: "Raleway",
+                                                    fontSize: "24px",
+                                                    fontWeight: 700,
+                                                    color: "#fff",
+                                                    mt: 1,
+                                                }}
+                                            >
+                                                {currentMessage}...
+                                            </Typography>
+                                        </Box>
+                                    </Backdrop>
+                                )}
 
                 <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
                     <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>

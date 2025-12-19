@@ -14,12 +14,20 @@ import {
   Stack,
   Alert,
   AlertTitle,
+  Backdrop,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useEbook } from "@/app/context/EbookContext";
 
+    const loadingMessages = [
+        "Analyzing your prompt",
+        "Generating outlines",
+        "Designing visual layout",
+        "Enhancing Design",
+        "Finalizing your Book",
+    ];
 
 const API_URL = process.env.NEXT_PUBLIC_EBOOK_API_BASE_URL;
 
@@ -30,6 +38,7 @@ export default function PromptToEbook() {
   const [progress, setProgress] = useState(0);
   const [currentMessage, setCurrentMessage] = useState("");
   const [error, setError] = useState("");
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const router = useRouter();
 
   const {setPdfBlob} = useEbook();
@@ -327,7 +336,7 @@ export default function PromptToEbook() {
         </Box>
 
         {/* Loading Box */}
-        {loading && (
+        {/* {loading && (
           <Box
             sx={{
               borderRadius: 2,
@@ -345,7 +354,42 @@ export default function PromptToEbook() {
               Progress: {progress}%
             </Typography>
           </Box>
-        )}
+        )} */}
+                        {loading && (
+                            <Backdrop
+                                open={loading}
+                                sx={{
+                                    zIndex: (theme) => theme.zIndex.drawer + 1,
+                                    backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <img
+                                        src="/Loader.gif"
+                                        alt="Generating..."
+                                        style={{ width: 470, height: 160 }}
+                                    />
+        
+                                    <Typography
+                                        sx={{
+                                            fontFamily: "Raleway",
+                                            fontSize: "24px",
+                                            fontWeight: 700,
+                                            color: "#fff",
+                                            mt: 1,
+                                        }}
+                                    >
+                                        {loadingMessages[loadingMessageIndex]}.....
+                                    </Typography>
+                                </Box>
+                            </Backdrop>
+                        )}
 
         {/* Quick Prompts */}
         <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>

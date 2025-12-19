@@ -14,6 +14,7 @@ import {
     MenuItem,
     Select,
     Chip,
+    Backdrop,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useEffect, useRef } from "react";
@@ -21,6 +22,7 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 import { useUser } from "@/app/context/AuthContext";
 import { useVideoJob } from "@/app/context/ExplainerVideoContext";
+import { useRouter } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_EXPLAINER_API_BASE_URL;
 const DEFAULT_TARGET_DURATION = 10;
@@ -29,6 +31,8 @@ export default function PromptToVideo() {
     const [prompt, setPrompt] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const router = useRouter();
+    const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
     // const [jobId, setJobId] = useState<string | null>(null);
     // const [progress, setProgress] = useState<number>(0);
     // const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -49,6 +53,24 @@ export default function PromptToVideo() {
         "Design Systems",
         "Cybersecurity",
     ];
+
+    const loadingMessages = [
+        "Analyzing your prompt",
+        "Generating video scenes",
+        "Designing visual layout",
+        "Rendering animations",
+        "Finalizing your video",
+    ];
+
+    useEffect(() => {
+        if (!loading) return;
+
+        const interval = setInterval(() => {
+            setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+        }, 2500);
+
+        return () => clearInterval(interval);
+    }, [loading]);
 
     useEffect(() => {
         const savedUrl = localStorage.getItem("savedVideoUrl");
@@ -101,6 +123,9 @@ export default function PromptToVideo() {
 
             if (data.status === "success" && data.video_path) {
                 setVideoUrl(data.video_path);
+                setLoading(false);
+
+                router.push(`/tools/prompt-to-video/${id}`);
                 setDownloadName(data.video_path.split("/").pop() || "generated_video.mp4");
                 setLoading(false);
                 if (pollingRef.current) clearInterval(pollingRef.current);
@@ -129,7 +154,6 @@ export default function PromptToVideo() {
         }
 
         setLoading(true);
-        setSlides([]);
 
         const payload = {
             prompt: prompt.trim(),
@@ -214,7 +238,7 @@ export default function PromptToVideo() {
                 </Typography>
 
                 <Typography sx={{ color: "rgba(109,109,109,1)", maxWidth: 520, mb: 6 }}>
-                    Enter a prompt and get a short video. Progress will be shown while generating.
+                    Enter a prompt and get video explaining the Topic mentioned.
                 </Typography>
 
                 <Box
@@ -323,65 +347,74 @@ export default function PromptToVideo() {
                             Generate
                         </Button>
                     </Box>
-
-                    {loading && (
-                        <Typography variant="body1" sx={{ mt: 2 }}>
-                            Generating video... Progress: {progress}%
-                        </Typography>
-                    )}
-
-                    {error && (
-                        <Alert
-                            severity="error"
-                            sx={{ mt: 2 }}
-                            action={
-                                <IconButton size="small" onClick={() => setError("")} color="inherit">
-                                    <CloseIcon fontSize="small" />
-                                </IconButton>
-                            }
-                        >
-                            <AlertTitle>Error</AlertTitle>
-                            {error}
-                        </Alert>
-                    )}
                 </Box>
-                                    {/* Quick Prompts */}
-                    <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
-                        <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
-                            {quickPrompts.map((text, i) => (
-                                <Chip
-                                    key={i}
-                                    label={text}
-                                    onClick={() => setPrompt(text)}
-                                    sx={{
-                                        border: "1px solid rgba(246, 246, 246, 1)",
-                                        bgcolor: "rgba(248, 248, 248, 0.14)",
-                                        "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
-                                    }}
-                                />
-                            ))}
-                        </Stack>
-                    </Box>
 
-                {videoUrl && (
-                    <Box sx={{ width: "100%", maxWidth: 900, mt: 2 }}>
-                        <Typography variant="h6" sx={{ mb: 1 }}>
-                            Generated Video
-                        </Typography>
-                        <Box sx={{ bgcolor: "#fff", p: 2, borderRadius: 2, boxShadow: 2 }}>
-                            <video src={videoUrl} controls style={{ width: "100%", borderRadius: 8 }} />
-                            <Stack direction="row" spacing={2} sx={{ mt: 2, justifyContent: "flex-end" }}>
-                                <Button
-                                    onClick={handleDownload}
-                                    variant="contained"
-                                    sx={{ backgroundColor: "#4A00E0", "&:hover": { backgroundColor: "#3a00b8" } }}
-                                >
-                                    Download
-                                </Button>
-                            </Stack>
+                {loading && (
+                    <Backdrop
+                        open={loading}
+                        sx={{
+                            zIndex: (theme) => theme.zIndex.drawer + 1,
+                            backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                            }}
+                        >
+                            <img
+                                src="/Loader.gif"
+                                alt="Generating..."
+                                style={{ width: 470, height: 160 }}
+                            />
+
+                            <Typography
+                                sx={{
+                                    fontFamily: "Raleway",
+                                    fontSize: "24px",
+                                    fontWeight: 700,
+                                    color: "#fff",
+                                    mt: 1,
+                                }}
+                            >
+                                {loadingMessages[loadingMessageIndex]}.....
+                            </Typography>
                         </Box>
-                    </Box>
+                    </Backdrop>
                 )}
+                {error && (
+                    <Alert
+                        severity="error"
+                        sx={{ mt: 2 }}
+                        action={
+                            <IconButton size="small" onClick={() => setError("")} color="inherit">
+                                <CloseIcon fontSize="small" />
+                            </IconButton>
+                        }
+                    >
+                        <AlertTitle>Error</AlertTitle>
+                        {error}
+                    </Alert>
+                )}
+                {/* Quick Prompts */}
+                <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
+                    <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
+                        {quickPrompts.map((text, i) => (
+                            <Chip
+                                key={i}
+                                label={text}
+                                onClick={() => setPrompt(text)}
+                                sx={{
+                                    border: "1px solid rgba(246, 246, 246, 1)",
+                                    bgcolor: "rgba(248, 248, 248, 0.14)",
+                                    "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
+                                }}
+                            />
+                        ))}
+                    </Stack>
+                </Box>
             </Box>
         </Box>
     );
