@@ -175,41 +175,43 @@ export default function PromptToProposal() {
           )}
         </Box>
 
-        {loading && (
-          <Backdrop
-            open={loading}
-            sx={{
-              zIndex: (theme) => theme.zIndex.drawer + 1,
-              backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <img
-                src="/Loader.gif"
-                alt="Generating..."
-                style={{ width: 470, height: 160 }}
-              />
+{loading && (
+  <Backdrop
+    open={loading}
+    sx={{
+      zIndex: (theme) => theme.zIndex.drawer + 1,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+    }}
+  >
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      <img
+        src="/Loader.gif"
+        alt="Generating..."
+        style={{ width: 470, height: 160 }}
+      />
 
-              <Typography
-                sx={{
-                  fontFamily: "Raleway",
-                  fontSize: "24px",
-                  fontWeight: 700,
-                  color: "#fff",
-                  mt: 1,
-                }}
-              >
-                {loadingMessages[loadingMessageIndex]}.....
-              </Typography>
-            </Box>
-          </Backdrop>
-        )}
+      <Typography
+        sx={{
+          fontFamily: "Raleway",
+          fontSize: "24px",
+          fontWeight: 700,
+          color: "#fff",
+          mt: 1,
+          textAlign: "center",
+          maxWidth: 700,
+        }}
+      >
+        {loadingMessage}...
+      </Typography>
+    </Box>
+  </Backdrop>
+)}
 
         {!loading && (
           <Box sx={{ textAlign: "center", maxWidth: 800, mt: 2 }}>
