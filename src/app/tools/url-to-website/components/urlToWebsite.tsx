@@ -15,6 +15,7 @@ import {
     AlertTitle,
     LinearProgress,
     IconButton,
+    Backdrop,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef, useEffect } from "react";
@@ -41,7 +42,7 @@ export default function UrlToWebsite() {
 
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
-    const [currentMessage, setCurrentMessage] = useState("");
+    const [currentMessage, setCurrentMessage] = useState("Testing");
     const [currentDetail, setCurrentDetail] = useState("");
     const [error, setError] = useState("");
 
@@ -344,61 +345,42 @@ export default function UrlToWebsite() {
                     )}
                 </Box>
 
-                {/* Progress Bar */}
                 {loading && (
-                    <Box
+                    <Backdrop
+                        open={loading}
                         sx={{
-                            width: { xs: "95%", md: 800 },
-                            maxWidth: 926,
-                            mx: "auto",
-                            p: 4,
-                            borderRadius: 3,
-                            bgcolor: "white",
-                            boxShadow: "0 6px 25px rgba(142, 45, 226, 0.12)",
-                            border: "1px solid #f0f0f0",
+                            zIndex: (theme) => theme.zIndex.drawer + 1,
+                            backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
                         }}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                            <Box
-                                sx={{
-                                    width: 16,
-                                    height: 16,
-                                    borderRadius: "50%",
-                                    bgcolor: "#8E2DE2",
-                                    animation: "pulse 1.8s infinite",
-                                    "@keyframes pulse": {
-                                        "0%, 100%": { opacity: 0.6 },
-                                        "50%": { opacity: 1 },
-                                    },
-                                }}
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                            }}
+                        >
+                            <img
+                                src="/Loader.gif"
+                                alt="Generating..."
+                                style={{ width: 470, height: 160 }}
                             />
-                            <Typography variant="h6" sx={{ color: "#8E2DE2", fontWeight: 600, flex: 1 }}>
-                                {currentMessage || "Building your website..."}
-                            </Typography>
-                            <Typography sx={{ color: "#8E2DE2", fontWeight: 600 }}>
-                                {Math.round(progress)}%
+
+                            <Typography
+                                sx={{
+                                    fontFamily: "Raleway",
+                                    fontSize: "24px",
+                                    fontWeight: 700,
+                                    color: "#fff",
+                                    mt: 1,
+                                }}
+                            >
+                                {currentMessage}...
                             </Typography>
                         </Box>
-
-                        <LinearProgress
-                            variant="determinate"
-                            value={progress}
-                            sx={{
-                                height: 10,
-                                borderRadius: 5,
-                                bgcolor: "#e8e2ff",
-                                "& .MuiLinearProgress-bar": {
-                                    bgcolor: "#8E2DE2",
-                                    borderRadius: 5,
-                                },
-                            }}
-                        />
-
-                        <Typography sx={{ mt: 2, color: "#666" }}>
-                            {currentDetail || "This usually takes 20–60 seconds..."}
-                        </Typography>
-                    </Box>
+                    </Backdrop>
                 )}
+
 
                 {/* Quick Suggestions */}
                 <Box sx={{ textAlign: "center", maxWidth: 900, mt: 4 }}>

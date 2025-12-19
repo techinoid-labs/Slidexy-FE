@@ -14,6 +14,7 @@ import {
     MenuItem,
     Select,
     Chip,
+    Backdrop,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useEffect, useRef } from "react";
@@ -347,45 +348,41 @@ export default function PromptToVideo() {
                         </Button>
                     </Box>
                 </Box>
+
                 {loading && (
-                    <Box
+                    <Backdrop
+                        open={loading}
                         sx={{
-                            mt: -7,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
+                            zIndex: (theme) => theme.zIndex.drawer + 1,
+                            backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
                         }}
                     >
-                        <img
-                            src="/Loader.gif"
-                            alt="Generating..."
-                            style={{ width: 280, height: 230 }}
-                        />
-
-                        {/* rotating message */}
-                        <Typography
+                        <Box
                             sx={{
-                                fontSize: "15px",
-                                fontWeight: 500,
-                                color: "rgba(109,109,109,1)",
-                                mt: -5,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
                             }}
                         >
-                            {loadingMessages[loadingMessageIndex]}
-                        </Typography>
+                            <img
+                                src="/Loader.gif"
+                                alt="Generating..."
+                                style={{ width: 470, height: 160 }}
+                            />
 
-                        {/* progress */}
-                        <Typography
-                            sx={{
-                                fontSize: "13px",
-                                color: "rgba(140,140,140,1)",
-                                mt: 0.5,
-                            }}
-                        >
-                            {Math.round(progress)}% completed
-                        </Typography>
-                    </Box>
+                            <Typography
+                                sx={{
+                                    fontFamily: "Raleway",
+                                    fontSize: "24px",
+                                    fontWeight: 700,
+                                    color: "#fff",
+                                    mt: 1,
+                                }}
+                            >
+                                {loadingMessages[loadingMessageIndex]}.....
+                            </Typography>
+                        </Box>
+                    </Backdrop>
                 )}
                 {error && (
                     <Alert
