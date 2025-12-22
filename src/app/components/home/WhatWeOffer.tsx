@@ -29,30 +29,35 @@ export default function WhatWeOffer() {
     const tools = [
         {
             title: "Prompt-to-Deck",
+            icon: "/images/tools/prompt-to-deck.svg",
             description:
                 "Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers. Simply describe your idea, and get a complete deck with slides, visuals, and tone matching your brand.",
             route: "/tools/prompt-to-deck",
         },
         {
             title: "Video-to-Deck",
+            icon: "/images/tools/video-to-deck.svg",
             description:
                 "Upload a video or lecture and automatically convert it into a structured slide deck. Our AI extracts speech, visuals, and highlights to create story-driven presentations ready for delivery.",
             route: "/tools/video-to-deck",
         },
         {
             title: "Web-to-Deck",
+            icon: "/images/tools/web-to-deck.svg",
             description:
                 "Transform any web page or article into a clean, visually consistent presentation. Summarize sections, keep key visuals, and align design with your company’s brand.",
             route: "/tools/web-to-deck",
         },
         {
             title: "Text-to-Infographics",
+            icon: "/images/tools/text-to-infographics.svg",
             description:
                 "Convert long reports or data-heavy text into dynamic, easy-to-read infographics. AI identifies data patterns and crafts compelling visuals to simplify complex insights.",
             route: "/tools/text-to-infographics",
         },
         {
             title: "Prompt-to-Template",
+            icon: "/images/tools/prompt-to-template.svg",
             description:
                 "Need a new presentation design? Describe your theme, tone, and purpose, and our AI generates a matching slide template — fully editable and brand-consistent.",
             route: "/tools/prompt-to-template",
@@ -195,16 +200,34 @@ export default function WhatWeOffer() {
                                             },
                                         }}
                                     >
-                                        <Typography
-                                            sx={{
-                                                fontWeight: 500,
-                                                fontSize: "1.05rem",
-                                                color: "#18181B",
-                                                mb: 1,
-                                            }}
+                                        <Box
+                                        sx={{
+                                            display: 'flex',
+                                            gap: 2
+                                        }}
                                         >
-                                            {tool.title}
-                                        </Typography>
+                                            <Image
+                                                src={tool.icon}
+                                                alt="service-icon"
+                                                width={25}
+                                                height={25}
+                                            // style={{
+                                            //     objectFit: "contain",
+                                            //     width: "100%",
+                                            //     height: "100%",
+                                            // }}
+                                            />
+                                            <Typography
+                                                sx={{
+                                                    fontWeight: 500,
+                                                    fontSize: "1.05rem",
+                                                    color: "#18181B",
+                                                    mb: 1,
+                                                }}
+                                            >
+                                                {tool.title}
+                                            </Typography>
+                                        </Box>
                                         {active && (
                                             <>
                                                 <Typography
