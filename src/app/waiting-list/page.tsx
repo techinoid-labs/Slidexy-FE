@@ -352,7 +352,7 @@ export default function WaitingList() {
 
           {/* Main Heading */}
           <Typography
-            variant="h1"
+            variant="h2"
             sx={{
               fontSize: { xs: 28, sm: 34, md: 50 },
               fontWeight: 550,

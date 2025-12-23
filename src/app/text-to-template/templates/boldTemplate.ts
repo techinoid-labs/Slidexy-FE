@@ -184,7 +184,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
             position: relative;
             z-index: 10;
           ">
-            <h1 style="
+            <h2 style="
               font-weight: 700;
               font-size: 2.5rem;
               line-height: 1.2;
@@ -194,7 +194,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
               text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
             ">
               ${titleText}
-            </h1>
+            </h2>
             ${textContent.slice(0, 2).map((text) => `
               <p style="
                 font-size: 1rem;

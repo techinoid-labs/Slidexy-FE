@@ -124,7 +124,7 @@ export const createModernTemplate = (backendSlide: BackendSlide, slideIndex: num
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
           ">
-            <h1 style="
+            <h2 style="
               font-size: 2rem;
               font-weight: 500;
               color: ${palette.primary};
@@ -132,7 +132,7 @@ export const createModernTemplate = (backendSlide: BackendSlide, slideIndex: num
               line-height: 1.2;
             ">
               ${titleText}
-            </h1>
+            </h2>
             ${textContent.slice(0, 2).map((text) => `
               <p style="
                 font-size: 1.1rem;

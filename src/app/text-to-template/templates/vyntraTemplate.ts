@@ -309,7 +309,7 @@ export const createVyntraTemplate = (backendSlide: BackendSlide, slideIndex: num
           ">
             ${floatingCard(`
               ${vibrantBadge("Abstract")}
-              <h1 style="
+              <h2 style="
                 font-family: 'Poppins', sans-serif;
                 font-weight: 800;
                 font-size: 2.25rem;
@@ -317,7 +317,7 @@ export const createVyntraTemplate = (backendSlide: BackendSlide, slideIndex: num
                 margin-bottom: 1rem;
                 line-height: 1.3;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-              ">${titleText}</h1>
+              ">${titleText}</h2>
               <p style="
                 font-size: 0.95rem;
                 color: ${palette.textSecondary};
@@ -614,7 +614,7 @@ export const createVyntraTemplate = (backendSlide: BackendSlide, slideIndex: num
           ">
             ${floatingCard(`
               ${vibrantBadge("Conclusion")}
-              <h1 style="
+              <h2 style="
                 font-family: 'Poppins', sans-serif;
                 font-weight: 800;
                 font-size: 2.25rem;
@@ -622,7 +622,7 @@ export const createVyntraTemplate = (backendSlide: BackendSlide, slideIndex: num
                 margin-bottom: 1rem;
                 line-height: 1.3;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-              ">${titleText}</h1>
+              ">${titleText}</h2>
               <p style="
                 font-size: 0.95rem;
                 color: ${palette.textSecondary};

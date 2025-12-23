@@ -385,7 +385,7 @@ export default function PromptToEbook() {
                                             mt: 1,
                                         }}
                                     >
-                                        {loadingMessages[loadingMessageIndex]}.....
+                                        {currentMessage || 'Thinking'}.....
                                     </Typography>
                                 </Box>
                             </Backdrop>

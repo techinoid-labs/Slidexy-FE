@@ -251,7 +251,7 @@ export const createFluxeraTemplate = (backendSlide: BackendSlide, slideIndex: nu
             ">
               ${floatingModule(`
                 ${vibrantBadge("Abstract")}
-                <h1 style="
+                <h2 style="
                   font-family: 'GT Walsheim Bold', sans-serif;
                   font-weight: 800;
                   font-size: 2.5rem;
@@ -264,7 +264,7 @@ export const createFluxeraTemplate = (backendSlide: BackendSlide, slideIndex: nu
                   ${titleText.split(" ").map((word, idx) => `
                     <span style="display: inline-block; animation-delay: ${idx * 0.1}s">${word}&nbsp;</span>
                   `).join("")}
-                </h1>
+                </h2>
                 <p style="
                   font-size: 0.95rem;
                   color: ${palette.textSecondary};
@@ -276,7 +276,7 @@ export const createFluxeraTemplate = (backendSlide: BackendSlide, slideIndex: nu
                     0% { opacity: 0; transform: translateY(10px); }
                     100% { opacity: 1; transform: translateY(0); }
                   }
-                  h1 span { animation: fadeIn 0.5s ease-in-out both; }
+                  h2 span { animation: fadeIn 0.5s ease-in-out both; }
                 </style>
               `)}
             </div>

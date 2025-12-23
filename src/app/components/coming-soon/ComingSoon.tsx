@@ -40,8 +40,8 @@ const ComingSoonPage = () => {
         <div className="text-center flex flex-col items-center justify-center">
           <Box mb={4}>
             <Typography
-              variant="h1"
-              component="h1"
+              variant="h2"
+              component="h2"
               sx={{
                 backgroundImage: gradientText,
                 backgroundClip: "text",

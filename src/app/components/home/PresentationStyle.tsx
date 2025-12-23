@@ -57,7 +57,7 @@ export default function PresentationStyleSection() {
       {/* Heading and Subtitle */}
       <Box sx={{ textAlign: { xs: "center", md: "center" } }}>
         <Typography
-          variant="h1"
+          variant="h2"
           sx={{
             fontWeight: 500,
             fontSize: { xs: "1.6rem", md: "2.9rem" },

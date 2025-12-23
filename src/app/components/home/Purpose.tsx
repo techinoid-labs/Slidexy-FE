@@ -68,7 +68,7 @@ export default function PurposeSection() {
           />
 
           <Typography
-            variant="h1"
+            variant="h2"
             sx={{
               fontWeight: 520,
               fontSize: { xs: "1.9rem", md: "2.5rem" },

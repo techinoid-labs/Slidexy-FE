@@ -24,9 +24,12 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
-  title: "Slides - Your Idea, Instantly on Slides",
+  title: "Slidexy AI – Your Idea, Instantly on Slides",
   description:
     "Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers.",
+    alternates: {
+    canonical: 'https://slidexy.ai/',
+  },
 };
 
 export default function RootLayout({

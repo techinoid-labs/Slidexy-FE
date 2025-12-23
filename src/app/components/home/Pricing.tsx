@@ -40,7 +40,7 @@ export default function PricingSection() {
     Exclusive: {
       color: "#6C2BD7",
       textColor: "#fff",
-      borderColor: "#6C2BD7",
+      borderColor: "#E9E9FF",
       btnHover: "#4A00E0",
     },
     Platinum: {
@@ -65,10 +65,9 @@ export default function PricingSection() {
         alignItems: "center",
         pt: { xs: 6, md: "80px" },
         px: { xs: 2, md: "162px" },
-        pb: { xs: 6, md: "80px" },
-        gap: "48px",
         boxSizing: "border-box",
         mx: "auto",
+        mb: '50px'
       }}
     >
       {/* Badge */}
@@ -95,7 +94,6 @@ export default function PricingSection() {
           fontWeight: 500,
           fontSize: "1rem",
           borderRadius: "999px",
-          mb: 4,
           width: "fit-content",
           "& .MuiChip-icon": {
             marginRight: "6px",
@@ -106,14 +104,17 @@ export default function PricingSection() {
       {/* Heading */}
       <Typography
         sx={{
-          fontWeight: 600,
           fontSize: { xs: "30px", md: "48px" },
           color: "#222",
-          mb: 2,
+          mt: 2,
+          mb: 4,
           textAlign: "center",
+          fontFamily: 'Raleway',
+          fontWeight: 500,
+          lineHeight: '100%',
         }}
       >
-        From Free to Full Power
+        Enjoy all our feature by subscribing regularly!
       </Typography>
 
       <Typography
@@ -152,48 +153,54 @@ export default function PricingSection() {
                   <Box
                     key={plan._id}
                     sx={{
-                      minWidth: { xs: "335px" },
-                      maxWidth: { sm: "355px", xs: "auto" },
+                      width: { xs: "352px" },
                       background: "#fff",
                       borderRadius: "20px",
-                      border: `1px solid ${styles.borderColor}`,
-                      boxShadow: "0 2px 16px 0 rgba(80, 80, 120, 0.07)",
-                      p: { sm: "40px", xs: "30px" },
+                      border: `1px solid rgba(246, 246, 246, 1);`,
+                      boxShadow: 'none',
+                      pt: { sm: "40px", xs: "30px" },
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
                     }}
                   >
-                    {/* Plan Name */}
-                    <Typography
+                    <Box
                       sx={{
-                        fontWeight: 600,
-                        fontSize: "24px",
-                        color: "#222",
-                        mb: 1,
+                        display: 'flex',
+                        gap: '32px',
+                        alignItems: 'center'
                       }}
                     >
-                      {plan.name}
-                    </Typography>
-
-                    {/* Price */}
-                    <Box
-                      sx={{ display: "flex", alignItems: "flex-end", mb: 2 }}
-                    >
+                      {/* Plan Name */}
                       <Typography
                         sx={{
-                          fontWeight: 700,
-                          fontSize: "2.8rem",
-                          color: "#18181B",
+                          fontWeight: 600,
+                          fontSize: "24px",
+                          color: "#222",
                         }}
                       >
-                        ${plan.price}
+                        {plan.name}
                       </Typography>
-                      <Typography
-                        sx={{ color: "#757575", fontSize: "1.1rem", mb: 0.5 }}
+
+                      {/* Price */}
+                      <Box
+                        sx={{ display: "flex", alignItems: "flex-end" }}
                       >
-                        /{tenure}
-                      </Typography>
+                        <Typography
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: "2.8rem",
+                            color: "#18181B",
+                          }}
+                        >
+                          ${plan.price}
+                        </Typography>
+                        <Typography
+                          sx={{ color: "#757575", fontSize: "1.1rem", mb: 0.5 }}
+                        >
+                          /{tenure}
+                        </Typography>
+                      </Box>
                     </Box>
 
                     {/* Description */}
@@ -201,6 +208,7 @@ export default function PricingSection() {
                       sx={{
                         color: "#757575",
                         fontSize: "1rem",
+                        width: '292px',
                         mb: 3,
                         textAlign: "center",
                       }}
@@ -222,7 +230,8 @@ export default function PricingSection() {
                           fontWeight: 600,
                           fontSize: "1.1rem",
                           textTransform: "none",
-                          width: "100%",
+                          width: "292px",
+                          height: "48.000003814697266",
                           mb: 3,
                           boxShadow: "none",
                           "&:hover": { background: styles.btnHover },
@@ -239,19 +248,24 @@ export default function PricingSection() {
                     <Box
                       sx={{
                         width: "100%",
-                        borderTop: "1px solid #E9E9FF",
+                        borderTop: "1px solid #f9f9fb",
                         my: 2,
                       }}
                     />
 
                     {/* Features */}
-                    <Box sx={{ width: "100%" }}>
+                    <Box sx={{
+                      width: "100%", backgroundColor: '#f9f9fb', pb: { sm: "40px", xs: "30px" },
+                      borderBottomLeftRadius: "20px",
+                      borderBottomRightRadius: "20px"
+                    }}>
                       {plan.features.map((feature, i) => (
                         <Box
                           key={i}
                           sx={{
                             display: "flex",
                             alignItems: "center",
+                            px: { sm: "40px", xs: "30px" },
                             mb: 1.5,
                           }}
                         >
