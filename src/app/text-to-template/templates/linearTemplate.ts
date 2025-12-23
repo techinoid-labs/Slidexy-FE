@@ -163,7 +163,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
             position: relative;
             z-index: 10;
           ">
-            <h1 style="
+            <h2 style="
               font-family: 'Inter', sans-serif;
               font-size: 2.8rem;
               font-weight: 700;
@@ -173,7 +173,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
               line-height: 1.1;
             ">
               ${titleText}
-            </h1>
+            </h2>
             ${textContent.slice(0, 2).map((text) => `
               <p style="
                 font-family: 'Inter', sans-serif;

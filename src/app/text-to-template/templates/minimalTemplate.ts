@@ -168,14 +168,14 @@ export const createMinimalistTemplate = (backendSlide: BackendSlide, slideIndex:
             max-width: 460px;
           ">
             ${minimalBadge("Introduction")}
-            <h1 style="
+            <h2 style="
               font-size: 2.4rem;
               font-weight: 300;
               color: ${palette.text};
               margin: 0 0 0.75rem;
               line-height: 1.2;
               letter-spacing: -0.01em;
-            ">${titleText}</h1>
+            ">${titleText}</h2>
             ${textContent.slice(0, 3).map((t, idx) => `
               <div style="
                 display: flex;

@@ -108,7 +108,7 @@ export default function WorkingSection() {
         }}
       >
         <Typography
-          variant="h1"
+          variant="h2"
           sx={{
             fontWeight: 500,
             fontSize: { xs: "2rem", md: "2.5rem" },

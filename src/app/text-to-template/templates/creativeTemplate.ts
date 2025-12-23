@@ -258,7 +258,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
             margin: 0 auto;
             box-sizing: border-box;
           ">
-            <h1 style="
+            <h2 style="
               font-size: 2.5rem;
               font-weight: 800;
               color: ${creativePalette.text};
@@ -267,7 +267,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
               text-align: center;
             ">
               ${titleText}
-            </h1>
+            </h2>
             ${textContent.slice(0, 2).map((text) => `
               <p style="
                 font-size: 1rem;

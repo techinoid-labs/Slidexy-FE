@@ -1,84 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- Core Pages -->
   <url>
     <loc>https://slidexy.ai/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://slidexy.ai/about-us</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://slidexy.ai/tools</loc>
   </url>
 
   <url>
-    <loc>https://slidexy.ai/contact-us</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://slidexy.ai/templates</loc>
   </url>
 
   <url>
     <loc>https://slidexy.ai/pricing</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
   </url>
 
-  <url>
-    <loc>https://slidexy.ai/login</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
-    <loc>https://slidexy.ai/register</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <!-- Blog -->
   <url>
     <loc>https://slidexy.ai/blog</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://slidexy.ai/blog/ai-presentations</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://slidexy.ai/blog/presentation-design</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://slidexy.ai/blog/startup-pitching</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://slidexy.ai/blog/business-slides</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://slidexy.ai/blog/education-slides</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://slidexy.ai/blog/productivity</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
   </url>
 
 </urlset>

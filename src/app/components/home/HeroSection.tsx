@@ -63,32 +63,32 @@ export default function HeroSection() {
           justifyContent: "center",
         }}
       >
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                overflow: "hidden",
-                zIndex: 1,
-              }}
-            >
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  opacity: "0.1"
-                }}
-              >
-                <source src="/services-background.mp4" type="video/mp4" />
-              </video>
-            </Box>
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            overflow: "hidden",
+            zIndex: 1,
+          }}
+        >
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              opacity: "0.1"
+            }}
+          >
+            <source src="/services-background.mp4" type="video/mp4" />
+          </video>
+        </Box>
         {/* Decorative Elements */}
         <Box
           sx={{
@@ -199,7 +199,7 @@ export default function HeroSection() {
               variant="h1"
               noWrap
               sx={{
-                fontSize: { xs: 30, md: 50, lg: 50 },
+                fontSize: { xs: 28, md: 28, lg: 38 },
                 fontWeight: 550,
                 mb: 4,
                 lineHeight: 1.3,
@@ -209,7 +209,7 @@ export default function HeroSection() {
                 textOverflow: "ellipsis",
               }}
             >
-              Slidexy — Your AI Presentation Maker
+              SlideXy AI Turns Your Ideas into Stunning Presentations Instantly
             </Typography>
 
             <Typography
@@ -225,8 +225,8 @@ export default function HeroSection() {
               }}
             >
               <span>
-                Turn any thought into a polished, on-brand presentation — 
-                powered by AI, styled by designers.
+                Create slides instantly using AI. Turn ideas, voice, text, or links into
+                polished presentations in seconds.
               </span>
               <Box
                 component="span"

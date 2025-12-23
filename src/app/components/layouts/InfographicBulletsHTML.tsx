@@ -81,7 +81,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
           id={`title-${slideIndex}`}
           text={title}
           isEditing={isEditing}
-          tagName="h1"
+          tagName="h2"
           onChange={(val) => handleUpdate('title', val)}
           onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text')}
           style={{
@@ -199,7 +199,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
           id={`title-${slideIndex}`}
           text={title}
           isEditing={isEditing}
-          tagName="h1"
+          tagName="h2"
           onChange={(val) => handleUpdate('title', val)}
           onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text')}
           style={{
@@ -315,7 +315,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
           id={`title-${slideIndex}`}
           text={title}
           isEditing={isEditing}
-          tagName="h1"
+          tagName="h2"
           onChange={(val) => handleUpdate('title', val)}
           onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text')}
           style={{
@@ -428,7 +428,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
           id={`title-${slideIndex}`}
           text={title}
           isEditing={isEditing}
-          tagName="h1"
+          tagName="h2"
           onChange={(val) => handleUpdate('title', val)}
           onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text')}
           style={{
@@ -528,7 +528,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
         id={`title-${slideIndex}`}
         text={title}
         isEditing={isEditing}
-        tagName="h1"
+        tagName="h2"
         onChange={(val) => handleUpdate('title', val)}
         onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text')}
         style={{

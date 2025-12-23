@@ -113,7 +113,7 @@ export const FullImageTextOverlayHTML: React.FC<FullImageTextOverlayHTMLProps> =
                 <EditableElement
                     id="overlay-title"
                     text={title}
-                    tagName="h1"
+                    tagName="h2"
                     isEditing={isEditing}
                     onChange={(val) => handleUpdate('title', val)}
                     onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text')}

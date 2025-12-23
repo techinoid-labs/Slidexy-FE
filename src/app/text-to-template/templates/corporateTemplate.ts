@@ -132,14 +132,14 @@ export const createCorporateTemplate = (
             transition: transform 0.3s ease;
           ">
             ${modernBadge("Introduction")}
-            <h1 style="
+            <h2 style="
               font-size: 2rem;
               font-weight: 800;
               color: ${palette.text};
               margin: 0 0 1rem;
               line-height: 1.2;
               text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            ">${titleText}</h1>
+            ">${titleText}</h2>
             ${textContent.slice(0, 3).map((t, idx) => `
               <div style="
                 display: flex;

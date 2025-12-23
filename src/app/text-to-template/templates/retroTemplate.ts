@@ -145,7 +145,7 @@ export const createRetroTemplate = (backendSlide: BackendSlide, slideIndex: numb
             position: relative;
             z-index: 10;
           ">
-            <h1 style="
+            <h2 style="
               font-weight: 700;
               font-size: 2.8rem;
               line-height: 1.2;
@@ -155,7 +155,7 @@ export const createRetroTemplate = (backendSlide: BackendSlide, slideIndex: numb
               text-shadow: 2px 2px ${palette.accent2};
             ">
               ${titleText}
-            </h1>
+            </h2>
             ${textContent.slice(0, 2).map((text) => `
               <p style="
                 font-size: 1rem;

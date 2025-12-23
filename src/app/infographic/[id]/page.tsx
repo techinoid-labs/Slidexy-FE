@@ -196,7 +196,7 @@ export default function InfographicPage() {
       >
         {/* Title */}
         <Box sx={{ textAlign: "center", maxWidth: 1000 }}>
-          <h1
+          <h2
             style={{
               fontSize: isSmallMobile ? "2rem" : isMobile ? "2.8rem" : "3.8rem",
               fontWeight: 900,
@@ -206,7 +206,7 @@ export default function InfographicPage() {
             }}
           >
             {title}
-          </h1>
+          </h2>
           {subtitle && (
             <p style={{ fontSize: "1.3rem", color: "#6B7280", marginTop: "0.8rem", fontStyle: "italic" }}>
               {subtitle}

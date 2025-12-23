@@ -67,7 +67,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
         onOpenThemePanel={handleOpenThemePanel}
       />
       <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>{presentation.title}</h1>
+        <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>{presentation.title}</h2>
         <div style={{ border: "1px solid #e0e0e0", padding: "16px", borderRadius: "8px" }}>
           {presentation.content}
         </div>

@@ -204,7 +204,7 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
             ">
               ${modularBlock(`
                 ${accentBadge("Abstract", palette.neutral)}
-                <h1 style="
+                <h2 style="
                   font-family: 'Neue Haas Grotesk', sans-serif;
                   font-weight: 900;
                   font-size: 2.5rem;
@@ -215,7 +215,7 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
                   ${titleText.split(" ").map((word, idx) => `
                     <span style="display: inline-block; animation-delay: ${idx * 0.1}s">${word}&nbsp;</span>
                   `).join("")}
-                </h1>
+                </h2>
                 <p style="
                   font-size: 0.95rem;
                   color: ${palette.textSecondary};
@@ -246,7 +246,7 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
                     0% { opacity: 0; transform: translateY(10px); }
                     100% { opacity: 1; transform: translateY(0); }
                   }
-                  h1 span { animation: fadeIn 0.5s ease-in-out both; }
+                  h2 span { animation: fadeIn 0.5s ease-in-out both; }
                 </style>
               `)}
             </div>

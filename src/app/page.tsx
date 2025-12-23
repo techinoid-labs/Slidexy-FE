@@ -1,56 +1,33 @@
-"use client";
-import Header from "@/app/components/headers-navbar/Header";
-import HeroSection from "@/app/components/home/HeroSection";
-import { Box } from "@mui/material";
-import Image from "next/image";
-import FeaturesSection from "@/app/components/home/Features";
-import PurposeSection from "@/app/components/home/Purpose";
-import PresentationStyleSection from "@/app/components/home/PresentationStyle";
-import WorkingSection from "@/app/components/home/Working";
-import TestimonialSection from "@/app/components/home/Testimonial";
-import PricingSection from "@/app/components/home/Pricing";
-import CommunitySection from "@/app/components/home/Community";
-import Footer from "@/app/components/home/Footer";
-import ContactSection from "@/app/components/home/ContactSection";
-import WhatWeOffer from "./components/home/WhatWeOffer";
+import HomeClient from "./components/HomeClient";
+
 export default function Home() {
   return (
-    <Box
-      component="main"
-      sx={{
-        position: "relative",
-        minHeight: "100vh",
-        backgroundColor: "#ffffff",
-        overflow: "hidden",
-      }}
-    >
-      {/* BACKGROUND LAYER */}
-      <Box
-        sx={{
+    <>
+      <h1
+        style={{
           position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          pointerEvents: "none",
+          left: "-9999px",
+          top: "-9999px",
+          height: 1,
+          width: 1,
+          overflow: "hidden",
         }}
-      ></Box>
+      >SlideXy AI Turns Your Ideas into Stunning Presentations Instantly</h1>
+      <p
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          top: "-9999px",
+          height: 1,
+          width: 1,
+          overflow: "hidden",
+        }}
+      >
+        Create slides instantly using AI. Turn ideas, voice, text, or links into
+        polished presentations in seconds.
+      </p>
 
-      {/* FOREGROUND CONTENT */}
-      <Header />
-      <HeroSection />
-      <WhatWeOffer />
-      <PurposeSection />
-      <PresentationStyleSection />
-      <WorkingSection />
-      <TestimonialSection />
-      <PricingSection />
-      <CommunitySection />
-      <ContactSection />
-      <Footer />
-    </Box>
+      <HomeClient />
+    </>
   );
 }
