@@ -176,6 +176,80 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
     setSlides(updatedSlides);
   };
 
+  // ✅ NEW: Duplicate shape properly
+  const handleDuplicateShape = () => {
+    if (!shapeObj || slideIndex === -1 || !selectedShapeId) return;
+
+    const updatedSlides = structuredClone(slides);
+    const originalSlide = updatedSlides[slideIndex];
+
+    if (!originalSlide) return;
+
+    // Create new shape element with proper structure and mark as userAdded
+    const newShapeElement = {
+      ...structuredClone(shapeObj),
+      shape_id: `user-${Date.now()}`, // New unique ID
+      properties: {
+        ...structuredClone(shapeObj.properties || {}),
+        userAdded: true,
+        x: (shapeObj.properties?.x || 100) + 30,
+        y: (shapeObj.properties?.y || 100) + 30,
+      },
+    };
+
+    // Update original: Add to elements array
+    originalSlide.elements = originalSlide.elements || [];
+    originalSlide.elements.push(newShapeElement);
+
+    // Update current variant (if exists)
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant) {
+        variant.elements = variant.elements || [];
+        variant.elements.push(structuredClone(newShapeElement));
+      }
+    }
+
+    setSlides(updatedSlides);
+  };
+
+  // ✅ NEW: Delete shape properly
+  const handleDeleteShape = () => {
+    if (slideIndex === -1 || !selectedShapeId) return;
+
+    const updatedSlides = structuredClone(slides);
+    const originalSlide = updatedSlides[slideIndex];
+
+    if (!originalSlide) return;
+
+    // Find and delete from variant
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant && variant.elements) {
+        const variantIndex = variant.elements.findIndex(
+          (el: any) => el.shape_id === selectedShapeId
+        );
+        if (variantIndex !== -1) {
+          variant.elements.splice(variantIndex, 1);
+        }
+      }
+    }
+
+    // Delete from original
+    if (originalSlide.elements) {
+      const originalIndex = originalSlide.elements.findIndex(
+        (el: any) => el.shape_id === selectedShapeId
+      );
+      if (originalIndex !== -1) {
+        originalSlide.elements.splice(originalIndex, 1);
+      }
+    }
+
+    setSlides(updatedSlides);
+  };
+
   return (
     <div className="w-[310px] min-w-[310px] bg-white flex flex-col overflow-y-auto editor-scrollbar border-l border-gray-100">
       <div className="p-6 space-y-6">
@@ -207,6 +281,27 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
           showValue
           unit="%"
         />
+
+        <PremiumDivider />
+
+        {/* Actions */}
+        <div>
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Actions</h4>
+          <div className="flex gap-2">
+            <button
+              onClick={handleDuplicateShape}
+              className="flex-1 px-3 py-2.5 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300 transition-all"
+            >
+              Duplicate
+            </button>
+            <button
+              onClick={handleDeleteShape}
+              className="flex-1 px-3 py-2.5 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

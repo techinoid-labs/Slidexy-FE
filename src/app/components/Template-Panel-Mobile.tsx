@@ -14,6 +14,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useSlideThemeContext } from "../context/ThemeContext";
+import { useSlides } from "../context/SlidesContext";
 import Image from "next/image";
 
 interface Theme {
@@ -43,6 +44,7 @@ const MobileTemplatePanel = ({
   const [error, setError] = useState("");
   const [imgError, setImgError] = useState(false);
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
+  const { setSlides, slides } = useSlides();
   // console.log({ themes });
   const themeImageUrls = [
     "/theme-1.jpeg",
@@ -56,7 +58,7 @@ const MobileTemplatePanel = ({
   const mockThemes: Theme[] = [
     {
       font: "Inter",
-      primaryColor: "#fff",
+      primaryColor: "#1A202C",
       secondaryColor: "#007AFF",
       backgroundColor: "#E0F7FA",
       image_url: themeImageUrls[0],
@@ -70,28 +72,28 @@ const MobileTemplatePanel = ({
     },
     {
       font: "Open Sans",
-      primaryColor: "#ffa",
+      primaryColor: "#1A365D",
       secondaryColor: "#00BCD4",
       backgroundColor: "#E3F2FD",
       image_url: themeImageUrls[2],
     },
     {
       font: "Poppins",
-      primaryColor: "#9E7e12",
+      primaryColor: "#2D3748",
       secondaryColor: "#FFD600",
       backgroundColor: "#F1F8E9",
       image_url: themeImageUrls[3],
     },
     {
       font: "Lato",
-      primaryColor: "#fff",
+      primaryColor: "#2D3748",
       secondaryColor: "#FF7043",
       backgroundColor: "#ECEFF1",
       image_url: themeImageUrls[4],
     },
     {
       font: "Montserrat",
-      primaryColor: "#F7D9EC		",
+      primaryColor: "#5D4037",
       secondaryColor: "#FF8A65",
       backgroundColor: "#FFF3E0",
       image_url: themeImageUrls[5],
@@ -101,42 +103,42 @@ const MobileTemplatePanel = ({
   const fallbackThemes: Theme[] = [
     {
       font: "Inter",
-      primaryColor: "#2c3e50",
+      primaryColor: "#1A202C",
       secondaryColor: "#e67e22",
       backgroundColor: "#ecf0f1",
       image_url: themeImageUrls[0],
     },
     {
       font: "Roboto",
-      primaryColor: "#8e44ad",
+      primaryColor: "#4A148C",
       secondaryColor: "#16a085",
       backgroundColor: "#f9e79f",
       image_url: themeImageUrls[1],
     },
     {
       font: "Poppins",
-      primaryColor: "#2980b9",
+      primaryColor: "#2D3748",
       secondaryColor: "#f1c40f",
       backgroundColor: "#f5eef8",
       image_url: themeImageUrls[2],
     },
     {
       font: "Lato",
-      primaryColor: "#c0392b",
+      primaryColor: "#2C3E50",
       secondaryColor: "#27ae60",
       backgroundColor: "#f6ddcc",
       image_url: themeImageUrls[3],
     },
     {
       font: "Montserrat",
-      primaryColor: "#34495e",
+      primaryColor: "#5D4037",
       secondaryColor: "#e74c3c",
       backgroundColor: "#d5f5e3",
       image_url: themeImageUrls[4],
     },
     {
       font: "Open Sans",
-      primaryColor: "#1abc9c",
+      primaryColor: "#1A365D",
       secondaryColor: "#9b59b6",
       backgroundColor: "#f2d7d5",
       image_url: themeImageUrls[5],
@@ -197,6 +199,60 @@ const MobileTemplatePanel = ({
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleSearch();
+  };
+
+  const handleThemeSelect = (theme: Theme) => {
+    setSelectedTheme(theme);
+
+    const updatedSlides = (slides || []).map((slide) => {
+      const primaryColor = theme.primaryColor;
+
+      const updateContent = (s: any) => ({
+        ...s,
+        slide_title: {
+          ...s.slide_title,
+          useThemeColor: true,
+          properties: {
+            ...s.slide_title?.properties,
+            fill: primaryColor,
+          },
+        },
+        subtitle: s.subtitle ? {
+          ...s.subtitle,
+          properties: {
+            ...s.subtitle.properties,
+            fill: primaryColor,
+          }
+        } : undefined,
+        elements: (s.elements || []).map((el: any) => {
+          if (
+            el.element_type === "text" ||
+            el.element_type === "bullet_point" ||
+            el.element_type === "quote" ||
+            el.element_type === "author" ||
+            el.element_type === "context"
+          ) {
+            return {
+              ...el,
+              useThemeColor: true,
+              properties: {
+                ...el.properties,
+                fill: primaryColor,
+              },
+            };
+          }
+          return el;
+        }),
+      });
+
+      const updatedMain = updateContent(slide);
+      return {
+        ...updatedMain,
+        layouts: (slide.layouts || []).map((layout: any) => updateContent(layout))
+      };
+    });
+
+    setSlides(updatedSlides);
   };
 
   return (
@@ -377,7 +433,7 @@ const MobileTemplatePanel = ({
                     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                   },
                 }}
-                onClick={() => setSelectedTheme(theme)}
+                onClick={() => handleThemeSelect(theme)}
               >
                 {theme.image_url && theme.image_url.startsWith("data:image") ? (
                   <img

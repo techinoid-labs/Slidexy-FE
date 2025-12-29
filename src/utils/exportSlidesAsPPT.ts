@@ -6,7 +6,8 @@ import html2canvas from "html2canvas";
  * Uses html2canvas to screenshot each slide and places it as a full-slide image in PPT.
  * This ensures 100% visual fidelity (WYSIWYG).
  */
-export async function exportSlidesAsPPT(slidesCount: number) {
+export async function exportSlidesAsPPT(slides: any[]) {
+  const slidesCount = slides.length;
   try {
     const pptx = new PptxGenJS();
     const pptFileName = localStorage.getItem("fileName") || "Presentation";
@@ -54,14 +55,30 @@ export async function exportSlidesAsPPT(slidesCount: number) {
       container.innerHTML = "";
       container.appendChild(clone);
 
+      // Wait for fonts to be ready
+      if (document.fonts) {
+        await document.fonts.ready;
+      }
+
+      // Small delay to ensure layout stabilizer
+      await new Promise(r => setTimeout(r, 100));
+
       try {
         const canvas = await html2canvas(container, {
-          scale: 2, // 2x scale for better quality
+          scale: 3, // Higher quality
           useCORS: true,
           width: 960,
           height: 540,
           backgroundColor: "#ffffff",
           logging: false,
+          onclone: (clonedDoc) => {
+            const textNodes = clonedDoc.querySelectorAll('p, div, h1, h2, h3, h4, span');
+            textNodes.forEach((node: any) => {
+              if (node.style) {
+                node.style.letterSpacing = 'normal';
+              }
+            });
+          }
         });
 
         const imgData = canvas.toDataURL("image/png");

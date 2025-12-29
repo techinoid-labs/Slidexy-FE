@@ -47,41 +47,56 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     const {
         slides,
         selectedTextId,
-        selectedShapeIndex,
+        setSelectedTextId,
         selectedSlideIndex,
         setSlides,
     } = useSlides();
-    const { setPrimaryColor } = useSlideThemeContext();
+
+    // ✅ FIX: Parse selectedTextId to handle title, subtitle, and elements
     const parsed = selectedTextId
-        ? selectedTextId.match(/(?:title|el)-(\d+)(?:-(\d+))?/)
+        ? selectedTextId.match(/(?:title|subtitle|el)-(\d+)(?:-(\d+))?/)
         : null;
 
     const slideIndex = parsed ? parseInt(parsed[1], 10) : selectedSlideIndex;
+    const elementIndex = parsed?.[2] ? parseInt(parsed[2], 10) : null;
 
-    const elementIndex = parsed?.[2]
-        ? parseInt(parsed[2], 10)
-        : selectedShapeIndex !== null
-            ? selectedShapeIndex
-            : null;
-
+    // ✅ FIX: Get text object from current variant slide
     let textObj: any = null;
     if (slideIndex !== -1 && slides[slideIndex]) {
+        const originalSlide = slides[slideIndex];
+
+        const getCurrentVariantSlide = (slide: any) => {
+            if (!slide.layouts || slide.layouts.length === 0) {
+                return slide;
+            }
+            const variantIndex = slide.currentVariantIndex ?? 0;
+            const variant = slide.layouts[variantIndex];
+            return variant || slide;
+        };
+
+        const currentSlide = getCurrentVariantSlide(originalSlide);
+
+        // ✅ FIX: Handle title, subtitle, and regular elements
         if (selectedTextId?.startsWith("title")) {
-            textObj = slides[slideIndex].slide_title;
-        } else if (elementIndex !== null) {
-            textObj = slides[slideIndex].elements[elementIndex];
+            textObj = currentSlide.slide_title;
+        } else if (selectedTextId?.startsWith("subtitle")) {
+            textObj = currentSlide.subtitle;
+        } else if (elementIndex !== null && currentSlide.elements?.[elementIndex]) {
+            textObj = currentSlide.elements[elementIndex];
         }
     }
 
-    if (!textObj) return null;
-
-    const rawProps = textObj.properties || {};
+    const hasValidText = !!textObj;
+    const rawProps = textObj?.properties || {};
 
     const fontSize = rawProps.fontSize ?? 24;
     const fontFamily = fontOptions.includes(rawProps.fontFamily)
         ? rawProps.fontFamily
         : "Roboto";
-    const fill = rawProps.fill ?? "#000000";
+    const selectedTheme = slides[selectedSlideIndex]?.theme || null;
+    const fill = rawProps.fill ?? (textObj?.useThemeColor !== false
+        ? "#000000"
+        : "#000000");
     const fontWeight = weightOptions.some((w) => w.value === rawProps.fontWeight)
         ? rawProps.fontWeight
         : "normal";
@@ -89,27 +104,253 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     const opacity = rawProps.opacity ?? 1;
     const verticalAlign = rawProps.verticalAlign ?? "top";
 
+    // ✅ FIX: Update text property in both original and variant
     const updateTextProperty = (prop: string, value: any) => {
         if (!textObj || slideIndex === -1) return;
+
         const updatedSlides = structuredClone(slides);
-        const target: any = selectedTextId?.startsWith("title")
-            ? updatedSlides[slideIndex].slide_title.properties
-            : elementIndex !== null
-                ? updatedSlides[slideIndex].elements[elementIndex].properties
-                : null;
-        if (target) target[prop] = value;
+        const originalSlide = updatedSlides[slideIndex];
+
+        const isTitle = selectedTextId?.startsWith("title");
+        const isSubtitle = selectedTextId?.startsWith("subtitle");
+
+        // Update original slide
+        if (isTitle) {
+            originalSlide.slide_title = originalSlide.slide_title;
+            originalSlide.slide_title.properties = originalSlide.slide_title.properties || {};
+            originalSlide.slide_title.properties[prop] = value;
+        } else if (isSubtitle) {
+            originalSlide.subtitle = originalSlide.subtitle || {};
+            originalSlide.subtitle.properties = originalSlide.subtitle.properties || {};
+            originalSlide.subtitle.properties[prop] = value;
+        } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements?.[elementIndex]) {
+            const el = originalSlide.elements[elementIndex];
+            el.properties = el.properties || {};
+            el.properties[prop] = value;
+        }
+
+        // Update current variant (if exists)
+        if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+            if (variant) {
+                if (isTitle) {
+                    variant.slide_title = variant.slide_title;
+                    variant.slide_title.properties = variant.slide_title.properties || {};
+                    variant.slide_title.properties[prop] = value;
+                } else if (isSubtitle) {
+                    variant.subtitle = variant.subtitle || {};
+                    variant.subtitle.properties = variant.subtitle.properties || {};
+                    variant.subtitle.properties[prop] = value;
+                } else if (elementIndex !== null && elementIndex >= 0 && variant.elements?.[elementIndex]) {
+                    const variantEl = variant.elements[elementIndex];
+                    variantEl.properties = variantEl.properties || {};
+                    variantEl.properties[prop] = value;
+                }
+            }
+        }
+
         setSlides(updatedSlides);
     };
 
+    // ✅ FIX: Update text content in both original and variant
     const updateTextContent = (value: string) => {
         if (!textObj || slideIndex === -1) return;
+
         const updatedSlides = structuredClone(slides);
-        if (selectedTextId?.startsWith("title")) {
-            updatedSlides[slideIndex].slide_title.text = value;
-        } else if (elementIndex !== null) {
-            updatedSlides[slideIndex].elements[elementIndex].text = value;
+        const originalSlide = updatedSlides[slideIndex];
+
+        const isTitle = selectedTextId?.startsWith("title");
+        const isSubtitle = selectedTextId?.startsWith("subtitle");
+
+        // Update original
+        if (isTitle) {
+            originalSlide.slide_title = originalSlide.slide_title;
+            originalSlide.slide_title.text = value;
+        } else if (isSubtitle) {
+            originalSlide.subtitle = originalSlide.subtitle || {};
+            originalSlide.subtitle.text = value;
+        } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements?.[elementIndex]) {
+            originalSlide.elements[elementIndex].text = value;
         }
+
+        // Update current variant (if exists)
+        if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+            if (variant) {
+                if (isTitle) {
+                    variant.slide_title = variant.slide_title;
+                    variant.slide_title.text = value;
+                } else if (isSubtitle) {
+                    variant.subtitle = variant.subtitle || {};
+                    variant.subtitle.text = value;
+                } else if (elementIndex !== null && elementIndex >= 0 && variant.elements?.[elementIndex]) {
+                    variant.elements[elementIndex].text = value;
+                }
+            }
+        }
+
         setSlides(updatedSlides);
+    };
+
+    // ✅ FIX: Update color and disable theme color
+    const setTextFillAndDisableTheme = (color: string) => {
+        if (slideIndex === -1) return;
+
+        const updatedSlides = structuredClone(slides);
+        const originalSlide = updatedSlides[slideIndex];
+
+        const isTitle = selectedTextId?.startsWith("title");
+        const isSubtitle = selectedTextId?.startsWith("subtitle");
+
+        // Update original
+        let el = isTitle
+            ? originalSlide.slide_title
+            : isSubtitle
+                ? originalSlide.subtitle
+                : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
+
+        if (el) {
+            el.properties = el.properties || {};
+            el.properties.fill = color;
+            el.useThemeColor = false;
+        }
+
+        // Update current variant (if exists)
+        if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+            if (variant) {
+                let variantEl = isTitle
+                    ? variant.slide_title
+                    : isSubtitle
+                        ? variant.subtitle
+                        : (elementIndex !== null && elementIndex >= 0 ? variant.elements?.[elementIndex] : null);
+
+                if (variantEl) {
+                    variantEl.properties = variantEl.properties || {};
+                    variantEl.properties.fill = color;
+                    variantEl.useThemeColor = false;
+                }
+            }
+        }
+
+        setSlides(updatedSlides);
+    };
+
+    // ✅ FIX: Duplicate text properly
+    const handleDuplicateText = () => {
+        if (!textObj || slideIndex === -1) return;
+
+        const updatedSlides = structuredClone(slides);
+        const originalSlide = updatedSlides[slideIndex];
+
+        const isTitle = selectedTextId?.startsWith("title");
+        const isSubtitle = selectedTextId?.startsWith("subtitle");
+
+        const originalElement = isTitle
+            ? originalSlide.slide_title
+            : isSubtitle
+                ? originalSlide.subtitle
+                : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
+
+        if (!originalElement) return;
+
+        // ✅ FIX: Create new text element with proper structure and mark as userAdded
+        const newTextElement = {
+            konva_component: "Konva.Text",
+            element_type: "text",
+            text: originalElement.text || "",
+            properties: {
+                ...structuredClone(originalElement.properties || {}),
+                userAdded: true, // ✅ Mark as user-added so UserElementsRenderer picks it up
+                x: (originalElement.properties?.x || 100) + 30,
+                y: (originalElement.properties?.y || 100) + 30,
+                width: originalElement.properties?.width || 300,
+                fontSize: originalElement.properties?.fontSize || 24,
+                fontFamily: originalElement.properties?.fontFamily || "Roboto",
+                fill: originalElement.properties?.fill || "#000000",
+                fontWeight: originalElement.properties?.fontWeight || "normal",
+                align: originalElement.properties?.align || "left",
+            },
+            useThemeColor: originalElement.useThemeColor !== undefined ? originalElement.useThemeColor : false,
+        };
+
+        // Update original: Add to elements array
+        originalSlide.elements = originalSlide.elements || [];
+        const insertIndex = (isTitle || isSubtitle) ? 0 : (elementIndex! + 1);
+        originalSlide.elements.splice(insertIndex, 0, newTextElement);
+
+        // Update current variant (if exists)
+        if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+            if (variant) {
+                variant.elements = variant.elements || [];
+                variant.elements.splice(insertIndex, 0, structuredClone(newTextElement));
+            }
+        }
+
+        setSlides(updatedSlides);
+
+        // Select the new duplicated element
+        const newId = `el-${slideIndex}-${insertIndex}`;
+        setSelectedTextId(newId);
+    };
+
+    // ✅ FIX: Delete text properly
+    const handleDeleteText = () => {
+        if (slideIndex === -1) return;
+
+        const updatedSlides = structuredClone(slides);
+        const originalSlide = updatedSlides[slideIndex];
+
+        const isTitle = selectedTextId?.startsWith("title");
+        const isSubtitle = selectedTextId?.startsWith("subtitle");
+
+        // Update original
+        if (isTitle) {
+            originalSlide.slide_title = {
+                konva_component: "Konva.Text",
+                text: "",
+                properties: {
+                    fontSize: 36,
+                    fontWeight: "700",
+                    fontFamily: "Raleway",
+                    fill: "#000",
+                    fontStyle: "normal",
+                    align: "center",
+                    x: 25,
+                    y: 40,
+                    width: 800,
+                    height: 0,
+                },
+                useThemeColor: true,
+            };
+        } else if (isSubtitle) {
+            originalSlide.subtitle = undefined;
+        } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements) {
+            originalSlide.elements.splice(elementIndex, 1);
+        }
+
+        // Update current variant (if exists)
+        if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+            if (variant) {
+                if (isTitle) {
+                    variant.slide_title = structuredClone(originalSlide.slide_title);
+                } else if (isSubtitle) {
+                    variant.subtitle = undefined;
+                } else if (elementIndex !== null && elementIndex >= 0 && variant.elements) {
+                    variant.elements.splice(elementIndex, 1);
+                }
+            }
+        }
+
+        setSlides(updatedSlides);
+        setSelectedTextId(null);
     };
 
     return (
@@ -181,7 +422,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                     </Select> */}
                 </Box>
 
-               {/* 
+                {/* 
 
                 {/* Text */}
                 <Box sx={{ px: 1, mb: 2, width: 300 }}>
@@ -190,37 +431,43 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                             Text
                         </Typography>
                         <IconButton size="small">
-                            
+
                         </IconButton>
                     </Box>
 
                     <InputBase
-                        value={textObj.text ?? ""}
-                        onChange={(e) => updateTextContent(e.target.value)}
+                        value={textObj?.text ?? ""}
+                        onChange={(e) => hasValidText && updateTextContent(e.target.value)}
                         fullWidth
+                        disabled={!hasValidText}
+                        multiline
                         sx={{
                             mb: 1,
                             borderRadius: 2,
-                            bgcolor: "#F8F8FA",
+                            bgcolor: hasValidText ? "#F8F8FA" : "#F0F0F0",
                             fontWeight: 500,
                             fontSize: 15,
-                            height: 44,
+                            minHeight: 44,
                             px: 2,
+                            py: 1.5,
+                            opacity: hasValidText ? 1 : 0.6,
                         }}
                     />
 
                     <Select
                         value={fontFamily}
-                        onChange={(e) => updateTextProperty("fontFamily", e.target.value)}
+                        onChange={(e) => hasValidText && updateTextProperty("fontFamily", e.target.value)}
                         fullWidth
                         size="small"
+                        disabled={!hasValidText}
                         sx={{
                             mb: 1,
                             borderRadius: 2,
-                            bgcolor: "#F8F8FA",
+                            bgcolor: hasValidText ? "#F8F8FA" : "#F0F0F0",
                             fontWeight: 500,
                             fontSize: 15,
                             height: 44,
+                            opacity: hasValidText ? 1 : 0.6,
                         }}
                     >
                         {fontOptions.map((opt) => (
@@ -233,17 +480,17 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                     <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
                         <Select
                             value={fontSize}
-                            onChange={(e) =>
-                                updateTextProperty("fontSize", Number(e.target.value))
-                            }
+                            onChange={(e) => hasValidText && updateTextProperty("fontSize", Number(e.target.value))}
                             size="small"
+                            disabled={!hasValidText}
                             sx={{
                                 borderRadius: 2,
-                                bgcolor: "#F8F8FA",
+                                bgcolor: hasValidText ? "#F8F8FA" : "#F0F0F0",
                                 fontWeight: 500,
                                 fontSize: 15,
                                 width: 80,
                                 height: 44,
+                                opacity: hasValidText ? 1 : 0.6,
                             }}
                         >
                             {[16, 18, 20, 24, 28, 32, 36].map((size) => (
@@ -254,15 +501,17 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                         </Select>
                         <Select
                             value={fontWeight}
-                            onChange={(e) => updateTextProperty("fontWeight", e.target.value)}
+                            onChange={(e) => hasValidText && updateTextProperty("fontWeight", e.target.value)}
                             size="small"
+                            disabled={!hasValidText}
                             sx={{
                                 borderRadius: 2,
-                                bgcolor: "#F8F8FA",
+                                bgcolor: hasValidText ? "#F8F8FA" : "#F0F0F0",
                                 fontWeight: 500,
                                 fontSize: 15,
                                 width: 120,
                                 height: 44,
+                                opacity: hasValidText ? 1 : 0.6,
                             }}
                         >
                             {weightOptions.map((opt) => (
@@ -284,9 +533,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                             return (
                                 <IconButton
                                     key={value}
-                                    onClick={() => updateTextProperty("align", value)}
-                                    className={`rounded-md w-11 h-11 ${align === value ? "bg-gray-300" : "bg-[#F8F8FA]"
-                                        }`}
+                                    onClick={() => hasValidText && updateTextProperty("align", value)}
+                                    disabled={!hasValidText}
+                                    className={`rounded-md w-11 h-11 ${align === value ? "bg-gray-300" : "bg-[#F8F8FA]"} ${!hasValidText ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     <Icon />
                                 </IconButton>
@@ -302,9 +551,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                                 return (
                                     <IconButton
                                         key={value}
-                                        onClick={() => updateTextProperty("verticalAlign", value)}
-                                        className={`w-9 h-9 rounded-md ${verticalAlign === value ? "bg-gray-300" : "bg-transparent"
-                                            }`}
+                                        onClick={() => hasValidText && updateTextProperty("verticalAlign", value)}
+                                        disabled={!hasValidText}
+                                        className={`w-9 h-9 rounded-md ${verticalAlign === value ? "bg-gray-300" : "bg-transparent"} ${!hasValidText ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         <Icon />
                                     </IconButton>
@@ -326,10 +575,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                             type="color"
                             value={fill}
                             className="w-12 h-12 rounded-full"
-                            onChange={(e) => {
-                                updateTextProperty("fill", e.target.value);
-                                // !selectedShapeIndex && setPrimaryColor(e.target.value);
-                            }}
+                            onChange={(e) => setTextFillAndDisableTheme(e.target.value)}
+                            disabled={!hasValidText}
                         />
                         <Typography sx={{ fontSize: 14 }}>{fill.toUpperCase()}</Typography>
                     </Box>
@@ -364,6 +611,66 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
                                 textAlign: "center",
                             }}
                         />
+                    </Box>
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                {/* Actions */}
+                <Box sx={{ px: 3, mb: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+                            Actions
+                        </Typography>
+                    </Box>
+
+                    <Box sx={{ display: "flex", gap: 2, width: 250 }}>
+                        <Box
+                            onClick={handleDuplicateText}
+                            sx={{
+                                flex: 1,
+                                borderRadius: 2,
+                                fontWeight: 600,
+                                fontSize: 12,
+                                py: 1.5,
+                                textAlign: "center",
+                                bgcolor: hasValidText ? "#F8F8FA" : "#F0F0F0",
+                                border: "1px solid #E0E0E0",
+                                color: "#222",
+                                cursor: hasValidText ? "pointer" : "not-allowed",
+                                opacity: hasValidText ? 1 : 0.6,
+                                "&:hover": {
+                                    bgcolor: hasValidText ? "#F3EDFF" : "#F8F8FA",
+                                    borderColor: hasValidText ? "#7B4AE2" : "#E0E0E0",
+                                    color: hasValidText ? "#7B4AE2" : "#222",
+                                },
+                            }}
+                        >
+                            Duplicate
+                        </Box>
+                        <Box
+                            onClick={handleDeleteText}
+                            sx={{
+                                flex: 1,
+                                borderRadius: 2,
+                                fontWeight: 600,
+                                fontSize: 12,
+                                py: 1.5,
+                                textAlign: "center",
+                                bgcolor: hasValidText ? "#F8F8FA" : "#F0F0F0",
+                                border: "1px solid #E0E0E0",
+                                color: "#222",
+                                cursor: hasValidText ? "pointer" : "not-allowed",
+                                opacity: hasValidText ? 1 : 0.6,
+                                "&:hover": {
+                                    bgcolor: hasValidText ? "#FFF3F3" : "#F8F8FA",
+                                    borderColor: hasValidText ? "#C00" : "#E0E0E0",
+                                    color: hasValidText ? "#C00" : "#222",
+                                },
+                            }}
+                        >
+                            Delete
+                        </Box>
                     </Box>
                 </Box>
             </Box>
