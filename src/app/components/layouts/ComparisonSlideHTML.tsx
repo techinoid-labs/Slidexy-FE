@@ -45,11 +45,9 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
         if (type === 'title') {
             updatedSlide.slide_title = { ...updatedSlide.slide_title, text: value };
         } else if (type === 'bullet' && typeof index === 'number') {
-            const target = bullets[index];
-            if (target) {
-                updatedSlide.elements = slide.elements.map((el: any) =>
-                    el.id === target.id ? { ...el, text: value } : el
-                );
+            if (slide.elements[index]) {
+                updatedSlide.elements = [...slide.elements];
+                updatedSlide.elements[index] = { ...slide.elements[index], text: value };
             }
         }
 
@@ -87,9 +85,9 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {items.map((item: any, localIdx: number) => {
-                    const globalIndex = offset + localIdx;
+                    const actualIndex = slide.elements.indexOf(item);
                     return (
-                        <div key={item.id || globalIndex} style={{
+                        <div key={item.id || actualIndex} style={{
                             display: 'flex',
                             gap: '0.9rem',
                             alignItems: 'flex-start',
@@ -110,20 +108,19 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
                                 flexShrink: 0
                             }} />
                             <EditableElement
-                                id={`comparison-${globalIndex}`}
+                                id={`comparison-${actualIndex}`}
                                 text={item.text}
                                 tagName="div"
                                 isEditing={isEditing}
-                                onChange={(val) => handleUpdate('bullet', val, globalIndex)}
-                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${globalIndex}`, 'text', globalIndex)}
+                                onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
                                 style={{
-                                    fontSize: item.properties?.fontSize ? `${item.properties.fontSize}px` : '1.05rem',
-                                    color: item.useThemeColor === false ? (item.properties?.fill || '#1a202c') : '#1a202c',
-                                    lineHeight: item.properties?.lineHeight || 1.6,
-                                    fontWeight: item.properties?.fontWeight || 400,
-                                    textAlign: item.properties?.align || 'left',
+                                    fontSize: '1.05rem',
+                                    color: '#1a202c',
+                                    lineHeight: 1.6,
                                     textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                                 }}
+                                elementProperties={item.properties}
                             />
                         </div>
                     );
@@ -175,15 +172,16 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
                     onChange={(val) => handleUpdate('title', val)}
                     onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text')}
                     style={{
-                        fontSize: slide.slide_title?.properties?.fontSize ? `${slide.slide_title.properties.fontSize}px` : '2.6rem',
-                        fontWeight: slide.slide_title?.properties?.fontWeight || 800,
+                        fontSize: '2.6rem',
+                        fontWeight: 800,
                         margin: '0 0 2.5rem',
-                        textAlign: slide.slide_title?.properties?.align || 'center',
+                        textAlign: 'center',
                         letterSpacing: '-0.02em',
-                        color: slide.slide_title?.useThemeColor === false ? (slide.slide_title?.properties?.fill || '#1a202c') : '#1a202c',
+                        color: '#1a202c',
                         textShadow: '0 2px 8px rgba(0,0,0,0.4)',
                         animation: 'fadeInDown 0.6s ease-out'
                     }}
+                    elementProperties={slide.slide_title?.properties}
                 />
 
                 <div style={{

@@ -112,7 +112,13 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
     return {
       ...slide,                           // Keep original slide props (slide_id, etc.)
       ...variant,                         // Override with variant data (layout_type, title, elements, etc.)
-      elements: [...(variant.elements || []), ...userShapes], // Append user shapes on top
+      // Combine variant elements with user-added shapes (deduplicated by shape_id)
+      elements: [
+        ...(variant.elements || []),
+        ...userShapes.filter((us: any) =>
+          !(variant.elements || []).some((ve: any) => ve.shape_id === us.shape_id)
+        )
+      ],
       currentVariantIndex: variantIndex,  // Keep track of active variant
     };
   };
@@ -163,6 +169,7 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
           ? `el-${index}-${elementIndex}`
           : `title-${index}`);
       onSetSelectedTextId(textId);
+      onHandleSelect({ id: textId, type: "text", index: elementIndex ?? -1 });
     } else if (elementType === "image") {
       // Find image element in slide
       const imgEl = slide.elements?.find((el: any) =>
@@ -179,6 +186,7 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
 
       onSetSelectedImageId(finalId);
       onSetSelectedImageIndex(finalIndex);
+      onHandleSelect({ id: finalId, type: "image", index: finalIndex ?? 0 });
 
       if (imgEl) {
         onSetSelectedImage({
@@ -592,6 +600,8 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
     redo,
     selectedSlideIndex,
     setSelectedSlideIndex,
+    addSlide,
+    deleteSlide,
   } = useSlides();
 
   const { setSelectedTheme, selectedTheme } = useSlideThemeContext();
@@ -846,6 +856,8 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
       onSelectSlide={setSelectedSlideIndex}
       slideWidth={getDynamicConstants().SLIDE_WIDTH}
       slideHeight={getDynamicConstants().SLIDE_HEIGHT}
+      onAddSlide={addSlide}
+      onDeleteSlide={deleteSlide}
     >
       <Box
         sx={{

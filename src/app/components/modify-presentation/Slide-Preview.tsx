@@ -12,15 +12,17 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { HTMLSlideRenderer } from "../editor/HTMLSlideRenderer";
+
 
 // ✅ Define a proper prop type
 interface SlideShowPlayerProps {
     slides: any[];
     open: boolean;
     onClose: () => void;
-    theme?: any | null; 
+    theme?: any | null;
     forceCleanPreview?: boolean;
-    
+
 }
 
 const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
@@ -35,19 +37,12 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
     useEffect(() => {
         if (open) setCurrentSlide(0);
     }, [open]);
+    // No longer using snapshotsCache for current preview, 
+    // but keeping for other potential uses if needed.
     useEffect(() => {
-    if (!open || !forceCleanPreview) return;
-
-    const timer = setTimeout(() => {
-      const slide = slides[currentSlide];
-      if (!slide?.slide_id) return;
-
-      // Delete the old (dirty) snapshot → forces regeneration without transformer
-      snapshotsCache.setSnapshot(slide.slide_id, null);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [open, currentSlide, forceCleanPreview]);
+        if (!open || !forceCleanPreview) return;
+        // ... logic removed as we use HTML renderer directly
+    }, [open, currentSlide, forceCleanPreview]);
 
     const goNext = () => setCurrentSlide((i) => (i + 1) % slides.length);
     const goPrev = () => setCurrentSlide((i) => (i - 1 + slides.length) % slides.length);
@@ -65,25 +60,29 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
 
     if (!slides.length) return null;
 
-    const current = slides[currentSlide];
-    const [snapshot, setSnapshot] = useState<string | null>(null);
+    const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
+    const [scale, setScale] = useState(1);
 
     useEffect(() => {
-        let mounted = true;
-        const id = current?.slide_id;
-        if (!id) return;
-        const existing = snapshotsCache.getSnapshot(id);
-        if (mounted) setSnapshot(existing);
+        if (!containerRef || !open) return;
 
-        const cb = (data?: string | null) => {
-            if (mounted) setSnapshot(data || null);
+        const updateScale = () => {
+            const containerWidth = containerRef.clientWidth;
+            const containerHeight = containerRef.clientHeight;
+            const slideWidth = 960;
+            const slideHeight = 540;
+
+            const scaleX = containerWidth / slideWidth;
+            const scaleY = containerHeight / slideHeight;
+            const newScale = Math.min(scaleX, scaleY) * 0.95; // 95% of container
+
+            setScale(newScale);
         };
-        snapshotsCache.subscribe(id, cb);
-        return () => {
-            mounted = false;
-            snapshotsCache.unsubscribe(id, cb);
-        };
-    }, [current?.slide_id]);
+
+        updateScale();
+        window.addEventListener('resize', updateScale);
+        return () => window.removeEventListener('resize', updateScale);
+    }, [containerRef, open, currentSlide]);
 
     const progress = ((currentSlide + 1) / slides.length) * 100;
 
@@ -114,31 +113,37 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
 
                 {/* Snapshot Image */}
                 <Box
+                    ref={(el: HTMLDivElement) => setContainerRef(el)}
                     sx={{
-                        width: "90vw",
-                        maxWidth: "1100px",
-                        height: "70vh",
-                        maxHeight: "800px",
-                        borderRadius: 4,
-                        overflow: "hidden",
-                        boxShadow: "0 35px 80px rgba(0,0,0,0.8)",
-                        bgcolor: "#fff",
-                        backgroundImage: snapshot ? `url(${snapshot})` : "none",
-                        backgroundSize: "contain",
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "center",
-                        animation: "popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1)",
-                        "@keyframes popIn": {
-                            "0%": { transform: "scale(0.8)", opacity: 0 },
-                            "100%": { transform: "scale(1)", opacity: 1 },
-                        },
+                        width: "100%",
+                        height: "75vh",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        position: "relative",
+                        zIndex: 1,
                     }}
                 >
-                    {!snapshot && (
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#999" }}>
-                            <Typography>Loading slide...</Typography>
-                        </Box>
-                    )}
+                    <Box
+                        sx={{
+                            width: 960,
+                            height: 540,
+                            bgcolor: "#fff",
+                            borderRadius: "12px",
+                            overflow: "hidden",
+                            boxShadow: "0 35px 80px rgba(0,0,0,0.8)",
+                            transform: `scale(${scale})`,
+                            transformOrigin: "center center",
+                            transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                        }}
+                    >
+                        <HTMLSlideRenderer
+                            slide={slides[currentSlide]}
+                            theme={theme}
+                            isEditing={false}
+                            slideIndex={currentSlide}
+                        />
+                    </Box>
                 </Box>
 
                 {/* Navigation */}

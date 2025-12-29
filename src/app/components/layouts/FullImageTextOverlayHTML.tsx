@@ -125,6 +125,7 @@ export const FullImageTextOverlayHTML: React.FC<FullImageTextOverlayHTMLProps> =
                         margin: 0,
                         textShadow: '0 14px 35px rgba(0,0,0,0.55)',
                     }}
+                    elementProperties={slide.slide_title?.properties}
                 />
 
                 <EditableElement
@@ -141,6 +142,7 @@ export const FullImageTextOverlayHTML: React.FC<FullImageTextOverlayHTMLProps> =
                         margin: 0,
                         maxWidth: '640px',
                     }}
+                    elementProperties={slide.subtitle?.properties}
                 />
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginTop: '0.4rem' }}>

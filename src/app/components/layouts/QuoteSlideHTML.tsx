@@ -86,6 +86,7 @@ export const QuoteSlideHTML: React.FC<QuoteSlideHTMLProps> = ({
                 textAlign: 'center',
                 width: '100%'
             }}
+            elementProperties={quoteElement?.properties}
         />
     );
 
@@ -107,6 +108,7 @@ export const QuoteSlideHTML: React.FC<QuoteSlideHTMLProps> = ({
                 textAlign: 'center',
                 width: '100%'
             }}
+            elementProperties={authorElement?.properties}
         />
     );
 
@@ -127,6 +129,7 @@ export const QuoteSlideHTML: React.FC<QuoteSlideHTMLProps> = ({
                 width: '100%',
                 opacity: 0.8
             }}
+            elementProperties={contextElement?.properties}
         />
     );
 

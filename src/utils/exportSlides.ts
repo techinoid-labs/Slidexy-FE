@@ -6,8 +6,9 @@ import html2canvas from "html2canvas";
  * Works for both visible and hidden slides by cloning them to a temporary container.
  */
 export const exportSlidesAsPDF = async (
-  slidesCount: number
+  slides: any[]
 ) => {
+  const slidesCount = slides.length;
   try {
     const WIDTH = 960;
     const HEIGHT = 540;
@@ -57,18 +58,32 @@ export const exportSlidesAsPDF = async (
       container.innerHTML = ""; // Clear previous
       container.appendChild(clone);
 
-      // Wait a moment for images/fonts to be ready in the clone could help, 
-      // but usually immediate capture works if source was already loaded.
-      // If issues arise, we can await document.fonts.ready or image loading.
+      // CRITICAL: Wait for fonts to be ready before each capture
+      if (document.fonts) {
+        await document.fonts.ready;
+      }
+
+      // Small delay to ensure layout stabilizer
+      await new Promise(r => setTimeout(r, 100));
 
       try {
         const canvas = await html2canvas(container, {
-          scale: 2, // Higher quality
-          useCORS: true, // For cross-origin images
+          scale: 3, // Even higher quality
+          useCORS: true,
           width: WIDTH,
           height: HEIGHT,
           backgroundColor: "#ffffff",
-          logging: false
+          logging: false,
+          onclone: (clonedDoc) => {
+            // Ensure all text elements in the clone have explicitly handled line-height
+            const textNodes = clonedDoc.querySelectorAll('p, div, h1, h2, h3, h4, span');
+            textNodes.forEach((node: any) => {
+              if (node.style) {
+                // Force better rendering for html2canvas
+                node.style.letterSpacing = 'normal';
+              }
+            });
+          }
         });
 
         const imgData = canvas.toDataURL("image/png");
