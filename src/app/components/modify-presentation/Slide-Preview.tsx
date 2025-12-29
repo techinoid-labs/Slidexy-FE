@@ -44,19 +44,30 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
         // ... logic removed as we use HTML renderer directly
     }, [open, currentSlide, forceCleanPreview]);
 
-    const goNext = () => setCurrentSlide((i) => (i + 1) % slides.length);
-    const goPrev = () => setCurrentSlide((i) => (i - 1 + slides.length) % slides.length);
+    const goNext = React.useCallback(() => {
+        if (slides.length) setCurrentSlide((i) => (i + 1) % slides.length);
+    }, [slides.length]);
+
+    const goPrev = React.useCallback(() => {
+        if (slides.length) setCurrentSlide((i) => (i - 1 + slides.length) % slides.length);
+    }, [slides.length]);
 
     useEffect(() => {
+        if (!open) return;
         const handleKey = (e: KeyboardEvent) => {
-            if (!open) return;
-            if (e.key === "ArrowRight" || e.key === " ") goNext();
-            if (e.key === "ArrowLeft") goPrev();
+            if (e.key === "ArrowRight" || e.key === " ") {
+                e.preventDefault();
+                goNext();
+            }
+            if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                goPrev();
+            }
             if (e.key === "Escape") onClose();
         };
         window.addEventListener("keydown", handleKey);
         return () => window.removeEventListener("keydown", handleKey);
-    }, [open]);
+    }, [open, goNext, goPrev, onClose]);
 
     if (!slides.length) return null;
 
@@ -149,10 +160,44 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
                 {/* Navigation */}
                 {slides.length > 1 && (
                     <>
-                        <IconButton onClick={goPrev} sx={{ position: "absolute", left: 40, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(255,255,255,0.15)", color: "white", width: 70, height: 70, "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}>
+                        <IconButton
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                goPrev();
+                            }}
+                            sx={{
+                                position: "absolute",
+                                left: 40,
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                bgcolor: "rgba(255,255,255,0.15)",
+                                color: "white",
+                                width: 70,
+                                height: 70,
+                                zIndex: 10,
+                                "&:hover": { bgcolor: "rgba(255,255,255,0.3)" }
+                            }}
+                        >
                             <ArrowBackIosNewIcon sx={{ fontSize: 32 }} />
                         </IconButton>
-                        <IconButton onClick={goNext} sx={{ position: "absolute", right: 40, top: "50%", transform: "translateY(-50%)", bgcolor: "rgba(255,255,255,0.15)", color: "white", width: 70, height: 70, "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}>
+                        <IconButton
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                goNext();
+                            }}
+                            sx={{
+                                position: "absolute",
+                                right: 40,
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                bgcolor: "rgba(255,255,255,0.15)",
+                                color: "white",
+                                width: 70,
+                                height: 70,
+                                zIndex: 10,
+                                "&:hover": { bgcolor: "rgba(255,255,255,0.3)" }
+                            }}
+                        >
                             <ArrowForwardIosIcon sx={{ fontSize: 32 }} />
                         </IconButton>
                     </>
