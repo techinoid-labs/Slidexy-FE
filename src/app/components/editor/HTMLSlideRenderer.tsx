@@ -34,11 +34,47 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
 }) => {
     const layoutType = slide.layout_type || 'cover-hero';
 
-    // Get current variant index
-    const variantIndex = slide.currentVariantIndex ?? 0;
+    // ✅ FIX: Determine which variant to render. 
+    // If slide has variantNumber (it's a variant object from preview), use it.
+    // Otherwise use currentVariantIndex from the main slide object.
+    const variantIndex = typeof slide.variantNumber === 'number'
+        ? slide.variantNumber - 1
+        : (slide.currentVariantIndex ?? 0);
+
+    // Extract the current variant slide (or use original if no variants)
+    let currentSlide = slide;
+    if (slide.layouts && slide.layouts.length > 0) {
+        const variant = slide.layouts[variantIndex];
+        if (variant) {
+            // Extract user-added elements (those with userAdded: true or specific ID patterns)
+            const userShapes = (slide.elements || []).filter((el: any) =>
+                el.properties?.userAdded === true ||
+                (el.element_type === 'shape' && el.shape_id?.startsWith('user-')) ||
+                (el.element_type === 'image' && el.properties?.image_id) ||
+                (el.element_type === 'text' && el.id?.startsWith('user-'))
+            );
+
+            // Merge variant properties with original slide structure
+            currentSlide = {
+                ...slide,
+                // Override with variant-specific data
+                slide_title: variant.slide_title || slide.slide_title,
+                subtitle: variant.subtitle || slide.subtitle,
+                // Combine variant elements with user-added shapes (deduplicated by shape_id)
+                elements: [
+                    ...(variant.elements || []),
+                    ...userShapes.filter((us: any) =>
+                        !(variant.elements || []).some((ve: any) => ve.shape_id === us.shape_id)
+                    )
+                ],
+                image_url: variant.image_url || slide.image_url,
+                background: variant.background || slide.background,
+            };
+        }
+    }
 
     const commonProps = {
-        slide,
+        slide: currentSlide, // ✅ Pass current variant slide, not original
         theme,
         isEditing,
         onSlideUpdate,

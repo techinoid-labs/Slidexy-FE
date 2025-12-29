@@ -93,14 +93,22 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   const fill = rawProps.fill ?? (textObj?.useThemeColor !== false
     ? getContrastTextColor(selectedTheme?.backgroundColor || "#ffffff")
     : "#000000");
-  const fontWeight = weightOptions.some((w) => w.value === rawProps.fontWeight)
-    ? rawProps.fontWeight
-    : "normal";
+  // Check fontStyle for italic, otherwise use fontWeight
+
+
+  const fontWeight = rawProps.fontStyle === "italic"
+    ? "italic"
+    : (weightOptions.some((w) => w.value === rawProps.fontWeight)
+      ? rawProps.fontWeight
+      : "normal");
+
+
+
   const align = rawProps.align ?? "left";
   const opacity = rawProps.opacity ?? 1;
 
-  // ✅ FIX: Update text property in both original and variant
-  const updateTextProperty = (prop: string, value: any) => {
+  // ✅ FIX: Update multiple text properties in one go to avoid race conditions
+  const updateTextProperties = (updates: Record<string, any>) => {
     if (!textObj || slideIndex === -1) return;
 
     const updatedSlides = structuredClone(slides);
@@ -109,43 +117,44 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     const isTitle = selectedTextId?.startsWith("title");
     const isSubtitle = selectedTextId?.startsWith("subtitle");
 
+    const applyUpdates = (target: any) => {
+      if (!target) return;
+      target.properties = target.properties || {};
+      Object.entries(updates).forEach(([p, v]) => {
+        target.properties[p] = v;
+      });
+    };
+
     // Update original slide
     if (isTitle) {
-      originalSlide.slide_title = originalSlide.slide_title;
-      originalSlide.slide_title.properties = originalSlide.slide_title.properties || {};
-      originalSlide.slide_title.properties[prop] = value;
+      applyUpdates(originalSlide.slide_title);
     } else if (isSubtitle) {
-      originalSlide.subtitle = originalSlide.subtitle || {};
-      originalSlide.subtitle.properties = originalSlide.subtitle.properties || {};
-      originalSlide.subtitle.properties[prop] = value;
+      applyUpdates(originalSlide.subtitle);
     } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements?.[elementIndex]) {
-      const el = originalSlide.elements[elementIndex];
-      el.properties = el.properties || {};
-      el.properties[prop] = value;
+      applyUpdates(originalSlide.elements[elementIndex]);
     }
 
-    // Update current variant (if exists)
+    // Update current variant
     if (originalSlide.layouts && originalSlide.layouts.length > 0) {
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
         if (isTitle) {
-          variant.slide_title = variant.slide_title;
-          variant.slide_title.properties = variant.slide_title.properties || {};
-          variant.slide_title.properties[prop] = value;
+          applyUpdates(variant.slide_title);
         } else if (isSubtitle) {
-          variant.subtitle = variant.subtitle || {};
-          variant.subtitle.properties = variant.subtitle.properties || {};
-          variant.subtitle.properties[prop] = value;
+          applyUpdates(variant.subtitle);
         } else if (elementIndex !== null && elementIndex >= 0 && variant.elements?.[elementIndex]) {
-          const variantEl = variant.elements[elementIndex];
-          variantEl.properties = variantEl.properties || {};
-          variantEl.properties[prop] = value;
+          applyUpdates(variant.elements[elementIndex]);
         }
       }
     }
 
     setSlides(updatedSlides);
+  };
+
+  // ✅ FIX: Update text property in both original and variant
+  const updateTextProperty = (prop: string, value: any) => {
+    updateTextProperties({ [prop]: value });
   };
 
   // ✅ FIX: Update text content in both original and variant
@@ -274,16 +283,20 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
     // Update original: Add to elements array
     originalSlide.elements = originalSlide.elements || [];
-    const insertIndex = (isTitle || isSubtitle) ? 0 : (elementIndex! + 1);
+
+    // Determine the actual insertion point in the original elements array
+    // If it's a variant element, we want to insert it after its original counterpart
+    const insertIndex = (isTitle || isSubtitle) ? 0 : (elementIndex !== null ? elementIndex + 1 : originalSlide.elements.length);
     originalSlide.elements.splice(insertIndex, 0, newTextElement);
 
     // Update current variant (if exists)
     if (originalSlide.layouts && originalSlide.layouts.length > 0) {
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
       const variant = originalSlide.layouts[variantIndex];
-      if (variant) {
-        variant.elements = variant.elements || [];
-        variant.elements.splice(insertIndex, 0, structuredClone(newTextElement));
+      if (variant && variant.elements) {
+        // Important: Update variant elements as well to keep them in sync
+        const variantInsertIndex = elementIndex !== null ? elementIndex + 1 : variant.elements.length;
+        variant.elements.splice(variantInsertIndex, 0, structuredClone(newTextElement));
       }
     }
 
@@ -326,7 +339,10 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     } else if (isSubtitle) {
       originalSlide.subtitle = undefined;
     } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements) {
-      originalSlide.elements.splice(elementIndex, 1);
+      // ✅ FIX: Robust deletion from original slide
+      if (elementIndex < originalSlide.elements.length) {
+        originalSlide.elements.splice(elementIndex, 1);
+      }
     }
 
     // Update current variant (if exists)
@@ -339,7 +355,10 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         } else if (isSubtitle) {
           variant.subtitle = undefined;
         } else if (elementIndex !== null && elementIndex >= 0 && variant.elements) {
-          variant.elements.splice(elementIndex, 1);
+          // ✅ FIX: Robust deletion from variant elements
+          if (elementIndex < variant.elements.length) {
+            variant.elements.splice(elementIndex, 1);
+          }
         }
       }
     }
@@ -423,7 +442,22 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           </Select>
           <Select
             value={fontWeight}
-            onChange={(e) => hasValidText && updateTextProperty("fontWeight", e.target.value)}
+            onChange={(e) => {
+              if (!hasValidText) return;
+              const value = e.target.value;
+              // ✅ FIX: Use updateTextProperties to apply both changes in one state update
+              if (value === "italic") {
+                updateTextProperties({
+                  fontStyle: "italic",
+                  fontWeight: "normal"
+                });
+              } else {
+                updateTextProperties({
+                  fontWeight: value,
+                  fontStyle: "normal"
+                });
+              }
+            }}
             size="small"
             disabled={!hasValidText}
             sx={{

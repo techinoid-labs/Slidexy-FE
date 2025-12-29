@@ -41,11 +41,9 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
         if (type === 'title') {
             updatedSlide.slide_title = { ...updatedSlide.slide_title, text: value };
         } else if (type === 'bullet' && typeof index === 'number') {
-            const target = bullets[index];
-            if (target) {
-                updatedSlide.elements = slide.elements.map((el: any) =>
-                    el.id === target.id ? { ...el, text: value } : el
-                );
+            if (slide.elements[index]) {
+                updatedSlide.elements = [...slide.elements];
+                updatedSlide.elements[index] = { ...slide.elements[index], text: value };
             }
         }
 
@@ -82,6 +80,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         color: '#000000',
                         textAlign: 'center'
                     }}
+                    elementProperties={slide.slide_title?.properties}
                 />
 
                 <div style={{
@@ -103,68 +102,72 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         opacity: 0.6,
                     }} />
 
-                    {bullets.map((bullet: any, index: number) => (
-                        <div key={bullet.id || index} style={{
-                            display: 'grid',
-                            gridTemplateColumns: '32px 1fr',
-                            gap: '1rem',
-                            alignItems: 'flex-start',
-                        }}>
-                            <div style={{ position: 'relative', width: '32px', height: '32px' }}>
-                                <div style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: '4px',
-                                    width: '24px',
-                                    height: '24px',
-                                    borderRadius: '50%',
-                                    background: '#ffffff',
-                                    border: `2px solid ${accent}`,
-                                    zIndex: 2
-                                }} />
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '7px',
-                                    left: '11px',
-                                    width: '10px',
-                                    height: '10px',
-                                    borderRadius: '50%',
-                                    background: accent,
-                                    zIndex: 3
-                                }} />
-                            </div>
-
-                            <div style={{
-                                background: '#ffffff',
-                                border: '1px solid #e2e8f0',
-                                borderRadius: '14px',
-                                padding: '1rem 1.2rem',
-                                boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                    {bullets.map((bullet: any) => {
+                        const actualIndex = slide.elements.indexOf(bullet);
+                        return (
+                            <div key={bullet.id || actualIndex} style={{
+                                display: 'grid',
+                                gridTemplateColumns: '32px 1fr',
+                                gap: '1rem',
+                                alignItems: 'flex-start',
                             }}>
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.6rem',
-                                    marginBottom: '0.3rem',
-                                }}>
-                                    <span style={{ fontWeight: 700, color: '#000000' }}>Step {index + 1}</span>
+                                <div style={{ position: 'relative', width: '32px', height: '32px' }}>
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: '4px',
+                                        width: '24px',
+                                        height: '24px',
+                                        borderRadius: '50%',
+                                        background: '#ffffff',
+                                        border: `2px solid ${accent}`,
+                                        zIndex: 2
+                                    }} />
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '7px',
+                                        left: '11px',
+                                        width: '10px',
+                                        height: '10px',
+                                        borderRadius: '50%',
+                                        background: accent,
+                                        zIndex: 3
+                                    }} />
                                 </div>
-                                <EditableElement
-                                    id={`timeline-${index}`}
-                                    text={bullet.text}
-                                    tagName="div"
-                                    isEditing={isEditing}
-                                    onChange={(val) => handleUpdate('bullet', val, index)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                    style={{
-                                        fontSize: '1.05rem',
-                                        color: '#000000',
-                                        lineHeight: 1.55,
-                                    }}
-                                />
+
+                                <div style={{
+                                    background: '#ffffff',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: '14px',
+                                    padding: '1rem 1.2rem',
+                                    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                                }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.6rem',
+                                        marginBottom: '0.3rem',
+                                    }}>
+                                        <span style={{ fontWeight: 700, color: '#000000' }}>Step {bullets.indexOf(bullet) + 1}</span>
+                                    </div>
+                                    <EditableElement
+                                        id={`timeline-${actualIndex}`}
+                                        text={bullet.text}
+                                        tagName="div"
+                                        isEditing={isEditing}
+                                        onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        style={{
+                                            fontSize: '1.05rem',
+                                            color: '#000000',
+                                            lineHeight: 1.55,
+                                        }}
+                                        elementProperties={bullet.properties}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         );
@@ -195,6 +198,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         color: '#000000',
                         marginBottom: '4rem'
                     }}
+                    elementProperties={slide.slide_title?.properties}
                 />
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
@@ -208,52 +212,56 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         zIndex: 0
                     }} />
 
-                    {bullets.map((bullet: any, index: number) => (
-                        <div key={bullet.id || index} style={{
-                            flex: 1,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            textAlign: 'center',
-                            padding: '0 1rem',
-                            zIndex: 1
-                        }}>
-                            <div style={{
-                                width: '50px',
-                                height: '50px',
-                                borderRadius: '50%',
-                                background: accent,
-                                color: '#ffffff',
+                    {bullets.map((bullet: any) => {
+                        const actualIndex = slide.elements.indexOf(bullet);
+                        return (
+                            <div key={bullet.id || actualIndex} style={{
+                                flex: 1,
                                 display: 'flex',
+                                flexDirection: 'column',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: 'bold',
-                                fontSize: '1.5rem',
-                                marginBottom: '1.5rem',
-                                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                                textAlign: 'center',
+                                padding: '0 1rem',
+                                zIndex: 1
                             }}>
-                                {index + 1}
+                                <div style={{
+                                    width: '50px',
+                                    height: '50px',
+                                    borderRadius: '50%',
+                                    background: accent,
+                                    color: '#ffffff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 'bold',
+                                    fontSize: '1.5rem',
+                                    marginBottom: '1.5rem',
+                                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                                }}>
+                                    {bullets.indexOf(bullet) + 1}
+                                </div>
+                                <EditableElement
+                                    id={`timeline-${actualIndex}`}
+                                    text={bullet.text}
+                                    tagName="p"
+                                    isEditing={isEditing}
+                                    onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    style={{
+                                        fontSize: '1.1rem',
+                                        color: '#000000',
+                                        fontWeight: 500,
+                                        background: '#ffffff',
+                                        padding: '1rem',
+                                        borderRadius: '8px',
+                                        border: '1px solid #e2e8f0',
+                                        width: '100%'
+                                    }}
+                                    elementProperties={bullet.properties}
+                                />
                             </div>
-                            <EditableElement
-                                id={`timeline-${index}`}
-                                text={bullet.text}
-                                tagName="p"
-                                isEditing={isEditing}
-                                onChange={(val) => handleUpdate('bullet', val, index)}
-                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                style={{
-                                    fontSize: '1.1rem',
-                                    color: '#000000',
-                                    fontWeight: 500,
-                                    background: '#ffffff',
-                                    padding: '1rem',
-                                    borderRadius: '8px',
-                                    border: '1px solid #e2e8f0',
-                                    width: '100%'
-                                }}
-                            />
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         );
@@ -279,6 +287,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         onChange={(val) => handleUpdate('title', val)}
                         onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text')}
                         style={{ fontSize: '3rem', fontWeight: 800, color: '#000000' }}
+                        elementProperties={slide.slide_title?.properties}
                     />
                 </div>
 
@@ -292,10 +301,11 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         background: '#e2e8f0'
                     }} />
 
-                    {bullets.map((bullet: any, index: number) => {
-                        const isLeft = index % 2 === 0;
+                    {bullets.map((bullet: any) => {
+                        const actualIndex = slide.elements.indexOf(bullet);
+                        const isLeft = bullets.indexOf(bullet) % 2 === 0;
                         return (
-                            <div key={bullet.id || index} style={{
+                            <div key={bullet.id || actualIndex} style={{
                                 display: 'flex',
                                 justifyContent: isLeft ? 'flex-end' : 'flex-start',
                                 marginBottom: '2rem',
@@ -316,13 +326,14 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                                         boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
                                     }}>
                                         <EditableElement
-                                            id={`timeline-${index}`}
+                                            id={`timeline-${actualIndex}`}
                                             text={bullet.text}
                                             tagName="p"
                                             isEditing={isEditing}
-                                            onChange={(val) => handleUpdate('bullet', val, index)}
-                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
+                                            onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
                                             style={{ fontSize: '1.1rem', color: '#000000', margin: 0 }}
+                                            elementProperties={bullet.properties}
                                         />
                                     </div>
                                 </div>
@@ -365,6 +376,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         onChange={(val) => handleUpdate('title', val)}
                         onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text')}
                         style={{ fontSize: '2.5rem', fontWeight: 800, color: '#000000' }}
+                        elementProperties={slide.slide_title?.properties}
                     />
                     <div style={{ fontSize: '5rem', fontWeight: 900, color: `${accent}20`, lineHeight: 1 }}>
                         {new Date().getFullYear()}
@@ -378,36 +390,40 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                     alignContent: 'center',
                     flex: 1
                 }}>
-                    {bullets.map((bullet: any, index: number) => (
-                        <div key={bullet.id || index} style={{
-                            background: '#ffffff',
-                            padding: '2rem',
-                            borderRadius: '16px',
-                            borderTop: `6px solid ${index % 2 === 0 ? accent : accent2}`,
-                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '1rem'
-                        }}>
-                            <span style={{
-                                fontSize: '2rem',
-                                fontWeight: 900,
-                                color: index % 2 === 0 ? accent : accent2,
-                                opacity: 0.5
+                    {bullets.map((bullet: any) => {
+                        const actualIndex = slide.elements.indexOf(bullet);
+                        return (
+                            <div key={bullet.id || actualIndex} style={{
+                                background: '#ffffff',
+                                padding: '2rem',
+                                borderRadius: '16px',
+                                borderTop: `6px solid ${bullets.indexOf(bullet) % 2 === 0 ? accent : accent2}`,
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1rem'
                             }}>
-                                0{index + 1}
-                            </span>
-                            <EditableElement
-                                id={`timeline-${index}`}
-                                text={bullet.text}
-                                tagName="p"
-                                isEditing={isEditing}
-                                onChange={(val) => handleUpdate('bullet', val, index)}
-                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                style={{ fontSize: '1.05rem', color: '#000000', lineHeight: 1.5 }}
-                            />
-                        </div>
-                    ))}
+                                <span style={{
+                                    fontSize: '2rem',
+                                    fontWeight: 900,
+                                    color: bullets.indexOf(bullet) % 2 === 0 ? accent : accent2,
+                                    opacity: 0.5
+                                }}>
+                                    0{bullets.indexOf(bullet) + 1}
+                                </span>
+                                <EditableElement
+                                    id={`timeline-${actualIndex}`}
+                                    text={bullet.text}
+                                    tagName="p"
+                                    isEditing={isEditing}
+                                    onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    style={{ fontSize: '1.05rem', color: '#000000', lineHeight: 1.5 }}
+                                    elementProperties={bullet.properties}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         );
@@ -441,6 +457,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                     borderLeft: `5px solid ${accent}`,
                     paddingLeft: '1rem'
                 }}
+                elementProperties={slide.slide_title?.properties}
             />
 
             <div style={{
@@ -450,40 +467,45 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                 flex: 1,
                 overflowY: 'auto'
             }}>
-                {bullets.map((bullet: any, index: number) => (
-                    <div key={bullet.id || index} style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '1.5rem',
-                        padding: '1.5rem',
-                        background: '#ffffff',
-                        borderRadius: '0 12px 12px 0',
-                        borderLeft: `2px solid ${accent}`,
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-                    }}>
-                        <div style={{
-                            fontSize: '1.5rem',
-                            fontWeight: 700,
-                            color: accent,
-                            minWidth: '40px'
+                {bullets.map((bullet: any) => {
+                    const actualIndex = slide.elements.indexOf(bullet);
+                    return (
+                        <div key={bullet.id || actualIndex} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1.5rem',
+                            padding: '1.5rem',
+                            background: '#ffffff',
+                            borderRadius: '0 12px 12px 0',
+                            borderLeft: `2px solid ${accent}`,
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
                         }}>
-                            {index + 1}.
+                            <div style={{
+                                fontSize: '1.5rem',
+                                fontWeight: 700,
+                                color: accent,
+                                minWidth: '40px'
+                            }}>
+                                {bullets.indexOf(bullet) + 1}.
+                            </div>
+                            <EditableElement
+                                id={`timeline-${actualIndex}`}
+                                text={bullet.text}
+                                tagName="div"
+                                isEditing={isEditing}
+                                onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                id-new={`bullet-${actualIndex}`}
+                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                style={{
+                                    fontSize: '1.1rem',
+                                    color: '#000000',
+                                    lineHeight: 1.5,
+                                }}
+                                elementProperties={bullet.properties}
+                            />
                         </div>
-                        <EditableElement
-                            id={`timeline-${index}`}
-                            text={bullet.text}
-                            tagName="div"
-                            isEditing={isEditing}
-                            onChange={(val) => handleUpdate('bullet', val, index)}
-                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                            style={{
-                                fontSize: '1.1rem',
-                                color: '#000000',
-                                lineHeight: 1.5,
-                            }}
-                        />
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

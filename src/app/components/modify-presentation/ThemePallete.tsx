@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Box, Button, Divider, Typography, Snackbar, Alert } from "@mui/material";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
-import LayoutVariantPreview from "./LayoutVariantPreview";
+import LiveLayoutPreview from "./LiveLayoutPreview";
 import { generateSlideVariants } from "../../../utils/variantGenerator";
 
 // Compact palette swatch component - small inline rectangles
@@ -177,7 +177,7 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
 
     if (selectedSlideIndex >= 0 && slides[selectedSlideIndex]) {
       const currentSlide = slides[selectedSlideIndex];
-      
+
       // Debounce variant generation to prevent performance issues
       variantTimeoutRef.current = setTimeout(() => {
         console.log('[ThemePanel] Generating fresh layouts for theme/slide update');
@@ -245,7 +245,7 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
     currentSlide.slide_title = selectedVariant.slide_title ? structuredClone(selectedVariant.slide_title) : currentSlide.slide_title;
     currentSlide.subtitle = selectedVariant.subtitle ? structuredClone(selectedVariant.subtitle) : currentSlide.subtitle;
     currentSlide.background = selectedVariant.background ? structuredClone(selectedVariant.background) : currentSlide.background;
-    
+
     if (selectedVariant.image_url !== undefined) {
       currentSlide.image_url = selectedVariant.image_url;
     }
@@ -288,6 +288,33 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
     }
   };
 
+  const updateContent = (item: any, primaryColor: string) => {
+    if (!item) return;
+
+    // Update title
+    if (item.slide_title) {
+      if (!item.slide_title.properties) item.slide_title.properties = {};
+      item.slide_title.properties = { ...item.slide_title.properties, fill: primaryColor };
+    }
+
+    // Update subtitle
+    if (item.subtitle) {
+      if (!item.subtitle.properties) item.subtitle.properties = {};
+      item.subtitle.properties = { ...item.subtitle.properties, fill: primaryColor };
+    }
+
+    // Update other text elements
+    if (item.elements && Array.isArray(item.elements)) {
+      item.elements = item.elements.map((el: any) => {
+        if (['text', 'bullet_point', 'quote', 'author', 'context'].includes(el.element_type)) {
+          const props = el.properties || {};
+          return { ...el, properties: { ...props, fill: primaryColor } };
+        }
+        return el;
+      });
+    }
+  };
+
   const handlePaletteClick = (palette: string[], index: number) => {
     const theme = paletteToTheme(palette);
     const contrastText = getContrastingTextColor(palette[0], palette[1]);
@@ -314,6 +341,17 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
         setQuotaError(true);
       }
     }
+
+    // ✅ Recursive update: update all slides and their layouts
+    const updatedSlides = slides.map((slide: any) => {
+      const newSlide = structuredClone(slide);
+      updateContent(newSlide, contrastText);
+      if (newSlide.layouts) {
+        newSlide.layouts.forEach((layout: any) => updateContent(layout, contrastText));
+      }
+      return newSlide;
+    });
+    setSlides(updatedSlides);
   };
 
   const handleReset = () => {
@@ -332,6 +370,17 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
     } catch (e) {
       console.error("Failed to reset localStorage", e);
     }
+
+    // ✅ Reset all slides and layouts
+    const updatedSlides = slides.map((slide: any) => {
+      const newSlide = structuredClone(slide);
+      updateContent(newSlide, contrastText);
+      if (newSlide.layouts) {
+        newSlide.layouts.forEach((layout: any) => updateContent(layout, contrastText));
+      }
+      return newSlide;
+    });
+    setSlides(updatedSlides);
   };
 
   useEffect(() => {
@@ -363,7 +412,7 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
   );
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const previewSize = isMobile ? { width: 120, height: 67.5 } : { width: 140, height: 78.75 }; // Smaller previews for narrower panel
+  const previewSize = isMobile ? { width: 220, height: 123.75 } : { width: 260, height: 146.25 }; // Slightly larger for better detail
 
   return (
     <Box className="w-[300px] min-w-[250px] md:min-w-[250px] bg-white flex-col border-r border-gray-200 shadow-sm"
@@ -426,9 +475,10 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
               {currentVariants.map((variant: any, i: number) => (
-                <LayoutVariantPreview
+                <LiveLayoutPreview
                   key={`variant-${selectedSlideIndex}-${i}`}
                   variant={variant}
+                  theme={selectedTheme}
                   isSelected={localVariantIndex === i}
                   onClick={() => applyVariant(i)}
                   size={previewSize}

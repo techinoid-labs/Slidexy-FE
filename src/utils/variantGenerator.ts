@@ -69,15 +69,15 @@ export const generateSlideVariants = (slide: any, selectedTheme: any) => {
       name: `Layout ${i}`,
       layout_type: layoutType,
       variantNumber: i,
-      slide_title: slide.slide_title,
-      subtitle: slide.subtitle,
-      elements: updatedElements,
+      // Deep clone objects to prevent Redux state mutation between variant references
+      slide_title: structuredClone(slide.slide_title),
+      subtitle: structuredClone(slide.subtitle),
+      elements: structuredClone(updatedElements),
       image_url: slide.image_url,
       background: { type: "solid", color: colors.background },
       slide_id: slide.slide_id,
     });
   }
 
-  console.log(`[variantGenerator] Generated ${variants.length} variant metadata objects for "${layoutType}"`);
   return variants;
 };

@@ -129,9 +129,24 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
   const [isLoading, setIsLoading] = useState(false);
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
 
+  // ✅ FIX: Get image object from current variant
   let imageObj: KonvaComponent | null = null;
   if (selectedSlideIndex !== -1 && slides[selectedSlideIndex] && selectedImageIndex !== null) {
-    imageObj = slides[selectedSlideIndex].elements[selectedImageIndex];
+    const originalSlide = slides[selectedSlideIndex];
+
+    const getCurrentVariantSlide = (slide: any) => {
+      if (!slide.layouts || slide.layouts.length === 0) {
+        return slide;
+      }
+      const variantIndex = slide.currentVariantIndex ?? 0;
+      const variant = slide.layouts[variantIndex];
+      return variant || slide;
+    };
+
+    const currentSlide = getCurrentVariantSlide(originalSlide);
+    if (currentSlide.elements?.[selectedImageIndex]) {
+      imageObj = currentSlide.elements[selectedImageIndex];
+    }
   }
 
   if (!imageObj || imageObj.element_type !== "image") return null;
@@ -141,25 +156,45 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
   const shadow = rawProps.shadow ?? { offsetX: 0, offsetY: 0, blur: 0, color: "#000000" };
   const borderRadius = rawProps.borderRadius ?? 0;
 
+  // ✅ FIX: Update image property in both original and variant
   const updateImageProperty = (props: { [key: string]: any }) => {
     if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null) return;
 
     const updatedSlides = structuredClone(slides);
-    const target = updatedSlides[selectedSlideIndex].elements[selectedImageIndex].properties;
-    const element = updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
+    const originalSlide = updatedSlides[selectedSlideIndex];
 
-    if (target) {
-      Object.entries(props).forEach(([key, value]) => {
-        target[key] = value;
-        // console.log(`[ImageSettingsPanelMobile] Updated ${key} to ${JSON.stringify(value)} for image at slide ${selectedSlideIndex}, index ${selectedImageIndex}`);
-      });
+    const updateInSlide = (slide: any) => {
+      if (slide && slide.elements?.[selectedImageIndex]) {
+        const el = slide.elements[selectedImageIndex];
+        el.properties = el.properties || {};
+        Object.entries(props).forEach(([key, value]) => {
+          el.properties[key] = value;
+        });
+        return el;
+      }
+      return null;
+    };
 
-      setSlides(updatedSlides);
+    // Update original
+    const updatedOriginalEl = updateInSlide(originalSlide);
+
+    // Update current variant
+    let updatedVariantEl = null;
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      updatedVariantEl = updateInSlide(variant);
+    }
+
+    setSlides(updatedSlides);
+
+    const activeEl = updatedVariantEl || updatedOriginalEl;
+    if (activeEl) {
       setSelectedImage({
-        ...element,
-        konva_component: element.konva_component || "Konva.Image",
-        element_type: element.element_type || "image",
-        properties: { ...element.properties },
+        ...activeEl,
+        konva_component: activeEl.konva_component || "Konva.Image",
+        element_type: activeEl.element_type || "image",
+        properties: { ...activeEl.properties },
       });
     }
   };
@@ -168,36 +203,39 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
     updateImageProperty({ [prop]: value });
   };
 
+  // ✅ FIX: Duplicate image in both original and variant
   const handleDuplicateImage = () => {
-    if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null)
-      return;
+    if (!imageObj || selectedSlideIndex === -1 || selectedImageIndex === null) return;
 
-    const currentSlide = slides[selectedSlideIndex];
-    const elements = [...currentSlide.elements];
+    const updatedSlides = structuredClone(slides);
+    const originalSlide = updatedSlides[selectedSlideIndex];
 
-    const originalElement = elements[selectedImageIndex];
+    const originalElement = originalSlide.elements?.[selectedImageIndex];
+    if (!originalElement) return;
 
     const newImageId = uuidv4();
     const newElement = {
       ...structuredClone(originalElement),
       id: `el-${selectedSlideIndex}-${uuidv4()}`,
       properties: {
-        ...structuredClone(originalElement.properties),
+        ...structuredClone(originalElement.properties || {}),
         image_id: newImageId,
-        x: (originalElement.properties?.x || 0) + 20,
-        y: (originalElement.properties?.y || 0) + 20,
+        x: (originalElement.properties?.x || 0) + 30,
+        y: (originalElement.properties?.y || 0) + 30,
       },
     };
 
-    elements.splice(selectedImageIndex + 1, 0, newElement);
+    // Update original
+    originalSlide.elements.splice(selectedImageIndex + 1, 0, newElement);
 
-    const updatedSlide = {
-      ...currentSlide,
-      elements,
-    };
-
-    const updatedSlides = [...slides];
-    updatedSlides[selectedSlideIndex] = updatedSlide;
+    // Update current variant
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant && variant.elements) {
+        variant.elements.splice(selectedImageIndex + 1, 0, structuredClone(newElement));
+      }
+    }
 
     setSlides(updatedSlides);
     setSelectedImage(newElement);
@@ -205,14 +243,33 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
     setSelectedImageId(newImageId);
   };
 
+  // ✅ FIX: Delete image from both original and variant
   const handleDeleteImage = () => {
     if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
+
     const updatedSlides = structuredClone(slides);
-    updatedSlides[selectedSlideIndex].elements.splice(selectedImageIndex, 1);
+    const originalSlide = updatedSlides[selectedSlideIndex];
+
+    // Delete from variant
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant && variant.elements) {
+        variant.elements.splice(selectedImageIndex, 1);
+      }
+    }
+
+    // Delete from original
+    originalSlide.elements.splice(selectedImageIndex, 1);
+
     setSlides(updatedSlides);
+    setSelectedImage(null);
+    setSelectedImageIndex(null);
+    setSelectedImageId(null);
     onClose();
   };
 
+  // ✅ FIX: Handle image change in both original and variant
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -220,23 +277,48 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
     const reader = new FileReader();
     reader.onloadend = () => {
       const result = reader.result as string;
-      if (selectedSlideIndex === null || selectedImageIndex === null || !slides[selectedSlideIndex]?.elements[selectedImageIndex]) return;
+      if (selectedSlideIndex === null || selectedImageIndex === null || !slides[selectedSlideIndex]) return;
 
       const updatedSlides = structuredClone(slides);
-      const element = updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
-      element.properties.imageSrc = result;
-      element.properties.opacity = 1;
+      const originalSlide = updatedSlides[selectedSlideIndex];
+
+      const updateSrc = (slide: any) => {
+        if (slide && slide.elements?.[selectedImageIndex]) {
+          const el = slide.elements[selectedImageIndex];
+          el.properties.imageSrc = result;
+          el.properties.opacity = 1;
+          return el;
+        }
+        return null;
+      };
+
+      // Update original
+      const updatedOriginalEl = updateSrc(originalSlide);
+
+      // Update variant
+      let updatedVariantEl = null;
+      if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+        const variantIndex = originalSlide.currentVariantIndex ?? 0;
+        const variant = originalSlide.layouts[variantIndex];
+        updatedVariantEl = updateSrc(variant);
+      }
+
       setSlides(updatedSlides);
-      setSelectedImage({
-        ...element,
-        konva_component: element.konva_component || "Konva.Image",
-        element_type: element.element_type || "image",
-        properties: { ...element.properties },
-      });
+
+      const activeEl = updatedVariantEl || updatedOriginalEl;
+      if (activeEl) {
+        setSelectedImage({
+          ...activeEl,
+          konva_component: activeEl.konva_component || "Konva.Image",
+          element_type: activeEl.element_type || "image",
+          properties: { ...activeEl.properties },
+        });
+      }
     };
     reader.readAsDataURL(file);
   };
 
+  // ✅ FIX: Remove background in both original and variant
   const handleRemoveBackground = async () => {
     if (!imageObj || !imageObj.properties?.imageSrc) return;
 
@@ -248,17 +330,41 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
       const reader = new FileReader();
       reader.onloadend = () => {
         const resultUrl = reader.result as string;
-        if (selectedSlideIndex !== null && selectedImageIndex !== null && slides[selectedSlideIndex]?.elements[selectedImageIndex]) {
+        if (selectedSlideIndex !== null && selectedImageIndex !== null && slides[selectedSlideIndex]) {
           const updatedSlides = structuredClone(slides);
-          const element = updatedSlides[selectedSlideIndex].elements[selectedImageIndex];
-          element.properties.imageSrc = resultUrl;
+          const originalSlide = updatedSlides[selectedSlideIndex];
+
+          const updateSrc = (slide: any) => {
+            if (slide && slide.elements?.[selectedImageIndex]) {
+              const el = slide.elements[selectedImageIndex];
+              el.properties.imageSrc = resultUrl;
+              return el;
+            }
+            return null;
+          };
+
+          // Update original
+          const updatedOriginalEl = updateSrc(originalSlide);
+
+          // Update variant
+          let updatedVariantEl = null;
+          if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+            updatedVariantEl = updateSrc(variant);
+          }
+
           setSlides(updatedSlides);
-          setSelectedImage({
-            ...element,
-            konva_component: element.konva_component || "Konva.Image",
-            element_type: element.element_type || "image",
-            properties: { ...element.properties },
-          });
+
+          const activeEl = updatedVariantEl || updatedOriginalEl;
+          if (activeEl) {
+            setSelectedImage({
+              ...activeEl,
+              konva_component: activeEl.konva_component || "Konva.Image",
+              element_type: activeEl.element_type || "image",
+              properties: { ...activeEl.properties },
+            });
+          }
         }
         setIsLoading(false);
       };

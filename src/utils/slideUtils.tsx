@@ -273,15 +273,19 @@ export const getRandomSlide = () => {
   return {
     slide_id: `slide-${Date.now()}`,
     slide_title: {
+      konva_component: "Konva.Text",
       text: "",
       properties: {
         fontSize: 24,
         fontFamily: "Arial",
         fill: "#000",
         fontStyle: "normal",
+        zIndex: 0,
       },
     },
     elements: [],
+    image_url: null,
+    image_caption: "",
   };
 };
 

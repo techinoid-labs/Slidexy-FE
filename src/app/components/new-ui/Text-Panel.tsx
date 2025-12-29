@@ -62,23 +62,37 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     sendElementBackward,
   } = useSlides();
   const { setPrimaryColor } = useSlideThemeContext();
+  // ✅ FIX: Parse selectedTextId to handle title, subtitle, and elements
   const parsed = selectedTextId
-    ? selectedTextId.match(/(?:title|el)-(\d+)(?:-(\d+))?/)
+    ? selectedTextId.match(/(?:title|subtitle|el)-(\d+)(?:-(\d+))?/)
     : null;
 
   const slideIndex = parsed ? parseInt(parsed[1], 10) : selectedSlideIndex;
-  const elementIndex = parsed?.[2]
-    ? parseInt(parsed[2], 10)
-    : selectedShapeIndex !== null
-      ? selectedShapeIndex
-      : null;
+  const elementIndex = parsed?.[2] ? parseInt(parsed[2], 10) : null;
 
+  // ✅ FIX: Get text object from current variant slide
   let textObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex]) {
+    const originalSlide = slides[slideIndex];
+
+    const getCurrentVariantSlide = (slide: any) => {
+      if (!slide.layouts || slide.layouts.length === 0) {
+        return slide;
+      }
+      const variantIndex = slide.currentVariantIndex ?? 0;
+      const variant = slide.layouts[variantIndex];
+      return variant || slide;
+    };
+
+    const currentSlide = getCurrentVariantSlide(originalSlide);
+
+    // ✅ FIX: Handle title, subtitle, and regular elements
     if (selectedTextId?.startsWith("title")) {
-      textObj = slides[slideIndex].slide_title;
-    } else if (elementIndex !== null) {
-      textObj = slides[slideIndex].elements[elementIndex];
+      textObj = currentSlide.slide_title;
+    } else if (selectedTextId?.startsWith("subtitle")) {
+      textObj = currentSlide.subtitle;
+    } else if (elementIndex !== null && currentSlide.elements?.[elementIndex]) {
+      textObj = currentSlide.elements[elementIndex];
     }
   }
 
@@ -100,104 +114,205 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
   const originalX = rawProps.x ?? 0;
   const originalY = rawProps.y ?? 0;
 
+  // ✅ FIX: Update text property in both original and variant
   const updateTextProperty = (prop: string, value: any) => {
     if (!textObj || slideIndex === -1) return;
-    const updatedSlides = structuredClone(slides);
-    const target: any = selectedTextId?.startsWith("title")
-      ? updatedSlides[slideIndex].slide_title.properties
-      : elementIndex !== null
-        ? updatedSlides[slideIndex].elements[elementIndex].properties
-        : null;
 
-    if (target) {
-      target[prop] = value;
-      if (prop === "align") {
-        target.align = value;
-        if (!target.width || target.width < 50) {
-          target.width = 220;
+    const updatedSlides = structuredClone(slides);
+    const originalSlide = updatedSlides[slideIndex];
+
+    const isTitle = selectedTextId?.startsWith("title");
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
+
+    // Update original slide
+    if (isTitle) {
+      originalSlide.slide_title = originalSlide.slide_title;
+      originalSlide.slide_title.properties = originalSlide.slide_title.properties || {};
+      originalSlide.slide_title.properties[prop] = value;
+      if (prop === "align") originalSlide.slide_title.properties.width = Math.max(originalSlide.slide_title.properties.width || 0, 220);
+    } else if (isSubtitle) {
+      originalSlide.subtitle = originalSlide.subtitle || {};
+      originalSlide.subtitle.properties = originalSlide.subtitle.properties || {};
+      originalSlide.subtitle.properties[prop] = value;
+    } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements?.[elementIndex]) {
+      const el = originalSlide.elements[elementIndex];
+      el.properties = el.properties || {};
+      el.properties[prop] = value;
+      if (prop === "align") el.properties.width = Math.max(el.properties.width || 0, 220);
+    }
+
+    // Update current variant (if exists)
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant) {
+        if (isTitle) {
+          variant.slide_title = variant.slide_title;
+          variant.slide_title.properties = variant.slide_title.properties || {};
+          variant.slide_title.properties[prop] = value;
+        } else if (isSubtitle) {
+          variant.subtitle = variant.subtitle || {};
+          variant.subtitle.properties = variant.subtitle.properties || {};
+          variant.subtitle.properties[prop] = value;
+        } else if (elementIndex !== null && elementIndex >= 0 && variant.elements?.[elementIndex]) {
+          const variantEl = variant.elements[elementIndex];
+          variantEl.properties = variantEl.properties || {};
+          variantEl.properties[prop] = value;
         }
       }
     }
+
     setSlides(updatedSlides);
   };
+
+  // ✅ FIX: Update color and disable theme color in both original and variant
   const setTextFillAndDisableTheme = (color: string) => {
-    const updatedSlides = structuredClone(slides);
-    const el = selectedTextId?.startsWith("title")
-      ? updatedSlides[slideIndex].slide_title
-      : elementIndex !== null
-        ? updatedSlides[slideIndex].elements[elementIndex]
-        : null;
+    if (slideIndex === -1) return;
 
-    if (!el) return;
-    el.properties.fill = color;
-    el.useThemeColor = false;
+    const updatedSlides = structuredClone(slides);
+    const originalSlide = updatedSlides[slideIndex];
+
+    const isTitle = selectedTextId?.startsWith("title");
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
+
+    // Update original
+    let el = isTitle
+      ? originalSlide.slide_title
+      : isSubtitle
+        ? originalSlide.subtitle
+        : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
+
+    if (el) {
+      el.properties = el.properties || {};
+      el.properties.fill = color;
+      el.useThemeColor = false;
+    }
+
+    // Update current variant (if exists)
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant) {
+        let variantEl = isTitle
+          ? variant.slide_title
+          : isSubtitle
+            ? variant.subtitle
+            : (elementIndex !== null && elementIndex >= 0 ? variant.elements?.[elementIndex] : null);
+
+        if (variantEl) {
+          variantEl.properties = variantEl.properties || {};
+          variantEl.properties.fill = color;
+          variantEl.useThemeColor = false;
+        }
+      }
+    }
 
     setSlides(updatedSlides);
   };
 
+  // ✅ FIX: Toggle bullet point in both original and variant
   const toggleBulletPoint = () => {
     if (!textObj || slideIndex === -1) return;
     const bulletPrefix = "• ";
     const updatedSlides = structuredClone(slides);
-    let target = selectedTextId?.startsWith("title")
-      ? updatedSlides[slideIndex].slide_title
-      : elementIndex !== null
-        ? updatedSlides[slideIndex].elements[elementIndex]
-        : null;
+    const originalSlide = updatedSlides[slideIndex];
 
-    if (!target) return;
+    const isTitle = selectedTextId?.startsWith("title");
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
 
-    const lines = (target.text || "").split("\n").map((line) => line.trim());
-    let newText = "";
+    const processText = (target: any) => {
+      if (!target) return;
+      const lines = (target.text || "").split("\n").map((line: string) => line.trim());
+      let newText = "";
+      if (!lines.join("").trim()) {
+        newText = "• [Click to edit]";
+      } else if (lines.every((line: string) => line.startsWith(bulletPrefix))) {
+        newText = lines.map((line: string) => line.substring(bulletPrefix.length).trim()).join("\n");
+      } else {
+        newText = lines.map((line: string) => bulletPrefix + line).join("\n");
+      }
+      target.text = newText;
+      if (target.properties) {
+        target.properties.x = originalX;
+        target.properties.y = originalY;
+      }
+    };
 
-    if (!lines.join("").trim()) {
-      newText = "• [Click to edit]";
-    } else if (lines.every((line) => line.startsWith(bulletPrefix))) {
-      newText = lines
-        .map((line) => line.substring(bulletPrefix.length).trim())
-        .join("\n");
-    } else {
-      newText = lines.map((line) => bulletPrefix + line).join("\n");
+    // Update original
+    const originalTarget = isTitle
+      ? originalSlide.slide_title
+      : isSubtitle
+        ? originalSlide.subtitle
+        : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
+    processText(originalTarget);
+
+    // Update current variant
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant) {
+        const variantTarget = isTitle
+          ? variant.slide_title
+          : isSubtitle
+            ? variant.subtitle
+            : (elementIndex !== null && elementIndex >= 0 ? variant.elements?.[elementIndex] : null);
+        processText(variantTarget);
+      }
     }
 
-    target.text = newText;
-    if (target.properties) {
-      target.properties.x = originalX;
-      target.properties.y = originalY;
-    }
     setSlides(updatedSlides);
   };
 
+  // ✅ FIX: Unbullet text in both original and variant
   const unbulletText = () => {
     if (!textObj || slideIndex === -1) return;
     const bulletPrefix = "• ";
     const updatedSlides = structuredClone(slides);
-    let target = selectedTextId?.startsWith("title")
-      ? updatedSlides[slideIndex].slide_title
-      : elementIndex !== null
-        ? updatedSlides[slideIndex].elements[elementIndex]
-        : null;
+    const originalSlide = updatedSlides[slideIndex];
 
-    if (!target) return;
+    const isTitle = selectedTextId?.startsWith("title");
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
 
-    const lines = (target.text || "").split("\n").map((line) => line.trim());
-    let newText = lines.join("\n");
+    const processTextStrip = (target: any) => {
+      if (!target) return;
+      const lines = (target.text || "").split("\n").map((line: string) => line.trim());
+      let newText = lines.join("\n");
+      if (lines.some((line: string) => line.startsWith(bulletPrefix))) {
+        newText = lines
+          .map((line: string) =>
+            line.startsWith(bulletPrefix) ? line.substring(bulletPrefix.length).trim() : line
+          )
+          .join("\n");
+      }
+      target.text = newText;
+      if (target.properties) {
+        target.properties.x = originalX;
+        target.properties.y = originalY;
+      }
+    };
 
-    if (lines.some((line) => line.startsWith(bulletPrefix))) {
-      newText = lines
-        .map((line) =>
-          line.startsWith(bulletPrefix)
-            ? line.substring(bulletPrefix.length).trim()
-            : line
-        )
-        .join("\n");
+    // Update original
+    const originalTarget = isTitle
+      ? originalSlide.slide_title
+      : isSubtitle
+        ? originalSlide.subtitle
+        : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
+    processTextStrip(originalTarget);
+
+    // Update current variant
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant) {
+        const variantTarget = isTitle
+          ? variant.slide_title
+          : isSubtitle
+            ? variant.subtitle
+            : (elementIndex !== null && elementIndex >= 0 ? variant.elements?.[elementIndex] : null);
+        processTextStrip(variantTarget);
+      }
     }
 
-    target.text = newText;
-    if (target.properties) {
-      target.properties.x = originalX;
-      target.properties.y = originalY;
-    }
     setSlides(updatedSlides);
   };
 
@@ -240,82 +355,117 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     updateTextProperty("fontWeight", newStyle);
     setIsItalic(!isItalic);
   };
+  // ✅ FIX: Duplicate text in both original and variant
   const handleDuplicateText = () => {
-    if (!textObj || slideIndex === -1) {
-      return;
-    }
+    if (!textObj || slideIndex === -1) return;
 
     const updatedSlides = structuredClone(slides);
-    const currentSlide = updatedSlides[slideIndex];
-    if (!currentSlide) {
-      return;
-    }
+    const originalSlide = updatedSlides[slideIndex];
 
-    if (selectedTextId?.startsWith("title")) {
-      const titleElement = currentSlide.slide_title;
+    const isTitle = selectedTextId?.startsWith("title");
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
 
-      const newTextElement = {
-        konva_component: "Konva.Text",
-        element_type: "text",
-        text: titleElement.text,
-        properties: {
-          ...structuredClone(titleElement.properties),
-          x: (titleElement.properties?.x || 0) + 20,
-          y: (titleElement.properties?.y || 0) + 20,
-        },
-        useThemeColor: titleElement.useThemeColor || false,
-      };
+    const originalElement = isTitle
+      ? originalSlide.slide_title
+      : isSubtitle
+        ? originalSlide.subtitle
+        : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
 
-      currentSlide.elements.push(newTextElement);
+    if (!originalElement) return;
 
-    } else if (elementIndex !== null) {
-      const originalElement = currentSlide.elements[elementIndex];
+    const newTextElement = {
+      konva_component: "Konva.Text",
+      element_type: "text",
+      text: originalElement.text || "",
+      properties: {
+        ...structuredClone(originalElement.properties || {}),
+        userAdded: true,
+        x: (originalElement.properties?.x || 100) + 30,
+        y: (originalElement.properties?.y || 100) + 30,
+        width: originalElement.properties?.width || 300,
+        fontSize: originalElement.properties?.fontSize || 24,
+        fontFamily: originalElement.properties?.fontFamily || "Roboto",
+        fill: originalElement.properties?.fill || "#000000",
+        fontWeight: originalElement.properties?.fontWeight || "normal",
+        align: originalElement.properties?.align || "left",
+      },
+      useThemeColor: originalElement.useThemeColor !== undefined ? originalElement.useThemeColor : false,
+    };
 
-      const newElement = {
-        ...structuredClone(originalElement),
-        properties: {
-          ...structuredClone(originalElement.properties),
-          x: (originalElement.properties?.x || 0) + 20,
-          y: (originalElement.properties?.y || 0) + 20,
-        },
-      };
+    // Update original: Add to elements array
+    originalSlide.elements = originalSlide.elements || [];
+    const insertIndex = (isTitle || isSubtitle) ? 0 : (elementIndex! + 1);
+    originalSlide.elements.splice(insertIndex, 0, newTextElement);
 
-      currentSlide.elements.splice(elementIndex + 1, 0, newElement);
+    // Update current variant (if exists)
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant) {
+        variant.elements = variant.elements || [];
+        variant.elements.splice(insertIndex, 0, structuredClone(newTextElement));
+      }
     }
 
     setSlides(updatedSlides);
+
+    // Select the new duplicated element
+    const newId = `el-${slideIndex}-${insertIndex}`;
+    // setSelectedTextId(newId); // Note: SlideEditorMobile might need to handle this via context
   };
 
+  // ✅ FIX: Delete text in both original and variant
   const handleDeleteText = () => {
     if (slideIndex === -1) return;
-    const updatedSlides = structuredClone(slides);
 
-    if (selectedTextId?.startsWith("title")) {
-      updatedSlides[slideIndex].slide_title = {
+    const updatedSlides = structuredClone(slides);
+    const originalSlide = updatedSlides[slideIndex];
+
+    const isTitle = selectedTextId?.startsWith("title");
+    const isSubtitle = selectedTextId?.startsWith("subtitle");
+
+    // Update original
+    if (isTitle) {
+      originalSlide.slide_title = {
         konva_component: "Konva.Text",
         text: "",
         properties: {
-          fontSize: 14,
-          fontWeight: "normal",
-          fontFamily: "Roboto",
-          fill: "#444",
+          fontSize: 36,
+          fontWeight: "700",
+          fontFamily: "Raleway",
+          fill: "#000",
           fontStyle: "normal",
-          align: "left",
-          x: 0,
-          y: 25,
-          width: 220,
+          align: "center",
+          x: 25,
+          y: 40,
+          width: 800,
           height: 0,
-          radius: 0,
-          numPoints: 0,
-          innerRadius: 0,
-          outerRadius: 0,
         },
+        useThemeColor: true,
       };
-    } else if (elementIndex !== null) {
-      updatedSlides[slideIndex].elements.splice(elementIndex, 1);
+    } else if (isSubtitle) {
+      originalSlide.subtitle = undefined;
+    } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements) {
+      originalSlide.elements.splice(elementIndex, 1);
+    }
+
+    // Update current variant (if exists)
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant) {
+        if (isTitle) {
+          variant.slide_title = structuredClone(originalSlide.slide_title);
+        } else if (isSubtitle) {
+          variant.subtitle = undefined;
+        } else if (elementIndex !== null && elementIndex >= 0 && variant.elements) {
+          variant.elements.splice(elementIndex, 1);
+        }
+      }
     }
 
     setSlides(updatedSlides);
+    // setSelectedTextId(null); // Let the editor handle selection clear if needed
   };
 
   return (
