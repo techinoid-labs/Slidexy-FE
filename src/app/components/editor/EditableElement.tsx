@@ -148,6 +148,7 @@ export const EditableElement: React.FC<EditableElementProps> = ({
         <div style={wrapperStyle}>
             <Tag
                 ref={contentRef}
+                id={id}
                 contentEditable
                 suppressContentEditableWarning
                 className={`${className} outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 rounded px-1 transition-shadow duration-200 cursor-text empty:before:content-[attr(placeholder)] empty:before:text-gray-400`}

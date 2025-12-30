@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
+import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
 
 interface SplitContentHTMLProps {
@@ -35,6 +36,13 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
             }
         }
         onSlideUpdate(updatedSlide);
+    };
+
+    const handleElementUpdate = (index: number, updates: any) => {
+        if (!onSlideUpdate) return;
+        const updatedElements = [...(slide.elements || [])];
+        updatedElements[index] = { ...updatedElements[index], ...updates };
+        onSlideUpdate({ ...slide, elements: updatedElements });
     };
 
     const title = slide.slide_title?.text || "Slide Title";
@@ -77,7 +85,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                         marginBottom: '2rem'
                     }} />
                     <EditableElement
-                        id="slide-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -117,7 +125,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                                         flexShrink: 0
                                     }} />
                                     <EditableElement
-                                        id={`bullet-${actualIndex}`}
+                                        id={`el-${slideIndex}-${actualIndex}`}
                                         text={bullet.text}
                                         tagName="p"
                                         isEditing={isEditing}
@@ -131,6 +139,13 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                         })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -210,6 +225,13 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                         </div>
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -218,6 +240,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
     if (variant === 3) {
         return (
             <div style={{
+                position: 'relative',
                 height: '100%',
                 background: bgColor,
                 fontFamily: "'Raleway', sans-serif",
@@ -290,6 +313,13 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -298,6 +328,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
     if (variant === 4) {
         return (
             <div style={{
+                position: 'relative',
                 display: 'flex',
                 height: '100%',
                 background: bgColor,
@@ -373,6 +404,13 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                         })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -500,6 +538,13 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                     })}
                 </div>
             </div>
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </div>
     );
 };

@@ -66,41 +66,6 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
         onSlideUpdate({ elements: updatedElements });
     };
 
-    const TitleElement = ({ style }: { style: React.CSSProperties }) => (
-        <EditableElement
-            id={`title-${slideIndex}`}
-            text={title}
-            tagName="h1"
-            isEditing={isEditing}
-            onChange={(val) => handleUpdate('title', val)}
-            onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
-            style={style}
-            elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
-        />
-    );
-
-    const SubtitleElement = ({ style }: { style: React.CSSProperties }) => (
-        <EditableElement
-            id={`subtitle-${slideIndex}`}
-            text={subtitle}
-            tagName="p"
-            isEditing={isEditing}
-            onChange={(val) => handleUpdate('subtitle', val)}
-            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
-            style={style}
-            elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
-        />
-    );
-
-    const ElementsRenderer = () => (
-        <UserElementsRenderer
-            elements={slide.elements || []}
-            isEditing={isEditing}
-            onElementClick={onElementClick}
-            onElementUpdate={handleElementUpdate}
-            slideIndex={slideIndex}
-        />
-    );
 
     // Variant 1: Hero Glass Overlay (Gamma Inspired)
     if (variant === 1) {
@@ -111,18 +76,25 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                 background: bgColor,
                 position: 'relative',
                 overflow: 'hidden',
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'Raleway', sans-serif",
             }}>
                 {/* Background Hero Image */}
                 {imageUrl && (
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backgroundImage: `url(${imageUrl})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        opacity: 0.9,
-                    }} />
+                    <div
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundImage: `url(${imageUrl})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            opacity: slide.image_properties?.opacity ?? 0.9,
+                            cursor: isEditing ? 'pointer' : 'default',
+                            filter: slide.image_properties?.shadow
+                                ? `drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                                : undefined,
+                        }}
+                    />
                 )}
 
                 {/* Gradient Wash */}
@@ -153,23 +125,41 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                         boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.15)',
                         maxWidth: '100%',
                     }}>
-                        <TitleElement style={{
-                            fontSize: '2.8rem', // ✅ Scaled down from 4rem
-                            fontWeight: 700,    // ✅ Scaled down from 800
-                            color: primaryColor,
-                            margin: '0 0 1rem',
-                            lineHeight: 1.2,
-                            letterSpacing: '-0.02em',
-                        }} />
+                        <EditableElement
+                            id={`title-${slideIndex}`}
+                            text={title}
+                            tagName="h1"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('title', val)}
+                            onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
+                            style={{
+                                fontSize: '2.8rem', // ✅ Scaled down from 4rem
+                                fontWeight: 700,    // ✅ Scaled down from 800
+                                color: primaryColor,
+                                margin: '0 0 1rem',
+                                lineHeight: 1.2,
+                                letterSpacing: '-0.02em',
+                            }}
+                            elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
+                        />
 
                         {subtitle && (
-                            <SubtitleElement style={{
-                                fontSize: '1.1rem', // ✅ Scaled down from 1.4rem
-                                color: secondaryColor,
-                                lineHeight: 1.5,
-                                margin: 0,
-                                fontWeight: 400,
-                            }} />
+                            <EditableElement
+                                id={`subtitle-${slideIndex}`}
+                                text={subtitle}
+                                tagName="p"
+                                isEditing={isEditing}
+                                onChange={(val) => handleUpdate('subtitle', val)}
+                                onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
+                                style={{
+                                    fontSize: '1.1rem', // ✅ Scaled down from 1.4rem
+                                    color: secondaryColor,
+                                    lineHeight: 1.5,
+                                    margin: 0,
+                                    fontWeight: 400,
+                                }}
+                                elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
+                            />
                         )}
                     </div>
                 </div>
@@ -198,7 +188,6 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                                 alignItems: 'center',
                                 gap: '0.75rem',
                                 border: `1px solid ${accentColor}20`,
-                                transform: `rotate(${idx % 2 === 0 ? '-1deg' : '1deg'})`,
                             }}>
                                 <div style={{
                                     width: '10px',
@@ -208,12 +197,15 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                                     flexShrink: 0,
                                 }} />
                                 <EditableElement
-                                    id={`el-${slideIndex}-${actualIndex}`}
+                                    id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}
                                     tagName="div"
                                     isEditing={isEditing}
                                     onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    onSelectElement={() => {
+                                        const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                        onElementClick?.(bId, 'text', actualIndex);
+                                    }}
                                     style={{
                                         fontSize: '0.95rem',
                                         color: primaryColor,
@@ -227,7 +219,13 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                     })}
                 </div>
 
-                <ElementsRenderer />
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -239,7 +237,7 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                 display: 'flex',
                 height: '100%',
                 background: bgColor,
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'Raleway', sans-serif",
                 gap: '1.5rem',
                 padding: '2rem',
             }}>
@@ -267,23 +265,41 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                         Introduction
                     </div>
 
-                    <TitleElement style={{
-                        fontSize: '2.5rem', // ✅ Scaled down from 3.8rem
-                        fontWeight: 700,    // ✅ Scaled down from 900
-                        color: primaryColor,
-                        margin: '0 0 1rem',
-                        lineHeight: 1.1,
-                        letterSpacing: '-0.02em',
-                    }} />
+                    <EditableElement
+                        id={`title-${slideIndex}`}
+                        text={title}
+                        tagName="h1"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('title', val)}
+                        onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
+                        style={{
+                            fontSize: '2.5rem', // ✅ Scaled down from 3.8rem
+                            fontWeight: 700,    // ✅ Scaled down from 900
+                            color: primaryColor,
+                            margin: '0 0 1rem',
+                            lineHeight: 1.1,
+                            letterSpacing: '-0.02em',
+                        }}
+                        elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
+                    />
 
                     {subtitle && (
-                        <SubtitleElement style={{
-                            fontSize: '1rem',
-                            color: textLightColor,
-                            lineHeight: 1.5,
-                            margin: '0 0 2rem',
-                            fontWeight: 400,
-                        }} />
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
+                            style={{
+                                fontSize: '1rem',
+                                color: textLightColor,
+                                lineHeight: 1.5,
+                                margin: '0 0 2rem',
+                                fontWeight: 400,
+                            }}
+                            elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
+                        />
                     )}
 
                     <div style={{
@@ -311,12 +327,15 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                                         {idx + 1}
                                     </div>
                                     <EditableElement
-                                        id={`el-${slideIndex}-${actualIndex}`}
+                                        id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                         text={bullet.text}
                                         tagName="div"
                                         isEditing={isEditing}
                                         onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        onSelectElement={() => {
+                                            const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                            onElementClick?.(bId, 'text', actualIndex);
+                                        }}
                                         style={{
                                             fontSize: '0.95rem',
                                             color: primaryColor,
@@ -341,8 +360,19 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                 }}>
                     {imageUrl ? (
                         <img
+                            onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
                             src={imageUrl}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                cursor: isEditing ? 'pointer' : 'default',
+                                opacity: slide.image_properties?.opacity ?? 1,
+                                borderRadius: `${slide.image_properties?.borderRadius ?? 0}px`,
+                                filter: slide.image_properties?.shadow
+                                    ? `drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                                    : undefined,
+                            }}
                             alt="hero"
                         />
                     ) : (
@@ -387,7 +417,13 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                     </div>
                 </div>
 
-                <ElementsRenderer />
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -401,21 +437,29 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                 background: bgColor,
                 position: 'relative',
                 overflow: 'hidden',
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'Raleway', sans-serif",
             }}>
                 {/* Large Background Hero */}
-                <div style={{
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: '60%',
-                    backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundColor: accentColor,
-                    clipPath: 'polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%)',
-                }} />
+                <div
+                    onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                    style={{
+                        position: 'absolute',
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: '60%',
+                        backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundColor: accentColor,
+                        clipPath: 'polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%)',
+                        cursor: isEditing ? 'pointer' : 'default',
+                        opacity: slide.image_properties?.opacity ?? 1,
+                        filter: slide.image_properties?.shadow
+                            ? `drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                            : undefined,
+                    }}
+                />
 
                 {/* Content Panel */}
                 <div style={{
@@ -439,21 +483,39 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                             marginBottom: '2rem',
                         }} />
 
-                        <TitleElement style={{
-                            fontSize: '2.8rem', // ✅ Scaled down from 3.5rem
-                            fontWeight: 700,    // ✅ Scaled down from 800
-                            color: primaryColor,
-                            margin: '0 0 1rem',
-                            lineHeight: 1.2,
-                        }} />
+                        <EditableElement
+                            id={`title-${slideIndex}`}
+                            text={title}
+                            tagName="h1"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('title', val)}
+                            onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
+                            style={{
+                                fontSize: '2.8rem', // ✅ Scaled down from 3.5rem
+                                fontWeight: 700,    // ✅ Scaled down from 800
+                                color: primaryColor,
+                                margin: '0 0 1rem',
+                                lineHeight: 1.2,
+                            }}
+                            elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
+                        />
 
                         {subtitle && (
-                            <SubtitleElement style={{
-                                fontSize: '1.05rem',
-                                color: textLightColor,
-                                lineHeight: 1.6,
-                                margin: '0 0 2rem',
-                            }} />
+                            <EditableElement
+                                id={`subtitle-${slideIndex}`}
+                                text={subtitle}
+                                tagName="p"
+                                isEditing={isEditing}
+                                onChange={(val) => handleUpdate('subtitle', val)}
+                                onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
+                                style={{
+                                    fontSize: '1.05rem',
+                                    color: textLightColor,
+                                    lineHeight: 1.6,
+                                    margin: '0 0 2rem',
+                                }}
+                                elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
+                            />
                         )}
 
                         <div style={{
@@ -479,12 +541,15 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                                             flexShrink: 0,
                                         }} />
                                         <EditableElement
-                                            id={`el-${slideIndex}-${actualIndex}`}
+                                            id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                             text={bullet.text}
                                             tagName="div"
                                             isEditing={isEditing}
                                             onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                            onSelectElement={() => {
+                                                const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                                onElementClick?.(bId, 'text', actualIndex);
+                                            }}
                                             style={{
                                                 fontSize: '1rem',
                                                 color: primaryColor,
@@ -500,7 +565,13 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                     </div>
                 </div>
 
-                <ElementsRenderer />
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -513,7 +584,7 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                 flexDirection: 'column',
                 height: '100%',
                 background: `radial-gradient(circle at top right, ${accentColor}08, ${bgColor})`,
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'Raleway', sans-serif",
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '3rem',
@@ -532,22 +603,40 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                         alignItems: 'center',
                     }}>
                         <div style={{ flex: '1.5' }}>
-                            <TitleElement style={{
-                                fontSize: '3rem',   // ✅ Scaled down from 4.2rem
-                                fontWeight: 700,    // ✅ Scaled down from 800
-                                color: primaryColor,
-                                margin: '0 0 0.75rem',
-                                letterSpacing: '-0.02em',
-                                lineHeight: 1.1,
-                            }} />
+                            <EditableElement
+                                id={`title-${slideIndex}`}
+                                text={title}
+                                tagName="h1"
+                                isEditing={isEditing}
+                                onChange={(val) => handleUpdate('title', val)}
+                                onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
+                                style={{
+                                    fontSize: '3rem',   // ✅ Scaled down from 4.2rem
+                                    fontWeight: 700,    // ✅ Scaled down from 800
+                                    color: primaryColor,
+                                    margin: '0 0 0.75rem',
+                                    letterSpacing: '-0.02em',
+                                    lineHeight: 1.1,
+                                }}
+                                elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
+                            />
 
                             {subtitle && (
-                                <SubtitleElement style={{
-                                    fontSize: '1.2rem',
-                                    color: textLightColor,
-                                    lineHeight: 1.4,
-                                    fontWeight: 400,
-                                }} />
+                                <EditableElement
+                                    id={`subtitle-${slideIndex}`}
+                                    text={subtitle}
+                                    tagName="p"
+                                    isEditing={isEditing}
+                                    onChange={(val) => handleUpdate('subtitle', val)}
+                                    onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
+                                    style={{
+                                        fontSize: '1.2rem',
+                                        color: textLightColor,
+                                        lineHeight: 1.4,
+                                        fontWeight: 400,
+                                    }}
+                                    elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
+                                />
                             )}
                         </div>
 
@@ -568,7 +657,22 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                                 background: `linear-gradient(135deg, ${accentColor}10, ${accent2Color}05)`,
                             }}>
                                 {imageUrl && (
-                                    <img src={imageUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="hero" />
+                                    <img
+                                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                                        src={imageUrl}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            cursor: isEditing ? 'pointer' : 'default',
+                                            opacity: slide.image_properties?.opacity ?? 1,
+                                            borderRadius: `${slide.image_properties?.borderRadius ?? 0}px`,
+                                            filter: slide.image_properties?.shadow
+                                                ? `drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                                                : undefined,
+                                        }}
+                                        alt="hero"
+                                    />
                                 )}
                             </div>
                         </div>
@@ -610,12 +714,15 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                                         {idx + 1}
                                     </div>
                                     <EditableElement
-                                        id={`el-${slideIndex}-${actualIndex}`}
+                                        id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                         text={bullet.text}
                                         tagName="div"
                                         isEditing={isEditing}
                                         onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        onSelectElement={() => {
+                                            const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                            onElementClick?.(bId, 'text', actualIndex);
+                                        }}
                                         style={{
                                             fontSize: '0.9rem',
                                             color: primaryColor,
@@ -630,7 +737,13 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                     </div>
                 </div>
 
-                <ElementsRenderer />
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -641,19 +754,26 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
             display: 'flex',
             height: '100%',
             background: bgColor,
-            fontFamily: "'Inter', sans-serif",
+            fontFamily: "'Raleway', sans-serif",
             position: 'relative',
             overflow: 'hidden',
         }}>
             {/* Background Hero */}
-            <div style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                opacity: 0.85,
-            }} />
+            <div
+                onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    opacity: slide.image_properties?.opacity ?? 0.85,
+                    cursor: isEditing ? 'pointer' : 'default',
+                    filter: slide.image_properties?.shadow
+                        ? `drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                        : undefined,
+                }}
+            />
 
             {/* Content Sidebar */}
             <div style={{
@@ -684,22 +804,40 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                         Gamma Design
                     </div>
 
-                    <TitleElement style={{
-                        fontSize: '2.5rem', // ✅ Scaled down from 3rem
-                        fontWeight: 700,    // ✅ Scaled down from 800
-                        color: primaryColor,
-                        margin: '0 0 1rem',
-                        lineHeight: 1.1,
-                        letterSpacing: '-0.02em',
-                    }} />
+                    <EditableElement
+                        id={`title-${slideIndex}`}
+                        text={title}
+                        tagName="h1"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('title', val)}
+                        onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
+                        style={{
+                            fontSize: '2.5rem', // ✅ Scaled down from 3rem
+                            fontWeight: 700,    // ✅ Scaled down from 800
+                            color: primaryColor,
+                            margin: '0 0 1rem',
+                            lineHeight: 1.1,
+                            letterSpacing: '-0.02em',
+                        }}
+                        elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
+                    />
 
                     {subtitle && (
-                        <SubtitleElement style={{
-                            fontSize: '1rem',
-                            color: textLightColor,
-                            lineHeight: 1.5,
-                            fontWeight: 400,
-                        }} />
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
+                            style={{
+                                fontSize: '1rem',
+                                color: textLightColor,
+                                lineHeight: 1.5,
+                                fontWeight: 400,
+                            }}
+                            elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
+                        />
                     )}
                 </div>
 
@@ -720,12 +858,15 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                                 alignItems: 'center',
                             }}>
                                 <EditableElement
-                                    id={`el-${slideIndex}-${actualIndex}`}
+                                    id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}
                                     tagName="div"
                                     isEditing={isEditing}
                                     onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    onSelectElement={() => {
+                                        const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                        onElementClick?.(bId, 'text', actualIndex);
+                                    }}
                                     style={{
                                         fontSize: '0.9rem',
                                         color: primaryColor,
@@ -756,7 +897,13 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                 </div>
             </div>
 
-            <ElementsRenderer />
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </div>
     );
 };

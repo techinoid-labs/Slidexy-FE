@@ -289,7 +289,14 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     elements: KonvaComponent[],
     id: string
   ): { element: KonvaComponent; index: number } | null {
-    // New: Parse index-based IDs (e.g., "el-0-5" -> elements[5])
+    // 1. Try finding by stable ID first (best practice)
+    for (let i = 0; i < elements.length; i++) {
+      const el = elements[i];
+      const elId = el.id || el.properties?.id || el.shape_id || el.properties?.shape_id || el.image_id || el.properties?.image_id;
+      if (elId === id) return { element: el, index: i };
+    }
+
+    // 2. Parse index-based IDs (fallback for legacy or temporary selection)
     if (id.startsWith("el-")) {
       const match = id.match(/el-(\d+)-(\d+)/);
       if (match) {
@@ -300,19 +307,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     }
-    // Existing loop for stored IDs (el.id, shape_id, properties.image_id)
-    for (let i = 0; i < elements.length; i++) {
-      const el = elements[i];
-      if (el.id && el.id === id) {
-        return { element: el, index: i };
-      }
-      if (el.shape_id && el.shape_id === id) {
-        return { element: el, index: i };
-      }
-      if (el.properties && (el.properties as any).image_id === id) {
-        return { element: el, index: i };
-      }
-    }
+
     return null;
   }
   // Helper function (add this above the functions if not already present)
@@ -510,17 +505,20 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     const currentSlide = slides[selectedSlideIndex];
     const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
     const prePushLength = currentSlide.elements?.length || 0;
-    const newIndex = prePushLength;  // Index before push
-    const textId = `el-${selectedSlideIndex}-${newIndex}`;  // Index-based ID
+
+    // Generate a stable unique ID
+    const textId = `user-text-${uuidv4()}`;
+
     const newTextElement: KonvaComponent = {
+      id: textId, // Stable ID
       konva_component: "Konva.Text",
       element_type: "text",
       text: props?.text || "New Text",
       properties: {
-        // Removed id: textId (unnecessary; use element-level id if needed elsewhere)
+        id: textId,
         userAdded: true,
         fontSize: props?.fontSize || 24,
-        fontFamily: props?.fontFamily || "Roboto",
+        fontFamily: props?.fontFamily || "Raleway",
         fill: props?.fill || selectedTheme?.primaryColor || "#000000",
         fontWeight: props?.fontWeight || "normal",
         fontStyle: "normal",
@@ -529,24 +527,18 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         y: props?.y ?? SLIDE_HEIGHT / 2,
         width: 300,
         height: 0,
-        zIndex: prePushLength + 200,  // Adjusted for pre-push
+        zIndex: prePushLength + 200,
       },
       useThemeColor: false,
     };
+
     const updatedSlides = structuredClone(slides);
     const targetSlide = updatedSlides[selectedSlideIndex];
     targetSlide.elements = targetSlide.elements || [];
     targetSlide.elements.push(structuredClone(newTextElement));
-    if (targetSlide.layouts && targetSlide.layouts.length > 0) {
-      const variantIndex = targetSlide.currentVariantIndex ?? 0;
-      const variant = targetSlide.layouts[variantIndex];
-      if (variant) {
-        variant.elements = variant.elements || [];
-        variant.elements.push(structuredClone(newTextElement));
-      }
-    }
+
     handleSetSlides(updatedSlides);
-    setSelectedTextId(textId);  // Use index-based for immediate panel binding
+    setSelectedTextId(textId); // Selection now uses stable UUID
     setSelectedImageIndex(null);
     setSelectedImage(null);
     setSelectedShapeIndex(null);
@@ -575,12 +567,16 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     const x = props.x ?? (SLIDE_WIDTH - width) / 2;
     const y = props.y ?? (SLIDE_HEIGHT - height) / 2;
     const prePushLength = currentSlide.elements?.length || 0;
-    const newIndex = prePushLength;
-    const imageId = `el-${selectedSlideIndex}-${newIndex}`;
+
+    // Generate stable unique ID for image
+    const imageId = `user-img-${uuidv4()}`;
+
     const newImageElement: KonvaComponent = {
+      id: imageId,
       konva_component: "Konva.Image",
       element_type: "image",
       properties: {
+        id: imageId,
         userAdded: true,
         x,
         y,
@@ -588,15 +584,16 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         height,
         imageSrc: props.imageSrc,
         image_id: imageId,
-        zIndex: prePushLength + Z_INDEX_RANGES.IMAGES.START, // Group-aware
+        zIndex: prePushLength + Z_INDEX_RANGES.IMAGES.START,
         opacity: 1,
       },
     };
+
     const updatedSlides = structuredClone(slides);
     const targetSlide = updatedSlides[selectedSlideIndex];
-    // ✅ ENSURE: Init elements
     targetSlide.elements = targetSlide.elements || [];
     targetSlide.elements.push(structuredClone(newImageElement));
+
     if (targetSlide.layouts && targetSlide.layouts.length > 0) {
       const variantIndex = targetSlide.currentVariantIndex ?? 0;
       const variant = targetSlide.layouts[variantIndex];
@@ -608,11 +605,10 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     handleSetSlides(updatedSlides);
     setSelectedImage(newImageElement);
     setSelectedImageId(imageId);
-    setSelectedImageIndex(newIndex);
+    setSelectedImageIndex(null); // Switch to ID-based selection
     setSelectedTextId(null);
     setSelectedShapeIndex(null);
     setSelectedShapeId(null);
-    // 🔧 FIXED: Add Shape Function
   };
   const addShape = (props?: {
     konva_component: string;
@@ -631,15 +627,18 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
 
     const currentSlide = slides[selectedSlideIndex];
     const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
-
     const prePushLength = currentSlide.elements?.length || 0;
-    const newIndex = prePushLength;
-    const shapeId = `el-${selectedSlideIndex}-${newIndex}`;
+
+    // Generate stable unique ID for shape
+    const shapeId = `user-shape-${uuidv4()}`;
+
     const newShapeElement: KonvaComponent = {
+      id: shapeId,
       konva_component: props.konva_component,
       element_type: "shape",
       shape_id: shapeId,
       properties: {
+        id: shapeId,
         shape_id: shapeId,
         userAdded: true,
         x: props.properties?.x ?? SLIDE_WIDTH / 2 - 100,
@@ -647,7 +646,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         width: props.properties?.width || 200,
         height: props.properties?.height || 200,
         fill: props.properties?.fill || "#7B4AE2",
-        zIndex: (currentSlide.elements?.length || 0) + 100,
+        zIndex: prePushLength + 100,
         ...props.properties,
       },
     };
@@ -655,7 +654,6 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     const updatedSlides = structuredClone(slides);
     const targetSlide = updatedSlides[selectedSlideIndex];
 
-    // ✅ CRITICAL FIX: Add to BOTH original AND current variant
     targetSlide.elements = targetSlide.elements || [];
     targetSlide.elements.push(structuredClone(newShapeElement));
 
@@ -670,7 +668,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
 
     handleSetSlides(updatedSlides);
     setSelectedShapeId(shapeId);
-    setSelectedShapeIndex(newIndex);
+    setSelectedShapeIndex(null); // Switch to ID-based selection
     setSelectedTextId(null);
     setSelectedImageIndex(null);
     setSelectedImage(null);

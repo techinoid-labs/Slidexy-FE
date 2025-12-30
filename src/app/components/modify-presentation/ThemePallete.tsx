@@ -128,7 +128,7 @@ const getContrastingTextColor = (bgColor: string, preferredText: string): string
 };
 
 const paletteToTheme = (palette: string[]) => ({
-  font: "Inter",
+  font: "Raleway",
   primaryColor: palette[1],
   secondaryColor: palette[2],
   backgroundColor: palette[0],
@@ -239,28 +239,41 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
       return;
     }
 
-    // ✅ CRITICAL: Replace entire slide properties with variant
-    currentSlide.elements = selectedVariant.elements ? structuredClone(selectedVariant.elements) : [];
-    currentSlide.layout_type = selectedVariant.layout_type || currentSlide.layout_type;
-    currentSlide.slide_title = selectedVariant.slide_title ? structuredClone(selectedVariant.slide_title) : currentSlide.slide_title;
-    currentSlide.subtitle = selectedVariant.subtitle ? structuredClone(selectedVariant.subtitle) : currentSlide.subtitle;
-    currentSlide.background = selectedVariant.background ? structuredClone(selectedVariant.background) : currentSlide.background;
-
-    if (selectedVariant.image_url !== undefined) {
-      currentSlide.image_url = selectedVariant.image_url;
-    }
-
-    // Track which variant is active
-    currentSlide.currentVariantIndex = variantIndex;
-
-    // Update layouts array
-    if (!currentSlide.layouts) {
-      currentSlide.layouts = currentVariants;
+    // ✅ CRITICAL: Compute layouts array BEFORE creating updatedSlide to avoid read-only property errors
+    // Create a new layouts array (don't mutate the read-only one)
+    let newLayouts: any[];
+    if (currentSlide.layouts && Array.isArray(currentSlide.layouts)) {
+      // Create a new array with updated variant
+      newLayouts = currentSlide.layouts.map((layout: any, idx: number) =>
+        idx === variantIndex ? structuredClone(selectedVariant) : structuredClone(layout)
+      );
     } else {
-      currentSlide.layouts[variantIndex] = selectedVariant;
+      // Create layouts array from currentVariants
+      newLayouts = structuredClone(currentVariants) || [];
     }
 
-    console.log('[ThemePanel] Updated slide with variant:', { layout_type: currentSlide.layout_type, elementCount: currentSlide.elements.length });
+    // ✅ CRITICAL: Reset background color if it exists - compute BEFORE creating updatedSlide
+    let backgroundReset = currentSlide.background;
+    if (backgroundReset && typeof backgroundReset === 'object') {
+      backgroundReset = { ...backgroundReset, color: null };
+    }
+
+    // ✅ CRITICAL: Replace entire slide properties with variant using spread to avoid read-only property errors
+    const updatedSlide = {
+      ...currentSlide,
+      elements: selectedVariant.elements ? structuredClone(selectedVariant.elements) : [],
+      layout_type: selectedVariant.layout_type || currentSlide.layout_type,
+      slide_title: selectedVariant.slide_title ? structuredClone(selectedVariant.slide_title) : currentSlide.slide_title,
+      subtitle: selectedVariant.subtitle ? structuredClone(selectedVariant.subtitle) : currentSlide.subtitle,
+      background: backgroundReset, // ✅ Use pre-computed background reset
+      image_url: selectedVariant.image_url !== undefined ? selectedVariant.image_url : currentSlide.image_url,
+      currentVariantIndex: variantIndex,
+      layouts: newLayouts, // ✅ Set layouts in the initial object creation
+    };
+
+    updatedSlides[selectedSlideIndex] = updatedSlide;
+
+    console.log('[ThemePanel] Updated slide with variant:', { layout_type: updatedSlide.layout_type, elementCount: updatedSlide.elements.length });
 
     // Apply changes - triggers SlideEditor re-render
     setSlides(updatedSlides);

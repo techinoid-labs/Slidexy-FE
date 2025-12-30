@@ -188,7 +188,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
               font-weight: 700;
               font-size: 2.5rem;
               line-height: 1.2;
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               margin: 0 0 1rem;
               color: ${palette.bg};
               text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -199,7 +199,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
               <p style="
                 font-size: 1rem;
                 line-height: 1.5;
-                font-family: 'Inter', sans-serif;
+                font-family: 'Raleway', sans-serif;
                 font-weight: 400;
                 color: ${palette.bg}CC;
                 margin: 0 0 0.8rem;
@@ -286,7 +286,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
               font-weight: 700;
               margin: 0 0 1rem;
               color: ${palette.primary};
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
             ">
               ${titleText}
             </h2>
@@ -295,7 +295,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
                 font-size: 0.95rem;
                 line-height: 1.6;
                 color: ${palette.textSecondary};
-                font-family: 'Inter', sans-serif;
+                font-family: 'Raleway', sans-serif;
                 margin: 0 0 0.8rem;
               ">
                 • ${text}
@@ -394,7 +394,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
             <cite style="
               font-size: 0.9rem;
               color: ${palette.bg}CC;
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               font-weight: 500;
               text-align: center;
               display: block;
@@ -480,7 +480,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
               font-weight: 700;
               margin: 0;
               color: ${palette.primary};
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
             ">
               ${titleText}
             </h2>
@@ -524,7 +524,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
                   font-weight: 600;
                   color: ${palette.primary};
                   margin: 0;
-                  font-family: 'Inter', sans-serif;
+                  font-family: 'Raleway', sans-serif;
                 ">
                   Feature ${idx + 1}
                 </h3>
@@ -533,7 +533,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
                   line-height: 1.4;
                   color: ${palette.textSecondary};
                   margin: 0;
-                  font-family: 'Inter', sans-serif;
+                  font-family: 'Raleway', sans-serif;
                 ">
                   ${text || 'Highlight key aspects of your project.'}
                 </p>
@@ -586,7 +586,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
               font-weight: 700;
               margin: 0;
               color: ${palette.primary};
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
             ">
               ${titleText}
             </h2>
@@ -641,7 +641,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
                   font-weight: 600;
                   color: ${palette.primary};
                   margin: 0 0 0.5rem;
-                  font-family: 'Inter', sans-serif;
+                  font-family: 'Raleway', sans-serif;
                 ">
                   Phase ${idx + 1}
                 </h3>
@@ -650,7 +650,7 @@ export const createBoldTemplate = (backendSlide: BackendSlide, slideIndex: numbe
                   color: ${palette.textSecondary};
                   margin: 0;
                   line-height: 1.4;
-                  font-family: 'Inter', sans-serif;
+                  font-family: 'Raleway', sans-serif;
                 ">
                   ${text}
                 </p>

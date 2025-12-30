@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
+import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
 
 interface TimelineSlideHTMLProps {
@@ -48,6 +49,13 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
         }
 
         onSlideUpdate(updatedSlide);
+    };
+
+    const handleElementUpdate = (index: number, updates: any) => {
+        if (!onSlideUpdate) return;
+        const updatedElements = [...(slide.elements || [])];
+        updatedElements[index] = { ...updatedElements[index], ...updates };
+        onSlideUpdate({ ...slide, elements: updatedElements });
     };
 
     // Variant 1: Standard Vertical Timeline (Dark Text)
@@ -151,12 +159,15 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                                         <span style={{ fontWeight: 700, color: '#000000' }}>Step {bullets.indexOf(bullet) + 1}</span>
                                     </div>
                                     <EditableElement
-                                        id={`timeline-${actualIndex}`}
+                                        id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                         text={bullet.text}
                                         tagName="div"
                                         isEditing={isEditing}
                                         onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        onSelectElement={() => {
+                                            const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                            onElementClick?.(bId, 'text', actualIndex);
+                                        }}
                                         style={{
                                             fontSize: '1.05rem',
                                             color: '#000000',
@@ -169,6 +180,13 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -177,6 +195,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
     if (variant === 2) {
         return (
             <div style={{
+                position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
@@ -241,16 +260,19 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                                     {bullets.indexOf(bullet) + 1}
                                 </div>
                                 <EditableElement
-                                    id={`timeline-${actualIndex}`}
+                                    id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}
-                                    tagName="p"
+                                    tagName="div"
                                     isEditing={isEditing}
                                     onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    onSelectElement={() => {
+                                        const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                        onElementClick?.(bId, 'text', actualIndex);
+                                    }}
                                     style={{
-                                        fontSize: '1.1rem',
+                                        fontSize: '1.05rem',
                                         color: '#000000',
-                                        fontWeight: 500,
+                                        lineHeight: 1.55,
                                         background: '#ffffff',
                                         padding: '1rem',
                                         borderRadius: '8px',
@@ -263,6 +285,13 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -271,6 +300,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
     if (variant === 3) {
         return (
             <div style={{
+                position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
@@ -326,12 +356,15 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                                         boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
                                     }}>
                                         <EditableElement
-                                            id={`timeline-${actualIndex}`}
+                                            id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                             text={bullet.text}
                                             tagName="p"
                                             isEditing={isEditing}
                                             onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                            onSelectElement={() => {
+                                                const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                                onElementClick?.(bId, 'text', actualIndex);
+                                            }}
                                             style={{ fontSize: '1.1rem', color: '#000000', margin: 0 }}
                                             elementProperties={bullet.properties}
                                         />
@@ -353,6 +386,13 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -361,6 +401,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
     if (variant === 4) {
         return (
             <div style={{
+                position: 'relative',
                 display: 'flex',
                 height: '100%',
                 backgroundColor: bgColor,
@@ -412,12 +453,15 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                                     0{bullets.indexOf(bullet) + 1}
                                 </span>
                                 <EditableElement
-                                    id={`timeline-${actualIndex}`}
+                                    id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}
                                     tagName="p"
                                     isEditing={isEditing}
                                     onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    onSelectElement={() => {
+                                        const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                        onElementClick?.(bId, 'text', actualIndex);
+                                    }}
                                     style={{ fontSize: '1.05rem', color: '#000000', lineHeight: 1.5 }}
                                     elementProperties={bullet.properties}
                                 />
@@ -425,6 +469,13 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -489,13 +540,15 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                                 {bullets.indexOf(bullet) + 1}.
                             </div>
                             <EditableElement
-                                id={`timeline-${actualIndex}`}
+                                id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                 text={bullet.text}
                                 tagName="div"
                                 isEditing={isEditing}
                                 onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                id-new={`bullet-${actualIndex}`}
-                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                onSelectElement={() => {
+                                    const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                    onElementClick?.(bId, 'text', actualIndex);
+                                }}
                                 style={{
                                     fontSize: '1.1rem',
                                     color: '#000000',
@@ -507,6 +560,13 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                     );
                 })}
             </div>
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </div>
     );
 };

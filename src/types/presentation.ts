@@ -13,6 +13,16 @@ export interface Slide {
   slide_id: string;
   title?: string;
   image_url?: string | null;
+  image_properties?: {
+    opacity?: number;
+    borderRadius?: number;
+    shadow?: {
+      offsetX: number;
+      offsetY: number;
+      blur: number;
+      color: string;
+    };
+  };
   htmlTemplate?: string; // HTML template string for rendering
   elements?: SlideElement[];
   exportElements?: ExportElement[];
