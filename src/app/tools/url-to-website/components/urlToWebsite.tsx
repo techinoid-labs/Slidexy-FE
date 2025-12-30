@@ -112,14 +112,14 @@ export default function UrlToWebsite() {
                 if (!/^https?:\/\//i.test(formattedUrl)) {
                     formattedUrl = "https://" + formattedUrl;
                 }
-                endpoint = `${API_BASE_URL}/api/website-generator/generate`;
+                endpoint = `${API_BASE_URL}/api/website-generator/smart-generate`;
                 body = { url: formattedUrl };
             } else {
                 let formattedUrl = url.trim();
                 if (!/^https?:\/\//i.test(formattedUrl)) {
                     formattedUrl = "https://" + formattedUrl;
                 }
-                endpoint = `${API_BASE_URL}/api/improved-dynamic/generate`;
+                endpoint = `${API_BASE_URL}/api/website-generator/clone-generate`;
                 body = { url: formattedUrl };
             }
 
@@ -135,8 +135,12 @@ export default function UrlToWebsite() {
             }
 
             const data = await response.json();
+            console.log("🔥 DEBUG: Full Backend Response:", data);
+
             const presentationId =
-                data.data?.id || data.data?.presentationId || data.presentationId || data.id;
+                data.data?.id || data.data?.presentationId || data.presentationId || data.id || data.data?._id;
+
+            console.log("🔥 DEBUG: Extracted ID:", presentationId);
 
             if (!presentationId) throw new Error("No website ID returned");
 
