@@ -48,6 +48,7 @@ interface SlideRendererProps {
   onSetSelectedImage: (image: any) => void;
   onSetSelectedImageId: (id: string | null) => void;
   onSetSelectedTextId: (id: string | null) => void;
+  onSetSelectedTextIndex: (index: number | null) => void;
   onSetSelectedShapeIndex: (index: number | null) => void;
   onSetSlides: (slides: any[]) => void;
 }
@@ -75,6 +76,7 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
   onSetSelectedImage,
   onSetSelectedImageId,
   onSetSelectedTextId,
+  onSetSelectedTextIndex,
   onSetSelectedShapeIndex,
   onSetSlides,
   index,
@@ -186,6 +188,7 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
 
       if (selectedTextId !== textId) {
         onSetSelectedTextId(textId);
+        onSetSelectedTextIndex(elementIndex ?? null);
         onHandleSelect({ id: textId, type: "text", index: elementIndex ?? -1 });
       }
     } else if (elementType === "image") {
@@ -642,9 +645,11 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
     setSelectedImageIndex,
     setSelectedImage,
     selectedTextId,
+    selectedTextIndex,
     selectedImageId,
     setSelectedImageId,
     setSelectedTextId,
+    setSelectedTextIndex,
     selectedShapeIndex,
     setSelectedShapeIndex,
     setSlides,
@@ -944,6 +949,7 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
             onSetSelectedImage={setSelectedImage}
             onSetSelectedImageId={setSelectedImageId}
             onSetSelectedTextId={setSelectedTextId}
+            onSetSelectedTextIndex={setSelectedTextIndex}
             onSetSelectedShapeIndex={setSelectedShapeIndex}
             onSetSlides={setSlides}
             index={index}

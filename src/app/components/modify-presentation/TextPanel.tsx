@@ -42,9 +42,10 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
   const {
     slides,
-    selectedTextId,
-    setSelectedTextId,
     selectedSlideIndex,
+    selectedTextId,
+    selectedTextIndex,
+    setSelectedTextId,
     setSlides,
   } = useSlides();
 
@@ -76,14 +77,14 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     }
   }, [selectedTextId]);
 
-  // ✅ FIX: Enhanced ID parsing and lookup logic
+  // ✅ FIX: Enhanced ID parsing to allow suffixes like -metric or -desc
   const parsed = selectedTextId
-    ? selectedTextId.match(/^(title|subtitle|quote|author|context|el|text|user-text)-(\d+)(?:-(\d+))?$/)
+    ? selectedTextId.match(/^(title|subtitle|quote|author|context|el|text|user-text)-(\d+)(?:-(\d+))?(?:-.*)?$/)
     : null;
 
   const slideIndex = parsed ? parseInt(parsed[2], 10) : selectedSlideIndex;
-  // If it's a simple index-based ID, we get elementIndex here
-  let elementIndex = parsed?.[3] ? parseInt(parsed[3], 10) : null;
+  // Use parsed index or context fallback index
+  let elementIndex = parsed?.[3] ? parseInt(parsed[3], 10) : selectedTextIndex;
 
   // ✅ FIX: Get text object from current variant slide
   let textObj: any = null;
@@ -120,8 +121,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
       if (found) {
         textObj = found;
-        // Try to infer index for functions that still use it
-        if (!elementIndex) {
+        if (elementIndex === null) {
           const idx = currentSlide.elements?.indexOf(found);
           if (idx !== -1 && idx !== undefined) elementIndex = idx;
         }
