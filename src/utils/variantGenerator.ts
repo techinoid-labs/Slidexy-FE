@@ -65,7 +65,7 @@ export const generateSlideVariants = (slide: any, selectedTheme: any) => {
   // Generate variant metadata - HTML components will handle their own rendering
   const variants = [];
   for (let i = 1; i <= variantCount; i++) {
-    variants.push({
+    const variant: any = {
       name: `Layout ${i}`,
       layout_type: layoutType,
       variantNumber: i,
@@ -76,7 +76,16 @@ export const generateSlideVariants = (slide: any, selectedTheme: any) => {
       image_url: slide.image_url,
       background: { type: "solid", color: colors.background },
       slide_id: slide.slide_id,
-    });
+    };
+
+    // ✅ FIX: Preserve quote/author/context top-level fields for quote slides (needed for previews)
+    if (layoutType === 'quote-slide') {
+      variant.quote = slide.quote || null;
+      variant.author = slide.author || null;
+      variant.context = slide.context || null;
+    }
+
+    variants.push(variant);
   }
 
   return variants;

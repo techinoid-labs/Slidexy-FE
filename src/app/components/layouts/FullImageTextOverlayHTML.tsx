@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
+import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
 
 interface FullImageTextOverlayHTMLProps {
@@ -44,6 +45,13 @@ export const FullImageTextOverlayHTML: React.FC<FullImageTextOverlayHTMLProps> =
         onSlideUpdate(updated);
     };
 
+    const handleElementUpdate = (index: number, updates: any) => {
+        if (!onSlideUpdate) return;
+        const updatedElements = [...(slide.elements || [])];
+        updatedElements[index] = { ...updatedElements[index], ...updates };
+        onSlideUpdate({ ...slide, elements: updatedElements });
+    };
+
     return (
         <div style={{
             position: 'relative',
@@ -56,17 +64,25 @@ export const FullImageTextOverlayHTML: React.FC<FullImageTextOverlayHTMLProps> =
             color: '#1a202c',
         }}>
             {/* Background image */}
-            <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundImage: bgImage ? `url(${bgImage})` : 'linear-gradient(135deg, #1f2937, #111827)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                filter: 'brightness(0.72)',
-            }} />
+            <div
+                onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundImage: bgImage ? `url(${bgImage}) center/cover` : 'linear-gradient(135deg, #1f2937, #111827)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: `brightness(0.72)${slide.image_properties?.shadow
+                        ? ` drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                        : ''}`,
+                    opacity: slide.image_properties?.opacity ?? 1,
+                    cursor: isEditing ? 'pointer' : 'default',
+                    borderRadius: `${slide.image_properties?.borderRadius ?? 16}px`,
+                }}
+            />
 
             {/* Overlay */}
             <div style={{
@@ -165,6 +181,13 @@ export const FullImageTextOverlayHTML: React.FC<FullImageTextOverlayHTMLProps> =
                     </div>
                 </div>
             </div>
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </div>
     );
 };

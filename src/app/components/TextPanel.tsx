@@ -21,7 +21,7 @@ import VerticalAlignCenterIcon from "@mui/icons-material/VerticalAlignCenter";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
-const fontOptions = ["Raleway", "Roboto", "Montserrat"];
+const fontOptions = ["Raleway", "Roboto", "Montserrat", "Inter"];
 const weightOptions = ["Regular", "Semibold", "Bold"];
 const textTypeOptions = ["Title", "Headline", "Body"];
 

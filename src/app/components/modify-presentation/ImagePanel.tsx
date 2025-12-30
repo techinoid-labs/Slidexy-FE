@@ -79,27 +79,36 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     if (
       selectedSlideIndex === -1 ||
       !slides[selectedSlideIndex] ||
-      !selectedImage?.properties?.image_id ||
-      selectedImageIndex === null
+      !selectedImage?.properties?.image_id
     ) {
       return;
     }
 
+    // Special handling for fixed images (slide.image_url)
+    if (selectedImageIndex === -99) {
+      // Update slide.image_url when selectedImage changes - IMMUTABLY
+      const updatedSlides = slides.map((slide, idx) =>
+        idx === selectedSlideIndex
+          ? { ...slide, image_url: selectedImage.properties.imageSrc }
+          : slide
+      );
+      setSlides(updatedSlides);
+      return;
+    }
+
+    if (selectedImageIndex === null) {
+      return;
+    }
+
     const originalSlide = slides[selectedSlideIndex];
+    const variantIndex = originalSlide.currentVariantIndex ?? 0;
+    const variant = originalSlide.layouts?.[variantIndex];
+    const variantElements = variant?.elements || [];
+    const userElements = originalSlide.elements || [];
+    const mergedElements = [...variantElements, ...userElements];
 
-    const getCurrentVariantSlide = (slide: any) => {
-      if (!slide.layouts || slide.layouts.length === 0) {
-        return slide;
-      }
-      const variantIndex = slide.currentVariantIndex ?? 0;
-      const variant = slide.layouts[variantIndex];
-      return variant || slide;
-    };
-
-    const currentSlide = getCurrentVariantSlide(originalSlide);
-
-    // Primary: Try index first from variant slide
-    if (currentSlide.elements?.[selectedImageIndex] && currentSlide.elements[selectedImageIndex]?.element_type === "image") {
+    // Primary: Try index first from merged
+    if (mergedElements?.[selectedImageIndex] && mergedElements[selectedImageIndex]?.element_type === "image") {
       return; // Already in sync
     }
 
@@ -107,7 +116,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     const targetId = selectedImage.properties.image_id;
     console.log('[ImageSettingsPanel] Searching for image_id:', targetId);
 
-    const foundIndex = currentSlide.elements?.findIndex((el: any) => {
+    const foundIndex = mergedElements?.findIndex((el: any) => {
       if (el.element_type !== "image") return false;
       const elId = el.image_id || el.properties?.image_id;
       return elId === targetId;
@@ -143,127 +152,50 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     }
   }, [selectedImage]);
 
-  // Existing useEffect for dimensions (uses selectedImageIndex - will re-run post-sync)
-  useEffect(() => {
-    // Skip if no valid selection or invalid dimensions
-    if (
-      selectedSlideIndex === -1 ||
-      selectedImageIndex === null ||  // ✅ FIXED: Use selectedImageIndex (global, synced via effect)
-      !slides[selectedSlideIndex] ||
-      (isNaN(imageWidth) && isNaN(imageHeight))
-    )
-      return;
-
-    const timeout = setTimeout(() => {
-      // ✅ FIXED: Get current variant slide and update variant elements
-      const updatedSlides = structuredClone(slides);
-      const originalSlide = updatedSlides[selectedSlideIndex];
-
-      if (!originalSlide) return;
-
-      // Update the variant, not the original
-      if (originalSlide.layouts && originalSlide.layouts.length > 0) {
-        const variantIndex = originalSlide.currentVariantIndex ?? 0;
-        const variant = originalSlide.layouts[variantIndex];
-        if (variant && variant.elements?.[selectedImageIndex]) {  // ✅ FIXED: Use selectedImageIndex
-          const element = variant.elements[selectedImageIndex];
-
-          if (!element || !element.properties) {
-            return;
-          }
-
-          if (!isNaN(imageWidth)) {
-            element.properties.width = imageWidth;
-          }
-
-          if (!isNaN(imageHeight)) {
-            element.properties.height = imageHeight;
-          }
-        }
-        // Also update original for consistency
-        if (originalSlide.elements?.[selectedImageIndex]) {
-          const originalElement = originalSlide.elements[selectedImageIndex];
-          if (originalElement && originalElement.properties) {
-            if (!isNaN(imageWidth)) {
-              originalElement.properties.width = imageWidth;
-            }
-            if (!isNaN(imageHeight)) {
-              originalElement.properties.height = imageHeight;
-            }
-          }
-        }
-      } else {
-        // Fallback to original slide if no variant
-        const element = originalSlide.elements?.[selectedImageIndex];
-        if (element && element.properties) {
-          if (!isNaN(imageWidth)) {
-            element.properties.width = imageWidth;
-          }
-          if (!isNaN(imageHeight)) {
-            element.properties.height = imageHeight;
-          }
-        }
-      }
-
-      setSlides(updatedSlides);
-    }, 400);
-
-    return () => clearTimeout(timeout);
-  }, [
-    imageWidth,
-    imageHeight,
-    selectedSlideIndex,
-    selectedImageIndex,  // ✅ FIXED: Use global index (post-sync)
-    slides,
-    setSlides,
-  ]);
+  // ✅ REMOVED: problematic useEffect that caused dimensions to revert or sync incorrectly
 
   // ✅ FIXED: Compute unconditionally AFTER hooks (for display only, no side effects)
   let imageObj: KonvaComponent | null = null;
   let currentImageIndex = selectedImageIndex;  // Local for display (synced via effect)
 
   if (selectedSlideIndex !== -1 && slides[selectedSlideIndex]) {
-    const originalSlide = slides[selectedSlideIndex];
+    // Special handling for fixed images (slide.image_url)
+    if (selectedImageIndex === -99) {
+      imageObj = selectedImage;
+      currentImageIndex = -99;
+    } else {
+      const originalSlide = slides[selectedSlideIndex];
 
-    const getCurrentVariantSlide = (slide: any) => {
-      if (!slide.layouts || slide.layouts.length === 0) {
-        return slide;
+      // For user-added images, look in originalSlide.elements (which contains merged elements)
+      // Primary: Try index first from original slide
+      if (selectedImageIndex !== null && originalSlide.elements?.[selectedImageIndex]) {
+        const candidate = originalSlide.elements[selectedImageIndex];
+        if (candidate?.element_type === "image") {
+          imageObj = candidate;
+          currentImageIndex = selectedImageIndex;
+        } else {
+          console.warn('[ImageSettingsPanel] Selected index points to non-image:', candidate);
+        }
       }
-      const variantIndex = slide.currentVariantIndex ?? 0;
-      const variant = slide.layouts[variantIndex];
-      return variant || slide;
-    };
 
-    const currentSlide = getCurrentVariantSlide(originalSlide);
+      // Fallback: Search by ID
+      if (!imageObj && selectedImage?.properties?.image_id) {
+        const targetId = selectedImage.properties.image_id;
+        console.log('[ImageSettingsPanel] Searching for image_id:', targetId);
 
-    // Primary: Try index first from variant slide
-    if (selectedImageIndex !== null && currentSlide.elements?.[selectedImageIndex]) {
-      const candidate = currentSlide.elements[selectedImageIndex];
-      if (candidate?.element_type === "image") {
-        imageObj = candidate;
-        currentImageIndex = selectedImageIndex;
-      } else {
-        console.warn('[ImageSettingsPanel] Selected index points to non-image:', candidate);
-      }
-    }
+        const foundIndex = originalSlide.elements?.findIndex((el: any) => {
+          if (el.element_type !== "image") return false;
+          const elId = el.image_id || el.properties?.image_id;
+          return elId === targetId;
+        }) ?? -1;
 
-    // Fallback: Search by ID (compute only, no setState - sync handled in effect)
-    if (!imageObj && selectedImage?.properties?.image_id) {
-      const targetId = selectedImage.properties.image_id;
-      console.log('[ImageSettingsPanel] Searching for image_id:', targetId);
-
-      const foundIndex = currentSlide.elements?.findIndex((el: any) => {
-        if (el.element_type !== "image") return false;
-        const elId = el.image_id || el.properties?.image_id;
-        return elId === targetId;
-      }) ?? -1;
-
-      if (foundIndex !== -1) {
-        console.log('[ImageSettingsPanel] Found match at index', foundIndex);
-        imageObj = currentSlide.elements[foundIndex];
-        currentImageIndex = foundIndex;
-      } else {
-        console.warn('[ImageSettingsPanel] No match found for image_id:', targetId);
+        if (foundIndex !== -1) {
+          console.log('[ImageSettingsPanel] Found match at index', foundIndex);
+          imageObj = originalSlide.elements[foundIndex];
+          currentImageIndex = foundIndex;
+        } else {
+          console.warn('[ImageSettingsPanel] No match found for image_id:', targetId);
+        }
       }
     }
   }
@@ -272,64 +204,93 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   if (!imageObj || imageObj.element_type !== "image") return null;
 
   const updateImageProperty = (props: { [key: string]: any }) => {
-    if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
+    if (selectedSlideIndex === -1) return;
 
-    // ✅ FIXED: Get current variant slide and update variant elements
-    const updatedSlides = structuredClone(slides);
-    const originalSlide = updatedSlides[selectedSlideIndex];
+    // Special handling for fixed images (slide.image_url)
+    if (currentImageIndex === -99) {
+      // Update slide.image_properties for visual properties
+      const updatedSlides = slides.map((slide, idx) => {
+        if (idx !== selectedSlideIndex) return slide;
 
-    const getCurrentVariantSlide = (slide: any) => {
-      if (!slide.layouts || slide.layouts.length === 0) {
-        return slide;
-      }
-      const variantIndex = slide.currentVariantIndex ?? 0;
-      const variant = slide.layouts[variantIndex];
-      return variant || slide;
-    };
+        const updatedSlide = {
+          ...slide,
+          image_properties: {
+            ...slide.image_properties,
+            ...props
+          },
+          // Only update image_url if imageSrc changed
+          ...(props.imageSrc ? { image_url: props.imageSrc } : {})
+        };
 
-    let element: any = null;
-    let target: any = null;
+        // ALSO sync to the active variant if it exists, so HTMLSlideRenderer picks it up
+        if (updatedSlide.layouts && updatedSlide.layouts.length > 0) {
+          const variantIndex = updatedSlide.currentVariantIndex ?? 0;
+          updatedSlide.layouts = updatedSlide.layouts.map((layout: any, lIdx: number) => {
+            if (lIdx === variantIndex) {
+              return {
+                ...layout,
+                image_url: props.imageSrc || layout.image_url,
+                // Some variants might store image_properties at the layout level too
+                image_properties: {
+                  ...(layout.image_properties || {}),
+                  ...props
+                }
+              };
+            }
+            return layout;
+          });
+        }
 
-    // Update the variant, not the original
-    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
-      const variantIndex = originalSlide.currentVariantIndex ?? 0;
-      const variant = originalSlide.layouts[variantIndex];
-      if (variant && variant.elements?.[selectedImageIndex]) {
-        element = variant.elements[selectedImageIndex];
-        target = element.properties;
-      }
-    } else {
-      // Fallback to original slide if no variant
-      element = originalSlide.elements?.[selectedImageIndex];
-      target = element?.properties;
-    }
+        return updatedSlide;
+      });
 
-    // FIXED: Add null check for element and target
-    if (!element || !target) {
-      console.warn('[ImageSettingsPanel] Element or properties missing in updateImageProperty');
+      setSlides(updatedSlides);
+
+      // Update selectedImage to reflect changes
+      setSelectedImage({
+        ...selectedImage,
+        properties: { ...selectedImage.properties, ...props }
+      });
       return;
     }
 
-    Object.entries(props).forEach(([key, value]) => {
-      target[key] = value;
-    });
+    if (selectedImageIndex === null) return;
 
-    // Also update original for consistency
-    if (originalSlide.elements?.[selectedImageIndex]) {
-      const originalElement = originalSlide.elements[selectedImageIndex];
-      if (originalElement.properties) {
-        Object.entries(props).forEach(([key, value]) => {
-          originalElement.properties[key] = value;
-        });
+    const updatedSlides = structuredClone(slides);
+    const originalSlide = updatedSlides[selectedSlideIndex];
+    const variantIndex = originalSlide.currentVariantIndex ?? 0;
+    const variant = originalSlide.layouts?.[variantIndex];
+    const variantElements = variant?.elements || [];
+    const userElements = originalSlide.elements || [];
+    const mergedElements = [...variantElements, ...userElements];
+
+    if (selectedImageIndex < variantElements.length) {
+      // Update in variant
+      if (variant && variant.elements[selectedImageIndex]) {
+        variant.elements[selectedImageIndex] = {
+          ...variant.elements[selectedImageIndex],
+          properties: { ...variant.elements[selectedImageIndex].properties, ...props }
+        };
+      }
+    } else {
+      // Update in userElements
+      const userIndex = selectedImageIndex - variantElements.length;
+      if (userElements[userIndex]) {
+        userElements[userIndex] = {
+          ...userElements[userIndex],
+          properties: { ...userElements[userIndex].properties, ...props }
+        };
       }
     }
 
     setSlides(updatedSlides);
+    // Update selectedImage from the updated element
+    const updatedElement = mergedElements[selectedImageIndex];
     setSelectedImage({
-      ...element,
-      konva_component: element.konva_component || "Konva.Image",
-      element_type: element.element_type || "image",
-      properties: { ...element.properties },
+      ...updatedElement,
+      konva_component: updatedElement.konva_component || "Konva.Image",
+      element_type: updatedElement.element_type || "image",
+      properties: { ...updatedElement.properties },
     });
   };
 
@@ -341,7 +302,6 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
     if (!imageObj || selectedSlideIndex === -1 || currentImageIndex === null)
       return;
 
-    // ✅ FIXED: Use addImage from context which handles variants correctly
     // Get the current image properties to duplicate
     const originalElement = imageObj;
     if (!originalElement || !originalElement.properties) {
@@ -349,7 +309,19 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       return;
     }
 
-    // Use addImage to add a duplicate with offset position
+    // Special handling for layout images (index -99) - duplicate it as a new user element
+    if (currentImageIndex === -99) {
+      addImage({
+        imageSrc: originalElement.properties.imageSrc,
+        width: 400, // Default size for new element
+        height: 400,
+        x: 50,
+        y: 50,
+      });
+      return;
+    }
+
+    // Standard duplication for user-added elements
     addImage({
       imageSrc: originalElement.properties.imageSrc,
       width: originalElement.properties.width,
@@ -360,7 +332,23 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   };
 
   const handleDeleteImage = () => {
-    if (selectedSlideIndex === -1 || selectedImageIndex === null) return;
+    if (selectedSlideIndex === -1) return;
+
+    // Special handling for fixed images (slide.image_url)
+    if (currentImageIndex === -99) {
+      const updatedSlides = slides.map((slide, idx) =>
+        idx === selectedSlideIndex
+          ? { ...slide, image_url: null }
+          : slide
+      );
+      setSlides(updatedSlides);
+      setSelectedImage(null);
+      setSelectedImageIndex(null);
+      setSelectedImageId(null);
+      return;
+    }
+
+    if (selectedImageIndex === null) return;
 
     // ✅ FIXED: Delete from variant, not just original
     const updatedSlides = structuredClone(slides);
@@ -405,65 +393,19 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       const reader = new FileReader();
       reader.onloadend = () => {
         const resultUrl = reader.result as string;
-        if (
-          selectedSlideIndex !== null &&
-          currentImageIndex !== null &&
-          slides[selectedSlideIndex]
-        ) {
-          // ✅ FIXED: Update variant slide, not just original
-          const updatedSlides = structuredClone(slides);
-          const originalSlide = updatedSlides[selectedSlideIndex];
-
-          let element: any = null;
-
-          // Update the variant, not the original
-          if (originalSlide.layouts && originalSlide.layouts.length > 0) {
-            const variantIndex = originalSlide.currentVariantIndex ?? 0;
-            const variant = originalSlide.layouts[variantIndex];
-            if (variant && variant.elements?.[currentImageIndex]) {
-              element = variant.elements[currentImageIndex];
-              if (element && element.properties) {
-                element.properties.imageSrc = resultUrl;
-              }
-            }
-            // Also update original
-            if (originalSlide.elements?.[currentImageIndex]) {
-              const originalElement = originalSlide.elements[currentImageIndex];
-              if (originalElement && originalElement.properties) {
-                originalElement.properties.imageSrc = resultUrl;
-              }
-            }
-          } else {
-            // Fallback to original if no variant
-            element = originalSlide.elements?.[currentImageIndex];
-            if (element && element.properties) {
-              element.properties.imageSrc = resultUrl;
-            }
-          }
-
-          if (element && element.properties) {
-            setSlides(updatedSlides);
-            setImageSrc(resultUrl);
-            setSelectedImage({
-              ...element,
-              konva_component: element.konva_component || "Konva.Image",
-              element_type: element.element_type || "image",
-              properties: { ...element.properties },
-            });
-          } else {
-            console.warn('[ImageSettingsPanel] Element missing properties in removeBackground');
-          }
+        if (selectedSlideIndex !== -1 && slides[selectedSlideIndex]) {
+          // Use the central updateImageProperty function for consistency
+          updateImageProperty({ imageSrc: resultUrl });
+          setImageSrc(resultUrl);
         }
         setIsLoading(false);
       };
-
       reader.readAsDataURL(result);
     } catch (error) {
       console.error("Error removing background:", error);
       setIsLoading(false);
     }
   };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -474,54 +416,14 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       setImageSrc(result);
 
       if (
-        selectedSlideIndex === null ||
+        selectedSlideIndex === -1 ||
         currentImageIndex === null ||
         !slides[selectedSlideIndex]
       )
         return;
 
-      // ✅ FIXED: Update variant slide, not just original
-      const updatedSlides = structuredClone(slides);
-      const originalSlide = updatedSlides[selectedSlideIndex];
-
-      let element: any = null;
-
-      // Update the variant, not the original
-      if (originalSlide.layouts && originalSlide.layouts.length > 0) {
-        const variantIndex = originalSlide.currentVariantIndex ?? 0;
-        const variant = originalSlide.layouts[variantIndex];
-        if (variant && variant.elements?.[currentImageIndex]) {
-          element = variant.elements[currentImageIndex];
-          if (element && element.properties) {
-            element.properties.imageSrc = result;
-          }
-        }
-        // Also update original
-        if (originalSlide.elements?.[currentImageIndex]) {
-          const originalElement = originalSlide.elements[currentImageIndex];
-          if (originalElement && originalElement.properties) {
-            originalElement.properties.imageSrc = result;
-          }
-        }
-      } else {
-        // Fallback to original if no variant
-        element = originalSlide.elements?.[currentImageIndex];
-        if (element && element.properties) {
-          element.properties.imageSrc = result;
-        }
-      }
-
-      if (element && element.properties) {
-        setSlides(updatedSlides);
-        setSelectedImage({
-          ...element,
-          konva_component: element.konva_component || "Konva.Image",
-          element_type: element.element_type || "image",
-          properties: { ...element.properties },
-        });
-      } else {
-        console.warn('[ImageSettingsPanel] Element missing properties in handleImageChange');
-      }
+      // Use the central updateImageProperty function for consistency
+      updateImageProperty({ imageSrc: result });
     };
     reader.readAsDataURL(file);
   };
@@ -600,6 +502,13 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                 type="number"
                 value={isNaN(imageWidth) ? "" : imageWidth}
                 onChange={handleWidthChange}
+                onBlur={() => !isNaN(imageWidth) && updateImageProperty({ width: imageWidth })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isNaN(imageWidth)) {
+                    updateImageProperty({ width: imageWidth });
+                    (e.target as HTMLInputElement).blur();
+                  }
+                }}
                 sx={{
                   width: 50,
                   fontSize: 16,
@@ -628,6 +537,13 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                 type="number"
                 value={isNaN(imageHeight) ? "" : imageHeight}
                 onChange={handleHeightChange}
+                onBlur={() => !isNaN(imageHeight) && updateImageProperty({ height: imageHeight })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isNaN(imageHeight)) {
+                    updateImageProperty({ height: imageHeight });
+                    (e.target as HTMLInputElement).blur();
+                  }
+                }}
                 sx={{
                   width: 50,
                   fontSize: 16,
@@ -937,11 +853,11 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       <Box sx={{ px: 3, mb: 2, display: "flex", gap: 2 }}>
         <Button
           onClick={() => {
-            if (currentImageIndex !== null) {
+            if (currentImageIndex !== null && currentImageIndex !== -99) {
               sendElementBackward(selectedImageIndex);  // Use synced index
             }
           }}
-          disabled={selectedImageIndex === null}
+          disabled={selectedImageIndex === null || selectedImageIndex === -99}
           variant="outlined"
           endIcon={
             <img
@@ -980,11 +896,11 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
         </Button>
         <Button
           onClick={() => {
-            if (currentImageIndex !== null) {
+            if (currentImageIndex !== null && currentImageIndex !== -99) {
               bringElementForward(selectedImageIndex);  // Use synced index
             }
           }}
-          disabled={selectedImageIndex === null}
+          disabled={selectedImageIndex === null || selectedImageIndex === -99}
           variant="outlined"
           endIcon={
             <img

@@ -52,7 +52,7 @@ const TemplatePanel = forwardRef<HTMLDivElement, TemplateProps>(
 
     const defaultThemes: Theme[] = [
       {
-        font: "Inter",
+        font: "Raleway",
         primaryColor: "#1A202C",
         secondaryColor: "#007AFF",
         backgroundColor: "#E0F7FA",

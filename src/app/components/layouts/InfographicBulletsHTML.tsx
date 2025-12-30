@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
+import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
 
 interface InfographicBulletsHTMLProps {
@@ -48,6 +49,13 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
         onSlideUpdate(updated);
     };
 
+    const handleElementUpdate = (index: number, updates: any) => {
+        if (!onSlideUpdate) return;
+        const updatedElements = [...(slide.elements || [])];
+        updatedElements[index] = { ...updatedElements[index], ...updates };
+        onSlideUpdate({ ...slide, elements: updatedElements });
+    };
+
     const parseMetric = (text: string) => {
         const match = text.match(/^([0-9]+(?:\.[0-9]+)?[%$KkMm]?)[\s\-–—]*(.*)$/i);
         if (match) {
@@ -67,6 +75,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
 
         return (
             <div style={{
+                position: 'relative',
                 width: '960px',
                 height: '540px',
                 backgroundColor: bgColor,
@@ -146,7 +155,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                         const newText = metric ? `${val} - ${description}` : val;
                                         handleUpdate('bullet', newText, actualIndex);
                                     }}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}-metric`, 'text', actualIndex)}
                                     style={{
                                         fontSize: metric ? '2.5rem' : '1.1rem',
                                         fontWeight: 800,
@@ -166,7 +175,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                         isEditing={isEditing}
                                         tagName="p"
                                         onChange={(val) => handleUpdate('bullet', `${metric} - ${val}`, actualIndex)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}-desc`, 'text', actualIndex)}
                                         style={{
                                             fontSize: '0.9rem',
                                             color: '#4a5568',
@@ -181,6 +190,13 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -191,6 +207,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
 
         return (
             <div style={{
+                position: 'relative',
                 width: '960px',
                 height: '540px',
                 backgroundColor: bgColor,
@@ -270,7 +287,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                             const newText = metric ? `${val} - ${description}` : val;
                                             handleUpdate('bullet', newText, actualIndex);
                                         }}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}-metric`, 'text', actualIndex)}
                                         style={{
                                             fontSize: metric ? '1.75rem' : '1rem',
                                             fontWeight: 700,
@@ -288,7 +305,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                             isEditing={isEditing}
                                             tagName="p"
                                             onChange={(val) => handleUpdate('bullet', `${metric} - ${val}`, actualIndex)}
-                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}-desc`, 'text', actualIndex)}
                                             style={{
                                                 fontSize: '0.85rem',
                                                 color: '#718096',
@@ -303,6 +320,13 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -313,6 +337,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
 
         return (
             <div style={{
+                position: 'relative',
                 width: '960px',
                 height: '520px',
                 backgroundColor: bgColor,
@@ -393,7 +418,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                                 const newText = metric ? `${val} - ${description}` : val;
                                                 handleUpdate('bullet', newText, actualIndex);
                                             }}
-                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}-metric`, 'text', actualIndex)}
                                             style={{
                                                 fontSize: '1.5rem',
                                                 fontWeight: 800,
@@ -411,7 +436,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                     isEditing={isEditing}
                                     tagName="p"
                                     onChange={(val) => handleUpdate('bullet', metric ? `${metric} - ${val}` : val, actualIndex)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}-desc`, 'text', actualIndex)}
                                     style={{
                                         fontSize: '0.85rem',
                                         color: '#4a5568',
@@ -424,14 +449,24 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
 
     // Variant 4: Vertical List with Big Numbers
     if (variant === 4) {
+        const gridCols = bullets.length <= 2 ? 2 : bullets.length === 3 ? 3 : 2;
+
         return (
             <div style={{
+                position: 'relative',
                 width: '960px',
                 height: '540px',
                 backgroundColor: bgColor,
@@ -495,7 +530,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                         const newText = metric ? `${val} - ${description}` : val;
                                         handleUpdate('bullet', newText, index);
                                     }}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}-metric`, 'text', index)}
                                     style={{
                                         fontSize: '2.5rem',
                                         fontWeight: 800,
@@ -513,7 +548,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                     isEditing={isEditing}
                                     tagName="p"
                                     onChange={(val) => handleUpdate('bullet', metric ? `${metric} - ${val}` : val, index)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}-desc`, 'text', index)}
                                     style={{
                                         fontSize: '1rem',
                                         color: '#4a5568',
@@ -526,6 +561,13 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -612,7 +654,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                         const newText = metric ? `${val} - ${description}` : val;
                                         handleUpdate('bullet', newText, actualIndex);
                                     }}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}-metric`, 'text', actualIndex)}
                                     style={{
                                         fontSize: metric ? '1.75rem' : '1.1rem',
                                         fontWeight: 800,
@@ -630,7 +672,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                         isEditing={isEditing}
                                         tagName="p"
                                         onChange={(val) => handleUpdate('bullet', `${metric} - ${val}`, actualIndex)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}-desc`, 'text', actualIndex)}
                                         style={{
                                             fontSize: '0.85rem',
                                             color: '#718096',
@@ -645,6 +687,13 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                     );
                 })}
             </div>
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </div>
     );
 };

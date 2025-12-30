@@ -60,7 +60,7 @@ const modernBadge = (text: string): string => `
     padding: 0.5rem 1.5rem;
     background: linear-gradient(90deg, ${palette.accent}, ${palette.accent2});
     color: ${palette.bg};
-    font-family: 'Inter', sans-serif;
+    font-family: 'Raleway', sans-serif;
     font-size: 0.85rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -114,7 +114,7 @@ export const createCorporateTemplate = (
           background: linear-gradient(135deg, ${palette.gradientStart}20, ${palette.gradientEnd}20, ${palette.bg});
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           gap: 1.5rem;
         ">
           ${gridPattern}
@@ -213,7 +213,7 @@ export const createCorporateTemplate = (
           background: linear-gradient(120deg, ${palette.gradientStart}10, ${palette.gradientEnd}10, ${palette.bg});
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           align-items: center;
           gap: 1.5rem;
         ">
@@ -327,7 +327,7 @@ overflow: hidden;
           background: linear-gradient(135deg, ${palette.gradientStart}20, ${palette.gradientEnd}20);
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
         ">
           ${gridPattern}
           ${decorativeArc("10%", "20%", "160px", palette.accent, 0.15)}
@@ -405,7 +405,7 @@ overflow: hidden;
           background: ${palette.bg};
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
         ">
           ${gridPattern}
           ${decorativeArc("20%", "80%", "140px", palette.accent2, 0.15)}
@@ -487,7 +487,7 @@ overflow: hidden;
           background: linear-gradient(120deg, ${palette.bg}, ${palette.gradientEnd}20);
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
         ">
           ${gridPattern}
           ${decorativeArc("85%", "15%", "160px", palette.accent, 0.15)}

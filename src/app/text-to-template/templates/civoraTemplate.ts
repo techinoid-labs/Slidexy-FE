@@ -139,7 +139,7 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
       flex-direction: column;
       align-items: center;
       z-index: 3;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Raleway', sans-serif;
     ">
       <div style="
         width: 32px;
@@ -184,7 +184,7 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
           width: 960px;
           height: 540px;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           background: ${palette.neutral};
         ">
           ${sidebar}
@@ -273,7 +273,7 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
           width: 960px;
           height: 540px;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           background: ${palette.neutral};
         ">
           ${sidebar}
@@ -371,7 +371,7 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
           width: 960px;
           height: 540px;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           background: ${palette.neutral};
         ">
           ${sidebar}
@@ -438,7 +438,7 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
                       justify-content: center;
                       margin: 0 auto 0.5rem;
                       color: ${palette.textLight};
-                      font-family: 'Inter', sans-serif;
+                      font-family: 'Raleway', sans-serif;
                       font-size: 0.9rem;
                       font-weight: 600;
                     ">${idx + 1}</div>
@@ -464,7 +464,7 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
           width: 960px;
           height: 540px;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           background: ${palette.neutral};
         ">
           ${sidebar}
@@ -564,7 +564,7 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
           width: 960px;
           height: 540px;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           background: ${palette.neutral};
         ">
           ${sidebar}
@@ -676,12 +676,12 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
                     justify-content: center;
                     margin: 0 auto 0.5rem;
                     color: ${palette.textLight};
-                    font-family: 'Inter', sans-serif;
+                    font-family: 'Raleway', sans-serif;
                     font-size: 0.9rem;
                     font-weight: 600;
                   ">1</div>
                   <h3 style="
-                    font-family: 'Inter', sans-serif;
+                    font-family: 'Raleway', sans-serif;
                     font-weight: 600;
                     font-size: 0.9rem;
                     color: ${palette.textLight};
@@ -716,12 +716,12 @@ export const createCivoraTemplate = (backendSlide: BackendSlide, slideIndex: num
                     justify-content: center;
                     margin: 0 auto 0.5rem;
                     color: ${palette.textLight};
-                    font-family: 'Inter', sans-serif;
+                    font-family: 'Raleway', sans-serif;
                     font-size: 0.9rem;
                     font-weight: 600;
                   ">2</div>
                   <h3 style="
-                    font-family: 'Inter', sans-serif;
+                    font-family: 'Raleway', sans-serif;
                     font-weight: 600;
                     font-size: 0.9rem;
                     color: ${palette.textLight};

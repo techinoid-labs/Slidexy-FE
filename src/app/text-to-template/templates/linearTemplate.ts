@@ -164,7 +164,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
             z-index: 10;
           ">
             <h2 style="
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               font-size: 2.8rem;
               font-weight: 700;
               color: ${linearPalette.dark};
@@ -176,7 +176,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
             </h2>
             ${textContent.slice(0, 2).map((text) => `
               <p style="
-                font-family: 'Inter', sans-serif;
+                font-family: 'Raleway', sans-serif;
                 font-size: 1.1rem;
                 color: ${linearPalette.textLight};
                 line-height: 1.6;
@@ -228,7 +228,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
               ">
                 ${accentBar('left', '4px', linearPalette.secondary, '40%')}
                 <p style="
-                  font-family: 'Inter', sans-serif;
+                  font-family: 'Raleway', sans-serif;
                   color: ${linearPalette.textLight};
                   font-size: 1rem;
                 ">Content Area</p>
@@ -264,7 +264,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
           ">
             ${accentBar('top', '4px', linearPalette.secondary, '80px')}
             <h2 style="
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               font-size: 1.5rem;
               font-weight: 600;
               color: ${linearPalette.dark};
@@ -282,7 +282,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
                 gap = 0.5rem;
               ">
                 <p style="
-                  font-family: 'Inter', sans-serif;
+                  font-family: 'Raleway', sans-serif;
                   font-size: 1rem;
                   color: ${linearPalette.textLight};
                   line-height: 1;
@@ -376,7 +376,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
       ">
         ${accentBar('bottom', '4px', linearPalette.primary, '150px')}
         <h2 style="
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           font-size: 1.8rem;
           font-weight: 700;
           color: ${linearPalette.neutral};
@@ -416,7 +416,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
               margin-bottom: 0.6rem; /* reduced gap */
             "></div>
             <h3 style="
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               font-size: 1.1rem;
               font-weight: 600;
               color: ${linearPalette.dark};
@@ -425,7 +425,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
               ${idx === 0 ? 'Overview' : idx === 1 ? 'Analysis' : 'Strategy'}
             </h3>
             <p style="
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               font-size: 0.85rem;
               color: ${linearPalette.textLight};
               line-height: 1.4;
@@ -460,7 +460,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
                 justify-content: center;
                 position: relative;
                 color: ${linearPalette.textLight};
-                font-family: 'Inter', sans-serif;
+                font-family: 'Raleway', sans-serif;
                 font-size: 0.9rem;
               ">
                 ${accentBar('top', '2px', idx % 2 === 0 ? linearPalette.primary : linearPalette.secondary, '40%')}
@@ -518,7 +518,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
           "></div>
         </div>
         <h2 style="
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           font-size: 2.4rem;
           font-weight: 700;
           color: ${linearPalette.dark};
@@ -562,7 +562,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-family: 'Inter', sans-serif;
+                font-family: 'Raleway', sans-serif;
                 font-weight: 600;
                 font-size: 0.9rem;
               ">
@@ -575,7 +575,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
               "></div>
             </div>
             <h3 style="
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               font-size: 1.1rem;
               font-weight: 600;
               color: ${linearPalette.dark};
@@ -584,7 +584,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
               Step ${idx + 1}
             </h3>
             <p style="
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               font-size: 0.95rem;
               color: ${linearPalette.textLight};
               line-height: 1.5;
@@ -626,7 +626,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
                   gap: 0.5rem;
                   color: ${linearPalette.textLight};
                   font-size: 0.8rem;
-                  font-family: 'Inter', sans-serif;
+                  font-family: 'Raleway', sans-serif;
                 ">
                   ${linearIcon('plus', 14, linearPalette.mediumGray)}
                   <span>Visual</span>
@@ -668,7 +668,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
           margin-bottom: 2rem;
         "></div>
         <h2 style="
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           font-size: 3rem;
           font-weight: 300;
           color: ${linearPalette.dark};
@@ -680,7 +680,7 @@ export const createLinearTemplate = (backendSlide: BackendSlide, slideIndex: num
         </h2>
         ${textContent.slice(0, 2).map((text, idx) => `
           <p style="
-            font-family: 'Inter', sans-serif;
+            font-family: 'Raleway', sans-serif;
             font-size: 1.1rem;
             color: ${linearPalette.textLight};
             line-height: 1.7;

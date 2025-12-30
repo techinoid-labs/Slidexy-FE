@@ -169,20 +169,26 @@ const ThemePanelMobile = ({ onClose }: ThemePanelMobileProps) => {
       return;
     }
 
-    currentSlide.elements = selectedVariant.elements ? structuredClone(selectedVariant.elements) : [];
-    currentSlide.layout_type = selectedVariant.layout_type || currentSlide.layout_type;
-    currentSlide.slide_title = selectedVariant.slide_title ? structuredClone(selectedVariant.slide_title) : currentSlide.slide_title;
-    currentSlide.subtitle = selectedVariant.subtitle ? structuredClone(selectedVariant.subtitle) : currentSlide.subtitle;
-    currentSlide.background = selectedVariant.background ? structuredClone(selectedVariant.background) : currentSlide.background;
+    const updatedSlide = {
+      ...currentSlide,
+      elements: selectedVariant.elements ? structuredClone(selectedVariant.elements) : [],
+      layout_type: selectedVariant.layout_type || currentSlide.layout_type,
+      slide_title: selectedVariant.slide_title ? structuredClone(selectedVariant.slide_title) : currentSlide.slide_title,
+      subtitle: selectedVariant.subtitle ? structuredClone(selectedVariant.subtitle) : currentSlide.subtitle,
+      background: selectedVariant.background ? structuredClone(selectedVariant.background) : currentSlide.background,
+      image_url: selectedVariant.image_url !== undefined ? selectedVariant.image_url : currentSlide.image_url,
+      currentVariantIndex: variantIndex,
+    };
 
-    if (selectedVariant.image_url !== undefined) currentSlide.image_url = selectedVariant.image_url;
-    currentSlide.currentVariantIndex = variantIndex;
-
-    if (!currentSlide.layouts) {
-      currentSlide.layouts = currentVariants;
+    if (!updatedSlide.layouts) {
+      updatedSlide.layouts = structuredClone(currentVariants);
     } else {
-      currentSlide.layouts[variantIndex] = selectedVariant;
+      updatedSlide.layouts = updatedSlide.layouts.map((layout: any, idx: number) =>
+        idx === variantIndex ? structuredClone(selectedVariant) : layout
+      );
     }
+
+    updatedSlides[selectedSlideIndex] = updatedSlide;
 
     setSlides(updatedSlides);
 

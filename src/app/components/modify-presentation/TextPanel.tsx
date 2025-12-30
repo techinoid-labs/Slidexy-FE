@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { v4 as uuidv4 } from "uuid";
 import { useTheme, useMediaQuery } from "@mui/material";
 import {
   Box,
@@ -19,7 +20,7 @@ import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
 import { useSlides } from "@/app/context/SlidesContext";
 import { getContrastTextColor } from "@/utils/colorUtils";
 
-const fontOptions = ["Raleway", "Roboto", "Arial"];
+const fontOptions = ["Raleway", "Roboto", "Arial", "Inter", "Playfair Display", "Montserrat", "Outfit"];
 
 const weightOptions = [
   { label: "Regular", value: "normal" },
@@ -47,16 +48,47 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     setSlides,
   } = useSlides();
 
-  // ✅ FIX: Parse selectedTextId to handle title, subtitle, and elements
+  const [detectedFont, setDetectedFont] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setDetectedFont(null); // Reset immediately to prevent flickering of old font
+    if (selectedTextId) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(selectedTextId);
+        if (el) {
+          const style = window.getComputedStyle(el);
+          // Handle complex font stacks and Next.js font class names
+          const font = style.fontFamily.split(',')[0].replace(/['"]/g, '').trim();
+
+          // If it's a Next.js font like __Raleway_123456, normalize it
+          let normalizedFont = font;
+          if (font.includes('Raleway')) normalizedFont = 'Raleway';
+          else if (font.includes('Roboto')) normalizedFont = 'Roboto';
+          else if (font.includes('Inter')) normalizedFont = 'Inter';
+          else if (font.includes('Playfair')) normalizedFont = 'Playfair Display';
+          else if (font.includes('Montserrat')) normalizedFont = 'Montserrat';
+          else if (font.includes('Outfit')) normalizedFont = 'Outfit';
+
+          setDetectedFont(normalizedFont);
+        }
+      }, 100); // Increased timeout to ensure DOM is ready
+      return () => clearTimeout(timer);
+    }
+  }, [selectedTextId]);
+
+  // ✅ FIX: Enhanced ID parsing and lookup logic
   const parsed = selectedTextId
-    ? selectedTextId.match(/(?:title|subtitle|el)-(\d+)(?:-(\d+))?/)
+    ? selectedTextId.match(/^(title|subtitle|quote|author|context|el|text|user-text)-(\d+)(?:-(\d+))?$/)
     : null;
 
-  const slideIndex = parsed ? parseInt(parsed[1], 10) : selectedSlideIndex;
-  const elementIndex = parsed?.[2] ? parseInt(parsed[2], 10) : null;
+  const slideIndex = parsed ? parseInt(parsed[2], 10) : selectedSlideIndex;
+  // If it's a simple index-based ID, we get elementIndex here
+  let elementIndex = parsed?.[3] ? parseInt(parsed[3], 10) : null;
 
   // ✅ FIX: Get text object from current variant slide
   let textObj: any = null;
+  let currentSlide: any = null;
+
   if (slideIndex !== -1 && slides[slideIndex]) {
     const originalSlide = slides[slideIndex];
 
@@ -69,25 +101,71 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       return variant || slide;
     };
 
-    const currentSlide = getCurrentVariantSlide(originalSlide);
+    currentSlide = getCurrentVariantSlide(originalSlide);
 
-    // ✅ FIX: Handle title, subtitle, and regular elements
-    if (selectedTextId?.startsWith("title")) {
-      textObj = currentSlide.slide_title;
-    } else if (selectedTextId?.startsWith("subtitle")) {
-      textObj = currentSlide.subtitle;
-    } else if (elementIndex !== null && currentSlide.elements?.[elementIndex]) {
-      textObj = currentSlide.elements[elementIndex];
+    // 1. Try finding by explicit ID first (most robust for UUIDs)
+    if (selectedTextId) {
+      const allElements = [
+        ...(currentSlide.elements || []),
+        ...(originalSlide.elements || [])
+      ];
+
+      const found = allElements.find((el: any) =>
+        el.id === selectedTextId ||
+        el.properties?.id === selectedTextId ||
+        el.properties?.text_id === selectedTextId ||
+        el.shape_id === selectedTextId ||
+        el.properties?.shape_id === selectedTextId
+      );
+
+      if (found) {
+        textObj = found;
+        // Try to infer index for functions that still use it
+        if (!elementIndex) {
+          const idx = currentSlide.elements?.indexOf(found);
+          if (idx !== -1 && idx !== undefined) elementIndex = idx;
+        }
+      }
+    }
+
+    // 2. Fallback to parsing-based logic if not found by ID
+    if (!textObj) {
+      if (selectedTextId?.startsWith("title") || selectedTextId?.startsWith("quote")) {
+        textObj = currentSlide.slide_title || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
+      } else if (selectedTextId?.startsWith("subtitle") || selectedTextId?.startsWith("author")) {
+        textObj = currentSlide.subtitle || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
+      } else if (selectedTextId?.startsWith("context")) {
+        const existing = (currentSlide.elements || []).find((el: any) => el.element_type === 'context');
+        textObj = existing || { properties: {}, konva_component: "Konva.Text", element_type: "text", text: currentSlide.context || "" };
+      } else if (elementIndex !== null) {
+        const variantElements = currentSlide.elements || [];
+        if (elementIndex < variantElements.length) {
+          textObj = variantElements[elementIndex];
+        } else {
+          const userIndex = elementIndex - variantElements.length;
+          const userElements = originalSlide.elements || [];
+          if (userIndex >= 0 && userIndex < userElements.length) {
+            textObj = userElements[userIndex];
+          }
+        }
+      }
     }
   }
 
   const hasValidText = !!textObj;
+
+  const displayText = textObj?.text || (
+    selectedTextId?.startsWith("quote") ? currentSlide?.quote :
+      selectedTextId?.startsWith("author") ? currentSlide?.author :
+        selectedTextId?.startsWith("context") ? currentSlide?.context :
+          ""
+  ) || "";
   const rawProps = textObj?.properties || {};
 
   const fontSize = rawProps.fontSize ?? 24;
-  const fontFamily = fontOptions.includes(rawProps.fontFamily)
+  const fontFamily = detectedFont || (fontOptions.includes(rawProps.fontFamily)
     ? rawProps.fontFamily
-    : "Roboto";
+    : "Raleway");
   const selectedTheme = slides[selectedSlideIndex]?.theme || null;
   // Update the fill variable definition:
   const fill = rawProps.fill ?? (textObj?.useThemeColor !== false
@@ -114,8 +192,9 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
 
-    const isTitle = selectedTextId?.startsWith("title");
-    const isSubtitle = selectedTextId?.startsWith("subtitle");
+    const isTitle = selectedTextId?.startsWith("title") || selectedTextId?.startsWith("quote");
+    const isSubtitle = selectedTextId?.startsWith("subtitle") || selectedTextId?.startsWith("author");
+    const isContext = selectedTextId?.startsWith("context");
 
     const applyUpdates = (target: any) => {
       if (!target) return;
@@ -127,11 +206,68 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
     // Update original slide
     if (isTitle) {
+      originalSlide.slide_title = originalSlide.slide_title || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
       applyUpdates(originalSlide.slide_title);
     } else if (isSubtitle) {
+      originalSlide.subtitle = originalSlide.subtitle || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
       applyUpdates(originalSlide.subtitle);
-    } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements?.[elementIndex]) {
-      applyUpdates(originalSlide.elements[elementIndex]);
+    } else if (isContext) {
+      const idx = originalSlide.elements?.findIndex((el: any) => el.element_type === 'context');
+      if (idx !== undefined && idx >= 0) {
+        applyUpdates(originalSlide.elements[idx]);
+      } else {
+        // Create context element if it doesn't exist
+        originalSlide.elements = originalSlide.elements || [];
+        originalSlide.elements.push({
+          element_type: 'context',
+          text: originalSlide.context || "",
+          properties: updates,
+          konva_component: "Konva.Text"
+        });
+      }
+    } else if (selectedTextId) {
+      // ✅ FIX: Find and update ALL elements with this ID (handles mirrored elements)
+      const targets: any[] = [];
+
+      // Look in top-level elements
+      if (originalSlide.elements) {
+        originalSlide.elements.forEach((el: any) => {
+          if (el.id === selectedTextId || el.properties?.id === selectedTextId ||
+            el.shape_id === selectedTextId || el.properties?.shape_id === selectedTextId) {
+            targets.push(el);
+          }
+        });
+      }
+
+      // Look in ALL layouts/variants
+      if (originalSlide.layouts) {
+        originalSlide.layouts.forEach((layout: any) => {
+          if (layout.elements) {
+            layout.elements.forEach((el: any) => {
+              if (el.id === selectedTextId || el.properties?.id === selectedTextId ||
+                el.shape_id === selectedTextId || el.properties?.shape_id === selectedTextId) {
+                targets.push(el);
+              }
+            });
+          }
+        });
+      }
+
+      if (targets.length > 0) {
+        targets.forEach(t => applyUpdates(t));
+      } else if (elementIndex !== null) {
+        // Fallback to index if ID search fails (backward compatibility)
+        const variantElements = (originalSlide.layouts?.[originalSlide.currentVariantIndex ?? 0]?.elements) || [];
+        if (elementIndex < variantElements.length) {
+          applyUpdates(variantElements[elementIndex]);
+        } else {
+          const userIndex = elementIndex - variantElements.length;
+          const userElements = originalSlide.elements || [];
+          if (userIndex >= 0 && userIndex < userElements.length) {
+            applyUpdates(userElements[userIndex]);
+          }
+        }
+      }
     }
 
     // Update current variant
@@ -140,11 +276,24 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
         if (isTitle) {
+          variant.slide_title = variant.slide_title || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
           applyUpdates(variant.slide_title);
         } else if (isSubtitle) {
+          variant.subtitle = variant.subtitle || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
           applyUpdates(variant.subtitle);
-        } else if (elementIndex !== null && elementIndex >= 0 && variant.elements?.[elementIndex]) {
-          applyUpdates(variant.elements[elementIndex]);
+        } else if (isContext) {
+          const vIdx = variant.elements?.findIndex((el: any) => el.element_type === 'context');
+          if (vIdx !== undefined && vIdx >= 0) {
+            applyUpdates(variant.elements[vIdx]);
+          } else {
+            variant.elements = variant.elements || [];
+            variant.elements.push({
+              element_type: 'context',
+              text: variant.context || originalSlide.context || "",
+              properties: updates,
+              konva_component: "Konva.Text"
+            });
+          }
         }
       }
     }
@@ -164,18 +313,70 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
 
-    const isTitle = selectedTextId?.startsWith("title");
-    const isSubtitle = selectedTextId?.startsWith("subtitle");
+    const isTitle = selectedTextId?.startsWith("title") || selectedTextId?.startsWith("quote");
+    const isSubtitle = selectedTextId?.startsWith("subtitle") || selectedTextId?.startsWith("author");
+    const isContext = selectedTextId?.startsWith("context");
 
     // Update original
     if (isTitle) {
-      originalSlide.slide_title = originalSlide.slide_title;
+      originalSlide.slide_title = originalSlide.slide_title || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
       originalSlide.slide_title.text = value;
     } else if (isSubtitle) {
-      originalSlide.subtitle = originalSlide.subtitle || {};
+      originalSlide.subtitle = originalSlide.subtitle || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
       originalSlide.subtitle.text = value;
-    } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements?.[elementIndex]) {
-      originalSlide.elements[elementIndex].text = value;
+    } else if (isContext) {
+      const idx = originalSlide.elements?.findIndex((el: any) => el.element_type === 'context');
+      if (idx !== undefined && idx >= 0) {
+        originalSlide.elements[idx].text = value;
+      } else {
+        // Create context element if it doesn't exist
+        originalSlide.elements = originalSlide.elements || [];
+        originalSlide.elements.push({
+          element_type: 'context',
+          text: value,
+          properties: {},
+          konva_component: "Konva.Text"
+        });
+      }
+    } else if (selectedTextId) {
+      const targets: any[] = [];
+
+      if (originalSlide.elements) {
+        originalSlide.elements.forEach((el: any) => {
+          if (el.id === selectedTextId || el.properties?.id === selectedTextId ||
+            el.shape_id === selectedTextId || el.properties?.shape_id === selectedTextId) {
+            targets.push(el);
+          }
+        });
+      }
+
+      if (originalSlide.layouts) {
+        originalSlide.layouts.forEach((layout: any) => {
+          if (layout.elements) {
+            layout.elements.forEach((el: any) => {
+              if (el.id === selectedTextId || el.properties?.id === selectedTextId ||
+                el.shape_id === selectedTextId || el.properties?.shape_id === selectedTextId) {
+                targets.push(el);
+              }
+            });
+          }
+        });
+      }
+
+      if (targets.length > 0) {
+        targets.forEach(t => t.text = value);
+      } else if (elementIndex !== null) {
+        const variantElements = (originalSlide.layouts?.[originalSlide.currentVariantIndex ?? 0]?.elements) || [];
+        if (elementIndex < variantElements.length) {
+          variantElements[elementIndex].text = value;
+        } else {
+          const userIndex = elementIndex - variantElements.length;
+          const userElements = originalSlide.elements || [];
+          if (userIndex >= 0 && userIndex < userElements.length) {
+            userElements[userIndex].text = value;
+          }
+        }
+      }
     }
 
     // Update current variant (if exists)
@@ -184,13 +385,24 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
         if (isTitle) {
-          variant.slide_title = variant.slide_title;
+          variant.slide_title = variant.slide_title || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
           variant.slide_title.text = value;
         } else if (isSubtitle) {
-          variant.subtitle = variant.subtitle || {};
+          variant.subtitle = variant.subtitle || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
           variant.subtitle.text = value;
-        } else if (elementIndex !== null && elementIndex >= 0 && variant.elements?.[elementIndex]) {
-          variant.elements[elementIndex].text = value;
+        } else if (isContext) {
+          const vIdx = variant.elements?.findIndex((el: any) => el.element_type === 'context');
+          if (vIdx !== undefined && vIdx >= 0) {
+            variant.elements[vIdx].text = value;
+          } else {
+            variant.elements = variant.elements || [];
+            variant.elements.push({
+              element_type: 'context',
+              text: value,
+              properties: {},
+              konva_component: "Konva.Text"
+            });
+          }
         }
       }
     }
@@ -205,15 +417,81 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
 
-    const isTitle = selectedTextId?.startsWith("title");
-    const isSubtitle = selectedTextId?.startsWith("subtitle");
+    const isTitle = selectedTextId?.startsWith("title") || selectedTextId?.startsWith("quote");
+    const isSubtitle = selectedTextId?.startsWith("subtitle") || selectedTextId?.startsWith("author");
+    const isContext = selectedTextId?.startsWith("context");
 
     // Update original
-    let el = isTitle
-      ? originalSlide.slide_title
-      : isSubtitle
-        ? originalSlide.subtitle
-        : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
+    let el = null;
+    if (isTitle) {
+      el = originalSlide.slide_title;
+    } else if (isSubtitle) {
+      el = originalSlide.subtitle;
+    } else if (isContext) {
+      el = originalSlide.elements?.find((e: any) => e.element_type === 'context');
+    } else if (selectedTextId) {
+      const targets: any[] = [];
+
+      if (originalSlide.elements) {
+        originalSlide.elements.forEach((el: any) => {
+          if (el.id === selectedTextId || el.properties?.id === selectedTextId ||
+            el.shape_id === selectedTextId || el.properties?.shape_id === selectedTextId) {
+            targets.push(el);
+          }
+        });
+      }
+
+      if (originalSlide.layouts) {
+        originalSlide.layouts.forEach((layout: any) => {
+          if (layout.elements) {
+            layout.elements.forEach((el: any) => {
+              if (el.id === selectedTextId || el.properties?.id === selectedTextId ||
+                el.shape_id === selectedTextId || el.properties?.shape_id === selectedTextId) {
+                targets.push(el);
+              }
+            });
+          }
+        });
+      }
+
+      if (targets.length > 0) {
+        targets.forEach(el => {
+          el.properties = el.properties || {};
+          el.properties.fill = color;
+          el.useThemeColor = false;
+        });
+      } else if (elementIndex !== null) {
+        const variantElements = (originalSlide.layouts?.[originalSlide.currentVariantIndex ?? 0]?.elements) || [];
+        if (elementIndex < variantElements.length) {
+          el = variantElements[elementIndex];
+        } else {
+          const userIndex = elementIndex - variantElements.length;
+          const userElements = originalSlide.elements || [];
+          if (userIndex >= 0 && userIndex < userElements.length) {
+            el = userElements[userIndex];
+          }
+        }
+        if (el) {
+          el.properties = el.properties || {};
+          el.properties.fill = color;
+          el.useThemeColor = false;
+        }
+      }
+    }
+
+    if (!el && isContext) {
+      // Create context if missing
+      originalSlide.elements = originalSlide.elements || [];
+      const newEl = {
+        element_type: 'context',
+        text: originalSlide.context || "",
+        properties: { fill: color, userAdded: true },
+        konva_component: "Konva.Text",
+        useThemeColor: false
+      };
+      originalSlide.elements.push(newEl);
+      el = newEl;
+    }
 
     if (el) {
       el.properties = el.properties || {};
@@ -226,11 +504,33 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       const variantIndex = originalSlide.currentVariantIndex ?? 0;
       const variant = originalSlide.layouts[variantIndex];
       if (variant) {
-        let variantEl = isTitle
-          ? variant.slide_title
-          : isSubtitle
-            ? variant.subtitle
-            : (elementIndex !== null && elementIndex >= 0 ? variant.elements?.[elementIndex] : null);
+        let variantEl = null;
+        if (isTitle) {
+          variantEl = variant.slide_title;
+        } else if (isSubtitle) {
+          variantEl = variant.subtitle;
+        } else if (isContext) {
+          variantEl = variant.elements?.find((e: any) => e.element_type === 'context');
+        } else if (elementIndex !== null) {
+          const variantElements = variant.elements || [];
+          if (elementIndex < variantElements.length) {
+            variantEl = variantElements[elementIndex];
+          } else {
+            // For user elements, no variantEl
+          }
+        }
+
+        if (!variantEl && isContext) {
+          variant.elements = variant.elements || [];
+          variantEl = {
+            element_type: 'context',
+            text: variant.context || originalSlide.context || "",
+            properties: { fill: color, userAdded: true },
+            konva_component: "Konva.Text",
+            useThemeColor: false
+          };
+          variant.elements.push(variantEl);
+        }
 
         if (variantEl) {
           variantEl.properties = variantEl.properties || {};
@@ -250,24 +550,26 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
 
-    const isTitle = selectedTextId?.startsWith("title");
-    const isSubtitle = selectedTextId?.startsWith("subtitle");
+    const isTitle = selectedTextId?.startsWith("title") || selectedTextId?.startsWith("quote");
+    const isSubtitle = selectedTextId?.startsWith("subtitle") || selectedTextId?.startsWith("author");
+    const isContext = selectedTextId?.startsWith("context");
 
-    const originalElement = isTitle
-      ? originalSlide.slide_title
-      : isSubtitle
-        ? originalSlide.subtitle
-        : (elementIndex !== null && elementIndex >= 0 ? originalSlide.elements?.[elementIndex] : null);
+    const originalElement = textObj;
 
     if (!originalElement) return;
 
+    // ✅ FIX: Generate new UUID for the duplicate to prevent duplicate key errors
+    const newId = `user-text-${uuidv4()}`;
+
     // ✅ FIX: Create new text element with proper structure and mark as userAdded
     const newTextElement = {
+      id: newId, // ✅ New unique ID
       konva_component: "Konva.Text",
       element_type: "text",
       text: originalElement.text || "",
       properties: {
         ...structuredClone(originalElement.properties || {}),
+        id: newId, // ✅ Ensure properties also have the new unique ID
         userAdded: true, // ✅ Mark as user-added so UserElementsRenderer picks it up
         x: (originalElement.properties?.x || 100) + 30,
         y: (originalElement.properties?.y || 100) + 30,
@@ -286,24 +588,12 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 
     // Determine the actual insertion point in the original elements array
     // If it's a variant element, we want to insert it after its original counterpart
-    const insertIndex = (isTitle || isSubtitle) ? 0 : (elementIndex !== null ? elementIndex + 1 : originalSlide.elements.length);
+    const insertIndex = (isTitle || isSubtitle || isContext) ? 0 : (elementIndex !== null ? elementIndex + 1 : originalSlide.elements.length);
     originalSlide.elements.splice(insertIndex, 0, newTextElement);
-
-    // Update current variant (if exists)
-    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
-      const variantIndex = originalSlide.currentVariantIndex ?? 0;
-      const variant = originalSlide.layouts[variantIndex];
-      if (variant && variant.elements) {
-        // Important: Update variant elements as well to keep them in sync
-        const variantInsertIndex = elementIndex !== null ? elementIndex + 1 : variant.elements.length;
-        variant.elements.splice(variantInsertIndex, 0, structuredClone(newTextElement));
-      }
-    }
 
     setSlides(updatedSlides);
 
-    // Select the new duplicated element
-    const newId = `el-${slideIndex}-${insertIndex}`;
+    // Select the new duplicated element by its NEW ID
     setSelectedTextId(newId);
   };
 
@@ -314,8 +604,9 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
     const updatedSlides = structuredClone(slides);
     const originalSlide = updatedSlides[slideIndex];
 
-    const isTitle = selectedTextId?.startsWith("title");
-    const isSubtitle = selectedTextId?.startsWith("subtitle");
+    const isTitle = selectedTextId?.startsWith("title") || selectedTextId?.startsWith("quote");
+    const isSubtitle = selectedTextId?.startsWith("subtitle") || selectedTextId?.startsWith("author");
+    const isContext = selectedTextId?.startsWith("context");
 
     // Update original
     if (isTitle) {
@@ -338,10 +629,50 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
       };
     } else if (isSubtitle) {
       originalSlide.subtitle = undefined;
-    } else if (elementIndex !== null && elementIndex >= 0 && originalSlide.elements) {
-      // ✅ FIX: Robust deletion from original slide
-      if (elementIndex < originalSlide.elements.length) {
-        originalSlide.elements.splice(elementIndex, 1);
+    } else if (isContext) {
+      const idx = originalSlide.elements?.findIndex((el: any) => el.element_type === 'context');
+      if (idx !== undefined && idx >= 0) {
+        originalSlide.elements.splice(idx, 1);
+      }
+    } else if (selectedTextId) {
+      // Find and delete by ID
+      let deleted = false;
+      if (originalSlide.elements) {
+        const idx = originalSlide.elements.findIndex((el: any) =>
+          el.id === selectedTextId || el.properties?.id === selectedTextId ||
+          el.shape_id === selectedTextId || el.properties?.shape_id === selectedTextId
+        );
+        if (idx !== -1) {
+          originalSlide.elements.splice(idx, 1);
+          deleted = true;
+        }
+      }
+
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts?.[variantIndex];
+      if (!deleted && variant?.elements) {
+        const vIdx = variant.elements.findIndex((el: any) =>
+          el.id === selectedTextId || el.properties?.id === selectedTextId ||
+          el.shape_id === selectedTextId || el.properties?.shape_id === selectedTextId
+        );
+        if (vIdx !== -1) {
+          variant.elements.splice(vIdx, 1);
+          deleted = true;
+        }
+      }
+
+      // Final fallback to elementIndex if ID search failed
+      if (!deleted && elementIndex !== null) {
+        const variantElements = variant?.elements || [];
+        if (elementIndex < variantElements.length) {
+          variantElements.splice(elementIndex, 1);
+        } else {
+          const userIndex = elementIndex - variantElements.length;
+          const userElements = originalSlide.elements || [];
+          if (userIndex >= 0 && userIndex < userElements.length) {
+            userElements.splice(userIndex, 1);
+          }
+        }
       }
     }
 
@@ -354,10 +685,10 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           variant.slide_title = structuredClone(originalSlide.slide_title);
         } else if (isSubtitle) {
           variant.subtitle = undefined;
-        } else if (elementIndex !== null && elementIndex >= 0 && variant.elements) {
-          // ✅ FIX: Robust deletion from variant elements
-          if (elementIndex < variant.elements.length) {
-            variant.elements.splice(elementIndex, 1);
+        } else if (isContext) {
+          const vIdx = variant.elements?.findIndex((el: any) => el.element_type === 'context');
+          if (vIdx !== undefined && vIdx >= 0) {
+            variant.elements.splice(vIdx, 1);
           }
         }
       }
@@ -377,7 +708,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         </Box>
 
         <InputBase
-          value={textObj?.text ?? ""}
+          value={displayText}
           onChange={(e) => hasValidText && updateTextContent(e.target.value)}
           fullWidth
           disabled={!hasValidText}
@@ -396,7 +727,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         />
 
         <Select
-          value={fontFamily}
+          value={fontOptions.includes(fontFamily) ? fontFamily : (fontOptions.includes(detectedFont || "") ? detectedFont : "Raleway")}
           onChange={(e) => hasValidText && updateTextProperty("fontFamily", e.target.value)}
           fullWidth
           size="small"
@@ -416,6 +747,11 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
               {opt}
             </MenuItem>
           ))}
+          {detectedFont && !fontOptions.includes(detectedFont) && (
+            <MenuItem key={detectedFont} value={detectedFont}>
+              {detectedFont} (Detected)
+            </MenuItem>
+          )}
         </Select>
 
         <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
