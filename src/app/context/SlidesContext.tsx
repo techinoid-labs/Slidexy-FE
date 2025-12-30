@@ -34,6 +34,8 @@ interface SlidesContextType {
   setSelectedImageIndex: (index: number | null) => void;
   selectedTextId: string | null;
   setSelectedTextId: (id: string | null) => void;
+  selectedTextIndex: number | null;
+  setSelectedTextIndex: (index: number | null) => void;
   setSelectedImageId: (id: string | null) => void;
   selectedShapeId: string | null;
   setSelectedShapeId: (id: string | null) => void;
@@ -96,6 +98,7 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const [futureSlides, setFutureSlides] = useState<SlidesType[]>([]);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
+  const [selectedTextIndex, setSelectedTextIndex] = useState<number | null>(null);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<KonvaComponent | null>(
     null
@@ -707,6 +710,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         setSelectedImageIndex,
         selectedTextId,
         setSelectedTextId,
+        selectedTextIndex,
+        setSelectedTextIndex,
         setSelectedImageId,
         selectedImageId,
         selectedShapeIndex,
