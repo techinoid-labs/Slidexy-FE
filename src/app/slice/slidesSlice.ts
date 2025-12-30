@@ -76,6 +76,7 @@ interface GroupProperties extends KonvaShapeProperties {
 
 export interface KonvaComponent {
   id?: string;
+  image_id?: string;
   konva_component: string;
   element_id?: string;
   element_type?: string;

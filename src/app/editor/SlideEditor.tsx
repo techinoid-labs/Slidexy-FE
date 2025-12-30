@@ -101,40 +101,56 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
       return {
         ...slide,
         ...fallbackVariant,
-        elements: [...(fallbackVariant.elements || []), ...extractUserShapes(slide)],
+        elements: [...(fallbackVariant.elements || []), ...extractUserElements(slide)],
       };
     }
 
-    // Extract user-added shapes (ones the user drew manually, not part of any layout)
-    const userShapes = extractUserShapes(slide);
+    // Extract user-added elements (drawn manually, not part of layout)
+    const userElements = extractUserElements(slide);
 
-    // Merge: variant wins on everything except user-added shapes
+    // Merge: variant wins on everything except user-added elements
     return {
       ...slide,                           // Keep original slide props (slide_id, etc.)
-      ...variant,                         // Override with variant data (layout_type, title, elements, etc.)
-      // Combine variant elements with user-added shapes (deduplicated by shape_id)
+      ...variant,                         // Override with variant data
+      // ✅ FIX: Combine variant elements with user-added elements (deduplicated by multiple ID fields)
       elements: [
         ...(variant.elements || []),
-        ...userShapes.filter((us: any) =>
-          !(variant.elements || []).some((ve: any) => ve.shape_id === us.shape_id)
-        )
+        ...userElements.filter((ue: any) => {
+          const ueId = ue.id || ue.shape_id || ue.properties?.shape_id || ue.properties?.image_id;
+          return !(variant.elements || []).some((ve: any) => {
+            const veId = ve.id || ve.shape_id || ve.properties?.shape_id || ve.properties?.image_id;
+            return ueId && veId && ueId === veId;
+          });
+        })
       ],
-      currentVariantIndex: variantIndex,  // Keep track of active variant
+      currentVariantIndex: variantIndex,
     };
   };
 
   /**
-   * Helper: extracts only user-drawn shapes (not part of generated layouts)
+   * Helper: extracts only user-added elements (not part of generated layouts)
    */
-  const extractUserShapes = (slide: any): any[] => {
+  const extractUserElements = (slide: any): any[] => {
     if (!slide.elements || !Array.isArray(slide.elements)) return [];
 
-    return slide.elements.filter((el: any) =>
-      el.element_type === "shape" &&
-      el.shape_id &&
-      typeof el.shape_id === "string" &&
-      el.shape_id.startsWith("user-") // optional: enforce your naming convention
-    );
+    return slide.elements.filter((el: any) => {
+      // 1. Elements marked with userAdded property
+      if (el.userAdded === true || el.properties?.userAdded === true) return true;
+
+      // 2. Elements with known user-generated ID prefixes
+      const id = el.id || el.shape_id || el.properties?.shape_id || el.properties?.image_id || el.image_id;
+      if (typeof id === "string") {
+        if (id.startsWith("user-")) return true;
+        if (id.startsWith("el-")) return true;
+        if (id.startsWith("img-")) return true;
+      }
+
+      // 3. Fallback for specific element types that are likely user-added in this context
+      // (like shapes or images that somehow lost their userAdded flag)
+      if (el.element_type === 'shape' || el.element_type === 'image') return true;
+
+      return false;
+    });
   };
 
   const slide = getCurrentVariantSlide(originalSlide);
@@ -155,22 +171,28 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
     elementType: string,
     elementIndex?: number
   ) => {
-    // Clear cross-type selections
-    onSetSelectedShapeId(null);
-    onSetSelectedImageId(null);
-    onSetSelectedImageIndex(null);
-    onSetSelectedShapeIndex(null);
-    onSetSelectedTextId(null);
-
+    // Selective clearing based on what's being selected
     if (elementType === "text") {
+      onSetSelectedShapeId(null);
+      onSetSelectedImageId(null);
+      onSetSelectedImageIndex(null);
+      onSetSelectedShapeIndex(null);
+
       const textId =
         elementId ||
         (typeof elementIndex === "number"
           ? `el-${index}-${elementIndex}`
           : `title-${index}`);
-      onSetSelectedTextId(textId);
-      onHandleSelect({ id: textId, type: "text", index: elementIndex ?? -1 });
+
+      if (selectedTextId !== textId) {
+        onSetSelectedTextId(textId);
+        onHandleSelect({ id: textId, type: "text", index: elementIndex ?? -1 });
+      }
     } else if (elementType === "image") {
+      onSetSelectedShapeId(null);
+      onSetSelectedShapeIndex(null);
+      onSetSelectedTextId(null);
+
       // Find image element in slide
       const imgEl = slide.elements?.find((el: any) =>
         el.element_type === "image" &&
@@ -184,9 +206,11 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
 
       const finalId = elementId || imgEl?.image_id || imgEl?.properties?.image_id || `image-${index}-${finalIndex ?? 0}`;
 
-      onSetSelectedImageId(finalId);
-      onSetSelectedImageIndex(finalIndex);
-      onHandleSelect({ id: finalId, type: "image", index: finalIndex ?? 0 });
+      if (selectedImageId !== finalId || selectedImageIndex !== finalIndex) {
+        onSetSelectedImageId(finalId);
+        onSetSelectedImageIndex(finalIndex);
+        onHandleSelect({ id: finalId, type: "image", index: finalIndex ?? 0 });
+      }
 
       if (imgEl) {
         onSetSelectedImage({
@@ -199,6 +223,27 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
             image_id: finalId,
           },
         });
+      } else {
+        // Layout image (slide.image_url) - read properties from slide.image_properties
+        const layoutImageProps = originalSlide.image_properties || {};
+        onSetSelectedImage({
+          element_type: "image",
+          konva_component: "Konva.Image",
+          properties: {
+            imageSrc: slide.image_url,
+            x: 0,
+            y: 0,
+            width: 400,
+            height: 400,
+            image_id: finalId,
+            // Read visual properties from slide.image_properties
+            opacity: layoutImageProps.opacity ?? 1,
+            borderRadius: layoutImageProps.borderRadius ?? 0,
+            shadow: layoutImageProps.shadow,
+            ...layoutImageProps,
+          },
+        });
+        onSetSelectedImageIndex(-99);
       }
     } else if (elementType === "shape") {
       const shapeId = elementId || `shape-${index}-${elementIndex ?? 0}`;
@@ -231,6 +276,7 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
     >
       {/* HTML Overlay for editing - visible and interactive */}
       <Box
+        data-slide-container="true"
         sx={{
           position: "absolute",
           top: 0,
@@ -278,16 +324,22 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
 
               // The HTML renderer provides elements as [ ...variant.elements, ...userShapes ]
               if (Array.isArray(updatedSlide.elements)) {
-                // Split updated elements into variant part and user-shapes part
-                const newVariantElements = updatedSlide.elements.slice(0, variantCount);
-                const newUserShapes = updatedSlide.elements.slice(variantCount);
+                // ✅ FIX: Correctly identify user elements and variant elements
+                const userElements = extractUserElements(updatedSlide);
+                const variantElements = updatedSlide.elements.filter(el =>
+                  !userElements.some(ue => {
+                    const ueId = ue.id || ue.shape_id || ue.properties?.image_id || ue.properties?.shape_id;
+                    const elId = el.id || el.shape_id || el.properties?.image_id || el.properties?.shape_id;
+                    return ueId && elId && ueId === elId;
+                  })
+                );
 
                 // Apply to variant and original slide elements
-                currentVariant.elements = newVariantElements;
+                currentVariant.elements = variantElements;
                 originalSlide.layouts[variantIndex] = currentVariant;
 
-                // Compose original elements as variant elements + user shapes
-                originalSlide.elements = [...newVariantElements, ...newUserShapes];
+                // Compose original elements
+                originalSlide.elements = [...variantElements, ...userElements];
               }
             } else {
               // No variants: replace top-level elements

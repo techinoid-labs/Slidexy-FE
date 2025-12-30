@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
+import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
 
 interface ConclusionSlideHTMLProps {
@@ -51,6 +52,13 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
             }
         }
         onSlideUpdate(updated);
+    };
+
+    const handleElementUpdate = (index: number, updates: any) => {
+        if (!onSlideUpdate) return;
+        const updatedElements = [...(slide.elements || [])];
+        updatedElements[index] = { ...updatedElements[index], ...updates };
+        onSlideUpdate({ ...slide, elements: updatedElements });
     };
 
     // Variant 1: Centered Focus (Dark Text)
@@ -135,12 +143,15 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                             }}>
                                 <div style={{ fontSize: '2rem', marginBottom: '1rem', color: accent }}>★</div>
                                 <EditableElement
-                                    id={`conclusion-bullet-${actualIndex}`}
+                                    id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}
                                     tagName="p"
                                     isEditing={isEditing}
                                     onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    onSelectElement={() => {
+                                        const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                        onElementClick?.(bId, 'text', actualIndex);
+                                    }}
                                     style={{
                                         fontSize: '1.2rem',
                                         color: '#000000',
@@ -153,6 +164,13 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -161,6 +179,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
     if (variant === 2) {
         return (
             <div style={{
+                position: 'relative',
                 display: 'flex',
                 height: '100%',
                 background: bgColor,
@@ -229,12 +248,15 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                                     fontWeight: 'bold'
                                 }}>✓</div>
                                 <EditableElement
-                                    id={`conclusion-bullet-${actualIndex}`}
+                                    id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}
                                     tagName="p"
                                     isEditing={isEditing}
                                     onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    onSelectElement={() => {
+                                        const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                        onElementClick?.(bId, 'text', actualIndex);
+                                    }}
                                     style={{
                                         fontSize: '1.15rem',
                                         color: '#000000',
@@ -247,6 +269,13 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                         );
                     })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -255,6 +284,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
     if (variant === 3) {
         return (
             <div style={{
+                position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
@@ -296,12 +326,15 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                             return (
                                 <div key={bullet.id || actualIndex} style={{ padding: '1rem', borderTop: `1px solid #e2e8f0` }}>
                                     <EditableElement
-                                        id={`conclusion-bullet-${actualIndex}`}
+                                        id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                         text={bullet.text}
                                         tagName="p"
                                         isEditing={isEditing}
                                         onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        onSelectElement={() => {
+                                            const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                            onElementClick?.(bId, 'text', actualIndex);
+                                        }}
                                         style={{
                                             fontSize: '1.2rem',
                                             color: '#000000',
@@ -314,6 +347,13 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                         })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -322,6 +362,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
     if (variant === 4) {
         return (
             <div style={{
+                position: 'relative',
                 display: 'flex',
                 height: '100%',
                 background: '#ffffff',
@@ -369,12 +410,15 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                                 <div key={bullet.id || actualIndex} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                     <div style={{ width: '8px', height: '8px', backgroundColor: accent, borderRadius: '50%' }} />
                                     <EditableElement
-                                        id={`conclusion-bullet-${actualIndex}`}
+                                        id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                         text={bullet.text}
                                         tagName="p"
                                         isEditing={isEditing}
                                         onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        onSelectElement={() => {
+                                            const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                            onElementClick?.(bId, 'text', actualIndex);
+                                        }}
                                         style={{
                                             fontSize: '1.2rem',
                                             color: '#000000'
@@ -386,6 +430,13 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                         })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -461,12 +512,15 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                                 minWidth: '200px'
                             }}>
                                 <EditableElement
-                                    id={`conclusion-bullet-${actualIndex}`}
+                                    id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}
                                     tagName="p"
                                     isEditing={isEditing}
                                     onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    onSelectElement={() => {
+                                        const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                        onElementClick?.(bId, 'text', actualIndex);
+                                    }}
                                     style={{
                                         fontSize: '1.2rem',
                                         color: '#000000',
@@ -480,6 +534,13 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                     })}
                 </div>
             </div>
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </div>
     );
 };

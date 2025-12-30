@@ -19,7 +19,7 @@ import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { v4 as uuidv4 } from "uuid";
 import { getSlideDimensions } from "@/utils/slideUtilsmobile";
 
-const fontOptions = ["Raleway", "Roboto", "Arial"];
+const fontOptions = ["Raleway", "Roboto", "Arial", "Inter", "Playfair Display", "Montserrat", "Outfit"];
 const weightOptions = [
   { label: "Regular", value: "normal" },
   { label: "Semibold", value: "600" },
@@ -45,22 +45,43 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
   } = useSlides();
   const { setPrimaryColor } = useSlideThemeContext();
   const parsed = selectedTextId
-    ? selectedTextId.match(/(?:title|el)-(\d+)(?:-(\d+))?/)
+    ? selectedTextId.match(/(?:title|subtitle|quote|author|context|el)-(\d+)(?:-(\d+))?/)
     : null;
 
   const slideIndex = parsed ? parseInt(parsed[1], 10) : selectedSlideIndex;
   const elementIndex = parsed?.[2]
     ? parseInt(parsed[2], 10)
     : selectedShapeIndex !== null
-    ? selectedShapeIndex
-    : null;
+      ? selectedShapeIndex
+      : null;
 
   let textObj: any = null;
   if (slideIndex !== -1 && slides[slideIndex]) {
-    if (selectedTextId?.startsWith("title")) {
-      textObj = slides[slideIndex].slide_title;
-    } else if (elementIndex !== null) {
-      textObj = slides[slideIndex].elements[elementIndex];
+    const originalSlide = slides[slideIndex];
+
+    const getCurrentVariantSlide = (slide: any) => {
+      if (!slide.layouts || slide.layouts.length === 0) {
+        return slide;
+      }
+      const variantIndex = slide.currentVariantIndex ?? 0;
+      const variant = slide.layouts[variantIndex];
+      return variant || slide;
+    };
+
+    const currentSlide = getCurrentVariantSlide(originalSlide);
+
+    // ✅ FIX: Handle specialized IDs
+    if (selectedTextId?.startsWith("title") || selectedTextId?.startsWith("quote")) {
+      textObj = currentSlide.slide_title || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
+      if (!textObj.text) textObj.text = currentSlide.quote || currentSlide.slide_title?.text || "";
+    } else if (selectedTextId?.startsWith("subtitle") || selectedTextId?.startsWith("author")) {
+      textObj = currentSlide.subtitle || { properties: {}, konva_component: "Konva.Text", element_type: "text" };
+      if (!textObj.text) textObj.text = currentSlide.author || currentSlide.subtitle?.text || "";
+    } else if (selectedTextId?.startsWith("context")) {
+      const existing = currentSlide.elements?.find((el: any) => el.element_type === 'context');
+      textObj = existing || { properties: {}, konva_component: "Konva.Text", element_type: "text", text: currentSlide.context || "" };
+    } else if (elementIndex !== null && currentSlide.elements?.[elementIndex]) {
+      textObj = currentSlide.elements[elementIndex];
     }
   }
 
@@ -71,7 +92,7 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
   const fontSize = rawProps.fontSize ?? 24;
   const fontFamily = fontOptions.includes(rawProps.fontFamily)
     ? rawProps.fontFamily
-    : "Roboto";
+    : "Raleway";
   const fill = rawProps.fill ?? "#000000";
   const fontWeight = weightOptions.some((w) => w.value === rawProps.fontWeight)
     ? rawProps.fontWeight
@@ -86,27 +107,76 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     if (!textObj || slideIndex === -1) return;
     // console.log("[TextPanelMobile] updateTextProperty called:", { prop, value, selectedTextId, slideIndex });
 
+    const isTitle = selectedTextId?.startsWith("title") || selectedTextId?.startsWith("quote");
+    const isSubtitle = selectedTextId?.startsWith("subtitle") || selectedTextId?.startsWith("author");
+    const isContext = selectedTextId?.startsWith("context");
+
     const updatedSlides = structuredClone(slides);
-    const target: any = selectedTextId?.startsWith("title")
-      ? updatedSlides[slideIndex].slide_title.properties
-      : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex].properties
-      : null;
+    const originalSlide = updatedSlides[slideIndex];
+
+    const target: any = isTitle
+      ? originalSlide.slide_title
+      : isSubtitle
+        ? originalSlide.subtitle
+        : isContext
+          ? originalSlide.elements?.find((el: any) => el.element_type === 'context')
+          : elementIndex !== null
+            ? originalSlide.elements?.[elementIndex]
+            : null;
 
     // console.log("[TextPanelMobile] Target found:", { target, isTitle: selectedTextId?.startsWith("title") });
 
     if (target) {
-      target[prop] = value;
+      target.properties = target.properties || {};
+      target.properties[prop] = value;
       // console.log("[TextPanelMobile] Updated target:", target);
 
       // Alignment fix: adjust x when align changes
       if (prop === "align") {
         // Do not change x — just update the align property
-        target.align = value;
+        target.properties.align = value;
 
         // Ensure width exists to let Konva align correctly
-        if (!target.width || target.width < 50) {
-          target.width = 220; // or any reasonable default
+        if (!target.properties.width || target.properties.width < 50) {
+          target.properties.width = 220; // or any reasonable default
+        }
+      }
+    } else if (isContext) {
+      originalSlide.elements = originalSlide.elements || [];
+      originalSlide.elements.push({
+        element_type: 'context',
+        text: originalSlide.context || "",
+        properties: { [prop]: value, userAdded: true },
+        konva_component: "Konva.Text"
+      });
+    }
+
+    // Update current variant (if exists)
+    if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+      const variantIndex = originalSlide.currentVariantIndex ?? 0;
+      const variant = originalSlide.layouts[variantIndex];
+      if (variant) {
+        const variantTarget = isTitle
+          ? variant.slide_title
+          : isSubtitle
+            ? variant.subtitle
+            : isContext
+              ? variant.elements?.find((el: any) => el.element_type === 'context')
+              : elementIndex !== null
+                ? variant.elements?.[elementIndex]
+                : null;
+
+        if (variantTarget) {
+          variantTarget.properties = variantTarget.properties || {};
+          variantTarget.properties[prop] = value;
+        } else if (isContext) {
+          variant.elements = variant.elements || [];
+          variant.elements.push({
+            element_type: 'context',
+            text: variant.context || originalSlide.context || "",
+            properties: { [prop]: value, userAdded: true },
+            konva_component: "Konva.Text"
+          });
         }
       }
     }
@@ -123,8 +193,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     let target = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title
       : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex]
-      : null;
+        ? updatedSlides[slideIndex].elements[elementIndex]
+        : null;
 
     if (!target) return;
 
@@ -161,8 +231,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     let target = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title
       : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex]
-      : null;
+        ? updatedSlides[slideIndex].elements[elementIndex]
+        : null;
 
     if (!target) return;
 
@@ -205,8 +275,8 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
     const el = selectedTextId?.startsWith("title")
       ? updatedSlides[slideIndex].slide_title
       : elementIndex !== null
-      ? updatedSlides[slideIndex].elements[elementIndex]
-      : null;
+        ? updatedSlides[slideIndex].elements[elementIndex]
+        : null;
 
     if (!el) return;
     el.properties.fill = color;

@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
+import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
 
 interface ContentLeftImageHTMLProps {
@@ -37,6 +38,13 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
         onSlideUpdate(updatedSlide);
     };
 
+    const handleElementUpdate = (index: number, updates: any) => {
+        if (!onSlideUpdate) return;
+        const updatedElements = [...(slide.elements || [])];
+        updatedElements[index] = { ...updatedElements[index], ...updates };
+        onSlideUpdate({ ...slide, elements: updatedElements });
+    };
+
     const title = slide.slide_title?.text || "Slide Title";
     const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
     const imageUrl = slide.image_url;
@@ -58,6 +66,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                 background: bgColor,
                 overflow: 'hidden',
                 fontFamily: "'Raleway', sans-serif",
+                position: 'relative',
             }}>
                 {/* Left Image with Card Style */}
                 <div style={{
@@ -70,9 +79,12 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         width: '100%',
                         height: '85%',
                         background: imageUrl ? `url(${imageUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}20, ${accent2Color}15)`,
-                        borderRadius: '20px',
+                        borderRadius: `${slide.image_properties?.borderRadius ?? 20}px`,
                         border: `2px solid ${accentColor}30`,
-                        boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
+                        boxShadow: slide.image_properties?.shadow
+                            ? `${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color}`
+                            : '0 12px 32px rgba(0,0,0,0.12)',
+                        opacity: slide.image_properties?.opacity ?? 1,
                         cursor: isEditing ? 'pointer' : 'default',
                         display: 'flex',
                         alignItems: 'center',
@@ -81,7 +93,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         fontSize: '1.1rem',
                         position: 'relative',
                     }}
-                        onClick={() => onElementClick?.(`image-${slideIndex}`, 'image', 0)}>
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
                         {!imageUrl && 'Image'}
                         <div style={{
                             position: 'absolute',
@@ -162,6 +174,13 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -202,8 +221,11 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         width: '100%',
                         height: '80%',
                         background: imageUrl ? `url(${imageUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}25, ${accent2Color}20)`,
-                        borderRadius: '24px',
-                        boxShadow: '0 16px 48px rgba(0,0,0,0.15)',
+                        borderRadius: `${slide.image_properties?.borderRadius ?? 24}px`,
+                        boxShadow: slide.image_properties?.shadow
+                            ? `${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color}`
+                            : '0 16px 48px rgba(0,0,0,0.15)',
+                        opacity: slide.image_properties?.opacity ?? 1,
                         cursor: isEditing ? 'pointer' : 'default',
                         display: 'flex',
                         alignItems: 'center',
@@ -213,7 +235,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         position: 'relative',
                         overflow: 'hidden',
                     }}
-                        onClick={() => onElementClick?.(`image-${slideIndex}`, 'image', 0)}>
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
                         {!imageUrl && 'Image'}
                         {/* Decorative corner */}
                         <div style={{
@@ -293,6 +315,13 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -307,6 +336,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                 background: bgColor,
                 overflow: 'hidden',
                 fontFamily: "'Raleway', sans-serif",
+                position: 'relative',
             }}>
                 {/* Left Image */}
                 <div style={{
@@ -320,8 +350,11 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         width: '100%',
                         height: '85%',
                         background: imageUrl ? `url(${imageUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}15, ${accent2Color}10)`,
-                        borderRadius: '16px',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                        borderRadius: `${slide.image_properties?.borderRadius ?? 16}px`,
+                        boxShadow: slide.image_properties?.shadow
+                            ? `${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color}`
+                            : '0 8px 24px rgba(0,0,0,0.1)',
+                        opacity: slide.image_properties?.opacity ?? 1,
                         cursor: isEditing ? 'pointer' : 'default',
                         display: 'flex',
                         alignItems: 'center',
@@ -329,7 +362,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         color: '#cbd5e0',
                         fontSize: '1.1rem',
                     }}
-                        onClick={() => onElementClick?.(`image-${slideIndex}`, 'image', 0)}>
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
                         {!imageUrl && 'Image'}
                     </div>
                 </div>
@@ -401,6 +434,13 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -409,6 +449,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
     if (variant === 4) {
         return (
             <div style={{
+                position: 'relative',
                 display: 'flex',
                 height: '100%',
                 background: bgColor,
@@ -439,8 +480,11 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         width: '90%',
                         height: '85%',
                         background: imageUrl ? `url(${imageUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}20, ${accent2Color}15)`,
-                        borderRadius: '20px',
-                        boxShadow: '0 16px 40px rgba(0,0,0,0.15)',
+                        borderRadius: `${slide.image_properties?.borderRadius ?? 20}px`,
+                        boxShadow: slide.image_properties?.shadow
+                            ? `${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color}`
+                            : '0 16px 40px rgba(0,0,0,0.15)',
+                        opacity: slide.image_properties?.opacity ?? 1,
                         cursor: isEditing ? 'pointer' : 'default',
                         display: 'flex',
                         alignItems: 'center',
@@ -450,7 +494,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         position: 'relative',
                         zIndex: 1,
                     }}
-                        onClick={() => onElementClick?.(`image-${slideIndex}`, 'image', 0)}>
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
                         {!imageUrl && 'Image'}
                     </div>
                 </div>
@@ -522,6 +566,13 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -559,8 +610,11 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     width: '100%',
                     height: '85%',
                     background: imageUrl ? `url(${imageUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}18, ${accent2Color}12)`,
-                    borderRadius: '22px',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+                    borderRadius: `${slide.image_properties?.borderRadius ?? 22}px`,
+                    boxShadow: slide.image_properties?.shadow
+                        ? `${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color}`
+                        : '0 10px 30px rgba(0,0,0,0.12)',
+                    opacity: slide.image_properties?.opacity ?? 1,
                     cursor: isEditing ? 'pointer' : 'default',
                     display: 'flex',
                     alignItems: 'center',
@@ -569,7 +623,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     fontSize: '1.1rem',
                     position: 'relative',
                 }}
-                    onClick={() => onElementClick?.(`image-${slideIndex}`, 'image', 0)}>
+                    onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
                     {!imageUrl && 'Image'}
                     {/* Decorative circle */}
                     <div style={{
@@ -643,6 +697,13 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     })}
                 </div>
             </div>
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </div>
     );
 };

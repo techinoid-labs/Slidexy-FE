@@ -2,6 +2,7 @@
 import React from 'react';
 import { getContrastTextColor } from '@/utils/colorUtils';
 import { EditableElement } from '../editor/EditableElement';
+import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 
 interface ComparisonSlideHTMLProps {
     slide: any;
@@ -52,6 +53,13 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
         }
 
         onSlideUpdate(updatedSlide);
+    };
+
+    const handleElementUpdate = (index: number, updates: any) => {
+        if (!onSlideUpdate) return;
+        const updatedElements = [...(slide.elements || [])];
+        updatedElements[index] = { ...updatedElements[index], ...updates };
+        onSlideUpdate({ ...slide, elements: updatedElements });
     };
 
     const Card = ({ heading, items, offset }: { heading: string; items: any[]; offset: number }) => (
@@ -108,12 +116,15 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
                                 flexShrink: 0
                             }} />
                             <EditableElement
-                                id={`comparison-${actualIndex}`}
+                                id={item.id || item.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                 text={item.text}
                                 tagName="div"
                                 isEditing={isEditing}
                                 onChange={(val) => handleUpdate('bullet', val, actualIndex)}
-                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                onSelectElement={() => {
+                                    const bId = item.id || item.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                    onElementClick?.(bId, 'text', actualIndex);
+                                }}
                                 style={{
                                     fontSize: '1.05rem',
                                     color: '#1a202c',
@@ -195,6 +206,13 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
                     <Card heading="Option B" items={rightItems} offset={midpoint} />
                 </div>
             </div>
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </>
     );
 };

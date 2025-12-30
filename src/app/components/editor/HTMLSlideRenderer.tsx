@@ -47,12 +47,23 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
         const variant = slide.layouts[variantIndex];
         if (variant) {
             // Extract user-added elements (those with userAdded: true or specific ID patterns)
-            const userShapes = (slide.elements || []).filter((el: any) =>
-                el.properties?.userAdded === true ||
-                (el.element_type === 'shape' && el.shape_id?.startsWith('user-')) ||
-                (el.element_type === 'image' && el.properties?.image_id) ||
-                (el.element_type === 'text' && el.id?.startsWith('user-'))
-            );
+            const userElements = (slide.elements || []).filter((el: any) => {
+                // 1. Elements marked with userAdded property
+                if (el.userAdded === true || el.properties?.userAdded === true) return true;
+
+                // 2. Elements with known user-generated ID prefixes
+                const id = el.id || el.shape_id || el.properties?.shape_id || el.properties?.image_id || el.image_id;
+                if (typeof id === "string") {
+                    if (id.startsWith("user-")) return true;
+                    if (id.startsWith("el-")) return true;
+                    if (id.startsWith("img-")) return true;
+                }
+
+                // 3. Fallback for specific element types
+                if (el.element_type === 'shape' || el.element_type === 'image') return true;
+
+                return false;
+            });
 
             // Merge variant properties with original slide structure
             currentSlide = {
@@ -60,16 +71,21 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
                 // Override with variant-specific data
                 slide_title: variant.slide_title || slide.slide_title,
                 subtitle: variant.subtitle || slide.subtitle,
-                // Combine variant elements with user-added shapes (deduplicated by shape_id)
+                // ✅ FIX: Combine variant elements with user-added elements (deduplicated by multiple ID fields)
                 elements: [
                     ...(variant.elements || []),
-                    ...userShapes.filter((us: any) =>
-                        !(variant.elements || []).some((ve: any) => ve.shape_id === us.shape_id)
-                    )
+                    ...userElements.filter((ue: any) => {
+                        const ueId = ue.id || ue.shape_id || ue.properties?.shape_id || ue.properties?.image_id || ue.image_id;
+                        return !(variant.elements || []).some((ve: any) => {
+                            const veId = ve.id || ve.shape_id || ve.properties?.shape_id || ve.properties?.image_id || ve.image_id;
+                            return ueId && veId && ueId === veId;
+                        });
+                    })
                 ],
                 image_url: variant.image_url || slide.image_url,
                 background: variant.background || slide.background,
             };
+            console.log(`[HTMLSlideRenderer] Merged ${currentSlide.elements.length} elements (User: ${userElements.length}, Variant: ${variant.elements?.length || 0})`);
         }
     }
 
