@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 // export const SLIDE_WIDTH = 800;
 // export const SLIDE_HEIGHT = 400;
 // export const LEFT_PADDING = 30;
@@ -219,15 +221,18 @@ export const getRandomSlide = () => {
       const text = bullets[Math.floor(Math.random() * bullets.length)];
       const fontSize = 18;
       const lineSpacing = 8;
+      const elId = `bullet-${uuidv4()}`;
       return {
+        id: elId,
         element_type: "bullet_point",
         text,
         konva_component: "Konva.Text",
 
         properties: {
+          id: elId,
           fontSize: 18,
           fontWeight: "",
-          fontFamily: "Roboto",
+          fontFamily: "Raleway",
           fill: "#444",
           fontStyle: "",
           zIndex: index + 1,
@@ -273,15 +278,19 @@ export const getRandomSlide = () => {
   return {
     slide_id: `slide-${Date.now()}`,
     slide_title: {
-      text: "",
+      konva_component: "Konva.Text",
+      text: titles[Math.floor(Math.random() * titles.length)],
       properties: {
         fontSize: 24,
-        fontFamily: "Arial",
+        fontFamily: "Raleway",
         fill: "#000",
         fontStyle: "normal",
+        zIndex: 0,
       },
     },
-    elements: [],
+    elements: getRandomBullets(3),
+    image_url: null,
+    image_caption: "",
   };
 };
 

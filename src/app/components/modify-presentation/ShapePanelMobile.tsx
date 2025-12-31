@@ -27,23 +27,45 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
 
     const {
         slides,
+        selectedShapeId,
         selectedShapeIndex,
         selectedSlideIndex,
         setSlides,
+        setSelectedShapeId,
     } = useSlides();
-    const { setPrimaryColor } = useSlideThemeContext();
 
     // Color picker state
     const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
 
-    // Extract shape object
-    const parsed = selectedShapeIndex !== null ? `el-${selectedSlideIndex}-${selectedShapeIndex}` : null;
     const slideIndex = selectedSlideIndex;
-    const elementIndex = selectedShapeIndex;
 
+    // ✅ FIX: Use shape_id to find shape reliably across variant slides
     let shapeObj: any = null;
-    if (slideIndex !== -1 && slides[slideIndex] && elementIndex !== null) {
-        shapeObj = slides[slideIndex].elements[elementIndex];
+    if (slideIndex !== -1 && slides[slideIndex] && selectedShapeId) {
+        const originalSlide = slides[slideIndex];
+
+        const getCurrentVariantSlide = (slide: any) => {
+            if (!slide.layouts || slide.layouts.length === 0) {
+                return slide;
+            }
+            const variantIndex = slide.currentVariantIndex ?? 0;
+            const variant = slide.layouts[variantIndex];
+            return variant || slide;
+        };
+
+        const currentSlide = getCurrentVariantSlide(originalSlide);
+
+        if (currentSlide.elements) {
+            shapeObj = currentSlide.elements.find(
+                (el: any) => el.shape_id === selectedShapeId
+            );
+        }
+
+        if (!shapeObj && originalSlide.elements) {
+            shapeObj = originalSlide.elements.find(
+                (el: any) => el.shape_id === selectedShapeId
+            );
+        }
     }
 
     if (!shapeObj || shapeObj.element_type !== "shape") return null;
@@ -52,34 +74,82 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
     const fill = rawProps.fill ?? "#000000";
     const opacity = rawProps.opacity ?? 1;
 
+    // ✅ FIX: Update shape property in both original and variant
     const updateShapeProperty = (prop: string, value: any) => {
-        if (!shapeObj || slideIndex === -1 || elementIndex === null) return;
+        if (!shapeObj || slideIndex === -1 || !selectedShapeId) return;
+
         const updatedSlides = structuredClone(slides);
-        const target = updatedSlides[slideIndex].elements[elementIndex].properties;
-        if (target) target[prop] = value;
+        const originalSlide = updatedSlides[slideIndex];
+
+        if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+            if (variant && variant.elements) {
+                const variantShape = variant.elements.find(
+                    (el: any) => el.shape_id === selectedShapeId
+                );
+                if (variantShape) {
+                    if (!variantShape.properties) variantShape.properties = {};
+                    variantShape.properties[prop] = value;
+                }
+            }
+        }
+
+        if (originalSlide.elements) {
+            const originalShape = originalSlide.elements.find(
+                (el: any) => el.shape_id === selectedShapeId
+            );
+            if (originalShape) {
+                if (!originalShape.properties) originalShape.properties = {};
+                originalShape.properties[prop] = value;
+            }
+        }
+
         setSlides(updatedSlides);
     };
 
+    // ✅ FIX: Update color and disable theme color in both original and variant
     const setShapeFillAndDisableTheme = (color: string) => {
-        // Add proper null checks before using elementIndex as an array index
-        if (slideIndex === -1 || elementIndex === null) return;
-        
+        if (slideIndex === -1 || !selectedShapeId) return;
+
         const updatedSlides = structuredClone(slides);
-        
-        // Ensure the slide exists
-        if (!updatedSlides[slideIndex] || !updatedSlides[slideIndex].elements) return;
-        
-        // Ensure the element exists at the specified index
-        const el = updatedSlides[slideIndex].elements[elementIndex];
-        if (!el) return;
-        
-        // Update properties
-        if (!el.properties) {
-            el.properties = {};
+        const originalSlide = updatedSlides[slideIndex];
+
+        if (!originalSlide) return;
+
+        if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+
+            if (variant && variant.elements) {
+                const variantShape = variant.elements.find(
+                    (el: any) => el.shape_id === selectedShapeId
+                );
+                if (variantShape) {
+                    if (!variantShape.properties) {
+                        variantShape.properties = {};
+                    }
+                    variantShape.properties.fill = color;
+                    variantShape.properties.stroke = color;
+                    variantShape.useThemeColor = false;
+                }
+            }
         }
-        
-        el.properties.fill = color;
-        el.useThemeColor = false;
+
+        if (originalSlide.elements) {
+            const originalShape = originalSlide.elements.find(
+                (el: any) => el.shape_id === selectedShapeId
+            );
+            if (originalShape) {
+                if (!originalShape.properties) {
+                    originalShape.properties = {};
+                }
+                originalShape.properties.fill = color;
+                originalShape.properties.stroke = color;
+                originalShape.useThemeColor = false;
+            }
+        }
+
         setSlides(updatedSlides);
     };
 
@@ -93,6 +163,82 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
         updateShapeProperty("fill", newColor);
         setShapeFillAndDisableTheme(newColor);
         setIsColorPickerOpen(false);
+    };
+
+    // ✅ NEW: Duplicate shape properly
+    const handleDuplicateShape = () => {
+        if (!shapeObj || slideIndex === -1 || !selectedShapeId) return;
+
+        const updatedSlides = structuredClone(slides);
+        const originalSlide = updatedSlides[slideIndex];
+
+        if (!originalSlide) return;
+
+        // Create new shape element with proper structure and mark as userAdded
+        const newShapeElement = {
+            ...structuredClone(shapeObj),
+            shape_id: `user-${Date.now()}`, // New unique ID
+            properties: {
+                ...structuredClone(shapeObj.properties || {}),
+                userAdded: true,
+                x: (shapeObj.properties?.x || 100) + 30,
+                y: (shapeObj.properties?.y || 100) + 30,
+            },
+        };
+
+        // Update original: Add to elements array
+        originalSlide.elements = originalSlide.elements || [];
+        originalSlide.elements.push(newShapeElement);
+
+        // Update current variant (if exists)
+        if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+            if (variant) {
+                variant.elements = variant.elements || [];
+                variant.elements.push(structuredClone(newShapeElement));
+            }
+        }
+
+        setSlides(updatedSlides);
+    };
+
+    // ✅ NEW: Delete shape properly
+    const handleDeleteShape = () => {
+        if (slideIndex === -1 || !selectedShapeId) return;
+
+        const updatedSlides = structuredClone(slides);
+        const originalSlide = updatedSlides[slideIndex];
+
+        if (!originalSlide) return;
+
+        // Find and delete from variant
+        if (originalSlide.layouts && originalSlide.layouts.length > 0) {
+            const variantIndex = originalSlide.currentVariantIndex ?? 0;
+            const variant = originalSlide.layouts[variantIndex];
+            if (variant && variant.elements) {
+                const variantIndex = variant.elements.findIndex(
+                    (el: any) => el.shape_id === selectedShapeId
+                );
+                if (variantIndex !== -1) {
+                    variant.elements.splice(variantIndex, 1);
+                }
+            }
+        }
+
+        // Delete from original
+        if (originalSlide.elements) {
+            const originalIndex = originalSlide.elements.findIndex(
+                (el: any) => el.shape_id === selectedShapeId
+            );
+            if (originalIndex !== -1) {
+                originalSlide.elements.splice(originalIndex, 1);
+            }
+        }
+
+        setSlides(updatedSlides);
+        setSelectedShapeId(null);
+        onClose();
     };
 
     return (
@@ -132,8 +278,8 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                     <Typography sx={{ fontWeight: 600, fontSize: 16 }}>
                         Color
                     </Typography>
-                    <IconButton 
-                        sx={{ color: "#000000" }} 
+                    <IconButton
+                        sx={{ color: "#000000" }}
                         onClick={() => setIsColorPickerOpen(true)}
                     >
                         <AddIcon />
@@ -141,9 +287,9 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                 </Box>
 
                 {/* Current Color Display */}
-                <Box 
-                    sx={{ 
-                        mb: 2, 
+                <Box
+                    sx={{
+                        mb: 2,
                         cursor: "pointer",
                         border: "1px solid #E0E0E0",
                         borderRadius: "8px",
@@ -227,6 +373,64 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                             textAlign: "center",
                         }}
                     />
+                </Box>
+            </Box>
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* Actions */}
+            <Box sx={{ px: 3, mb: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+                        Actions
+                    </Typography>
+                </Box>
+
+                <Box sx={{ display: "flex", gap: 2 }}>
+                    <Box
+                        onClick={handleDuplicateShape}
+                        sx={{
+                            flex: 1,
+                            borderRadius: 2,
+                            fontWeight: 600,
+                            fontSize: 12,
+                            py: 1.5,
+                            textAlign: "center",
+                            bgcolor: "#F8F8FA",
+                            border: "1px solid #E0E0E0",
+                            color: "#222",
+                            cursor: "pointer",
+                            "&:hover": {
+                                bgcolor: "#F3EDFF",
+                                borderColor: "#7B4AE2",
+                                color: "#7B4AE2",
+                            },
+                        }}
+                    >
+                        Duplicate
+                    </Box>
+                    <Box
+                        onClick={handleDeleteShape}
+                        sx={{
+                            flex: 1,
+                            borderRadius: 2,
+                            fontWeight: 600,
+                            fontSize: 12,
+                            py: 1.5,
+                            textAlign: "center",
+                            bgcolor: "#F8F8FA",
+                            border: "1px solid #E0E0E0",
+                            color: "#222",
+                            cursor: "pointer",
+                            "&:hover": {
+                                bgcolor: "#FFF3F3",
+                                borderColor: "#C00",
+                                color: "#C00",
+                            },
+                        }}
+                    >
+                        Delete
+                    </Box>
                 </Box>
             </Box>
         </Box>

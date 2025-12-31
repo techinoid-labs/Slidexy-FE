@@ -9,12 +9,16 @@ import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import DownloadIcon from "@mui/icons-material/Download";
+import AIEditorPanel from './AIEditorPanel';
+import { useAIEditor } from './useAIEditor';
+import { getClickListenerScript, CLICK_LISTENER_SCRIPT } from './clickInjector';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 interface FileData {
     type: string;
     content: string;
+    name?: string; // Optional: actual filename (e.g., "design.html", "projects.html")
 }
 
 interface WebsiteData {
@@ -39,78 +43,227 @@ export default function RightPanel({ presentationId }: EditorProps) {
     const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
     const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(["root"]));
     const [fullPreview, setFullPreview] = useState(false);
+    const [selectionMode, setSelectionMode] = useState(false); // Default OFF
+    const [iframeKey, setIframeKey] = useState(0); // Force iframe reload on content change
+    const [currentPage, setCurrentPage] = useState('index.html'); // Track current page in multi-page mode
+    const [isMultiPage, setIsMultiPage] = useState(false); // Detect if website has multiple HTML pages
+    const iframeWindowRef = React.useRef<Window | null>(null); // Store active iframe window from handshake
+
+    // AI Editor Hook
+    const {
+        loading: aiLoading,
+        history,
+        clickedElementId,
+        setClickedElementId,
+        editWebsite,
+        handleIframeMessage
+    } = useAIEditor({
+        presentationId,
+        onSuccess: (newFiles) => {
+            // Optimistically update file content if returned, or re-fetch
+            if (newFiles && newFiles.length > 0) {
+                // We need to merge new files into existing websiteData
+                setWebsiteData(prev => {
+                    if (!prev) return null;
+                    return { ...prev, files: newFiles };
+                });
+                // Also update selected file if it was modified
+                if (selectedFile) {
+                    const updated = newFiles.find((f: FileData) => f.type === selectedFile.type);
+                    if (updated) setSelectedFile(updated);
+                }
+                // Force iframe reload to show new changes
+                setIframeKey(prev => prev + 1);
+            } else {
+                fetchWebsiteData();
+                setIframeKey(prev => prev + 1);
+            }
+        }
+    });
+
+    // Listen for iframe messages (Click-to-Edit & Handshake & Page Navigation)
+    useEffect(() => {
+        const onMessage = (event: MessageEvent) => {
+            // Handshake: If iframe script says it's ready, send current mode
+            if (event.data && event.data.type === 'NEURO_EDITOR_READY') {
+                console.log("⚡ Iframe Ready received. Syncing Selection Mode:", selectionMode);
+                // Store the window reference for future toggles
+                iframeWindowRef.current = event.source as Window;
+                // Reply immediately
+                iframeWindowRef.current?.postMessage({ type: 'TOGGLE_SELECTION', enabled: selectionMode }, '*');
+            }
+
+            // Page Navigation: Handle multi-page navigation
+            if (event.data && event.data.type === 'NEURO_PAGE_CHANGE') {
+                const newPage = event.data.page;
+                console.log("📄 Page change requested:", newPage);
+                setCurrentPage(newPage);
+                setIframeKey(prev => prev + 1); // Force reload with new page
+            }
+
+            // Delegate other messages to the hook logic
+            handleIframeMessage(event);
+        };
+
+        window.addEventListener('message', onMessage);
+        return () => window.removeEventListener('message', onMessage);
+    }, [handleIframeMessage, selectionMode]);
+
+    // Sync Selection Mode with Iframe (User Toggles)
+    useEffect(() => {
+        if (iframeWindowRef.current) {
+            console.log("⚡ Sending Toggle to tracked iframe window:", selectionMode);
+            iframeWindowRef.current.postMessage({ type: 'TOGGLE_SELECTION', enabled: selectionMode }, '*');
+        } else {
+            // Fallback to DOM query if handshake missed (e.g. reload)
+            const iframe = document.querySelector('iframe');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage({ type: 'TOGGLE_SELECTION', enabled: selectionMode }, '*');
+            }
+        }
+    }, [selectionMode]);
 
     useEffect(() => {
         if (presentationId) {
             fetchWebsiteData();
         }
     }, [presentationId]);
-    // Corrected fetchWebsiteData function (copy-paste this)
+
     const fetchWebsiteData = async () => {
         try {
             setLoading(true);
-            setError("");
-
-            // Try Static first
-            let response = await fetch(`${API_BASE_URL}/api/website-generator/${presentationId}`);
-
-            // If not found → try Dynamic
-            if (!response.ok && response.status === 404) {
-                console.log("Not found in static, trying dynamic...");
-                response = await fetch(`${API_BASE_URL}/api/dynamic-website/${presentationId}`);
-            }
+            // Try fetching from the Website Generator endpoint (CEO New Feature) first
+            // If that fails, we could try dynamic-website, but for now let's switch to the one the generator uses.
+            const response = await fetch(`${API_BASE_URL}/api/website-generator/${presentationId}`);
 
             if (!response.ok) {
-                const err = await response.json().catch(() => ({}));
-                throw new Error(err.error || `Website not found (Status: ${response.status})`);
+                throw new Error("Failed to fetch website data");
             }
 
             const result = await response.json();
             const actualData = result.data || result;
 
             if (!actualData.files || !Array.isArray(actualData.files)) {
-                throw new Error("Invalid response: missing files");
+                throw new Error("Invalid website data: missing files");
             }
 
             setWebsiteData(actualData);
 
             const htmlFile = actualData.files.find((f: FileData) => f.type === "html");
-            if (htmlFile) setSelectedFile(htmlFile);
-
+            if (htmlFile) {
+                setSelectedFile(htmlFile);
+            }
         } catch (err: any) {
-            console.error("Failed to load website:", err);
-            setError(err.message || "Website not found or inaccessible");
+            console.error("Error fetching website data:", err);
+            setError(err.message || "Failed to load website data");
         } finally {
             setLoading(false);
         }
     };
 
-    // NEW: Generate complete HTML with inline CSS and JS
+    // Detect multi-page websites and initialize current page
+    useEffect(() => {
+        if (websiteData) {
+            const htmlFiles = websiteData.files.filter(f => f.type === 'html');
+            const hasMultiplePages = htmlFiles.length > 1;
+            setIsMultiPage(hasMultiplePages);
+
+            // Set initial page (index.html or first HTML file)
+            const initialPage = htmlFiles.find(f => f.name === 'index.html')?.name ||
+                htmlFiles[0]?.name ||
+                'index.html';
+            setCurrentPage(initialPage);
+
+            console.log(`📄 Website type: ${hasMultiplePages ? 'Multi-page' : 'Single-page'}, Pages: ${htmlFiles.length}`);
+        }
+    }, [websiteData]);
+
+    // Generate complete HTML with inline CSS and JS
+    // For multi-page sites, uses currentPage; for single-page, uses first HTML file
     const generateCompleteHTML = () => {
         if (!websiteData) return "";
 
-        const htmlFile = websiteData.files.find(f => f.type === "html");
+        // Find the HTML file to display
+        const htmlFile = isMultiPage
+            ? websiteData.files.find(f => f.type === 'html' && f.name === currentPage)
+            : websiteData.files.find(f => f.type === 'html');
+
+        if (!htmlFile) {
+            console.error('No HTML file found for current page:', currentPage);
+            return "<p>Error: HTML file not found</p>";
+        }
+
+        console.log(`🔄 Generating HTML for page: ${currentPage} (Multi-page: ${isMultiPage})`);
+
         const cssFile = websiteData.files.find(f => f.type === "css");
         const jsFile = websiteData.files.find(f => f.type === "js");
 
         if (!htmlFile) return "";
 
-        let html = htmlFile.content;
+        let htmlContent = htmlFile.content;
 
-        // Inject CSS inline
+        // --- DETERMINISTIC ID INJECTION (Frontend Match) ---
+        // We must apply the EXACT same logic as the backend to ensure IDs match.
+        // Backend: websiteEditorService.js -> cheerio
+        // Frontend: DOMParser
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, "text/html");
+            let idCounter = 1;
+
+            // Selector MUST match backend exactly:
+            // 'section, div, header, footer, nav, main, article, aside, h1, h2, h3, h4, h5, h6, p, ul, ol, li, form, table, img, span, a, button, i, strong, em, svg, path'
+            const tags = ['section', 'div', 'header', 'footer', 'nav', 'main', 'article', 'aside', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li', 'form', 'table', 'img', 'span', 'a', 'button', 'i', 'strong', 'em', 'svg', 'path'];
+            const selector = tags.join(', ');
+
+            const elements = doc.querySelectorAll(selector);
+            elements.forEach((el) => {
+                if (!el.id) {
+                    const tagName = el.tagName.toLowerCase();
+                    el.id = `neuro-${tagName}-${idCounter++}`;
+                }
+            });
+
+            htmlContent = doc.documentElement.outerHTML;
+        } catch (e) {
+            console.warn("Frontend ID injection failed, falling back to raw HTML", e);
+        }
+        // ---------------------------------------------------
+
+        let html = htmlContent;
+
+        // Inject CSS inline (support both naming conventions with regex)
         if (cssFile) {
             html = html.replace(
-                '<link rel="stylesheet" href="styles.css">',
+                /<link rel="stylesheet" href="styles?\.css">/g,
                 `<style>${cssFile.content}</style>`
             );
         }
 
-        // Inject JS inline
+        // Inject JS inline (support multiple naming conventions with regex)
         if (jsFile) {
             html = html.replace(
-                '<script src="app.js"></script>',
+                /<script src="(app|script|main)\.js"><\/script>/g,
                 `<script>${jsFile.content}</script>`
             );
+        }
+
+        // Fix image paths: Convert relative /uploads/ paths to absolute backend URLs
+        // This fixes the "question mark" image issue when images are replaced via AI editor
+        html = html.replace(
+            /src="\/uploads\//g,
+            `src="${API_BASE_URL}/uploads/`
+        );
+
+        // Inject Click Listener Script for AI Editing
+        if (selected === 'preview' || fullPreview) {
+            // Inject the click listener script into the body
+            const clickScript = getClickListenerScript(isMultiPage);
+            if (html.includes('</body>')) {
+                html = html.replace('</body>', clickScript + '</body>');
+            } else {
+                html += clickScript;
+            }
         }
 
         return html;
@@ -161,14 +314,20 @@ export default function RightPanel({ presentationId }: EditorProps) {
         return icons[type] || "📄";
     };
 
-    const getFileName = (type: string) => {
-        const names: { [key: string]: string } = {
+    const getFileName = (file: FileData) => {
+        // Use the actual filename if available (for multi-page sites)
+        if (file.name) {
+            return file.name;
+        }
+
+        // Fallback to type-based names for backwards compatibility
+        const names: Record<string, string> = {
             html: "index.html",
             css: "styles.css",
             js: "app.js",
             readme: "README.md",
         };
-        return names[type] || `file.${type}`;
+        return names[file.type] || `file.${file.type}`;
     };
 
     const ExplorerContent = (
@@ -217,7 +376,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
                                         onClick={() => setSelectedFile(file)}
                                     >
                                         <Typography sx={{ mr: 0.5 }}>{getFileIcon(file.type)}</Typography>
-                                        <Typography fontSize={14}>{getFileName(file.type)}</Typography>
+                                        <Typography fontSize={14}>{getFileName(file)}</Typography>
                                     </Box>
                                 ))}
                             </Box>
@@ -250,7 +409,6 @@ export default function RightPanel({ presentationId }: EditorProps) {
                     bottom: 0,
                     bgcolor: "#000",
                     zIndex: 9999,
-                    height: "100vh",
                 }}
             >
                 {/* Full Preview Header */}
@@ -263,14 +421,14 @@ export default function RightPanel({ presentationId }: EditorProps) {
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        p: 1,
+                        p: 2,
                         bgcolor: "rgba(0, 0, 0, 0.8)",
                         backdropFilter: "blur(10px)",
                         borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
                         zIndex: 10000,
                     }}
                 >
-                    <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: "12px" }}>
+                    <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: "18px" }}>
                         Full Preview Mode
                     </Typography>
                     <Button
@@ -279,7 +437,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
                             color: "#fff",
                             textTransform: "none",
                             fontWeight: 600,
-                            fontSize: "12px",
+                            fontSize: "16px",
                             "&:hover": {
                                 bgcolor: "rgba(255, 255, 255, 0.1)",
                             },
@@ -492,7 +650,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
                             {selectedFile ? (
                                 <Box>
                                     <Typography variant="subtitle2" color="text.secondary" mb={2}>
-                                        {getFileName(selectedFile.type)}
+                                        {getFileName(selectedFile)}
                                     </Typography>
                                     <Box
                                         component="pre"
@@ -507,7 +665,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
                                             maxHeight: "calc(78vh - 100px)",
                                         }}
                                     >
-                                        <code>{selectedFile.content}</code>
+                                        <code>{selectedFile.content.substring(0, selectedFile.content.length > 10000 ? 10000 : selectedFile.content.length)}</code>
                                     </Box>
                                 </Box>
                             ) : (
@@ -520,6 +678,7 @@ export default function RightPanel({ presentationId }: EditorProps) {
                         <Box sx={{ width: "100%", height: "100%" }}>
                             {websiteData?.files.find(f => f.type === "html") ? (
                                 <iframe
+                                    key={iframeKey}
                                     srcDoc={generateCompleteHTML()}
                                     style={{
                                         width: "100%",
@@ -538,6 +697,16 @@ export default function RightPanel({ presentationId }: EditorProps) {
                     )}
                 </Box>
             </Paper>
+            {/* AI Editor Panel */}
+            <AIEditorPanel
+                history={history}
+                isLoading={aiLoading}
+                clickedElementId={clickedElementId}
+                onClearSelection={() => setClickedElementId(null)}
+                onSubmit={(prompt, image) => editWebsite(prompt, image)}
+                selectionMode={selectionMode}
+                onToggleSelection={() => setSelectionMode(!selectionMode)}
+            />
         </Box>
     );
 }

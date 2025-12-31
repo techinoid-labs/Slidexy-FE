@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
+import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
 
 interface SplitContentHTMLProps {
@@ -29,15 +30,19 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
         if (field === 'title') {
             updatedSlide.slide_title = { ...updatedSlide.slide_title, text: newText };
         } else if (field === 'bullet' && typeof index === 'number') {
-            const bullets = slide.elements.filter((el: any) => el.element_type === 'bullet_point');
-            if (bullets[index]) {
-                const targetId = bullets[index].id;
-                updatedSlide.elements = slide.elements.map((el: any) =>
-                    el.id === targetId ? { ...el, text: newText } : el
-                );
+            if (slide.elements[index]) {
+                updatedSlide.elements = [...slide.elements];
+                updatedSlide.elements[index] = { ...slide.elements[index], text: newText };
             }
         }
         onSlideUpdate(updatedSlide);
+    };
+
+    const handleElementUpdate = (index: number, updates: any) => {
+        if (!onSlideUpdate) return;
+        const updatedElements = [...(slide.elements || [])];
+        updatedElements[index] = { ...updatedElements[index], ...updates };
+        onSlideUpdate({ ...slide, elements: updatedElements });
     };
 
     const title = slide.slide_title?.text || "Slide Title";
@@ -80,7 +85,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                         marginBottom: '2rem'
                     }} />
                     <EditableElement
-                        id="slide-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -93,6 +98,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                             lineHeight: 1.1,
                             letterSpacing: '-0.02em'
                         }}
+                        elementProperties={slide.slide_title?.properties}
                     />
                 </div>
 
@@ -106,29 +112,40 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                     background: bgColor
                 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.2rem' }}>
-                        {bullets.map((bullet: any, index: number) => (
-                            <div key={bullet.id || index} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                                <div style={{
-                                    width: '8px',
-                                    height: '8px',
-                                    borderRadius: '50%',
-                                    background: accentColor,
-                                    marginTop: '10px',
-                                    flexShrink: 0
-                                }} />
-                                <EditableElement
-                                    id={`bullet-${index}`}
-                                    text={bullet.text}
-                                    tagName="p"
-                                    isEditing={isEditing}
-                                    onChange={(val) => handleUpdate('bullet', val, index)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                    style={{ fontSize: '1.2rem', color: '#000000', lineHeight: 1.5 }}
-                                />
-                            </div>
-                        ))}
+                        {bullets.map((bullet: any) => {
+                            const actualIndex = slide.elements.indexOf(bullet);
+                            return (
+                                <div key={bullet.id || actualIndex} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                                    <div style={{
+                                        width: '8px',
+                                        height: '8px',
+                                        borderRadius: '50%',
+                                        background: accentColor,
+                                        marginTop: '10px',
+                                        flexShrink: 0
+                                    }} />
+                                    <EditableElement
+                                        id={`el-${slideIndex}-${actualIndex}`}
+                                        text={bullet.text}
+                                        tagName="p"
+                                        isEditing={isEditing}
+                                        onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        style={{ fontSize: '1.2rem', color: '#000000', lineHeight: 1.5, flex: 1 }}
+                                        elementProperties={bullet.properties}
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -170,6 +187,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                                 color: '#000000',
                                 marginBottom: '2rem'
                             }}
+                            elementProperties={slide.slide_title?.properties}
                         />
                         <div style={{
                             width: '100px',
@@ -181,28 +199,39 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
 
                     <div style={{ flex: 1, padding: '4rem 4rem 4rem 2rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {bullets.map((bullet: any, index: number) => (
-                                <div key={bullet.id || index} style={{
-                                    background: '#ffffff',
-                                    padding: '0.5rem 1.5rem',
-                                    borderRadius: '12px',
-                                    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-                                    borderLeft: `4px solid ${accentColor}`
-                                }}>
-                                    <EditableElement
-                                        id={`bullet-${index}`}
-                                        text={bullet.text}
-                                        tagName="p"
-                                        isEditing={isEditing}
-                                        onChange={(val) => handleUpdate('bullet', val, index)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                        style={{ fontSize: '1.1rem', color: '#000000', margin: 0 }}
-                                    />
-                                </div>
-                            ))}
+                            {bullets.map((bullet: any) => {
+                                const actualIndex = slide.elements.indexOf(bullet);
+                                return (
+                                    <div key={bullet.id || actualIndex} style={{
+                                        background: '#ffffff',
+                                        padding: '0.5rem 1.5rem',
+                                        borderRadius: '12px',
+                                        boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                                        borderLeft: `4px solid ${accentColor}`
+                                    }}>
+                                        <EditableElement
+                                            id={`bullet-${actualIndex}`}
+                                            text={bullet.text}
+                                            tagName="p"
+                                            isEditing={isEditing}
+                                            onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                            style={{ fontSize: '1.1rem', color: '#000000', margin: 0, flex: 1 }}
+                                            elementProperties={bullet.properties}
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -211,6 +240,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
     if (variant === 3) {
         return (
             <div style={{
+                position: 'relative',
                 height: '100%',
                 background: bgColor,
                 fontFamily: "'Raleway', sans-serif",
@@ -231,6 +261,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                             fontWeight: 700,
                             color: '#000000'
                         }}
+                        elementProperties={slide.slide_title?.properties}
                     />
                     <div style={{ width: '60px', height: '3px', background: accentColor, margin: '1rem auto 0' }} />
                 </div>
@@ -242,42 +273,53 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                     flex: 1,
                     alignContent: 'center'
                 }}>
-                    {bullets.map((bullet: any, index: number) => (
-                        <div key={bullet.id || index} style={{
-                            background: index % 2 === 0 ? '#f8fafc' : '#ffffff',
-                            padding: '2rem',
-                            borderRadius: '16px',
-                            border: '1px solid #e2e8f0',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '1.5rem'
-                        }}>
-                            <div style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '8px',
-                                background: `${accentColor}20`,
-                                color: accentColor,
+                    {bullets.map((bullet: any) => {
+                        const actualIndex = slide.elements.indexOf(bullet);
+                        return (
+                            <div key={bullet.id || actualIndex} style={{
+                                background: bullets.indexOf(bullet) % 2 === 0 ? '#f8fafc' : '#ffffff',
+                                padding: '2rem',
+                                borderRadius: '16px',
+                                border: '1px solid #e2e8f0',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: 'bold',
-                                flexShrink: 0
+                                gap: '1.5rem'
                             }}>
-                                {index + 1}
+                                <div style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '8px',
+                                    background: `${accentColor}20`,
+                                    color: accentColor,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 'bold',
+                                    flexShrink: 0
+                                }}>
+                                    {bullets.indexOf(bullet) + 1}
+                                </div>
+                                <EditableElement
+                                    id={`bullet-${actualIndex}`}
+                                    text={bullet.text}
+                                    tagName="p"
+                                    isEditing={isEditing}
+                                    onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    style={{ fontSize: '1.1rem', color: '#000000', margin: 0, flex: 1 }}
+                                    elementProperties={bullet.properties}
+                                />
                             </div>
-                            <EditableElement
-                                id={`bullet-${index}`}
-                                text={bullet.text}
-                                tagName="p"
-                                isEditing={isEditing}
-                                onChange={(val) => handleUpdate('bullet', val, index)}
-                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                style={{ fontSize: '1.1rem', color: '#000000', margin: 0 }}
-                            />
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -286,6 +328,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
     if (variant === 4) {
         return (
             <div style={{
+                position: 'relative',
                 display: 'flex',
                 height: '100%',
                 background: bgColor,
@@ -313,6 +356,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                             color: '#ffffff', // Explicit white for dark background
                             lineHeight: 1.2
                         }}
+                        elementProperties={slide.slide_title?.properties}
                     />
                     <div style={{
                         marginTop: '2rem',
@@ -327,35 +371,46 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
 
                 <div style={{ flex: 1, padding: '3rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: '#ffffff' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        {bullets.map((bullet: any, index: number) => (
-                            <div key={bullet.id || index} style={{
-                                display: 'flex',
-                                gap: '0.5rem',
-                                paddingBottom: '0.2rem',
-                                borderBottom: index < bullets.length - 1 ? '1px solid #f0f0f0' : 'none'
-                            }}>
-                                <div style={{
-                                    fontSize: '1.5rem',
-                                    lineHeight: 0.9,
-                                    fontWeight: 800,
-                                    color: '#f0f0f0',
-                                    marginTop: '-2px'
+                        {bullets.map((bullet: any) => {
+                            const actualIndex = slide.elements.indexOf(bullet);
+                            return (
+                                <div key={bullet.id || actualIndex} style={{
+                                    display: 'flex',
+                                    gap: '0.5rem',
+                                    paddingBottom: '0.2rem',
+                                    borderBottom: bullets.indexOf(bullet) < bullets.length - 1 ? '1px solid #f0f0f0' : 'none'
                                 }}>
-                                    0{index + 1}
+                                    <div style={{
+                                        fontSize: '1.5rem',
+                                        lineHeight: 0.9,
+                                        fontWeight: 800,
+                                        color: '#f0f0f0',
+                                        marginTop: '-2px'
+                                    }}>
+                                        0{bullets.indexOf(bullet) + 1}
+                                    </div>
+                                    <EditableElement
+                                        id={`bullet-${actualIndex}`}
+                                        text={bullet.text}
+                                        tagName="p"
+                                        isEditing={isEditing}
+                                        onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        style={{ fontSize: '1rem', color: '#000000', marginTop: '0.2rem', flex: 1 }}
+                                        elementProperties={bullet.properties}
+                                    />
                                 </div>
-                                <EditableElement
-                                    id={`bullet-${index}`}
-                                    text={bullet.text}
-                                    tagName="p"
-                                    isEditing={isEditing}
-                                    onChange={(val) => handleUpdate('bullet', val, index)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                    style={{ fontSize: '1rem', color: '#000000', marginTop: '0.2rem' }}
-                                />
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -394,8 +449,9 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                         fontSize: '3rem',
                         fontWeight: 700,
                         color: '#000000',
-                       
+
                     }}
+                    elementProperties={slide.slide_title?.properties}
                 />
             </div>
 
@@ -412,68 +468,83 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                 alignItems: 'flex-start'
             }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    {leftBullets.map((bullet: any, index: number) => (
-                        <div key={bullet.id || index} style={{ display: 'flex', gap: '1rem' }}>
-                            <div style={{
-                                width: '24px',
-                                height: '24px',
-                                background: primaryColor,
-                                color: '#fff',
-                                borderRadius: '4px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '0.8rem',
-                                fontWeight: 'bold',
-                                flexShrink: 0,
-                                marginTop: '4px'
-                            }}>
-                                {index + 1}
+                    {leftBullets.map((bullet: any) => {
+                        const actualIndex = slide.elements.indexOf(bullet);
+                        return (
+                            <div key={bullet.id || actualIndex} style={{ display: 'flex', gap: '1rem' }}>
+                                <div style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    background: primaryColor,
+                                    color: '#fff',
+                                    borderRadius: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 'bold',
+                                    flexShrink: 0,
+                                    marginTop: '4px'
+                                }}>
+                                    {leftBullets.indexOf(bullet) + 1}
+                                </div>
+                                <EditableElement
+                                    id={`bullet-${actualIndex}`}
+                                    text={bullet.text}
+                                    tagName="p"
+                                    isEditing={isEditing}
+                                    onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    style={{ fontSize: '1rem', color: '#000000', flex: 1 }}
+                                    elementProperties={bullet.properties}
+                                />
                             </div>
-                            <EditableElement
-                                id={`bullet-${index}`}
-                                text={bullet.text}
-                                tagName="p"
-                                isEditing={isEditing}
-                                onChange={(val) => handleUpdate('bullet', val, index)}
-                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                style={{ fontSize: '1rem', color: '#000000' }}
-                            />
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    {rightBullets.map((bullet: any, index: number) => (
-                        <div key={bullet.id || index + midPoint} style={{ display: 'flex', gap: '1rem' }}>
-                            <div style={{
-                                width: '24px',
-                                height: '24px',
-                                background: accentColor,
-                                color: '#fff',
-                                borderRadius: '4px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '0.8rem',
-                                fontWeight: 'bold',
-                                flexShrink: 0,
-                                marginTop: '4px'
-                            }}>
-                                {index + midPoint + 1}
+                    {rightBullets.map((bullet: any) => {
+                        const actualIndex = slide.elements.indexOf(bullet);
+                        return (
+                            <div key={bullet.id || actualIndex} style={{ display: 'flex', gap: '1rem' }}>
+                                <div style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    background: accentColor,
+                                    color: '#fff',
+                                    borderRadius: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 'bold',
+                                    flexShrink: 0,
+                                    marginTop: '4px'
+                                }}>
+                                    {bullets.indexOf(bullet) + 1}
+                                </div>
+                                <EditableElement
+                                    id={`bullet-${actualIndex}`}
+                                    text={bullet.text}
+                                    tagName="p"
+                                    isEditing={isEditing}
+                                    onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    style={{ fontSize: '1rem', color: '#000000', flex: 1 }}
+                                    elementProperties={bullet.properties}
+                                />
                             </div>
-                            <EditableElement
-                                id={`bullet-${index + midPoint}`}
-                                text={bullet.text}
-                                tagName="p"
-                                isEditing={isEditing}
-                                onChange={(val) => handleUpdate('bullet', val, index + midPoint)}
-                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index + midPoint}`, 'text', index + midPoint)}
-                                style={{ fontSize: '1rem', color: '#000000' }}
-                            />
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </div>
     );
 };

@@ -107,7 +107,7 @@ const shapes = [
     },
     svg: (
       <svg width="64" height="64">
-        <line x1="16" y1="16" x2="48" y2="48" stroke="#222" strokeWidth="2" refX = "10" refY = "10"/>
+        <line x1="16" y1="16" x2="48" y2="48" stroke="#222" strokeWidth="2" refX="10" refY="10" />
       </svg>
     ),
   },
@@ -221,24 +221,17 @@ interface ShapedProps {
 }
 
 const MobileShapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
-  const { slides, setSlides, selectedSlideIndex } = useSlides();
+  const { addShape } = useSlides(); // ✅ Use addShape from context
 
   const handleShapeClick = (shape: any) => {
-    const newShape = {
+    console.log('[Shapes-Mobile] Adding shape via context:', shape);
+
+    // ✅ Use context's addShape function which handles everything correctly
+    addShape({
       konva_component: shape.konva_component,
-      element_type: "shape",
       properties: shape.defaultProps,
-    };
+    });
 
-    const updatedSlides = [...slides];
-    const currentSlide = { ...updatedSlides[selectedSlideIndex] };
-    const updatedElements = [...(currentSlide.elements || []), newShape];
-    updatedSlides[selectedSlideIndex] = {
-      ...currentSlide,
-      elements: updatedElements,
-    };
-
-    setSlides(updatedSlides);
     onClose();
   };
 

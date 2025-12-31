@@ -224,40 +224,17 @@ interface ShapedProps {
 const Shapes = forwardRef<HTMLDivElement, ShapedProps>(
   ({ sidebarHeight = "100vh", onClose }, ref) => {
     const panelRef = useRef<HTMLDivElement>(null);
-    const { slides, setSlides, selectedSlideIndex } = useSlides();
+    const { addShape } = useSlides(); // ✅ Use addShape from context
+
     const handleShapeClick = (shape: any) => {
-      const shapeId = uuidv4();
-      const newShape = {
+      console.log('[Shapes] Adding shape via context:', shape);
+
+      // ✅ Use context's addShape function which handles everything correctly
+      addShape({
         konva_component: shape.konva_component,
-        element_type: "shape",
         properties: shape.defaultProps,
-        shape_id: shapeId,
-      };
-      console.log('[Shapes] Adding shape:', newShape);
+      });
 
-      const updatedSlides = [...slides];
-      const currentSlide = { ...updatedSlides[selectedSlideIndex] };
-
-      // 🔧 FIX: Add to BOTH original elements AND current variant
-      const updatedElements = [...(currentSlide.elements || []), newShape];
-
-      // Also add to current variant if layouts exist
-      if (currentSlide.layouts && currentSlide.layouts.length > 0) {
-        const variantIndex = currentSlide.currentVariantIndex ?? 0;
-        const updatedLayouts = [...currentSlide.layouts];
-        updatedLayouts[variantIndex] = {
-          ...updatedLayouts[variantIndex],
-          elements: [...(updatedLayouts[variantIndex].elements || []), newShape]
-        };
-        currentSlide.layouts = updatedLayouts;
-      }
-
-      updatedSlides[selectedSlideIndex] = {
-        ...currentSlide,
-        elements: updatedElements,
-      };
-
-      setSlides(updatedSlides);
       onClose();
     };
 

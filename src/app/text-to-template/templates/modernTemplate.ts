@@ -110,7 +110,7 @@ export const createModernTemplate = (backendSlide: BackendSlide, slideIndex: num
           background: ${palette.bg};
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
         ">
           ${waveBackground(palette.gradientStart, palette.gradientEnd)}
           ${circleAccent('20%', '10%', '150px', palette.accent, 0.15)}
@@ -198,7 +198,7 @@ export const createModernTemplate = (backendSlide: BackendSlide, slideIndex: num
           background: ${palette.bg};
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
         ">
           ${waveBackground(palette.accent, palette.accent2, 0.08)}
           ${circleAccent('10%', '90%', '80px', palette.highlight, 0.2)}
@@ -273,7 +273,7 @@ export const createModernTemplate = (backendSlide: BackendSlide, slideIndex: num
           background: linear-gradient(135deg, ${palette.primary} 0%, ${palette.secondary} 100%);
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
         ">
           ${waveBackground(palette.accent2, palette.accent, 0.15)}
           ${circleAccent('15%', '85%', '140px', palette.highlight, 0.1)}
@@ -350,7 +350,7 @@ export const createModernTemplate = (backendSlide: BackendSlide, slideIndex: num
           background: ${palette.bg};
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
         ">
           ${waveBackground(palette.accent, palette.accent2, 0.08)}
           ${circleAccent('10%', '10%', '100px', palette.accent2, 0.15)}
@@ -423,7 +423,7 @@ export const createModernTemplate = (backendSlide: BackendSlide, slideIndex: num
           background: ${palette.bg};
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
         ">
           ${waveBackground(palette.gradientStart, palette.gradientEnd, 0.1)}
           ${circleAccent('85%', '15%', '120px', palette.highlight, 0.12)}

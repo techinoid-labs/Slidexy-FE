@@ -1,238 +1,224 @@
-"use client";
 import React from 'react';
+import { Slide } from '@/types/presentation';
 import { EditableElement } from '../editor/EditableElement';
 import { UserElementsRenderer } from '../editor/UserElementsRenderer';
-import { getContrastTextColor } from '@/utils/colorUtils';
 
 interface CoverSlideHTMLProps {
-    slide: any;
+    slide: Slide;
     theme: any;
-    variant?: 1 | 2 | 3 | 4 | 5;
-    isEditing?: boolean;
-    onSlideUpdate?: (updatedSlide: any) => void;
-    onElementClick?: (elementId: string, elementType: string, elementIndex?: number) => void;
+    isEditing: boolean;
+    onSlideUpdate?: (updates: Partial<Slide>) => void;
+    onElementClick?: (elementId: string, type: string, index: number) => void;
+    variant?: number;
     slideIndex?: number;
 }
 
-/**
- * Modern Cover Slide - Professional template-based design with theme support
- */
 export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
     slide,
     theme,
-    variant = 1,
-    isEditing = false,
+    isEditing,
     onSlideUpdate,
     onElementClick,
+    variant = 1,
     slideIndex = 0
 }) => {
-    const handleUpdate = (field: string, newText: string, index?: number) => {
+    const title = slide.slide_title?.text || '';
+    const subtitle = slide.subtitle?.text || '';
+    // ✅ Fix: Use both type and element_type to ensure bullets are found
+    const bullets = (slide.elements || []).filter((el: any) =>
+        el.type === 'bullet_point' || el.element_type === 'bullet_point'
+    );
+    const imageUrl = slide.image_url || '';
+
+    const {
+        bgColor = '#FFFFFF',
+        primaryColor = '#1a1a1a',
+        secondaryColor = '#4a4a4a',
+        accentColor = '#3b82f6',
+        accent2Color = '#8b5cf6',
+        textColor = '#1a1a1a',
+        textLightColor = '#6b7280',
+        surfaceColor = '#f9fafb',
+    } = theme || {};
+
+    const handleUpdate = (type: 'title' | 'subtitle' | 'bullet', value: string, index?: number) => {
         if (!onSlideUpdate) return;
 
-        let updatedSlide = { ...slide };
-
-        if (field === 'title') {
-            updatedSlide.slide_title = { ...updatedSlide.slide_title, text: newText };
-        } else if (field === 'subtitle') {
-            updatedSlide.subtitle = { ...updatedSlide.subtitle, text: newText };
-        } else if (field === 'bullet' && typeof index === 'number') {
-            const bullets = slide.elements.filter((el: any) => el.element_type === 'bullet_point');
-            if (bullets[index]) {
-                const targetId = bullets[index].id;
-                updatedSlide.elements = slide.elements.map((el: any) =>
-                    el.id === targetId ? { ...el, text: newText } : el
-                );
-            }
+        if (type === 'title' && slide.slide_title) {
+            onSlideUpdate({
+                slide_title: { ...slide.slide_title, text: value }
+            });
+        } else if (type === 'subtitle' && slide.subtitle) {
+            onSlideUpdate({
+                subtitle: { ...slide.subtitle, text: value }
+            });
+        } else if (type === 'bullet' && index !== undefined) {
+            const updatedElements = [...(slide.elements || [])];
+            updatedElements[index] = { ...updatedElements[index], text: value };
+            onSlideUpdate({ elements: updatedElements });
         }
-
-        onSlideUpdate(updatedSlide);
     };
 
-    const handleElementUpdate = (index: number, updatedElement: any) => {
+    const handleElementUpdate = (index: number, updates: any) => {
         if (!onSlideUpdate) return;
-
-        const updatedSlide = { ...slide };
-        updatedSlide.elements = [...slide.elements];
-        updatedSlide.elements[index] = updatedElement;
-
-        onSlideUpdate(updatedSlide);
+        const updatedElements = [...(slide.elements || [])];
+        updatedElements[index] = { ...updatedElements[index], ...updates };
+        onSlideUpdate({ elements: updatedElements });
     };
 
-    const title = slide.slide_title?.text || "Welcome";
-    const subtitle = slide.subtitle?.text || "";
-    const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
 
-    const bgColor = theme?.backgroundColor || '#F7FAFC';
-    const primaryColor = theme?.primaryColor || '#1A202C';
-    const secondaryColor = theme?.secondaryColor || '#4A5568';
-    const accentColor = theme?.artPalette?.[0] || '#00C4B4';
-
-    console.log(`[CoverSlideHTML] Rendering variant ${variant} for slide "${title}"`);
-    const accent2Color = theme?.artPalette?.[1] || '#7C3AED';
-    const textColor = '#1a202c';
-    const textLightColor = getContrastTextColor(bgColor === '#ffffff' || bgColor === '#fff' ? '#f0f0f0' : bgColor);
-    const surfaceColor = theme?.surfaceColor || '#EDF2F7';
-
-    const TitleElement = ({ style }: { style: React.CSSProperties }) => (
-        <EditableElement
-            id="cover-title"
-            text={title}
-            tagName="h2"
-            isEditing={isEditing}
-            onChange={(val) => handleUpdate('title', val)}
-            onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text')}
-            style={style}
-            elementProperties={slide.slide_title?.properties}
-        />
-    );
-
-    const SubtitleElement = ({ style }: { style: React.CSSProperties }) => (
-        <EditableElement
-            id="cover-subtitle"
-            text={subtitle}
-            tagName="p"
-            isEditing={isEditing}
-            onChange={(val) => handleUpdate('subtitle', val)}
-            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
-            style={style}
-            elementProperties={slide.subtitle?.properties}
-        />
-    );
-
-    // Variant 1: Hero with Glassmorphism
+    // Variant 1: Hero Glass Overlay (Gamma Inspired)
     if (variant === 1) {
         return (
             <div data-slide-container style={{
                 display: 'flex',
-                flexDirection: 'column',
                 height: '100%',
-                padding: '4rem',
                 background: bgColor,
                 position: 'relative',
                 overflow: 'hidden',
-                fontFamily: "'Raleway', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-                justifyContent: 'center',
-                alignItems: 'center',
+                fontFamily: "'Raleway', sans-serif",
             }}>
-                {/* Wave background */}
+                {/* Background Hero Image */}
+                {imageUrl && (
+                    <div
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundImage: `url(${imageUrl})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            opacity: slide.image_properties?.opacity ?? 0.9,
+                            cursor: isEditing ? 'pointer' : 'default',
+                            filter: slide.image_properties?.shadow
+                                ? `drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                                : undefined,
+                        }}
+                    />
+                )}
+
+                {/* Gradient Wash */}
                 <div style={{
                     position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    background: `linear-gradient(135deg, ${accentColor}15 0%, ${accent2Color}15 100%)`,
-                    clipPath: 'polygon(0 0, 100% 0, 100% 85%, 80% 95%, 20% 85%, 0 95%)',
-                    zIndex: 0,
+                    inset: 0,
+                    background: `linear-gradient(135deg, ${bgColor}E6 0%, ${bgColor}33 100%)`,
                 }} />
 
-                {/* Circle accents */}
+                {/* Main Content Area */}
                 <div style={{
-                    position: 'absolute',
-                    top: '20%',
-                    left: '10%',
-                    width: '200px',
-                    height: '200px',
-                    background: `radial-gradient(circle, ${accentColor}30 0%, transparent 70%)`,
-                    borderRadius: '50%',
-                    filter: 'blur(40px)',
-                    zIndex: 1,
-                }} />
-                <div style={{
-                    position: 'absolute',
-                    bottom: '15%',
-                    right: '8%',
-                    width: '180px',
-                    height: '180px',
-                    background: `radial-gradient(circle, ${accent2Color}25 0%, transparent 70%)`,
-                    borderRadius: '50%',
-                    filter: 'blur(35px)',
-                    zIndex: 1,
-                }} />
-
-                {/* Glass card */}
-                <div style={{
+                    position: 'relative',
                     zIndex: 2,
-                    textAlign: 'center',
-                    maxWidth: '900px',
-                    width: '100%',
-                    background: 'rgba(255, 255, 255, 0.95)',
-                    padding: '3.5rem',
-                    borderRadius: '24px',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.8)',
-                    boxShadow: '0 25px 70px rgba(0, 0, 0, 0.15)',
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'center'
+                    justifyContent: 'center',
+                    alignItems: 'flex-start',
+                    padding: '3rem',
+                    width: '60%',
+                    height: '100%',
                 }}>
-                    <TitleElement style={{
-                        fontSize: '3rem',
-                        fontWeight: 800,
-                        color: primaryColor,
-                        margin: '0 0 1.5rem',
-                        lineHeight: 1.1,
-                        letterSpacing: '-0.02em',
-                        textAlign: 'center',
-                        width: '100%'
-                    }} />
+                    <div style={{
+                        background: 'rgba(255, 255, 255, 0.45)',
+                        backdropFilter: 'blur(20px)',
+                        padding: '2.5rem',
+                        borderRadius: '24px',
+                        border: '1px solid rgba(255, 255, 255, 0.4)',
+                        boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.15)',
+                        maxWidth: '100%',
+                    }}>
+                        <EditableElement
+                            id={`title-${slideIndex}`}
+                            text={title}
+                            tagName="h1"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('title', val)}
+                            onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
+                            style={{
+                                fontSize: '2.8rem', // ✅ Scaled down from 4rem
+                                fontWeight: 700,    // ✅ Scaled down from 800
+                                color: primaryColor,
+                                margin: '0 0 1rem',
+                                lineHeight: 1.2,
+                                letterSpacing: '-0.02em',
+                            }}
+                            elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
+                        />
 
-                    {subtitle && (
-                        <SubtitleElement style={{
-                            fontSize: '1.2rem',
-                            color: textLightColor,
-                            lineHeight: 1.6,
-                            margin: '0 0 2rem',
-                            fontWeight: 400,
-                            textAlign: 'center',
-                            width: '100%'
-                        }} />
-                    )}
-
-                    {bullets.length > 0 && (
-                        <div style={{
-                            display: 'flex',
-                            gap: '1.5rem',
-                            justifyContent: 'center',
-                            marginTop: '2.5rem',
-                            flexWrap: 'wrap',
-                            width: '100%'
-                        }}>
-                            {bullets.slice(0, 3).map((bullet: any, index: number) => (
-                                <div key={index} style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.75rem',
-                                    padding: '0.9rem 1.8rem',
-                                    background: surfaceColor,
-                                    borderRadius: '14px',
-                                    fontSize: '1.05rem',
-                                    color: '#1a202c',
-                                    fontWeight: 500,
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-                                }}>
-                                    <div style={{
-                                        width: '8px',
-                                        height: '8px',
-                                        borderRadius: '50%',
-                                        background: `linear-gradient(135deg, ${accentColor} 0%, ${accent2Color} 100%)`,
-                                    }} />
-                                    <EditableElement
-                                        id={`bullet-${index}`}
-                                        text={bullet.text}
-                                        tagName="span"
-                                        isEditing={isEditing}
-                                        onChange={(val) => handleUpdate('bullet', val, index)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                        elementProperties={bullet.properties}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                        {subtitle && (
+                            <EditableElement
+                                id={`subtitle-${slideIndex}`}
+                                text={subtitle}
+                                tagName="p"
+                                isEditing={isEditing}
+                                onChange={(val) => handleUpdate('subtitle', val)}
+                                onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
+                                style={{
+                                    fontSize: '1.1rem', // ✅ Scaled down from 1.4rem
+                                    color: secondaryColor,
+                                    lineHeight: 1.5,
+                                    margin: 0,
+                                    fontWeight: 400,
+                                }}
+                                elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
+                            />
+                        )}
+                    </div>
                 </div>
 
-                {/* User-added elements (text, images, shapes from panels) */}
+                {/* Bullets Overlay - Floating Badges */}
+                <div style={{
+                    position: 'absolute',
+                    right: '4rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                    zIndex: 3,
+                    width: '30%',
+                }}>
+                    {bullets.slice(0, 4).map((bullet: any, idx: number) => {
+                        const actualIndex = slide.elements.indexOf(bullet);
+                        return (
+                            <div key={`bullet-${actualIndex}`} style={{
+                                background: 'white',
+                                padding: '1rem 1.5rem',
+                                borderRadius: '16px',
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem',
+                                border: `1px solid ${accentColor}20`,
+                            }}>
+                                <div style={{
+                                    width: '10px',
+                                    height: '10px',
+                                    borderRadius: '50%',
+                                    background: accentColor,
+                                    flexShrink: 0,
+                                }} />
+                                <EditableElement
+                                    id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
+                                    text={bullet.text}
+                                    tagName="div"
+                                    isEditing={isEditing}
+                                    onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                    onSelectElement={() => {
+                                        const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                        onElementClick?.(bId, 'text', actualIndex);
+                                    }}
+                                    style={{
+                                        fontSize: '0.95rem',
+                                        color: primaryColor,
+                                        fontWeight: 600,
+                                        lineHeight: 1.4,
+                                    }}
+                                    elementProperties={bullet.properties || bullet.element_properties}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+
                 <UserElementsRenderer
                     elements={slide.elements || []}
                     isEditing={isEditing}
@@ -244,99 +230,193 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
         );
     }
 
-    // Variant 2: Bold Gradient Background
+    // Variant 2: Modern Split Layout (Gamma Inspired)
     if (variant === 2) {
         return (
             <div data-slide-container style={{
                 display: 'flex',
-                flexDirection: 'column',
                 height: '100%',
-                padding: '4rem',
-                background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
+                background: bgColor,
                 fontFamily: "'Raleway', sans-serif",
-                justifyContent: 'center',
-                alignItems: 'center',
-                color: '#fff',
-                position: 'relative',
-                overflow: 'hidden',
+                gap: '1.5rem',
+                padding: '2rem',
             }}>
-                {/* Decorative circles */}
+                {/* Left Content */}
                 <div style={{
-                    position: 'absolute',
-                    top: '-10%',
-                    right: '-5%',
-                    width: '400px',
-                    height: '400px',
-                    background: 'rgba(255,255,255,0.05)',
-                    borderRadius: '50%',
-                }} />
-                <div style={{
-                    position: 'absolute',
-                    bottom: '-15%',
-                    left: '-8%',
-                    width: '450px',
-                    height: '450px',
-                    background: 'rgba(255,255,255,0.03)',
-                    borderRadius: '50%',
-                }} />
+                    flex: '1.2',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    padding: '1.5rem',
+                }}>
+                    <div style={{
+                        display: 'inline-block',
+                        padding: '0.4rem 1rem',
+                        background: `${accentColor}10`,
+                        borderRadius: '100px',
+                        color: accentColor,
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        marginBottom: '1.5rem',
+                        width: 'fit-content',
+                    }}>
+                        Introduction
+                    </div>
 
-                <div style={{ textAlign: 'center', maxWidth: '900px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1 }}>
-                    <TitleElement style={{
-                        fontSize: '3rem',
-                        fontWeight: 800,
-                        margin: '0 0 1.5rem',
-                        lineHeight: 1.1,
-                        textShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                        textAlign: 'center',
-                        width: '100%',
-                        color: '#fff',
-                    }} />
+                    <EditableElement
+                        id={`title-${slideIndex}`}
+                        text={title}
+                        tagName="h1"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('title', val)}
+                        onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
+                        style={{
+                            fontSize: '2.5rem', // ✅ Scaled down from 3.8rem
+                            fontWeight: 700,    // ✅ Scaled down from 900
+                            color: primaryColor,
+                            margin: '0 0 1rem',
+                            lineHeight: 1.1,
+                            letterSpacing: '-0.02em',
+                        }}
+                        elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
+                    />
 
                     {subtitle && (
-                        <SubtitleElement style={{
-                            fontSize: '1.2rem',
-                            opacity: 0.95,
-                            lineHeight: 1.6,
-                            margin: '0 0 2.5rem',
-                            textAlign: 'center',
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
+                            style={{
+                                fontSize: '1rem',
+                                color: textLightColor,
+                                lineHeight: 1.5,
+                                margin: '0 0 2rem',
+                                fontWeight: 400,
+                            }}
+                            elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
+                        />
+                    )}
+
+                    <div style={{
+                        display: 'grid',
+                        gap: '0.75rem',
+                    }}>
+                        {bullets.slice(0, 3).map((bullet: any, idx: number) => {
+                            const actualIndex = slide.elements.indexOf(bullet);
+                            return (
+                                <div key={`bullet-${actualIndex}`} style={{
+                                    display: 'flex',
+                                    gap: '1rem',
+                                    alignItems: 'center',
+                                    padding: '1rem',
+                                    background: surfaceColor,
+                                    borderRadius: '12px',
+                                    border: `1px solid ${accentColor}08`,
+                                }}>
+                                    <div style={{
+                                        fontSize: '1rem',
+                                        fontWeight: 800,
+                                        color: accentColor,
+                                        opacity: 0.6,
+                                    }}>
+                                        {idx + 1}
+                                    </div>
+                                    <EditableElement
+                                        id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
+                                        text={bullet.text}
+                                        tagName="div"
+                                        isEditing={isEditing}
+                                        onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                        onSelectElement={() => {
+                                            const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                            onElementClick?.(bId, 'text', actualIndex);
+                                        }}
+                                        style={{
+                                            fontSize: '0.95rem',
+                                            color: primaryColor,
+                                            fontWeight: 500,
+                                        }}
+                                        elementProperties={bullet.properties || bullet.element_properties}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Right Image Feature */}
+                <div style={{
+                    flex: '1',
+                    position: 'relative',
+                    borderRadius: '24px',
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 40px -10px rgba(0,0,0,0.15)',
+                    height: '100%',
+                }}>
+                    {imageUrl ? (
+                        <img
+                            onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                            src={imageUrl}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                cursor: isEditing ? 'pointer' : 'default',
+                                opacity: slide.image_properties?.opacity ?? 1,
+                                borderRadius: `${slide.image_properties?.borderRadius ?? 0}px`,
+                                filter: slide.image_properties?.shadow
+                                    ? `drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                                    : undefined,
+                            }}
+                            alt="hero"
+                        />
+                    ) : (
+                        <div style={{
                             width: '100%',
-                            color: '#fff',
+                            height: '100%',
+                            background: `linear-gradient(135deg, ${accentColor}, ${accent2Color})`
                         }} />
                     )}
 
-                    {bullets.length > 0 && (
-                        <div style={{
-                            display: 'flex',
-                            gap: '1.2rem',
-                            justifyContent: 'center',
-                            marginTop: '2rem',
-                            flexWrap: 'wrap',
-                        }}>
-                            {bullets.slice(0, 3).map((bullet: any, index: number) => (
-                                <div key={index} style={{
-                                    padding: '0.8rem 1.5rem',
-                                    background: 'rgba(255,255,255,0.15)',
-                                    borderRadius: '12px',
-                                    backdropFilter: 'blur(10px)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
-                                }}>
-                                    <EditableElement
-                                        id={`bullet-${index}`}
-                                        text={bullet.text}
-                                        tagName="span"
-                                        isEditing={isEditing}
-                                        onChange={(val) => handleUpdate('bullet', val, index)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                        style={{ color: '#fff', fontSize: '1.05rem' }}
-                                        elementProperties={bullet.properties}
-                                    />
-                                </div>
-                            ))}
+                    {/* Floating Overlay Badge */}
+                    <div style={{
+                        position: 'absolute',
+                        bottom: '1.5rem',
+                        left: '1.5rem',
+                        right: '1.5rem',
+                        background: 'rgba(255, 255, 255, 0.8)',
+                        backdropFilter: 'blur(10px)',
+                        padding: '1.25rem',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '10px',
+                                background: accentColor,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontWeight: 800,
+                                fontSize: '0.8rem',
+                            }}>
+                                UX
+                            </div>
+                            <div style={{ fontSize: '0.85rem', color: primaryColor, fontWeight: 600, lineHeight: 1.2 }}>
+                                Strategy & Insights
+                            </div>
                         </div>
-                    )}
+                    </div>
                 </div>
 
-                {/* User-added elements */}
                 <UserElementsRenderer
                     elements={slide.elements || []}
                     isEditing={isEditing}
@@ -348,102 +428,143 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
         );
     }
 
-    // Variant 3: Minimalist Split
+    // Variant 3: Diagonal Geometric Hero (Gamma Inspired)
     if (variant === 3) {
         return (
             <div data-slide-container style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+                display: 'flex',
                 height: '100%',
                 background: bgColor,
-                fontFamily: "'Raleway', sans-serif",
+                position: 'relative',
                 overflow: 'hidden',
+                fontFamily: "'Raleway', sans-serif",
             }}>
-                {/* Left side - solid color */}
-                <div style={{
-                    background: `linear-gradient(135deg, ${accentColor}, ${accent2Color})`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '3rem',
-                    position: 'relative',
-                }}>
-                    <div style={{
+                {/* Large Background Hero */}
+                <div
+                    onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                    style={{
                         position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '300px',
-                        height: '300px',
-                        background: 'rgba(255,255,255,0.1)',
-                        borderRadius: '50%',
-                        filter: 'blur(60px)',
-                    }} />
-                    <div style={{
-                        fontSize: '8rem',
-                        fontWeight: 900,
-                        color: 'rgba(255,255,255,0.15)',
-                        letterSpacing: '-0.05em',
-                        position: 'relative',
-                        zIndex: 1,
-                    }}>
-                        {title.charAt(0)}
-                    </div>
-                </div>
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: '60%',
+                        backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundColor: accentColor,
+                        clipPath: 'polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%)',
+                        cursor: isEditing ? 'pointer' : 'default',
+                        opacity: slide.image_properties?.opacity ?? 1,
+                        filter: slide.image_properties?.shadow
+                            ? `drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                            : undefined,
+                    }}
+                />
 
-                {/* Right side - content */}
+                {/* Content Panel */}
                 <div style={{
+                    position: 'relative',
+                    zIndex: 2,
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
                     padding: '4rem',
+                    width: '55%',
+                    height: '100%',
                 }}>
-                    <TitleElement style={{
-                        fontSize: '2.2rem',
-                        fontWeight: 700,
-                        color: primaryColor,
-                        margin: '0 0 1.5rem',
-                        lineHeight: 1.0,
-                        width: '100%'
-                    }} />
-
-                    {subtitle && (
-                        <SubtitleElement style={{
-                            fontSize: '1.2rem',
-                            color: textLightColor,
-                            lineHeight: 1.6,
-                            margin: '0 0 2rem',
-                            width: '100%'
+                    <div style={{
+                        maxWidth: '480px',
+                    }}>
+                        <div style={{
+                            width: '35px',
+                            height: '5px',
+                            background: accentColor,
+                            borderRadius: '3px',
+                            marginBottom: '2rem',
                         }} />
-                    )}
 
-                    {bullets.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
-                            {bullets.slice(0, 3).map((bullet: any, index: number) => (
-                                <div key={index} style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                                    <div style={{
-                                        width: '6px',
-                                        height: '6px',
-                                        borderRadius: '50%',
-                                        background: accentColor,
-                                    }} />
-                                    <EditableElement
-                                        id={`bullet-${index}`}
-                                        text={bullet.text}
-                                        tagName="span"
-                                        isEditing={isEditing}
-                                        onChange={(val) => handleUpdate('bullet', val, index)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                        style={{ color: '#1a202c', fontSize: '1.1rem' }}
-                                        elementProperties={bullet.properties}
-                                    />
-                                </div>
-                            ))}
+                        <EditableElement
+                            id={`title-${slideIndex}`}
+                            text={title}
+                            tagName="h1"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('title', val)}
+                            onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
+                            style={{
+                                fontSize: '2.8rem', // ✅ Scaled down from 3.5rem
+                                fontWeight: 700,    // ✅ Scaled down from 800
+                                color: primaryColor,
+                                margin: '0 0 1rem',
+                                lineHeight: 1.2,
+                            }}
+                            elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
+                        />
+
+                        {subtitle && (
+                            <EditableElement
+                                id={`subtitle-${slideIndex}`}
+                                text={subtitle}
+                                tagName="p"
+                                isEditing={isEditing}
+                                onChange={(val) => handleUpdate('subtitle', val)}
+                                onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
+                                style={{
+                                    fontSize: '1.05rem',
+                                    color: textLightColor,
+                                    lineHeight: 1.6,
+                                    margin: '0 0 2rem',
+                                }}
+                                elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
+                            />
+                        )}
+
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.25rem',
+                        }}>
+                            {bullets.slice(0, 3).map((bullet: any, idx: number) => {
+                                const actualIndex = slide.elements.indexOf(bullet);
+                                return (
+                                    <div key={`bullet-${actualIndex}`} style={{
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        gap: '0.85rem',
+                                    }}>
+                                        <div style={{
+                                            marginTop: '0.4rem',
+                                            width: '14px',
+                                            height: '14px',
+                                            background: `linear-gradient(45deg, ${accentColor}, ${accent2Color})`,
+                                            borderRadius: '3px',
+                                            transform: 'rotate(45deg)',
+                                            flexShrink: 0,
+                                        }} />
+                                        <EditableElement
+                                            id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
+                                            text={bullet.text}
+                                            tagName="div"
+                                            isEditing={isEditing}
+                                            onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                            onSelectElement={() => {
+                                                const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                                onElementClick?.(bId, 'text', actualIndex);
+                                            }}
+                                            style={{
+                                                fontSize: '1rem',
+                                                color: primaryColor,
+                                                fontWeight: 500,
+                                                lineHeight: 1.4,
+                                            }}
+                                            elementProperties={bullet.properties || bullet.element_properties}
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
-                    )}
+                    </div>
                 </div>
 
-                {/* User-added elements */}
                 <UserElementsRenderer
                     elements={slide.elements || []}
                     isEditing={isEditing}
@@ -455,90 +576,167 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
         );
     }
 
-    // Variant 4: Centered with Top Accent
+    // Variant 4: Minimalist Card Stack (Gamma Inspired)
     if (variant === 4) {
         return (
             <div data-slide-container style={{
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
-                background: bgColor,
+                background: `radial-gradient(circle at top right, ${accentColor}08, ${bgColor})`,
                 fontFamily: "'Raleway', sans-serif",
-                position: 'relative',
-                overflow: 'hidden',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '3rem',
             }}>
-                {/* Top accent bar */}
                 <div style={{
-                    height: '8px',
-                    background: `linear-gradient(to right, ${accentColor}, ${accent2Color})`,
-                }} />
-
-                {/* Content */}
-                <div style={{
-                    flex: 1,
+                    width: '100%',
+                    maxWidth: '900px',
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: '4rem',
-                    textAlign: 'center',
+                    gap: '2rem',
                 }}>
+                    {/* Top Hero Section */}
                     <div style={{
-                        maxWidth: '800px',
+                        display: 'flex',
+                        gap: '2rem',
+                        alignItems: 'center',
+                    }}>
+                        <div style={{ flex: '1.5' }}>
+                            <EditableElement
+                                id={`title-${slideIndex}`}
+                                text={title}
+                                tagName="h1"
+                                isEditing={isEditing}
+                                onChange={(val) => handleUpdate('title', val)}
+                                onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
+                                style={{
+                                    fontSize: '3rem',   // ✅ Scaled down from 4.2rem
+                                    fontWeight: 700,    // ✅ Scaled down from 800
+                                    color: primaryColor,
+                                    margin: '0 0 0.75rem',
+                                    letterSpacing: '-0.02em',
+                                    lineHeight: 1.1,
+                                }}
+                                elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
+                            />
+
+                            {subtitle && (
+                                <EditableElement
+                                    id={`subtitle-${slideIndex}`}
+                                    text={subtitle}
+                                    tagName="p"
+                                    isEditing={isEditing}
+                                    onChange={(val) => handleUpdate('subtitle', val)}
+                                    onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
+                                    style={{
+                                        fontSize: '1.2rem',
+                                        color: textLightColor,
+                                        lineHeight: 1.4,
+                                        fontWeight: 400,
+                                    }}
+                                    elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
+                                />
+                            )}
+                        </div>
+
+                        <div style={{
+                            flex: '1',
+                            aspectRatio: '1',
+                            borderRadius: '24px',
+                            background: surfaceColor,
+                            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)',
+                            padding: '1rem',
+                            position: 'relative',
+                        }}>
+                            <div style={{
+                                width: '100%',
+                                height: '100%',
+                                borderRadius: '16px',
+                                overflow: 'hidden',
+                                background: `linear-gradient(135deg, ${accentColor}10, ${accent2Color}05)`,
+                            }}>
+                                {imageUrl && (
+                                    <img
+                                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                                        src={imageUrl}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            cursor: isEditing ? 'pointer' : 'default',
+                                            opacity: slide.image_properties?.opacity ?? 1,
+                                            borderRadius: `${slide.image_properties?.borderRadius ?? 0}px`,
+                                            filter: slide.image_properties?.shadow
+                                                ? `drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                                                : undefined,
+                                        }}
+                                        alt="hero"
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Features Row */}
+                    <div style={{
+                        display: 'flex',
+                        gap: '1rem',
                         width: '100%',
                     }}>
-                        <TitleElement style={{
-                            fontSize: '3.5rem',
-                            fontWeight: 800,
-                            color: primaryColor,
-                            margin: '0 0 1.5rem',
-                            lineHeight: 1.1,
-                            letterSpacing: '-0.02em',
-                            width: '100%'
-                        }} />
-
-                        {subtitle && (
-                            <SubtitleElement style={{
-                                fontSize: '1.4rem',
-                                color: textLightColor,
-                                lineHeight: 1.6,
-                                margin: '0 0 3rem',
-                                width: '100%'
-                            }} />
-                        )}
-
-                        {bullets.length > 0 && (
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                                gap: '1.5rem',
-                                marginTop: '2.5rem',
-                            }}>
-                                {bullets.slice(0, 3).map((bullet: any, index: number) => (
-                                    <div key={index} style={{
-                                        padding: '1.5rem',
-                                        background: `${accentColor}10`,
-                                        borderRadius: '16px',
-                                        border: `2px solid ${accentColor}30`,
+                        {bullets.slice(0, 3).map((bullet: any, idx: number) => {
+                            const actualIndex = slide.elements.indexOf(bullet);
+                            return (
+                                <div key={`bullet-${actualIndex}`} style={{
+                                    flex: 1,
+                                    padding: '1.25rem',
+                                    background: 'rgba(255, 255, 255, 0.6)',
+                                    backdropFilter: 'blur(8px)',
+                                    borderRadius: '16px',
+                                    border: `1px solid ${accentColor}10`,
+                                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.04)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0.5rem',
+                                }}>
+                                    <div style={{
+                                        width: '24px',
+                                        height: '24px',
+                                        borderRadius: '6px',
+                                        background: `${accentColor}15`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: accentColor,
+                                        fontWeight: 800,
+                                        fontSize: '0.65rem',
                                     }}>
-                                        <EditableElement
-                                            id={`bullet-${index}`}
-                                            text={bullet.text}
-                                            tagName="div"
-                                            isEditing={isEditing}
-                                            onChange={(val) => handleUpdate('bullet', val, index)}
-                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                            style={{ color: '#1a202c', fontSize: '1.1rem', fontWeight: 500 }}
-                                            elementProperties={bullet.properties}
-                                        />
+                                        {idx + 1}
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                    <EditableElement
+                                        id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
+                                        text={bullet.text}
+                                        tagName="div"
+                                        isEditing={isEditing}
+                                        onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                        onSelectElement={() => {
+                                            const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                            onElementClick?.(bId, 'text', actualIndex);
+                                        }}
+                                        style={{
+                                            fontSize: '0.9rem',
+                                            color: primaryColor,
+                                            fontWeight: 600,
+                                            lineHeight: 1.4,
+                                        }}
+                                        elementProperties={bullet.properties || bullet.element_properties}
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
-                {/* User-added elements */}
                 <UserElementsRenderer
                     elements={slide.elements || []}
                     isEditing={isEditing}
@@ -550,100 +748,162 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
         );
     }
 
-    // Variant 5: Diagonal Split
+    // Variant 5: Professional Sidebar Hero (Gamma Inspired)
     return (
         <div data-slide-container style={{
             display: 'flex',
-            flexDirection: 'column',
             height: '100%',
             background: bgColor,
             fontFamily: "'Raleway', sans-serif",
             position: 'relative',
             overflow: 'hidden',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '4rem',
         }}>
-            {/* Diagonal background */}
-            <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: `linear-gradient(135deg, ${accentColor}12 0%, transparent 60%)`,
-                clipPath: 'polygon(0 0, 70% 0, 40% 100%, 0 100%)',
-                zIndex: 0,
-            }} />
+            {/* Background Hero */}
+            <div
+                onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    opacity: slide.image_properties?.opacity ?? 0.85,
+                    cursor: isEditing ? 'pointer' : 'default',
+                    filter: slide.image_properties?.shadow
+                        ? `drop-shadow(${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color})`
+                        : undefined,
+                }}
+            />
 
-            {/* Content */}
+            {/* Content Sidebar */}
             <div style={{
-                maxWidth: '900px',
-                width: '100%',
-                textAlign: 'center',
                 position: 'relative',
-                zIndex: 1,
+                zIndex: 2,
+                height: '100%',
+                width: '400px', // ✅ Scaled down from 450px
+                background: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(30px)',
+                padding: '3rem 2.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                boxShadow: '15px 0 40px rgba(0,0,0,0.15)',
+                borderRight: '1px solid rgba(255, 255, 255, 0.3)',
             }}>
-                <TitleElement style={{
-                    fontSize: '3.6rem',
-                    fontWeight: 800,
-                    color: primaryColor,
-                    margin: '0 0 1.5rem',
-                    lineHeight: 1.1,
-                    letterSpacing: '-0.02em',
-                    width: '100%'
-                }} />
-
-                {subtitle && (
-                    <SubtitleElement style={{
-                        fontSize: '1.5rem',
-                        color: textLightColor,
-                        lineHeight: 1.6,
-                        margin: '0 0 2.5rem',
-                        width: '100%'
-                    }} />
-                )}
-
-                {bullets.length > 0 && (
+                <div style={{
+                    marginBottom: '2rem',
+                }}>
                     <div style={{
-                        display: 'flex',
-                        gap: '1.5rem',
-                        justifyContent: 'center',
-                        marginTop: '2.5rem',
-                        flexWrap: 'wrap',
+                        fontSize: '0.7rem',
+                        fontWeight: 800,
+                        color: accentColor,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.15em',
+                        marginBottom: '0.75rem',
                     }}>
-                        {bullets.slice(0, 3).map((bullet: any, index: number) => (
-                            <div key={index} style={{
-                                padding: '1rem 1.8rem',
-                                background: 'rgba(255,255,255,0.9)',
-                                borderRadius: '14px',
-                                boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
-                                borderLeft: `4px solid ${accentColor}`,
+                        Gamma Design
+                    </div>
+
+                    <EditableElement
+                        id={`title-${slideIndex}`}
+                        text={title}
+                        tagName="h1"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('title', val)}
+                        onSelectElement={() => onElementClick?.(`title-${slideIndex}`, 'text', -1)}
+                        style={{
+                            fontSize: '2.5rem', // ✅ Scaled down from 3rem
+                            fontWeight: 700,    // ✅ Scaled down from 800
+                            color: primaryColor,
+                            margin: '0 0 1rem',
+                            lineHeight: 1.1,
+                            letterSpacing: '-0.02em',
+                        }}
+                        elementProperties={slide.slide_title?.properties || slide.slide_title?.element_properties}
+                    />
+
+                    {subtitle && (
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text', -2)}
+                            style={{
+                                fontSize: '1rem',
+                                color: textLightColor,
+                                lineHeight: 1.5,
+                                fontWeight: 400,
+                            }}
+                            elementProperties={slide.subtitle?.properties || slide.subtitle?.element_properties}
+                        />
+                    )}
+                </div>
+
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                }}>
+                    {bullets.slice(0, 4).map((bullet: any, idx: number) => {
+                        const actualIndex = slide.elements.indexOf(bullet);
+                        return (
+                            <div key={`bullet-${actualIndex}`} style={{
+                                padding: '0.85rem',
+                                background: 'rgba(255, 255, 255, 0.4)',
+                                borderRadius: '12px',
+                                borderLeft: `3px solid ${accentColor}`,
+                                display: 'flex',
+                                alignItems: 'center',
                             }}>
                                 <EditableElement
-                                    id={`bullet-${index}`}
+                                    id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}
-                                    tagName="span"
+                                    tagName="div"
                                     isEditing={isEditing}
-                                    onChange={(val) => handleUpdate('bullet', val, index)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                    style={{ color: textColor, fontSize: '1.05rem', fontWeight: 500 }}
-                                    elementProperties={bullet.properties}
+                                    onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                    onSelectElement={() => {
+                                        const bId = bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`;
+                                        onElementClick?.(bId, 'text', actualIndex);
+                                    }}
+                                    style={{
+                                        fontSize: '0.9rem',
+                                        color: primaryColor,
+                                        fontWeight: 500,
+                                        lineHeight: 1.4,
+                                    }}
+                                    elementProperties={bullet.properties || bullet.element_properties}
                                 />
                             </div>
-                        ))}
-                    </div>
-                )}
+                        );
+                    })}
+                </div>
 
-                {/* User-added elements */}
-                <UserElementsRenderer
-                    elements={slide.elements || []}
-                    isEditing={isEditing}
-                    onElementClick={onElementClick}
-                    onElementUpdate={handleElementUpdate}
-                    slideIndex={slideIndex}
-                />
+                {/* Bottom Graphic */}
+                <div style={{
+                    marginTop: '2rem',
+                    display: 'flex',
+                    gap: '0.4rem',
+                }}>
+                    {[1, 2, 3].map(i => (
+                        <div key={i} style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: i === 1 ? accentColor : `${accentColor}20`,
+                        }} />
+                    ))}
+                </div>
             </div>
+
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </div>
     );
 };

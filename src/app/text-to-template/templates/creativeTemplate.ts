@@ -262,7 +262,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
               font-size: 2.5rem;
               font-weight: 800;
               color: ${creativePalette.text};
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               margin: 0 0 1.5rem;
               text-align: center;
             ">
@@ -273,7 +273,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
                 font-size: 1rem;
                 line-height: 1.6;
                 color: ${creativePalette.textSecondary};
-                font-family: 'Inter', sans-serif;
+                font-family: 'Raleway', sans-serif;
                 margin: 0 0 0.5rem;
                 text-align: center;
                 max-width: 90%;
@@ -308,7 +308,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
             font-size: 2rem;
             font-weight: 800;
             color: ${creativePalette.text};
-            font-family: 'Inter', sans-serif;
+            font-family: 'Raleway', sans-serif;
             text-align: center;
             margin: 0 0 0.5rem;
             padding: 0.5rem;
@@ -396,7 +396,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
       font-size: 0.95rem;
       line-height: 1.5;
       color: ${creativePalette.textSecondary};
-      font-family: 'Inter', sans-serif;
+      font-family: 'Raleway', sans-serif;
       margin: 0;
     ">
       ${text || 'Content placeholder'}
@@ -454,7 +454,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
               font-size: 2rem;
               font-weight: 800;
               color: ${creativePalette.text};
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               margin: 0 0 1rem;
             ">
               ${titleText}
@@ -464,7 +464,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
               line-height: 1.4;
               font-weight: 600;
               color: ${creativePalette.textSecondary};
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               font-style: italic;
               margin: 0;
               max-height: 150px;
@@ -542,7 +542,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
               font-size: 2rem;
               font-weight: 800;
               color: ${creativePalette.text};
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               margin: 0 0 1rem;
               border-bottom: 2px solid ${creativePalette.secondary}20;
               padding-bottom: 0.5rem;
@@ -563,7 +563,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
                   font-size: 0.95rem;
                   line-height: 1.5;
                   color: ${creativePalette.textSecondary};
-                  font-family: 'Inter', sans-serif;
+                  font-family: 'Raleway', sans-serif;
                   margin: 0;
                   overflow: hidden;
                   text-overflow: ellipsis;
@@ -660,7 +660,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
               font-size: 2rem;
               font-weight: 800;
               color: ${creativePalette.text};
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               margin: 0 0 1rem;
             ">
               ${titleText}
@@ -696,7 +696,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
                   font-size: 0.95rem;
                   line-height: 1.5;
                   color: ${creativePalette.textSecondary};
-                  font-family: 'Inter', sans-serif;
+                  font-family: 'Raleway', sans-serif;
                   margin: 0;
                   overflow: hidden;
                   text-overflow: ellipsis;
@@ -756,7 +756,7 @@ export const createCreativeTemplate = (backendSlide: BackendSlide, slideIndex: n
       break;
 
     default:
-      htmlTemplate = `<div style="font-family: 'Inter', sans-serif; color: ${creativePalette.text}; text-align: center;">Error: Invalid layout type</div>`;
+      htmlTemplate = `<div style="font-family: 'Raleway', sans-serif; color: ${creativePalette.text}; text-align: center;">Error: Invalid layout type</div>`;
   }
 
   elements.push({

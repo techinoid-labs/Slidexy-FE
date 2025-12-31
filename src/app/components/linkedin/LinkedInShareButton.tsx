@@ -64,6 +64,15 @@ export const LinkedInShareButton: React.FC<LinkedInShareButtonProps> = ({
         size="medium"
         sx={{
           borderRadius: "999px",
+          px: 3,
+          py: 1.2,
+          fontSize: 14,
+          boxShadow: "0 4px 12px rgba(10, 102, 194, 0.2)",
+          "&:hover": {
+            backgroundColor: "#005885",
+            boxShadow: "0 6px 16px rgba(10, 102, 194, 0.4)",
+            transform: "translateY(-1px)",
+          },
           ...sx,
         }}
       />
@@ -83,15 +92,16 @@ export const LinkedInShareButton: React.FC<LinkedInShareButtonProps> = ({
           background: "linear-gradient(80.89deg, #0A66C2 -90.43%, #004182 74.73%)",
           color: "#fff",
           borderRadius: "999px",
-          px: 2,
-          py: 1,
+          px: 3,  // ✅ Match export buttons
+          py: 1.2,  // ✅ Match export buttons
           fontSize: 14,
           fontWeight: 600,
           transition: "transform 0.2s ease, box-shadow 0.2s ease",
           opacity: capturing || connectionLoading ? 0.7 : 1,
+          boxShadow: capturing || connectionLoading ? "none" : "0 4px 12px rgba(10, 102, 194, 0.2)",  // ✅ Match export buttons
           "&:hover": capturing || connectionLoading ? {} : {
             transform: "translateY(-2px)",
-            boxShadow: "0 4px 12px rgba(10, 102, 194, 0.3)",
+            boxShadow: "0 6px 16px rgba(10, 102, 194, 0.4)",  // ✅ Match export buttons
           },
           "&:active": {
             transform: "translateY(0)",

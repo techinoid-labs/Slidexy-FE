@@ -13,8 +13,6 @@ import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 import { getRandomSlide, getSlideDimensions } from "../../utils/slideUtils";
 import { applyElementPositioning } from "@/utils/slideTextPositioningUtils";
-import TextSettingsPanelMobile from "../components/new-ui/Text-Panel";
-import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
 import { useDispatch } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import { HTMLSlideRenderer } from "../components/editor/HTMLSlideRenderer";
@@ -108,6 +106,42 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     setSlides(positionedSlides);
   }, [slides?.length]);
 
+  // Periodic snapshot regeneration for ALL slides while editing
+  useEffect(() => {
+    const lastSnapshotAt = { value: 0 };
+    const MIN_SNAPSHOT_INTERVAL = 1500; // Regenerate every 1.5s while editing
+
+    const updateAllSnapshots = async () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+
+      const now = Date.now();
+      if (now - lastSnapshotAt.value < MIN_SNAPSHOT_INTERVAL) return;
+      lastSnapshotAt.value = now;
+
+      for (let i = 0; i < slides.length; i++) {
+        const slide = slides[i];
+        const canvas = stageRefs.current[i]; // This ref is the canvas element from ref callback
+
+        if (!canvas || !slide?.slide_id) continue;
+
+        try {
+          // SlideEditor-NewMobile stores canvas directly in stageRefs.current[index]
+          await snapshotsCache.generateFromCanvas(slide.slide_id, canvas).catch((err) => {
+            console.warn(`[MobileEditor] Snapshot regeneration failed for slide ${slide.slide_id}:`, err);
+          });
+        } catch (err) {
+          console.error(`[MobileEditor] Error regenerating snapshot for slide ${i}:`, err);
+        }
+
+        // Small delay between slides to avoid blocking
+        await new Promise(resolve => setTimeout(resolve, 30));
+      }
+    };
+
+    const timer = setTimeout(updateAllSnapshots, 500);
+    return () => clearTimeout(timer);
+  }, [slides, selectedIndex]);
+
   useEffect(() => {
     const updateScale = () => {
       const slideWidth = getDynamicConstants().SLIDE_WIDTH;
@@ -177,15 +211,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     if (elementType === "text") {
       const textId = elementId || (typeof elementIndex === "number" ? `el-${selectedIndex}-${elementIndex}` : `title-${selectedIndex}`);
       setSelectedTextId(textId);
-
-      // Show tooltip/panel
-      setTooltip({
-        visible: true,
-        x: clientRect.x,
-        y: clientRect.y - 50, // slightly above
-        node: null
-      });
-
     } else if (elementType === "image") {
       const slide = slides[selectedIndex];
       // Find image logic mirroring Web
@@ -250,7 +275,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           return {
             ...slide,
             ...variant,
-            elements: [...(variant.elements || []), ...userShapes],
+            // Combine variant elements with user-added shapes (deduplicated by shape_id)
+            elements: [
+              ...(variant.elements || []),
+              ...userShapes.filter((us: any) =>
+                !(variant.elements || []).some((ve: any) => ve.shape_id === us.shape_id)
+              )
+            ],
             currentVariantIndex: variantIndex,
           };
         };
@@ -262,14 +293,17 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         return (
           <Box
             key={originalSlide.slide_id}
+            id={`slide-node-${index}`}
             sx={{
               borderRadius: 4,
               border: "1px solid #939393ff",
               backgroundColor: "#fff",
-              position: "relative",
+              position: index === selectedIndex ? "relative" : "absolute",
               mb: { xs: 7, md: -1, sm: -1 },
-              top: { xs: -30, sm: 20, lg: 20 },
-              display: index === selectedIndex ? "block" : "none",
+              top: index === selectedIndex ? { xs: -30, sm: 20, lg: 20 } : 0,
+              left: index === selectedIndex ? 0 : -99999,
+              display: "block",
+              visibility: index === selectedIndex ? "visible" : "hidden",
               transform: `scale(${scale})`,
               width: `${getDynamicConstants().SLIDE_WIDTH}px`,
               height: `${getDynamicConstants().SLIDE_HEIGHT}px`,
@@ -371,11 +405,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                       fontSize={titleProps.fontSize || 36}
                       fontWeight={titleProps.fontWeight || "700"}
                       fontFamily={titleProps.fontFamily || "Raleway"}
+                      fontStyle={titleProps.fontStyle || "normal"}
                       opacity={titleProps.opacity || 1}
                       fill={title.useThemeColor !== false
                         ? getContrastTextColor(selectedTheme?.backgroundColor || "#ffffff")
                         : titleProps.fill || "#000000"}
                       align={titleProps.align || "center"}
+                      lineHeight={titleProps.lineHeight || 1.2}
                       enableTypewriter={false}
                       enableLayoutAnimation={false}
                     />
@@ -397,10 +433,13 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                           fontSize={el.properties?.fontSize || 16}
                           fontFamily={el.properties?.fontFamily || "Raleway"}
                           fontWeight={el.properties?.fontWeight || "400"}
+                          fontStyle={el.properties?.fontStyle || "normal"}
+                          opacity={el.properties?.opacity ?? 1}
                           fill={el.useThemeColor !== false
                             ? getContrastTextColor(selectedTheme?.backgroundColor || "#ffffff")
                             : el.properties?.fill || "#000000"}
                           align={el.properties?.align || "left"}
+                          lineHeight={el.properties?.lineHeight || 1.4}
                           enableLayoutAnimation={false}
                         />
                       );
@@ -443,36 +482,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         );
       })}
 
-      {tooltip.visible && (
-        <TextSettingsPanelMobile
-          style={{
-            top: tooltip.y,
-            left: tooltip.x - 15,
-          }}
-          onClose={() => setTooltip({ ...tooltip, visible: false })}
-        />
-      )}
-      {isMobileImageSelected && (
-        <ImageSettingsPanelMobile
-          style={{
-            top: 100,
-            left: 100,
-          }}
-          onClose={() => {
-            setIsMobileImageSelected(false);
-            setSelectedImageIndex(null);
-            setSelectedImage(null);
-            setSelectedImageId(null);
-          }}
-          resetAll={() => {
-            setSelectedTextId(null);
-            setSelectedImageIndex(null);
-            setSelectedImage(null);
-            setSelectedImageId(null);
-            setIsMobileImageSelected(false);
-          }}
-        />
-      )}
       <Box sx={{ transform: `scale(${scale})` }}>
         <SlidePreviews
           slides={slides}

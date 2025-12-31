@@ -101,7 +101,7 @@ const minimalBadge = (text: string): string => `
     padding: 0.3rem 1rem;
     background: linear-gradient(90deg, ${palette.accent}, ${palette.accent2});
     color: ${palette.bg};
-    font-family: 'Inter', sans-serif;
+    font-family: 'Raleway', sans-serif;
     font-size: 0.7rem;
     font-weight: 500;
     text-transform: uppercase;
@@ -152,7 +152,7 @@ export const createMinimalistTemplate = (backendSlide: BackendSlide, slideIndex:
           gap: 1.5rem;
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           align-items: center;
         ">
           ${abstractBackground()}
@@ -247,7 +247,7 @@ export const createMinimalistTemplate = (backendSlide: BackendSlide, slideIndex:
           padding: 1.5rem;
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           gap: 1rem;
         ">
           ${abstractBackground()}
@@ -357,7 +357,7 @@ export const createMinimalistTemplate = (backendSlide: BackendSlide, slideIndex:
           padding: 1.5rem;
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
           justify-content: center;
           align-items: center;
         ">
@@ -391,7 +391,7 @@ export const createMinimalistTemplate = (backendSlide: BackendSlide, slideIndex:
               color: ${palette.text};
               line-height: 1.4;
               margin: 0 0 0.75rem;
-              font-family: 'Inter', sans-serif;
+              font-family: 'Raleway', sans-serif;
               letter-spacing: -0.01em;
             ">"${textContent[0] || "Minimalism is elegance."}"</blockquote>
             <cite style="
@@ -454,7 +454,7 @@ export const createMinimalistTemplate = (backendSlide: BackendSlide, slideIndex:
           gap: 1rem;
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
         ">
           ${abstractBackground()}
           ${arcAccent("15%", "85%", "40px", palette.accent, 0.4)}
@@ -568,7 +568,7 @@ export const createMinimalistTemplate = (backendSlide: BackendSlide, slideIndex:
           padding: 1.5rem;
           position: relative;
           overflow: hidden;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Raleway', sans-serif;
         ">
           ${abstractBackground()}
           ${arcAccent("10%", "90%", "45px", palette.accent2, 0.3)}

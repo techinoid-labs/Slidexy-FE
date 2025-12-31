@@ -39,28 +39,28 @@ export const EditableElement: React.FC<EditableElementProps> = ({
     const [localText, setLocalText] = useState(text);
 
     // Helper: Convert element properties to CSS styles
-    const getStyleFromProperties = (): React.CSSProperties => {
-        if (!elementProperties) return {};
+    const getStyleFromProperties = (props = elementProperties): React.CSSProperties => {
+        if (!props) return {};
 
         const cssStyle: React.CSSProperties = {};
 
         // Font properties
-        if (elementProperties.fontSize) cssStyle.fontSize = `${elementProperties.fontSize}px`;
-        if (elementProperties.fontFamily) cssStyle.fontFamily = elementProperties.fontFamily;
-        if (elementProperties.fontWeight) cssStyle.fontWeight = elementProperties.fontWeight;
-        if (elementProperties.fontStyle) cssStyle.fontStyle = elementProperties.fontStyle;
+        if (props.fontSize) cssStyle.fontSize = `${props.fontSize}px`;
+        if (props.fontFamily) cssStyle.fontFamily = props.fontFamily;
+        if (props.fontWeight) cssStyle.fontWeight = props.fontWeight;
+        if (props.fontStyle) cssStyle.fontStyle = props.fontStyle;
 
         // Color
-        if (elementProperties.fill) cssStyle.color = elementProperties.fill;
+        if (props.fill) cssStyle.color = props.fill;
 
         // Alignment
-        if (elementProperties.align) cssStyle.textAlign = elementProperties.align as any;
+        if (props.align) cssStyle.textAlign = props.align as any;
 
         // Opacity
-        if (elementProperties.opacity !== undefined) cssStyle.opacity = elementProperties.opacity;
+        if (props.opacity !== undefined) cssStyle.opacity = props.opacity;
 
         // Line height
-        if (elementProperties.lineHeight) cssStyle.lineHeight = elementProperties.lineHeight;
+        if (props.lineHeight) cssStyle.lineHeight = props.lineHeight;
 
         return cssStyle;
     };
@@ -105,32 +105,64 @@ export const EditableElement: React.FC<EditableElementProps> = ({
         )
     }
 
+    // DATA MIGRATION: Fix old italic data stored as fontWeight instead of fontStyle
+    // Create corrected copy to avoid mutating Redux state
+    const correctedProperties = elementProperties?.fontWeight === 'italic'
+        ? { ...elementProperties, fontStyle: 'italic', fontWeight: 'normal' }
+        : elementProperties;
+
     // Editing mode: Element properties override layout styles
     const mergedStyle = {
         ...style,
-        ...getStyleFromProperties(),
-        minWidth: "1em",
+        minWidth: style.minWidth || "1em",
         minHeight: "1em",
         whiteSpace: "pre-wrap",
         display: style.display || "block",
+        ...getStyleFromProperties(correctedProperties), // ← Element properties LAST so they override everything
+    };
+
+    // Extract textAlign for wrapper (since textAlign on contentEditable doesn't work well in flex)
+    const { textAlign, flex, ...contentStyle } = mergedStyle;
+
+    // Map textAlign to alignItems for the flex wrapper
+    const alignToFlexMap: Record<string, string> = {
+        left: 'flex-start',
+        center: 'center',
+        right: 'flex-end',
+        justify: 'stretch'
+    };
+    const alignItems = alignToFlexMap[textAlign as string] || 'flex-start';
+
+    // Wrapper should have width: 100% to ensure it can fill its parent and align content correctly
+    const wrapperStyle: React.CSSProperties = {
+        textAlign: (textAlign as any) || 'left',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: alignItems as any,
+        flex: flex, // Only use flex if provided
+        maxWidth: '100%'
     };
 
     return (
-        <Tag
-            ref={contentRef}
-            contentEditable
-            suppressContentEditableWarning
-            className={`${className} outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 rounded px-1 transition-shadow duration-200 cursor-text empty:before:content-[attr(placeholder)] empty:before:text-gray-400`}
-            style={mergedStyle}
-            placeholder={placeholder}
-            onInput={handleInput}
-            onBlur={handleBlur}
-            onFocus={handleFocus}
-        >
-            {/* Initial text render is handled by ref manipulation in useEffect or dangeriouslySetInnerHTML, 
-            Usage of children in contentEditable can vary. 
-            Using valid React pattern for CE: */}
-            {text}
-        </Tag>
+        <div style={wrapperStyle}>
+            <Tag
+                ref={contentRef}
+                id={id}
+                contentEditable
+                suppressContentEditableWarning
+                className={`${className} outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 rounded px-1 transition-shadow duration-200 cursor-text empty:before:content-[attr(placeholder)] empty:before:text-gray-400`}
+                style={{ ...contentStyle, textAlign: (textAlign as any) || 'left', width: 'auto', maxWidth: '100%' }}
+                placeholder={placeholder}
+                onInput={handleInput}
+                onBlur={handleBlur}
+                onFocus={handleFocus}
+            >
+                {/* Initial text render is handled by ref manipulation in useEffect or dangeriouslySetInnerHTML, 
+                Usage of children in contentEditable can vary. 
+                Using valid React pattern for CE: */}
+                {text}
+            </Tag>
+        </div>
     );
 };

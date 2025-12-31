@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
+import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
 
 interface ContentLeftImageHTMLProps {
@@ -29,15 +30,19 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
         if (field === 'title') {
             updatedSlide.slide_title = { ...updatedSlide.slide_title, text: newText };
         } else if (field === 'bullet' && typeof index === 'number') {
-            const bullets = slide.elements.filter((el: any) => el.element_type === 'bullet_point');
-            if (bullets[index]) {
-                const targetId = bullets[index].id;
-                updatedSlide.elements = slide.elements.map((el: any) =>
-                    el.id === targetId ? { ...el, text: newText } : el
-                );
+            if (slide.elements[index]) {
+                updatedSlide.elements = [...slide.elements];
+                updatedSlide.elements[index] = { ...slide.elements[index], text: newText };
             }
         }
         onSlideUpdate(updatedSlide);
+    };
+
+    const handleElementUpdate = (index: number, updates: any) => {
+        if (!onSlideUpdate) return;
+        const updatedElements = [...(slide.elements || [])];
+        updatedElements[index] = { ...updatedElements[index], ...updates };
+        onSlideUpdate({ ...slide, elements: updatedElements });
     };
 
     const title = slide.slide_title?.text || "Slide Title";
@@ -61,6 +66,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                 background: bgColor,
                 overflow: 'hidden',
                 fontFamily: "'Raleway', sans-serif",
+                position: 'relative',
             }}>
                 {/* Left Image with Card Style */}
                 <div style={{
@@ -73,9 +79,12 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         width: '100%',
                         height: '85%',
                         background: imageUrl ? `url(${imageUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}20, ${accent2Color}15)`,
-                        borderRadius: '20px',
+                        borderRadius: `${slide.image_properties?.borderRadius ?? 20}px`,
                         border: `2px solid ${accentColor}30`,
-                        boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
+                        boxShadow: slide.image_properties?.shadow
+                            ? `${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color}`
+                            : '0 12px 32px rgba(0,0,0,0.12)',
+                        opacity: slide.image_properties?.opacity ?? 1,
                         cursor: isEditing ? 'pointer' : 'default',
                         display: 'flex',
                         alignItems: 'center',
@@ -84,7 +93,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         fontSize: '1.1rem',
                         position: 'relative',
                     }}
-                        onClick={() => onElementClick?.(`image-${slideIndex}`, 'image', 0)}>
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
                         {!imageUrl && 'Image'}
                         <div style={{
                             position: 'absolute',
@@ -119,47 +128,59 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                             marginBottom: '2rem',
                             lineHeight: 1.2
                         }}
+                        elementProperties={slide.slide_title?.properties}
                     />
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.3rem' }}>
-                        {bullets.slice(0, 4).map((bullet: any, index: number) => (
-                            <div key={index} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                                <div style={{
-                                    width: '24px',
-                                    height: '24px',
-                                    borderRadius: '50%',
-                                    background: `${accentColor}20`,
-                                    marginTop: '0.2rem',
-                                    flexShrink: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}>
+                        {bullets.slice(0, 4).map((bullet: any) => {
+                            const actualIndex = slide.elements.indexOf(bullet);
+                            return (
+                                <div key={actualIndex} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                                     <div style={{
-                                        width: '8px',
-                                        height: '8px',
+                                        width: '24px',
+                                        height: '24px',
                                         borderRadius: '50%',
-                                        background: accentColor,
-                                    }} />
+                                        background: `${accentColor}20`,
+                                        marginTop: '0.2rem',
+                                        flexShrink: 0,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}>
+                                        <div style={{
+                                            width: '8px',
+                                            height: '8px',
+                                            borderRadius: '50%',
+                                            background: accentColor,
+                                        }} />
+                                    </div>
+                                    <EditableElement
+                                        id={`bullet-${actualIndex}`}
+                                        text={bullet.text}
+                                        tagName="div"
+                                        isEditing={isEditing}
+                                        onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        style={{
+                                            fontSize: '1.15rem',
+                                            color: '#1a202c',
+                                            lineHeight: 1.6,
+                                            flex: 1
+                                        }}
+                                        elementProperties={bullet.properties}
+                                    />
                                 </div>
-                                <EditableElement
-                                    id={`bullet-${index}`}
-                                    text={bullet.text}
-                                    tagName="div"
-                                    isEditing={isEditing}
-                                    onChange={(val) => handleUpdate('bullet', val, index)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                    style={{
-                                        fontSize: '1.15rem',
-                                        color: '#1a202c',
-                                        lineHeight: 1.6,
-                                        flex: 1
-                                    }}
-                                />
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -200,8 +221,11 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         width: '100%',
                         height: '80%',
                         background: imageUrl ? `url(${imageUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}25, ${accent2Color}20)`,
-                        borderRadius: '24px',
-                        boxShadow: '0 16px 48px rgba(0,0,0,0.15)',
+                        borderRadius: `${slide.image_properties?.borderRadius ?? 24}px`,
+                        boxShadow: slide.image_properties?.shadow
+                            ? `${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color}`
+                            : '0 16px 48px rgba(0,0,0,0.15)',
+                        opacity: slide.image_properties?.opacity ?? 1,
                         cursor: isEditing ? 'pointer' : 'default',
                         display: 'flex',
                         alignItems: 'center',
@@ -211,7 +235,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         position: 'relative',
                         overflow: 'hidden',
                     }}
-                        onClick={() => onElementClick?.(`image-${slideIndex}`, 'image', 0)}>
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
                         {!imageUrl && 'Image'}
                         {/* Decorative corner */}
                         <div style={{
@@ -248,44 +272,56 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                             marginBottom: '2rem',
                             lineHeight: 1.2
                         }}
+                        elementProperties={slide.slide_title?.properties}
                     />
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                        {bullets.slice(0, 4).map((bullet: any, index: number) => (
-                            <div key={index} style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
-                                <div style={{
-                                    minWidth: '32px',
-                                    height: '32px',
-                                    borderRadius: '8px',
-                                    background: `${accentColor}18`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontWeight: 700,
-                                    color: accentColor,
-                                    fontSize: '0.95rem',
-                                    marginTop: '0.1rem',
-                                }}>
-                                    {index + 1}
+                        {bullets.slice(0, 4).map((bullet: any) => {
+                            const actualIndex = slide.elements.indexOf(bullet);
+                            return (
+                                <div key={actualIndex} style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
+                                    <div style={{
+                                        minWidth: '32px',
+                                        height: '32px',
+                                        borderRadius: '8px',
+                                        background: `${accentColor}18`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontWeight: 700,
+                                        color: accentColor,
+                                        fontSize: '0.95rem',
+                                        marginTop: '0.1rem',
+                                    }}>
+                                        {bullets.indexOf(bullet) + 1}
+                                    </div>
+                                    <EditableElement
+                                        id={`bullet-${actualIndex}`}
+                                        text={bullet.text}
+                                        tagName="div"
+                                        isEditing={isEditing}
+                                        onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        style={{
+                                            fontSize: '1.1rem',
+                                            color: '#1a202c',
+                                            lineHeight: 1.6,
+                                            flex: 1
+                                        }}
+                                        elementProperties={bullet.properties}
+                                    />
                                 </div>
-                                <EditableElement
-                                    id={`bullet-${index}`}
-                                    text={bullet.text}
-                                    tagName="div"
-                                    isEditing={isEditing}
-                                    onChange={(val) => handleUpdate('bullet', val, index)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                    style={{
-                                        fontSize: '1.1rem',
-                                        color: '#1a202c',
-                                        lineHeight: 1.6,
-                                        flex: 1
-                                    }}
-                                />
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -300,6 +336,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                 background: bgColor,
                 overflow: 'hidden',
                 fontFamily: "'Raleway', sans-serif",
+                position: 'relative',
             }}>
                 {/* Left Image */}
                 <div style={{
@@ -313,8 +350,11 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         width: '100%',
                         height: '85%',
                         background: imageUrl ? `url(${imageUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}15, ${accent2Color}10)`,
-                        borderRadius: '16px',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                        borderRadius: `${slide.image_properties?.borderRadius ?? 16}px`,
+                        boxShadow: slide.image_properties?.shadow
+                            ? `${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color}`
+                            : '0 8px 24px rgba(0,0,0,0.1)',
+                        opacity: slide.image_properties?.opacity ?? 1,
                         cursor: isEditing ? 'pointer' : 'default',
                         display: 'flex',
                         alignItems: 'center',
@@ -322,7 +362,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         color: '#cbd5e0',
                         fontSize: '1.1rem',
                     }}
-                        onClick={() => onElementClick?.(`image-${slideIndex}`, 'image', 0)}>
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
                         {!imageUrl && 'Image'}
                     </div>
                 </div>
@@ -348,47 +388,59 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                             marginBottom: '2rem',
                             lineHeight: 1.2
                         }}
+                        elementProperties={slide.slide_title?.properties}
                     />
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {bullets.slice(0, 4).map((bullet: any, index: number) => (
-                            <div key={index}>
-                                <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
-                                    <div style={{
-                                        width: '6px',
-                                        height: '6px',
-                                        borderRadius: '50%',
-                                        background: accentColor,
-                                        marginTop: '0.7rem',
-                                        flexShrink: 0,
-                                    }} />
-                                    <EditableElement
-                                        id={`bullet-${index}`}
-                                        text={bullet.text}
-                                        tagName="div"
-                                        isEditing={isEditing}
-                                        onChange={(val) => handleUpdate('bullet', val, index)}
-                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                        style={{
-                                            fontSize: '1.15rem',
-                                            color: '#1a202c',
-                                            lineHeight: 1.6,
-                                            flex: 1
-                                        }}
-                                    />
+                        {bullets.slice(0, 4).map((bullet: any) => {
+                            const actualIndex = slide.elements.indexOf(bullet);
+                            return (
+                                <div key={actualIndex}>
+                                    <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
+                                        <div style={{
+                                            width: '6px',
+                                            height: '6px',
+                                            borderRadius: '50%',
+                                            background: accentColor,
+                                            marginTop: '0.7rem',
+                                            flexShrink: 0,
+                                        }} />
+                                        <EditableElement
+                                            id={`bullet-${actualIndex}`}
+                                            text={bullet.text}
+                                            tagName="div"
+                                            isEditing={isEditing}
+                                            onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                            onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                            style={{
+                                                fontSize: '1.15rem',
+                                                color: '#1a202c',
+                                                lineHeight: 1.6,
+                                                flex: 1
+                                            }}
+                                            elementProperties={bullet.properties}
+                                        />
+                                    </div>
+                                    {bullets.indexOf(bullet) < bullets.length - 1 && (
+                                        <div style={{
+                                            marginTop: '1rem',
+                                            height: '1px',
+                                            background: `${textColor}10`,
+                                            marginLeft: '1.4rem',
+                                        }} />
+                                    )}
                                 </div>
-                                {index < bullets.length - 1 && (
-                                    <div style={{
-                                        marginTop: '1rem',
-                                        height: '1px',
-                                        background: `${textColor}10`,
-                                        marginLeft: '1.4rem',
-                                    }} />
-                                )}
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -397,6 +449,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
     if (variant === 4) {
         return (
             <div style={{
+                position: 'relative',
                 display: 'flex',
                 height: '100%',
                 background: bgColor,
@@ -427,8 +480,11 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         width: '90%',
                         height: '85%',
                         background: imageUrl ? `url(${imageUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}20, ${accent2Color}15)`,
-                        borderRadius: '20px',
-                        boxShadow: '0 16px 40px rgba(0,0,0,0.15)',
+                        borderRadius: `${slide.image_properties?.borderRadius ?? 20}px`,
+                        boxShadow: slide.image_properties?.shadow
+                            ? `${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color}`
+                            : '0 16px 40px rgba(0,0,0,0.15)',
+                        opacity: slide.image_properties?.opacity ?? 1,
                         cursor: isEditing ? 'pointer' : 'default',
                         display: 'flex',
                         alignItems: 'center',
@@ -438,7 +494,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         position: 'relative',
                         zIndex: 1,
                     }}
-                        onClick={() => onElementClick?.(`image-${slideIndex}`, 'image', 0)}>
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
                         {!imageUrl && 'Image'}
                     </div>
                 </div>
@@ -465,46 +521,58 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                             marginBottom: '2rem',
                             lineHeight: 1.2
                         }}
+                        elementProperties={slide.slide_title?.properties}
                     />
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                        {bullets.slice(0, 4).map((bullet: any, index: number) => (
-                            <div key={index} style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
-                                <div style={{
-                                    minWidth: '28px',
-                                    height: '28px',
-                                    borderRadius: '6px',
-                                    background: `${accentColor}15`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    marginTop: '0.1rem',
-                                }}>
+                        {bullets.slice(0, 4).map((bullet: any) => {
+                            const actualIndex = slide.elements.indexOf(bullet);
+                            return (
+                                <div key={actualIndex} style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
                                     <div style={{
-                                        width: '6px',
-                                        height: '6px',
-                                        borderRadius: '50%',
-                                        background: accentColor,
-                                    }} />
+                                        minWidth: '28px',
+                                        height: '28px',
+                                        borderRadius: '6px',
+                                        background: `${accentColor}15`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginTop: '0.1rem',
+                                    }}>
+                                        <div style={{
+                                            width: '6px',
+                                            height: '6px',
+                                            borderRadius: '50%',
+                                            background: accentColor,
+                                        }} />
+                                    </div>
+                                    <EditableElement
+                                        id={`bullet-${actualIndex}`}
+                                        text={bullet.text}
+                                        tagName="div"
+                                        isEditing={isEditing}
+                                        onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                        onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                        style={{
+                                            fontSize: '1.1rem',
+                                            color: '#1a202c',
+                                            lineHeight: 1.6,
+                                            flex: 1
+                                        }}
+                                        elementProperties={bullet.properties}
+                                    />
                                 </div>
-                                <EditableElement
-                                    id={`bullet-${index}`}
-                                    text={bullet.text}
-                                    tagName="div"
-                                    isEditing={isEditing}
-                                    onChange={(val) => handleUpdate('bullet', val, index)}
-                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                    style={{
-                                        fontSize: '1.1rem',
-                                        color: '#1a202c',
-                                        lineHeight: 1.6,
-                                        flex: 1
-                                    }}
-                                />
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
+                <UserElementsRenderer
+                    elements={slide.elements || []}
+                    isEditing={isEditing}
+                    onElementClick={onElementClick}
+                    onElementUpdate={handleElementUpdate}
+                    slideIndex={slideIndex}
+                />
             </div>
         );
     }
@@ -542,8 +610,11 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     width: '100%',
                     height: '85%',
                     background: imageUrl ? `url(${imageUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}18, ${accent2Color}12)`,
-                    borderRadius: '22px',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+                    borderRadius: `${slide.image_properties?.borderRadius ?? 22}px`,
+                    boxShadow: slide.image_properties?.shadow
+                        ? `${slide.image_properties.shadow.offsetX}px ${slide.image_properties.shadow.offsetY}px ${slide.image_properties.shadow.blur}px ${slide.image_properties.shadow.color}`
+                        : '0 10px 30px rgba(0,0,0,0.12)',
+                    opacity: slide.image_properties?.opacity ?? 1,
                     cursor: isEditing ? 'pointer' : 'default',
                     display: 'flex',
                     alignItems: 'center',
@@ -552,7 +623,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     fontSize: '1.1rem',
                     position: 'relative',
                 }}
-                    onClick={() => onElementClick?.(`image-${slideIndex}`, 'image', 0)}>
+                    onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
                     {!imageUrl && 'Image'}
                     {/* Decorative circle */}
                     <div style={{
@@ -589,38 +660,50 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         marginBottom: '2rem',
                         lineHeight: 1.2
                     }}
+                    elementProperties={slide.slide_title?.properties}
                 />
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                    {bullets.slice(0, 4).map((bullet: any, index: number) => (
-                        <div key={index} style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
-                            <div style={{
-                                width: '3px',
-                                height: '40px',
-                                background: `linear-gradient(to bottom, ${accentColor}, ${accentColor}40)`,
-                                borderRadius: '2px',
-                                marginTop: '0.2rem',
-                                opacity: 1 - (index * 0.15),
-                            }} />
-                            <EditableElement
-                                id={`bullet-${index}`}
-                                text={bullet.text}
-                                tagName="div"
-                                isEditing={isEditing}
-                                onChange={(val) => handleUpdate('bullet', val, index)}
-                                onSelectElement={() => onElementClick?.(`el-${slideIndex}-${index}`, 'text', index)}
-                                style={{
-                                    fontSize: '1.15rem',
-                                    color: textColor,
-                                    lineHeight: 1.6,
-                                    flex: 1,
-                                    opacity: 1 - (index * 0.08),
-                                }}
-                            />
-                        </div>
-                    ))}
+                    {bullets.slice(0, 4).map((bullet: any) => {
+                        const actualIndex = slide.elements.indexOf(bullet);
+                        return (
+                            <div key={actualIndex} style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
+                                <div style={{
+                                    width: '3px',
+                                    height: '40px',
+                                    background: `linear-gradient(to bottom, ${accentColor}, ${accentColor}40)`,
+                                    borderRadius: '2px',
+                                    marginTop: '0.2rem',
+                                    opacity: 1 - (bullets.indexOf(bullet) * 0.15),
+                                }} />
+                                <EditableElement
+                                    id={`bullet-${actualIndex}`}
+                                    text={bullet.text}
+                                    tagName="div"
+                                    isEditing={isEditing}
+                                    onChange={(val) => handleUpdate('bullet', val, actualIndex)}
+                                    onSelectElement={() => onElementClick?.(`el-${slideIndex}-${actualIndex}`, 'text', actualIndex)}
+                                    style={{
+                                        fontSize: '1.15rem',
+                                        color: textColor,
+                                        lineHeight: 1.6,
+                                        flex: 1,
+                                        opacity: 1 - (bullets.indexOf(bullet) * 0.08),
+                                    }}
+                                    elementProperties={bullet.properties}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
+            <UserElementsRenderer
+                elements={slide.elements || []}
+                isEditing={isEditing}
+                onElementClick={onElementClick}
+                onElementUpdate={handleElementUpdate}
+                slideIndex={slideIndex}
+            />
         </div>
     );
 };

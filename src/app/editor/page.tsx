@@ -56,6 +56,7 @@ const Page = () => {
     isMobileImageSelected,
     setIsMobileImageSelected,
     setSelectedShapeIndex,
+    selectedShapeId,
   } = useSlides();
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
   const { presentationId } = useTemplateSlides();
@@ -63,12 +64,13 @@ const Page = () => {
   const router = useRouter();
   const stageRefs = useRef<any[]>([]);
   const [initialSlides] = useState(() => slides);
-  const [isMobileTextSelected, setIsMobileTextSelected] = useState(false);
   const [showRightPanel, setShowRightPanel] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [isExportingPPTX, setIsExportingPPTX] = useState(false);
   const { data: session } = useSession();
   const { user, loading } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -136,10 +138,8 @@ const Page = () => {
 
   const resetAll = () => {
     dispatch(setSlidesAction(initialSlides));
-    setSelectedTextId(null);
-    setSelectedImageIndex(null);
-    setSelectedImage(null);
-    setIsMobileTextSelected(false);
+    setSelectedImageId(null);
+    setSelectedShapeId(null);
     setIsMobileImageSelected(false);
     setIsThemePanelOpen(false);
     setSelectedShapeIndex(null);
@@ -193,62 +193,58 @@ const Page = () => {
     setSelectedImageIndex(null);
     setSelectedImage(null);
     setSelectedShapeIndex(null);
-    setIsMobileTextSelected(false);
     setIsMobileImageSelected(false);
 
     console.log('[ClearCanvas] Canvas cleared successfully');
   };
 
-  const handleExportPPTX = () => {
+  const handleExportPDF = async () => {
     if (loading) return;
-
     if (session?.user || user) {
       setShowAuthModal(false);
-      // Use image-based export for WYSIWYG results
-      exportSlidesAsPPT(slides.length);
+      setIsExportingPDF(true);
+      try {
+        await exportSlidesAsPDF(slides);
+      } catch (err) {
+        console.error("PDF Export failed:", err);
+      } finally {
+        setIsExportingPDF(false);
+      }
     } else {
       setShowAuthModal(true);
     }
   };
 
-  // Improved panel visibility logic - more robust checks
-  const isTextSelected =
-    selectedTextId !== null &&
-    selectedTextId !== "" &&
-    selectedImageIndex === null &&
-    selectedImage === null &&
-    selectedShapeIndex === null;
+  const handleExportPPTX = async () => {
+    if (loading) return;
+    if (session?.user || user) {
+      setShowAuthModal(false);
+      setIsExportingPPTX(true);
+      try {
+        await exportSlidesAsPPT(slides);
+      } catch (err) {
+        console.error("PPTX Export failed:", err);
+      } finally {
+        setIsExportingPPTX(false);
+      }
+    } else {
+      setShowAuthModal(true);
+    }
+  };
 
-  const isImageSelected =
-    (selectedImageIndex !== null || selectedImage !== null || selectedImageId !== null) &&
-    selectedTextId === null &&
-    selectedShapeIndex === null;
-
-  const isShapeSelected =
-    selectedShapeIndex !== null &&
-    selectedTextId === null &&
-    selectedImageIndex === null &&
-    selectedImage === null;
+  // Derived selection flags - simplified and unified
+  const isTextSelected = !!selectedTextId;
+  const isImageSelected = selectedImageIndex !== null || !!selectedImage || !!selectedImageId;
+  const isShapeSelected = selectedShapeIndex !== null || !!selectedShapeId;
 
   const hasElementSelected = isTextSelected || isImageSelected || isShapeSelected;
 
-  const handleExportPDF = () => {
-    if (loading) return;
-
-    if (session?.user || user) {
-      setShowAuthModal(false);
-      exportSlidesAsPDF(slides.length);
-    } else {
-      setShowAuthModal(true);
-    }
-  };
 
   const handleOpenThemePanel = () => {
     setSelectedTextId(null);
     setSelectedImageIndex(null);
     setSelectedImage(null);
     setSelectedShapeIndex(null);
-    setIsMobileTextSelected(false);
     setIsMobileImageSelected(false);
     setIsThemePanelOpen(true);
   };
@@ -261,8 +257,6 @@ const Page = () => {
     setSelectedTextId(null);
     setSelectedImageIndex(null);
     setSelectedImage(null);
-    setSelectedShapeIndex(null);
-    setIsMobileTextSelected(false);
     setIsMobileImageSelected(false);
 
     if (isMobile) {
@@ -283,8 +277,6 @@ const Page = () => {
     setSelectedImageIndex(null);
     setSelectedImage(null);
     setSelectedShapeIndex(null);
-    setSelectedShapeId(null);
-    setIsMobileTextSelected(false);
     setIsMobileImageSelected(false);
 
     // Open preview after state updates
@@ -335,6 +327,8 @@ const Page = () => {
               isThemePanelOpen={isThemePanelOpen}
               showAuthModal={showAuthModal}
               setShowAuthModal={setShowAuthModal}
+              isExportingPDF={isExportingPDF}
+              isExportingPPT={isExportingPPTX}
             />
           </div>
         ) : (
@@ -347,6 +341,8 @@ const Page = () => {
             isThemePanelOpen={isThemePanelOpen}
             showAuthModal={showAuthModal}
             setShowAuthModal={setShowAuthModal}
+            isExportingPDF={isExportingPDF}
+            isExportingPPT={isExportingPPTX}
           />
         )}
         <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
@@ -365,10 +361,10 @@ const Page = () => {
                 forceCleanPreview={previewOpen}
                 key={previewOpen ? "clean" : "normal"}
               />
-              {isMobileTextSelected && !isShapeSelected && (
+              {isTextSelected && !isShapeSelected && (
                 <TextSettingsPanelMobile
                   resetAll={resetAll}
-                  onClose={() => setIsMobileTextSelected(false)}
+                  onClose={() => setSelectedTextId(null)}
                   style={{ top: 100, left: 100 }}
                 />
               )}
@@ -387,12 +383,13 @@ const Page = () => {
                 <ShapeSettingsPanelMobile
                   resetAll={resetAll}
                   onClose={() => {
-                    setIsMobileTextSelected(false);
-                    setIsMobileImageSelected(false);
                     setSelectedTextId(null);
                     setSelectedImageIndex(null);
                     setSelectedImage(null);
+                    setSelectedImageId(null);
                     setSelectedShapeIndex(null);
+                    setSelectedShapeId(null);
+                    setIsMobileImageSelected(false);
                   }}
                   style={{ top: 100, left: 100 }}
                 />
