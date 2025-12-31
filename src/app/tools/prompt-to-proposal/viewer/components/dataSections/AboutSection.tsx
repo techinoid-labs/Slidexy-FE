@@ -10,7 +10,7 @@ export default function AboutSection({ data, onChange }: Props) {
   return (
     <Box sx={{ mt: 2 }}>
       <Typography variant="h6">About Company</Typography>
-      <Grid item xs={6}>
+      <Grid size={6}>
         <TextField
           label="Company"
           fullWidth
@@ -40,7 +40,7 @@ export default function AboutSection({ data, onChange }: Props) {
       <Grid container spacing={2} sx={{ mt: 1 }}>
         {["countriesWorkedWith", "businessesWorkedWith", "startupsSupported", "industriesWorkedWith"].map(
           (key) => (
-            <Grid item xs={6} key={key}>
+            <Grid size={6} key={key}>
               <TextField
                 label={key.replace(/([A-Z])/g, " $1")}
                 fullWidth
