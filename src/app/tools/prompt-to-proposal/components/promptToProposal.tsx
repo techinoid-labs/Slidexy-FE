@@ -96,6 +96,8 @@ export default function PromptToProposal() {
         sessionStorage.setItem("proposalPdfUrl", data.pdfUrl);
         sessionStorage.setItem("proposalId", data.proposalId);
         sessionStorage.setItem("proposalTitle", data.title);
+        sessionStorage.setItem("proposalData", JSON.stringify(data.data));
+        sessionStorage.setItem("pageMap", JSON.stringify(data.pageMap));
 
         // Navigate to viewer
         router.push("/tools/prompt-to-proposal/viewer");
