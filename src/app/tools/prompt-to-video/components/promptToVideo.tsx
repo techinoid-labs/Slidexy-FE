@@ -141,6 +141,7 @@ export default function PromptToVideo() {
         }
     };
 
+
     const handleSubmit = async () => {
         resetJob();
         setError("");
@@ -155,17 +156,19 @@ export default function PromptToVideo() {
 
         setLoading(true);
 
-        const payload = {
-            prompt: prompt.trim(),
-            target_duration: DEFAULT_TARGET_DURATION,
-            color_scheme: colorScheme,
-            userData: user,
-        };
-
         try {
+            const payload = {
+                prompt: prompt.trim(),
+                target_duration: DEFAULT_TARGET_DURATION,
+                color_scheme: colorScheme,
+                userData: user,
+            };
+
             const res = await fetch(`${API_BASE_URL}/generate`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify(payload),
             });
 
@@ -275,16 +278,17 @@ export default function PromptToVideo() {
                         sx={{
                             display: "flex",
                             flexDirection: { xs: "column", md: "row" },
-                            justifyContent: { xs: "center", md: "space-between" },
+                            justifyContent: "space-between",
                             alignItems: { xs: "stretch", md: "center" },
                             gap: 2,
                             width: "100%",
                         }}
                     >
+
                         <FormControl
                             sx={{
                                 display: "flex",
-                                width: { xs: "100%", sm: "130px", md: "160px" },
+                                width: { xs: "100%", sm: "170px" },
                                 height: "44px",
                                 borderRadius: "4px",
                                 boxShadow: "0 2px 4px rgba(0,0,0,0.04)",

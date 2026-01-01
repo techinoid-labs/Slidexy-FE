@@ -188,11 +188,10 @@ export default function InputModeSelector({
                   backgroundColor: isActive
                     ? theme.palette.secondary.light + "10"
                     : "transparent",
-                  border: `0px solid ${
-                    isActive
-                      ? theme.palette.secondary.light
-                      : theme.palette.grey[200]
-                  }`,
+                  border: `0px solid ${isActive
+                    ? theme.palette.secondary.light
+                    : theme.palette.grey[200]
+                    }`,
                   color: isActive
                     ? theme.palette.secondary.main
                     : theme.palette.grey[600],
