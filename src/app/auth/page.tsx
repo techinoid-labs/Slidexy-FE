@@ -1,147 +1,75 @@
 'use client'
 
-import React from 'react';
-import {
-    Box,
-    Paper,
-    Typography,
-    TextField,
-    InputAdornment,
-    Button,
-    FormControlLabel,
-    Checkbox,
-    Link
-} from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import EmailIcon from '@mui/icons-material/Email';
-import LockIcon from '@mui/icons-material/Lock';
+import React, { useState } from 'react';
+import { Box, Paper } from '@mui/material';
+import SignupForm from './components/SignupForm';
+import LoginForm from './components/LoginForm';
+import ForgotPasswordForm from './components/ForgotPasswordForm';
 
-const Signup = ({ formData, handleSubmit }) => {
+const Auth = () => {
+    const [formData, setFormData] = useState({
+        fullName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        agree: false,
+    });
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log('Form Data:', formData);
+        // Add signup logic here
+    };
+
     return (
         <Box
             sx={{
                 display: 'flex',
                 minHeight: '100vh',
-                flexDirection: { xs: 'column', md: 'row' } // stack on mobile, side by side on desktop
+                flexDirection: { xs: 'column', md: 'row' },
             }}
         >
-            {/* Left Panel - Form */}
+            {/* Left Panel */}
             <Paper
                 elevation={6}
                 square
                 sx={{
-                    flex: 1, // half width on desktop
+                    flex: 1,
                     display: 'flex',
-                    flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    p: 4
+                    p: 4,
                 }}
             >
-                <Box sx={{ width: '100%', maxWidth: 400 }}>
-                    <Typography variant="h4" component="h1" gutterBottom>
-                        SignUp
-                    </Typography>
-                    <Typography variant="body2" gutterBottom>
-                        Enter the following details to SignUp
-                    </Typography>
-
-                    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-                        <TextField
-                            fullWidth
-                            label="Full Name"
-                            name="fullName"
-                            //   value={formData.fullName}
-                            margin="normal"
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment
-                                    variant='outlined'
-                                    position="end">
-                                        <PersonIcon sx={{ color: 'currentColor' }} />
-                                    </InputAdornment>
-                                )
-                            }}
-                        />
-                        <TextField
-                            fullWidth
-                            label="Email"
-                            name="email"
-                            type="email"
-                            //   value={formData.email}
-                            margin="normal"
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <EmailIcon />
-                                    </InputAdornment>
-                                )
-                            }}
-                        />
-                        <TextField
-                            fullWidth
-                            label="Password"
-                            name="password"
-                            type="password"
-                            //   value={formData.password}
-                            margin="normal"
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <LockIcon />
-                                    </InputAdornment>
-                                )
-                            }}
-                        />
-                        <TextField
-                            fullWidth
-                            label="Confirm Password"
-                            name="confirmPassword"
-                            type="password"
-                            //   value={formData.confirmPassword}
-                            margin="normal"
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <LockIcon />
-                                    </InputAdornment>
-                                )
-                            }}
-                        />
-
-                        <FormControlLabel
-                            control={
-                                <Checkbox name="agree"
-                                // checked={formData.agree} 
-                                />
-                            }
-                            label="I agree to the Terms of Service and Privacy Policy"
-                            sx={{ mt: 1 }}
-                        />
-
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2, backgroundColor: '#6C1CF5' }}
-                        >
-                            Signup
-                        </Button>
-
-                        <Typography variant="body2" align="center">
-                            Already have an account?{' '}
-                            <Link href="#" underline="hover">
-                                Login
-                            </Link>
-                        </Typography>
-                    </Box>
-                </Box>
+                {/* <SignupForm
+                    formData={formData}
+                    handleChange={handleChange}
+                    handleSubmit={handleSubmit}
+                /> */}
+                {/* <LoginForm
+                    formData={formData}
+                    handleChange={handleChange}
+                    handleSubmit={handleSubmit}
+                /> */}
+                    <ForgotPasswordForm
+                    formData={formData}
+                    handleChange={handleChange}
+                    handleSubmit={handleSubmit}
+                />
             </Paper>
 
-            {/* Right Panel - Logo/Image */}
+            {/* Right Panel */}
             <Box
                 sx={{
-                    flex: 1, // half width on desktop
+                    flex: 1,
                     backgroundColor: '#F0EBFF',
                     display: 'flex',
                     justifyContent: 'center',
@@ -160,4 +88,4 @@ const Signup = ({ formData, handleSubmit }) => {
     );
 };
 
-export default Signup;
+export default Auth;
