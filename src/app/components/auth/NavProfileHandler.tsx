@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState } from "react"
 import {
   Avatar,
   Typography,
@@ -22,7 +22,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import EmailIcon from "@mui/icons-material/Email";
 
-const NavProfileHandler = ({ size, setAuthModalOpen, showMail }: any) => {
+const NavProfileHandler = ({ size, showMail }: any) => {
   const { user } = useUser();
   const router = useRouter();
   const theme = useTheme();
@@ -124,7 +124,7 @@ const NavProfileHandler = ({ size, setAuthModalOpen, showMail }: any) => {
         <Typography
           suppressHydrationWarning
           className="cursor-pointer"
-          onClick={() => setAuthModalOpen(true)}
+           onClick={() => router.push("/auth")}
           sx={{
             ml: "10px",
             px: "20px",

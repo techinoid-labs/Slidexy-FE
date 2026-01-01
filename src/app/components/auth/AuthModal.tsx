@@ -14,6 +14,9 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
+import SignupForm from "../../auth/components/SignupForm";
+import LoginForm from "../../auth/components/LoginForm";
+import ForgotPasswordForm from "../../auth/components/ForgotPasswordForm";
 
 interface AuthModalProps {
   onClose: any;
@@ -85,38 +88,6 @@ const AuthModal: React.FC<AuthModalProps> = ({
     return result.visitorId;
   }
 
-  // const handleSubmit = async () => {
-  //   if (!validateForm()) return;
-
-  //   setLoading(true);
-  //   try {
-  //     if (isSignup) {
-  //       await axios.post(`${API_BASE_URL}/api/users/register`, {
-  //         email,
-  //         password,
-  //         presentationId: presentationId || null,
-  //       });
-  //     }
-
-  //     const res = await signIn("credentials", {
-  //       redirect: false,
-  //       email,
-  //       password,
-  //       presentationId: presentationId || null,
-  //     });
-
-  //     if (res?.error) {
-  //       setError(res.error);
-  //     } else {
-  //       setAuthSuccess(true); // ✅ Switch to success screen
-  //     }
-  //   } catch (err: any) {
-  //     const msg = err.response?.data?.message || "Something went wrong";
-  //     setError(msg);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleSubmit = async () => {
     if (!validateForm()) return;

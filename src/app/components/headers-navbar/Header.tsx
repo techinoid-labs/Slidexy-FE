@@ -47,7 +47,6 @@ export default function Header() {
     { label: "Pricing", hasDropdown: false, link: "/pricing" },
     { label: "Blogs", hasDropdown: false, link: "/blog" },
   ];
-  const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
   return (
     <>
       <AppBar
@@ -162,7 +161,7 @@ export default function Header() {
                     </Button>
                   </Link> */}
 
-                  <NavProfileHandler setAuthModalOpen={setAuthModalOpen} />
+                  <NavProfileHandler />
 
                   {!isAcountsPage && !user && (
                     <Link href="/tools" passHref>
@@ -250,8 +249,7 @@ export default function Header() {
                       <div className="flex items-center gap-2 w-full">
                         <NavProfileHandler
                           // size={20}
-                          showMail={true} //For showing email on mobile view
-                          setAuthModalOpen={setAuthModalOpen}
+                          showMail={true} 
                         />
                       </div>
                     </MenuItem>
@@ -262,11 +260,6 @@ export default function Header() {
           </Box>
         </Toolbar>
       </AppBar>
-
-      <AuthModal
-        open={isAuthModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-      />
     </>
   );
 }
