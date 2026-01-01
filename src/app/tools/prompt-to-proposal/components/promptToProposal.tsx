@@ -42,6 +42,7 @@ export default function PromptToProposal() {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const router = useRouter();
 
+
   const cycleLoadingMessages = () => {
     let index = 0;
     setLoadingMessage(loadingMessages[0]);
@@ -66,10 +67,16 @@ export default function PromptToProposal() {
     const messageInterval = cycleLoadingMessages();
 
     try {
+      const payload = {
+        prompt: description,
+      };
+
       const res = await fetch(`${API_BASE_URL}/generate-proposal`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: description }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -146,11 +153,17 @@ export default function PromptToProposal() {
               minHeight: 224,
             }}
           />
-          <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <Button
               variant="contained"
               onClick={handleSubmit}
-              disabled={loading || !description.trim()}
+              disabled={loading}
               startIcon={<AutoAwesome />}
               sx={{
                 bgcolor: "#6C2BD9",
@@ -175,43 +188,43 @@ export default function PromptToProposal() {
           )}
         </Box>
 
-{loading && (
-  <Backdrop
-    open={loading}
-    sx={{
-      zIndex: (theme) => theme.zIndex.drawer + 1,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-    }}
-  >
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      <img
-        src="/Loader.gif"
-        alt="Generating..."
-        style={{ width: 470, height: 160 }}
-      />
+        {loading && (
+          <Backdrop
+            open={loading}
+            sx={{
+              zIndex: (theme) => theme.zIndex.drawer + 1,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src="/Loader.gif"
+                alt="Generating..."
+                style={{ width: 470, height: 160 }}
+              />
 
-      <Typography
-        sx={{
-          fontFamily: "Raleway",
-          fontSize: "24px",
-          fontWeight: 700,
-          color: "#fff",
-          mt: 1,
-          textAlign: "center",
-          maxWidth: 700,
-        }}
-      >
-        {loadingMessage}...
-      </Typography>
-    </Box>
-  </Backdrop>
-)}
+              <Typography
+                sx={{
+                  fontFamily: "Raleway",
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#fff",
+                  mt: 1,
+                  textAlign: "center",
+                  maxWidth: 700,
+                }}
+              >
+                {loadingMessage}...
+              </Typography>
+            </Box>
+          </Backdrop>
+        )}
 
         {!loading && (
           <Box sx={{ textAlign: "center", maxWidth: 800, mt: 2 }}>

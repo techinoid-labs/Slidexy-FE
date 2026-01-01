@@ -21,13 +21,13 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useEbook } from "@/app/context/EbookContext";
 
-    const loadingMessages = [
-        "Analyzing your prompt",
-        "Generating outlines",
-        "Designing visual layout",
-        "Enhancing Design",
-        "Finalizing your Book",
-    ];
+const loadingMessages = [
+  "Analyzing your prompt",
+  "Generating outlines",
+  "Designing visual layout",
+  "Enhancing Design",
+  "Finalizing your Book",
+];
 
 const API_URL = process.env.NEXT_PUBLIC_EBOOK_API_BASE_URL;
 
@@ -41,7 +41,7 @@ export default function PromptToEbook() {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const router = useRouter();
 
-  const {setPdfBlob} = useEbook();
+  const { setPdfBlob } = useEbook();
   const [jobId, setJobId] = useState<string | null>(null);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -53,6 +53,7 @@ export default function PromptToEbook() {
     "Design Systems",
     "Cybersecurity",
   ];
+
 
   /** ---------------------------
    *  Step 1: Generate eBook
@@ -73,7 +74,7 @@ export default function PromptToEbook() {
       const payload = {
         topic,
         genre,
-        num_chapters: 4,
+        num_chapters: "4",
         target_audience: "general",
         author: "Slidexy.ai",
         publisher: "Slidexy.ai",
@@ -105,7 +106,9 @@ export default function PromptToEbook() {
 
       const res = await fetch(`${API_URL}/ebook/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 
@@ -163,7 +166,7 @@ export default function PromptToEbook() {
 
       // Preview URL for iframe
       const url = URL.createObjectURL(blob);
-      setPdfBlob(blob); 
+      setPdfBlob(blob);
       router.push(`/tools/prompt-to-ebook/viewer?title=${topic}`);
     } catch (err) {
       console.error(err);
@@ -256,6 +259,7 @@ export default function PromptToEbook() {
               gap: 2,
             }}
           >
+
             {/* Genre Selector */}
             <FormControl
               sx={{
@@ -280,23 +284,23 @@ export default function PromptToEbook() {
                 onChange={(e) => setGenre(e.target.value)}
                 disabled={loading}
 
-                  sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        mt: 1.8,
-                        borderRadius: "10px",
-                      },
+                sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      mt: 1.8,
+                      borderRadius: "10px",
                     },
-                  }}
-                >
-                  <MenuItem sx={{ fontSize: "12px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Select Genre" hidden>
-                    Select Genre
-                  </MenuItem>
-                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Technology">Technology</MenuItem>
-                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Business">Business</MenuItem>
-                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61 , 1)", width: "147px" }} value="Education">Education</MenuItem>
-                </Select>
+                  },
+                }}
+              >
+                <MenuItem sx={{ fontSize: "12px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Select Genre" hidden>
+                  Select Genre
+                </MenuItem>
+                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Technology">Technology</MenuItem>
+                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Business">Business</MenuItem>
+                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61 , 1)", width: "147px" }} value="Education">Education</MenuItem>
+              </Select>
             </FormControl>
 
             {/* Generate Button */}
@@ -311,7 +315,7 @@ export default function PromptToEbook() {
                 px: 4,
                 py: 1.2,
                 whiteSpace: "nowrap",
-                height: "56px",
+                height: "44px",
               }}
               startIcon={<AutoAwesome />}
             >
@@ -355,41 +359,41 @@ export default function PromptToEbook() {
             </Typography>
           </Box>
         )} */}
-                        {loading && (
-                            <Backdrop
-                                open={loading}
-                                sx={{
-                                    zIndex: (theme) => theme.zIndex.drawer + 1,
-                                    backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        alignItems: "center",
-                                    }}
-                                >
-                                    <img
-                                        src="/Loader.gif"
-                                        alt="Generating..."
-                                        style={{ width: 470, height: 160 }}
-                                    />
-        
-                                    <Typography
-                                        sx={{
-                                            fontFamily: "Raleway",
-                                            fontSize: "24px",
-                                            fontWeight: 700,
-                                            color: "#fff",
-                                            mt: 1,
-                                        }}
-                                    >
-                                        {currentMessage || 'Thinking'}.....
-                                    </Typography>
-                                </Box>
-                            </Backdrop>
-                        )}
+        {loading && (
+          <Backdrop
+            open={loading}
+            sx={{
+              zIndex: (theme) => theme.zIndex.drawer + 1,
+              backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src="/Loader.gif"
+                alt="Generating..."
+                style={{ width: 470, height: 160 }}
+              />
+
+              <Typography
+                sx={{
+                  fontFamily: "Raleway",
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#fff",
+                  mt: 1,
+                }}
+              >
+                {currentMessage || 'Thinking'}.....
+              </Typography>
+            </Box>
+          </Backdrop>
+        )}
 
         {/* Quick Prompts */}
         <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>

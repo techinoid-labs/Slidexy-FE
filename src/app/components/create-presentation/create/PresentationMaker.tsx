@@ -82,7 +82,6 @@ export default function PresentationMaker({
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("landscape");
 
   const [inputValue, setInputValue] = useState("");
-
   const [error, setError] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -123,7 +122,7 @@ export default function PresentationMaker({
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
 
- 
+
 
   const getPlaceholder = () => {
     switch (inputMode) {
@@ -131,6 +130,10 @@ export default function PresentationMaker({
         return "Paste a YouTube video URL...";
       case "Website":
         return "Paste a website link to summarize...";
+      case "Template":
+        return "Describe the slide templates you need...";
+      case "TextToInfographics":
+        return "Describe the infographic you want to generate...";
       default:
         return "Describe your idea... e.g., 'Pitch for a new mental health app'";
     }
@@ -256,23 +259,15 @@ export default function PresentationMaker({
       }
     }
 
-    // Build payload
-    const base =
-      inputMode === "Youtube"
-        ? { source: "youtube", inputUrl: inputValue }
-        : inputMode === "Website"
-          ? { source: "website", inputWebsiteUrl: inputValue }
-          : { source: "text", textContent: inputValue };
-
-    const promptMeta = { goal, tone, audience };
-
-    console.log(slideCount);
-
+    // Build request payload
     const payload = {
-      ...base,
-      meta: promptMeta,
+      source: inputMode === "Youtube" ? "youtube" : inputMode === "Website" ? "website" : "text",
+      inputUrl: inputMode === "Youtube" ? inputValue : undefined,
+      inputWebsiteUrl: inputMode === "Website" ? inputValue : undefined,
+      textContent: inputMode === "Text" ? inputValue : undefined,
+      meta: { goal, tone, audience },
       artStyle,
-      slideCount: slideCount === "" ? 3 : slideCount,
+      slideCount: (slideCount === "" ? "3" : slideCount).toString(),
       userData: user,
     };
 
@@ -370,9 +365,9 @@ export default function PresentationMaker({
     };
 
     // Frontend progress simulation to prevent stuck feeling
-  let frontendProgress = 0;
-  let lastBackendProgress = 0;
-  let isCompleted = false;
+    let frontendProgress = 0;
+    let lastBackendProgress = 0;
+    let isCompleted = false;
 
     const startProgressSimulation = () => {
       progressIntervalRef.current = setInterval(() => {
@@ -518,9 +513,9 @@ export default function PresentationMaker({
       userData: user,
     };
 
-  let frontendProgress = 0;
-  let lastBackendProgress = 0;
-  let isCompleted = false;
+    let frontendProgress = 0;
+    let lastBackendProgress = 0;
+    let isCompleted = false;
 
     const startProgressSimulation = () => {
       progressIntervalRef.current = setInterval(() => {
@@ -648,6 +643,7 @@ export default function PresentationMaker({
       router.replace(newUrl, { scroll: false });
     }
   }, []);
+
 
   // Cleanup on unmount: clear any active progress interval
   useEffect(() => {
@@ -887,17 +883,16 @@ export default function PresentationMaker({
           py: 1.75,
           fontSize: "1.125rem",
           fontWeight: 600,
-          mb: 4,
+          flex: 1, // Make button take remaining space
           height: { xs: 57, md: 70 },
-          border: `2px solid ${
-            inputMode === "Template"
-              ? !templatePrompt.trim()
-                ? "grey"
-                : "#8E2DE2"
-              : !inputValue.trim() || Boolean(showYoutubeError)
-                ? "grey"
-                : "#8E2DE2"
-          }`,
+          border: `2px solid ${inputMode === "Template"
+            ? !templatePrompt.trim()
+              ? "grey"
+              : "#8E2DE2"
+            : !inputValue.trim() || Boolean(showYoutubeError)
+              ? "grey"
+              : "#8E2DE2"
+            }`,
           backgroundColor: "#fff",
           color: loading ? "#fff" : "#8E2DE2",
           transition: "color 0.6s ease",
@@ -1079,7 +1074,7 @@ export default function PresentationMaker({
           ))}
         </Box>
       </Box>
-    </Box>
+    </Box >
   );
 }
 

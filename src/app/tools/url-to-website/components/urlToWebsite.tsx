@@ -87,6 +87,7 @@ export default function UrlToWebsite() {
         return () => stopProgressSimulation();
     }, []);
 
+
     const handleSubmit = async () => {
         if (mode === "static" && !url.trim()) {
             setError("Please enter a website URL.");
@@ -105,28 +106,31 @@ export default function UrlToWebsite() {
         startProgressSimulation();
 
         try {
-            let endpoint, body;
+            let endpoint: string;
+            const payload: any = {};
 
             if (mode === "static") {
                 let formattedUrl = url.trim();
-                if (!/^https?:\/\//i.test(formattedUrl)) {
+                if (formattedUrl && !/^https?:\/\//i.test(formattedUrl)) {
                     formattedUrl = "https://" + formattedUrl;
                 }
                 endpoint = `${API_BASE_URL}/api/website-generator/smart-generate`;
-                body = { url: formattedUrl };
+                payload.url = formattedUrl;
             } else {
                 let formattedUrl = url.trim();
-                if (!/^https?:\/\//i.test(formattedUrl)) {
+                if (formattedUrl && !/^https?:\/\//i.test(formattedUrl)) {
                     formattedUrl = "https://" + formattedUrl;
                 }
                 endpoint = `${API_BASE_URL}/api/website-generator/clone-generate`;
-                body = { url: formattedUrl };
+                payload.url = formattedUrl;
             }
 
             const response = await fetch(endpoint, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) {
@@ -286,7 +290,7 @@ export default function UrlToWebsite() {
                         {/* ONLY Mode Selector */}
                         <FormControl
                             sx={{
-                                minWidth: 220,
+                                minWidth: 180,
                                 height: 55,
                                 backgroundColor: "#fff",
                                 borderRadius: "10px",
