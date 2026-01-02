@@ -20,6 +20,7 @@ import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
+import FileUploadZone from "@/app/components/shared/FileUploadZone";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -33,6 +34,7 @@ export default function TextToInfographics() {
     const [goal, setGoal] = useState("Select Goal");
     const [orientation, setOrientation] = useState("Choose Orientation");
     const [description, setDescription] = useState("");
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -43,116 +45,94 @@ export default function TextToInfographics() {
     const router = useRouter();
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    const handleSubmit = async () => {
-        if (!description.trim()) {
-            setError("Please enter a description for the infographic.");
-            return;
-        }
-
-        setLoading(true);
+    const handleFileChange = (file: File) => {
+        setSelectedFile(file);
         setError("");
-        setProgress(0);
-        setCurrentMessage("Starting AI generation...");
-        setCurrentDetail("");
-
-        abortControllerRef.current = new AbortController();
-
-        try {
-            const payload = {
-                prompt: description,
-                viewMode: orientation,
-                useReferences: true,
-            };
-
-            const res = await fetch(`${API_BASE_URL}/generate-poster-template`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "text/event-stream",
-                },
-                body: JSON.stringify(payload),
-                signal: abortControllerRef.current.signal,
-            });
-
-            if (!res.ok) {
-                const msg = await res.text();
-                throw new Error(msg || "Failed to start infographic generation");
-            }
-
-            if (!res.body) throw new Error("No response body received.");
-
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder("utf-8");
-            let done = false;
-
-            while (!done) {
-                const { value, done: readerDone } = await reader.read();
-                done = readerDone;
-                if (value) {
-                    const chunk = decoder.decode(value, { stream: true });
-                    const lines = chunk.split("\n").filter((line) => line.trim() !== "" && !line.startsWith(":"));
-
-                    for (const line of lines) {
-                        if (line === "data: [DONE]") {
-                            done = true;
-                            break;
-                        }
-
-                        if (line.startsWith("data: ")) {
-                            try {
-                                const event = JSON.parse(line.replace("data: ", ""));
-                                if (event.error) {
-                                    setError(event.error);
-                                    setLoading(false);
-                                    return;
-                                }
-
-                                if (event.percent) setProgress(event.percent);
-                                if (event.message) setCurrentMessage(event.message);
-                                if (event.detail) setCurrentDetail(event.detail);
-                            } catch {
-                                console.warn("Invalid SSE event:", line);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ✅ Save only once after full generation is complete
-            setCurrentMessage("Finalizing infographic...");
-            setCurrentDetail("Saving your generated infographic...");
-
-            const saveRes = await fetch(`${API_BASE_URL}/api/infographic`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: description, viewMode: orientation }),
-            });
-
-            if (!saveRes.ok) throw new Error(`Failed to save infographic (${saveRes.status})`);
-
-            const saveData = await saveRes.json();
-
-            if (saveData?.success && saveData?.infographic?._id) {
-                setCurrentMessage("✅ Infographic successfully created!");
-                setCurrentDetail("Redirecting to your infographic...");
-                setInfographicId(saveData.infographic._id);
-                router.push(`/infographic/${saveData.infographic._id}`);
-            } else {
-                throw new Error("Invalid response from save endpoint");
-            }
-        } catch (err: any) {
-            console.error("Infographic generation error:", err);
-            if (err.name === "AbortError") {
-                setError("Infographic generation was cancelled.");
-            } else {
-                setError(err.message || "Something went wrong during generation.");
-            }
-        } finally {
-            setLoading(false);
-            abortControllerRef.current = null;
-        }
     };
 
+    const removeFile = () => {
+        setSelectedFile(null);
+    };
+
+const handleSubmit = async () => {
+    if (!description.trim() && !selectedFile) {
+        setError("Please enter a description or upload a file for the infographic.");
+        return;
+    }
+    if (orientation === "Choose Orientation") {
+        setError("Please select the orientation");
+        return;
+    }
+
+    setLoading(true);
+    setError("");
+    setProgress(0);
+    setCurrentMessage("Generating your infographic...");
+    setCurrentDetail("Processing content and designing layout...");
+
+    abortControllerRef.current = new AbortController();
+
+    try {
+        const formData = new FormData();
+
+        // Optional user prompt (acts as title/focus hint)
+        if (description.trim()) {
+            formData.append("prompt", description.trim());
+        }
+
+        // View mode
+        formData.append("viewMode", orientation.toLowerCase()); // "landscape" or "portrait"
+
+        // File upload if present
+        if (selectedFile) {
+            formData.append("file", selectedFile);
+            setCurrentDetail("Extracting and summarizing uploaded file...");
+        }
+
+        // Direct call to the unified V2 endpoint
+        const res = await fetch(`${API_BASE_URL}/api/infographic`, {
+            method: "POST",
+            body: formData,
+            signal: abortControllerRef.current.signal,
+        });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(errorText || "Failed to generate infographic");
+        }
+
+        const data = await res.json();
+
+        if (!data.success || !data.infographic?._id) {
+            throw new Error("Invalid response: Infographic not created properly");
+        }
+
+        const infographicId = data.infographic._id;
+
+        // Update UI with success
+        setCurrentMessage("✅ Infographic created successfully!");
+        setCurrentDetail("Redirecting to your design...");
+        setProgress(100);
+        setInfographicId(infographicId);
+
+        // Small delay for nice UX before redirect
+        setTimeout(() => {
+            router.push(`/infographic/${infographicId}`);
+        }, 800);
+
+    } catch (err: any) {
+        console.error("Infographic generation error:", err);
+
+        if (err.name === "AbortError") {
+            setError("Generation was cancelled.");
+        } else {
+            setError(err.message || "Failed to generate infographic. Please try again.");
+        }
+    } finally {
+        setLoading(false);
+        abortControllerRef.current = null;
+    }
+};
 
     const cancelGeneration = () => {
         if (abortControllerRef.current) {
@@ -312,57 +292,72 @@ export default function TextToInfographics() {
                         }}
                     />
 
+
                     <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center" justifyContent="space-between">
-                        <Stack direction="row" spacing={2} alignItems="center" sx={{ width: { xs: "100%", md: "auto" } }}>
-                            <FormControl
-                                variant="outlined"
-                                sx={{
-                                    display: "flex",
-                                    width: { xs: "100%", sm: "193px" },
-                                    height: "44px",
-
-                                    borderRadius: "8px",
-                                    boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                                    backgroundColor: " rgba(255, 255, 255, 1)",
-                                    "& .MuiOutlinedInput-notchedOutline": {
-                                        border: "none",
-                                    },
-                                    "& .MuiSelect-select": {
-                                        py: "8px",
-                                    },
-                                }}>
-                                {/* <InputLabel>Select Orientation</InputLabel> */}
-                                <Select value={orientation} onChange={(e) => setOrientation(e.target.value)} disabled={loading}
-                                    displayEmpty
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                gap: 2,
+                            }}
+                        >
+                            <FileUploadZone
+                                selectedFile={selectedFile}
+                                onFileSelect={handleFileChange}
+                                onFileRemove={removeFile}
+                                onError={setError}
+                                disabled={loading}
+                            />
+                            <Stack direction="row" spacing={2} alignItems="center" sx={{ width: { xs: "100%", md: "auto" } }}>
+                                <FormControl
+                                    variant="outlined"
                                     sx={{
-                                        fontSize: "16px",
-                                        backgroundColor: "#fff",
+                                        display: "flex",
+                                        width: { xs: "100%", sm: "193px" },
                                         height: "44px",
-                                        color: "rgba(109, 109, 109, 1)",
 
-                                    }}
-                                    MenuProps={{
-                                        PaperProps: {
-                                            sx: {
-                                                mt: 0.5,
-                                                borderRadius: "10px",
-                                                maxHeight: 300,
-                                            },
+                                        borderRadius: "8px",
+                                        boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                                        backgroundColor: " rgba(255, 255, 255, 1)",
+                                        "& .MuiOutlinedInput-notchedOutline": {
+                                            border: "none",
                                         },
-                                    }}
-                                >
-                                    <MenuItem value="Choose Orientation" hidden>
-                                        Choose Orientation
-                                    </MenuItem>
-                                    {viewMode.map((v) => (
-                                        <MenuItem key={v.value} value={v.value}>
-                                            {v.label}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Stack>
+                                        "& .MuiSelect-select": {
+                                            py: "8px",
+                                        },
+                                    }}>
 
+                                    {/* <InputLabel>Select Orientation</InputLabel> */}
+                                    <Select value={orientation} onChange={(e) => setOrientation(e.target.value)} disabled={loading}
+                                        displayEmpty
+                                        sx={{
+                                            fontSize: "16px",
+                                            backgroundColor: "#fff",
+                                            height: "44px",
+                                            color: "rgba(109, 109, 109, 1)",
+
+                                        }}
+                                        MenuProps={{
+                                            PaperProps: {
+                                                sx: {
+                                                    mt: 0.5,
+                                                    borderRadius: "10px",
+                                                    maxHeight: 300,
+                                                },
+                                            },
+                                        }}
+                                    >
+                                        <MenuItem value="Choose Orientation" hidden>
+                                            Choose Orientation
+                                        </MenuItem>
+                                        {viewMode.map((v) => (
+                                            <MenuItem key={v.value} value={v.value}>
+                                                {v.label}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Stack>
+                        </Box>
                         <Button
                             variant="contained"
                             onClick={handleSubmit}
