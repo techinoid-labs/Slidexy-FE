@@ -13,6 +13,8 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useParams } from "next/navigation";
 import { useMediaQuery, useTheme } from "@mui/material";
 import html2canvas from "html2canvas";
+import domtoimage from "dom-to-image-more";
+
 
 export default function InfographicPage() {
   const stageRef = useRef<any>(null);
@@ -20,6 +22,7 @@ export default function InfographicPage() {
   const htmlRef = useRef<HTMLDivElement>(null);
   const { id } = useParams();
   const { setInfographicId } = useTemplateSlides();
+  const [isExporting, setIsExporting] = useState(false);
 
   const [infographicData, setInfographicData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -128,27 +131,56 @@ export default function InfographicPage() {
   }, [cleanedHtml]);
 
   // Download as PNG/JPG
-  const handleDownload = async (format: "png" | "jpg") => {
-    if (!stageRef.current) return;
+const handleDownload = async (format: "png" | "jpeg") => {
+  const node = document.getElementById("infographic-export");
+  if (!node) return;
 
-    try {
-      const stage = stageRef.current.getStage();
-      const canvas = await html2canvas(stage.container(), {
-        scale: window.devicePixelRatio * 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-      });
+  setIsExporting(true);
+  await new Promise((r) => requestAnimationFrame(r));
 
-      const link = document.createElement("a");
-      link.download = `${infographicData.infographic.title || "infographic"}.${format}`;
-      link.href = canvas.toDataURL(format === "png" ? "image/png" : "image/jpeg", 1.0);
-      link.click();
-    } catch (err) {
-      console.error("Download failed:", err);
-      alert("Download failed. Try again.");
-    }
-  };
+  // ✅ CLONE NODE
+  const clone = node.cloneNode(true) as HTMLElement;
+
+  // ✅ FORCE PIXEL ALIGNMENT
+  clone.style.transform = "scale(1)";
+  clone.style.width = `${Math.round(originalWidth)}px`;
+  clone.style.height = `${Math.round(dynamicHeight)}px`;
+  clone.style.background = "#ffffff";
+  clone.style.borderRadius = "0";
+  clone.style.boxShadow = "none";
+
+  // ✅ HARD RESET ALL DESCENDANTS
+  clone.querySelectorAll("*").forEach((el) => {
+    const e = el as HTMLElement;
+    e.style.boxShadow = "none";
+    e.style.outline = "none";
+    e.style.border = "none";
+    e.style.filter = "none";
+    e.style.transform = "translateZ(0)";
+  });
+
+  document.body.appendChild(clone);
+
+  const dataUrl =
+    format === "png"
+      ? await domtoimage.toPng(clone, {
+          scale: 2,
+          bgcolor: "#ffffff",
+        })
+      : await domtoimage.toJpeg(clone, {
+          quality: 0.98,
+          bgcolor: "#ffffff",
+        });
+
+  document.body.removeChild(clone);
+  setIsExporting(false);
+
+  const link = document.createElement("a");
+  link.download = `infographic.${format}`;
+  link.href = dataUrl;
+  link.click();
+};
+
 
   if (loading) {
     return (
@@ -242,7 +274,7 @@ export default function InfographicPage() {
               variant="contained"
               size="large"
               startIcon={<DownloadIcon />}
-              onClick={() => handleDownload("png")}
+              onClick={() => handleDownload('png')}
               sx={{
                 px: 5,
                 py: 1.8,
@@ -259,7 +291,7 @@ export default function InfographicPage() {
               variant="outlined"
               size="large"
               startIcon={<DownloadIcon />}
-              onClick={() => handleDownload("jpg")}
+              onClick={() => handleDownload('jpeg')}
               sx={{
                 px: 5,
                 py: 1.8,
@@ -283,6 +315,7 @@ export default function InfographicPage() {
 
         {/* Responsive Infographic Canvas */}
         <Box
+          id="infographic-root"
           sx={{
             width: "100%",
             display: "flex",
@@ -292,24 +325,31 @@ export default function InfographicPage() {
         >
           <Box
             sx={{
-              transform: `scale(${scale})`,
-              transformOrigin: "top center",
-              width: originalWidth,
+              // transform: isExporting ? "none" : `scale(${scale})`,
+              // transformOrigin: "top center",
+              borderRadius: "20px",
+              overflow: "hidden",
+              // boxShadow: "0 25px 50px rgba(0,0,0,0.2)",
+              background: "#fff",
+
+
             }}
           >
             <Stage
               ref={stageRef}
-              width={originalWidth}
-              height={dynamicHeight}
+              // width={originalWidth}
+              // height={dynamicHeight}
               style={{
-                borderRadius: "20px",
-                overflow: "hidden",
-                boxShadow: "0 25px 50px rgba(0,0,0,0.2)",
                 background: "#fff",
+                // outline: "1px solid #fff",
               }}
+              scaleX={scale}
+              scaleY={scale}
+              width={originalWidth / scale}
+              height={dynamicHeight / scale}
             >
               <Layer>
-                <Html>
+                <Html divProps={{ style: { pointerEvents: "none" } }}>
                   <div
                     ref={htmlRef}
                     style={{
@@ -323,6 +363,28 @@ export default function InfographicPage() {
               </Layer>
             </Stage>
           </Box>
+        </Box>
+        {/* Hidden export-only HTML */}
+        <Box
+          id="infographic-export"
+          sx={{
+            position: "fixed",
+            top: "-10000px",
+            left: "-10000px",
+            pointerEvents: "none",
+            zIndex: -1,
+            overflow:"hidden",
+          }}
+        >
+          <div
+            style={{
+              width: originalWidth + 2,
+              minHeight: dynamicHeight + 2,
+              background: "#fff",
+                  padding: "1px",
+            }}
+            dangerouslySetInnerHTML={{ __html: cleanedHtml }}
+          />
         </Box>
 
       </Box>
