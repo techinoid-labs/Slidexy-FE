@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { slugify } from "../../../../utils/slugUtils";
 import StepsHeader from "../../../components/headers-navbar/StepsHeader";
 import BlogPostForm from "../../../components/blogs/BlogPostForm";
 import {
@@ -94,9 +95,10 @@ export default function EditBlogPage() {
         throw new Error(data.error || "Failed to update blog");
       }
 
+      const data = await response.json();
       setSuccessMessage("Blog updated successfully!");
       setTimeout(() => {
-        router.push(`/blog/${params.id}`);
+        router.push(`/blog/${slugify(data.title)}`);
       }, 1500);
     } catch (err: any) {
       setError(err.message || "Failed to update blog");
