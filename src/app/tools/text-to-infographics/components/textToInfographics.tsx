@@ -56,13 +56,14 @@ export default function TextToInfographics() {
         setCurrentDetail("");
 
         abortControllerRef.current = new AbortController();
-        const payload = {
-            prompt: description,
-            viewMode: orientation,
-            useReferences: true,
-        };
 
         try {
+            const payload = {
+                prompt: description,
+                viewMode: orientation,
+                useReferences: true,
+            };
+
             const res = await fetch(`${API_BASE_URL}/generate-poster-template`, {
                 method: "POST",
                 headers: {
@@ -151,6 +152,7 @@ export default function TextToInfographics() {
             abortControllerRef.current = null;
         }
     };
+
 
     const cancelGeneration = () => {
         if (abortControllerRef.current) {
@@ -311,51 +313,55 @@ export default function TextToInfographics() {
                     />
 
                     <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center" justifyContent="space-between">
-                        <FormControl
-                            variant="outlined"
-                            sx={{
-                                display: "flex",
-                                width: { xs: "100%", sm: "193px" },
-                                height: "44px",
-                                borderRadius: "8px",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                                backgroundColor: " rgba(255, 255, 255, 1)",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                    border: "none",
-                                },
-                                "& .MuiSelect-select": {
-                                    py: "8px",
-                                },
-                            }}>
-                            {/* <InputLabel>Select Orientation</InputLabel> */}
-                            <Select value={orientation} onChange={(e) => setOrientation(e.target.value)} disabled={loading}
-                                displayEmpty
+                        <Stack direction="row" spacing={2} alignItems="center" sx={{ width: { xs: "100%", md: "auto" } }}>
+                            <FormControl
+                                variant="outlined"
                                 sx={{
-                                    fontSize: "16px",
-                                    backgroundColor: "#fff",
+                                    display: "flex",
+                                    width: { xs: "100%", sm: "193px" },
                                     height: "44px",
-                                    color: "rgba(109, 109, 109, 1)",
-                                }}
-                                MenuProps={{
-                                    PaperProps: {
-                                        sx: {
-                                            mt: 0.5,
-                                            borderRadius: "10px",
-                                            maxHeight: 300,
-                                        },
+
+                                    borderRadius: "8px",
+                                    boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                                    backgroundColor: " rgba(255, 255, 255, 1)",
+                                    "& .MuiOutlinedInput-notchedOutline": {
+                                        border: "none",
                                     },
-                                }}
-                            >
-                                <MenuItem value="Choose Orientation" hidden>
-                                    Choose Orientation
-                                </MenuItem>
-                                {viewMode.map((v) => (
-                                    <MenuItem key={v.value} value={v.value}>
-                                        {v.label}
+                                    "& .MuiSelect-select": {
+                                        py: "8px",
+                                    },
+                                }}>
+                                {/* <InputLabel>Select Orientation</InputLabel> */}
+                                <Select value={orientation} onChange={(e) => setOrientation(e.target.value)} disabled={loading}
+                                    displayEmpty
+                                    sx={{
+                                        fontSize: "16px",
+                                        backgroundColor: "#fff",
+                                        height: "44px",
+                                        color: "rgba(109, 109, 109, 1)",
+
+                                    }}
+                                    MenuProps={{
+                                        PaperProps: {
+                                            sx: {
+                                                mt: 0.5,
+                                                borderRadius: "10px",
+                                                maxHeight: 300,
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <MenuItem value="Choose Orientation" hidden>
+                                        Choose Orientation
                                     </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                                    {viewMode.map((v) => (
+                                        <MenuItem key={v.value} value={v.value}>
+                                            {v.label}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Stack>
 
                         <Button
                             variant="contained"
@@ -425,41 +431,41 @@ export default function TextToInfographics() {
                         </Typography>
                     </Box>
                 )} */}
-                                {loading && (
-                                    <Backdrop
-                                        open={loading}
-                                        sx={{
-                                            zIndex: (theme) => theme.zIndex.drawer + 1,
-                                            backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                alignItems: "center",
-                                            }}
-                                        >
-                                            <img
-                                                src="/Loader.gif"
-                                                alt="Generating..."
-                                                style={{ width: 470, height: 160 }}
-                                            />
-                
-                                            <Typography
-                                                sx={{
-                                                    fontFamily: "Raleway",
-                                                    fontSize: "24px",
-                                                    fontWeight: 700,
-                                                    color: "#fff",
-                                                    mt: 1,
-                                                }}
-                                            >
-                                                {currentMessage}...
-                                            </Typography>
-                                        </Box>
-                                    </Backdrop>
-                                )}
+                {loading && (
+                    <Backdrop
+                        open={loading}
+                        sx={{
+                            zIndex: (theme) => theme.zIndex.drawer + 1,
+                            backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                            }}
+                        >
+                            <img
+                                src="/Loader.gif"
+                                alt="Generating..."
+                                style={{ width: 470, height: 160 }}
+                            />
+
+                            <Typography
+                                sx={{
+                                    fontFamily: "Raleway",
+                                    fontSize: "24px",
+                                    fontWeight: 700,
+                                    color: "#fff",
+                                    mt: 1,
+                                }}
+                            >
+                                {currentMessage}...
+                            </Typography>
+                        </Box>
+                    </Backdrop>
+                )}
 
                 <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
                     <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>

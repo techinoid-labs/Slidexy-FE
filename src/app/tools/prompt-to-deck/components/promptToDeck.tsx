@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 import { useUser } from "@/app/context/AuthContext";
+import FileUploadZone from "@/app/components/shared/FileUploadZone";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -62,6 +63,7 @@ export default function PromptToDeck() {
   const [currentMessage, setCurrentMessage] = useState("");
   const [currentDetail, setCurrentDetail] = useState("");
   const [error, setError] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const router = useRouter();
   const { setSlides } = useSlides();
@@ -69,6 +71,10 @@ export default function PromptToDeck() {
   const { user } = useUser();
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const handleFileChange = (file: File) => {
+    setSelectedFile(file);
+    setError("");
+  };
 
   const handleSubmit = async () => {
     // ---- validation -------------------------------------------------
@@ -88,23 +94,26 @@ export default function PromptToDeck() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    const payload = {
-      source: "text",
-      textContent: description,
-      meta: { goal, tone, audience: "" }, // audience not used here
-      artStyle: visualStyle,
-      slideCount: count,
-      userData: user,
-    };
+    const formData = new FormData();
+    if (selectedFile) {
+      formData.append("source", "file");
+      formData.append("file", selectedFile);
+    } else {
+      formData.append("source", "text");
+    }
+    formData.append("textContent", description);
+    formData.append("meta", JSON.stringify({ goal, tone, audience: "" }));
+    formData.append("artStyle", visualStyle);
+    formData.append("slideCount", count.toString());
+    formData.append("userData", JSON.stringify(user));
 
     try {
       const res = await fetch(`${API_BASE_URL}/generate-slides`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Accept: "text/event-stream",
         },
-        body: JSON.stringify(payload),
+        body: formData,
         signal: controller.signal,
       });
 
@@ -183,6 +192,10 @@ export default function PromptToDeck() {
     setProgress(0);
     setCurrentMessage("");
     setCurrentDetail("");
+  };
+
+  const removeFile = () => {
+    setSelectedFile(null);
   };
 
   const quickPrompts = [
@@ -377,20 +390,13 @@ export default function PromptToDeck() {
               }}
               spacing={1.5}
             >
-              {/* <IconButton>
-                            <img
-                                src="/images/voice-icon-input.svg"
-                                alt="Custom icon"
-                                style={{ width: 20, height: 20 }}
-                            />
-                        </IconButton>
-                        <IconButton>
-                            <img
-                                src="/images/file-icon.svg"
-                                alt="Custom icon"
-                                style={{ width: 18, height: 18 }}
-                            />
-                        </IconButton> */}
+              <FileUploadZone
+                selectedFile={selectedFile}
+                onFileSelect={handleFileChange}
+                onFileRemove={removeFile}
+                onError={setError}
+                disabled={loading}
+              />
 
               {/* Counter */}
               <Box
@@ -590,41 +596,41 @@ export default function PromptToDeck() {
         </Box>
         {/* ---------- PROGRESS */}
 
-                        {loading && (
-                            <Backdrop
-                                open={loading}
-                                sx={{
-                                    zIndex: (theme) => theme.zIndex.drawer + 1,
-                                    backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        alignItems: "center",
-                                    }}
-                                >
-                                    <img
-                                        src="/Loader.gif"
-                                        alt="Generating..."
-                                        style={{ width: 470, height: 160 }}
-                                    />
-        
-                                    <Typography
-                                        sx={{
-                                            fontFamily: "Raleway",
-                                            fontSize: "24px",
-                                            fontWeight: 700,
-                                            color: "#fff",
-                                            mt: 1,
-                                        }}
-                                    >
-                                        {currentMessage}.....
-                                    </Typography>
-                                </Box>
-                            </Backdrop>
-                        )}
+        {loading && (
+          <Backdrop
+            open={loading}
+            sx={{
+              zIndex: (theme) => theme.zIndex.drawer + 1,
+              backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src="/Loader.gif"
+                alt="Generating..."
+                style={{ width: 470, height: 160 }}
+              />
+
+              <Typography
+                sx={{
+                  fontFamily: "Raleway",
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#fff",
+                  mt: 1,
+                }}
+              >
+                {currentMessage}.....
+              </Typography>
+            </Box>
+          </Backdrop>
+        )}
 
         <Box sx={{ textAlign: "center", maxWidth: 800 }}>
 

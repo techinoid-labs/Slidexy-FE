@@ -72,6 +72,7 @@ export default function PromptToPdf() {
         return () => stopProgressSimulation();
     }, []);
 
+
     const handleOneTimeGenerate = async () => {
         if (!prompt.trim()) {
             setError("Please enter a prompt.");
@@ -87,16 +88,18 @@ export default function PromptToPdf() {
         try {
             const payload = {
                 prompt: prompt.trim(),
-                context: context.trim() || null,
-                output_filename: outputFilename.trim() || null,
-                latex_engine: latexEngine || null,
+                context: context.trim() || undefined,
+                output_filename: outputFilename.trim() || undefined,
+                latex_engine: latexEngine || undefined,
                 save_tex: saveTex,
                 retry_on_error: retryOnError,
             };
 
             const response = await fetch(`${API_BASE_URL}/generate`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify(payload),
             });
 
@@ -138,14 +141,16 @@ export default function PromptToPdf() {
         try {
             const payload = {
                 prompt: prompt.trim(),
-                document_name: outputFilename.trim() || null,
-                context: context.trim() || null,
-                latex_engine: latexEngine || null,
+                document_name: outputFilename.trim() || undefined,
+                context: context.trim() || undefined,
+                latex_engine: latexEngine || undefined,
             };
 
             const response = await fetch(`${API_BASE_URL}/edit/sessions`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify(payload),
             });
 
@@ -214,7 +219,7 @@ export default function PromptToPdf() {
                         <Box sx={{ width: { xs: "100%", md: "50%" } }}>
                             <TextField
                                 fullWidth
-                                 label="Output Filename (Optional)"
+                                label="Output Filename (Optional)"
                                 placeholder="e.g., my_resume_2025"
                                 value={outputFilename}
                                 onChange={(e) => setOutputFilename(e.target.value)}
@@ -244,6 +249,7 @@ export default function PromptToPdf() {
                             </Stack>
                         </Box>
                     </Stack>
+
 
                     <Stack direction="row" spacing={2} justifyContent="center">
                         <Button

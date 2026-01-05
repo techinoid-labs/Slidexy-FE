@@ -134,15 +134,6 @@ export default function PromptToTemplate() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    const meta = { goal, tone, audience: "" };
-
-    const payload = {
-      topic: description,
-      meta,
-      slideCount: count,
-      userData: user,
-    };
-
     let frontendProgress = 0;
     let lastBackendProgress = 0;
     let isCompleted = false;
@@ -166,6 +157,12 @@ export default function PromptToTemplate() {
 
     try {
       startProgressSimulation();
+      const payload = {
+        topic: description,
+        meta: { goal, tone, audience: "" },
+        slideCount: count,
+        userData: user,
+      };
 
       const res = await fetch(`${API_BASE_URL}/generate-ppt-template`, {
         method: "POST",
@@ -283,6 +280,7 @@ export default function PromptToTemplate() {
     setCurrentDetail("");
     progressTracker.reset();
   };
+
 
   const quickPrompts = [
     "Creativity at Work",
@@ -465,20 +463,7 @@ export default function PromptToTemplate() {
               }}
               spacing={1.5}
             >
-              {/* <IconButton>
-                                      <img
-                                          src="/images/voice-icon-input.svg"
-                                          alt="Custom icon"
-                                          style={{ width: 20, height: 20 }}
-                                      />
-                                  </IconButton>
-                                  <IconButton>
-                                      <img
-                                          src="/images/file-icon.svg"
-                                          alt="Custom icon"
-                                          style={{ width: 18, height: 18 }}
-                                      />
-                                  </IconButton> */}
+
 
               {/* Counter */}
               <Box
@@ -796,41 +781,41 @@ export default function PromptToTemplate() {
           </Box>
         )} */}
 
-                {loading && (
-                    <Backdrop
-                        open={loading}
-                        sx={{
-                            zIndex: (theme) => theme.zIndex.drawer + 1,
-                            backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                            }}
-                        >
-                            <img
-                                src="/Loader.gif"
-                                alt="Generating..."
-                                style={{ width: 470, height: 160 }}
-                            />
+        {loading && (
+          <Backdrop
+            open={loading}
+            sx={{
+              zIndex: (theme) => theme.zIndex.drawer + 1,
+              backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src="/Loader.gif"
+                alt="Generating..."
+                style={{ width: 470, height: 160 }}
+              />
 
-                            <Typography
-                                sx={{
-                                    fontFamily: "Raleway",
-                                    fontSize: "24px",
-                                    fontWeight: 700,
-                                    color: "#fff",
-                                    mt: 1,
-                                }}
-                            >
-                                {currentMessage}.....
-                            </Typography>
-                        </Box>
-                    </Backdrop>
-                )}
+              <Typography
+                sx={{
+                  fontFamily: "Raleway",
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#fff",
+                  mt: 1,
+                }}
+              >
+                {currentMessage}.....
+              </Typography>
+            </Box>
+          </Backdrop>
+        )}
 
         {/* Quick Prompts */}
         <Box sx={{ textAlign: "center", maxWidth: 800 }}>
