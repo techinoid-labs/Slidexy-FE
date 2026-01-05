@@ -12,6 +12,7 @@ import {
   // Grid,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
+import { slugify } from "../../../utils/slugUtils";
 
 import {
   Facebook,
@@ -337,7 +338,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
                         boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
                       },
                     }}
-                    onClick={() => router.push(`/blog/${relatedBlog._id}`)}
+                    onClick={() => router.push(`/blog/${slugify(relatedBlog.title)}`)}
                   >
                     <Box sx={{ position: "relative", height: 200 }}>
                       {relatedBlog.coverImage ? (

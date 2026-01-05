@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { slugify } from "../../utils/slugUtils";
 import StepsHeader from "../components/headers-navbar/StepsHeader";
 import BlogList from "../components/blogs/BlogList";
 import {
@@ -241,7 +242,7 @@ export default function BlogPage() {
                   boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
                 },
               }}
-              onClick={() => router.push(`/blog/${filteredBlogs[0]._id}`)}
+              onClick={() => router.push(`/blog/${slugify(filteredBlogs[0].title)}`)}
             >
               {filteredBlogs[0].coverImage && (
                 <Box
@@ -415,7 +416,7 @@ export default function BlogPage() {
                               boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
                             },
                           }}
-                          onClick={() => router.push(`/blog/${blog._id}`)}
+                          onClick={() => router.push(`/blog/${slugify(blog.title)}`)}
                         >
                           {blog.coverImage ? (
                             <Box sx={{ position: "relative", height: 200 }}>
@@ -553,7 +554,7 @@ export default function BlogPage() {
             </Box>
           )}
 
-                    <Box sx={{ mb: 8, textAlign: "center" }}>
+          <Box sx={{ mb: 8, textAlign: "center" }}>
             <Container maxWidth="lg">
               <Stack
                 direction="row"
