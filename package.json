@@ -36,6 +36,7 @@
     "ccapture.js-npmfixed": "^1.1.0",
     "cropperjs": "^2.0.1",
     "dom-to-image": "^2.6.0",
+    "dom-to-image-more": "^3.7.2",
     "dompurify": "^3.2.6",
     "framer-motion": "^12.23.12",
     "gif.js": "^0.2.0",
