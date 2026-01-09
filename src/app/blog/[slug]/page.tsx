@@ -12,6 +12,7 @@ import {
 import { Home as HomeIcon, NavigateNext } from "@mui/icons-material";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useUser } from "../../context/AuthContext";
+import { slugify } from "../../../utils/slugUtils";
 import StepsHeader from "../../components/headers-navbar/StepsHeader";
 import BlogDetail from "../../components/blogs/BlogDetail";
 import { useSession } from "next-auth/react";
@@ -48,36 +49,34 @@ export default function BlogDetailPage() {
   const purpleLight = "rgba(142, 45, 226, 0.08)";
 
   useEffect(() => {
-    fetchAllBlogs();
-    if (params.id) {
-      fetchBlog(params.id as string);
-    }
-  }, [params.id]);
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_BASE_URL}/api/blogs`);
+        if (!response.ok) throw new Error("Failed to fetch blogs");
+        const data = await response.json();
+        const blogsData = data.blogs || data;
+        setAllBlogs(blogsData);
 
-  const fetchAllBlogs = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs`);
-      if (!response.ok) throw new Error("Failed to fetch blogs");
-      const data = await response.json();
-      setAllBlogs(data.blogs || data);
-    } catch (err: any) {
-      console.error(err);
-    }
-  };
+        if (params.slug) {
+          const foundBlog = blogsData.find(
+            (b: Blog) => slugify(b.title) === params.slug
+          );
+          if (foundBlog) {
+            setBlog(foundBlog);
+          } else {
+            setError("Blog not found");
+          }
+        }
+      } catch (err: any) {
+        setError(err.message || "Failed to load blog");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchBlog = async (id: string) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${id}`);
-      if (!response.ok) throw new Error("Blog not found");
-      const data = await response.json();
-      setBlog(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to load blog");
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadData();
+  }, [params.slug]);
 
   useEffect(() => {
     if (blog && allBlogs.length > 0) {
@@ -93,7 +92,8 @@ export default function BlogDetailPage() {
 
     try {
       const token = session?.user?.accessToken;
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${params.id}`, {
+      if (!blog?._id) return;
+      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

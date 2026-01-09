@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { slugify } from "../../../utils/slugUtils";
 import {
   Box,
   Card,
@@ -158,7 +159,7 @@ const BlogList: React.FC<BlogListProps> = ({
                   borderColor: purpleColor,
                 },
               }}
-              onClick={() => router.push(`/blog/${blog._id}`)}
+              onClick={() => router.push(`/blog/${slugify(blog.title)}`)}
             >
               <Box sx={{ position: "relative", overflow: "hidden" }}>
                 {blog.coverImage ? (
@@ -288,7 +289,7 @@ const BlogList: React.FC<BlogListProps> = ({
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: "vertical",
                     minHeight: "3.5rem",
-                    color : cardTextColor,
+                    color: cardTextColor,
                   }}
                 >
                   {blog.title}
@@ -325,9 +326,9 @@ const BlogList: React.FC<BlogListProps> = ({
                   <Box>
                     <Typography
                       variant="caption"
-                      sx={{ 
-                        fontWeight: 600, 
-                        color: darkCards ? "white" : purpleColor 
+                      sx={{
+                        fontWeight: 600,
+                        color: darkCards ? "white" : purpleColor
                       }}
                     >
                       {blog.author?.name || "Unknown"}
