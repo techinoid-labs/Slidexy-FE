@@ -72,7 +72,7 @@ export default function Hero() {
           }}
         >
           <Button
-            onClick={()=>router.push(`/presentation/create?${queryParams.toString()}`)}
+            onClick={()=>router.push(`/tools/prompt-to-template`)}
             variant="contained"
             endIcon={<ArrowForward />}
             sx={{

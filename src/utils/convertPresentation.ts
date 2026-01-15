@@ -9,6 +9,7 @@ import {createCivoraTemplate} from "@/app/text-to-template/templates/civoraTempl
 import { createFluxeraTemplate } from "@/app/text-to-template/templates/fluxeraTemplate"
 import { createLinearTemplate } from "@/app/text-to-template/templates/linearTemplate"
 import { createRetroTemplate } from "@/app/text-to-template/templates/retroTemplate"
+import { createPitchDeckTemplate } from "@/app/text-to-template/templates/pitchDeckTemplate"
 import type { Presentation } from "../app/text-to-template/types/presentation"
 
 export const convertPresentation = (
@@ -43,6 +44,8 @@ export const convertPresentation = (
          case "retro":
           return createRetroTemplate(backendSlide, index)
          // Temporary: using Modern for Retro
+         case "pitchDeck":
+          return createPitchDeckTemplate(backendSlide, index)
         default:
           return createModernTemplate(backendSlide, index)
       }

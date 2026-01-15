@@ -140,7 +140,7 @@ export default function PricingSection() {
               flexDirection: { xs: "column", md: "row" },
               gap: { xs: 4, md: "48px" },
               justifyContent: "center",
-              alignItems: "center",
+              alignItems: "flex-start",
               width: "100%",
             }}
           >

@@ -63,6 +63,7 @@ export default function ContactSection() {
   return (
     <Box
       component="section"
+      id="contact-section"
       sx={{
         py: { xs: 8, md: 12 },
         px: { xs: 2, md: 6 },
@@ -160,6 +161,7 @@ export default function ContactSection() {
 
                     "& .MuiInputLabel-shrink": {
                       top: "-10px",
+                      left: "-15px"
                     },
 
                     "& .MuiInputLabel-root": {
@@ -229,6 +231,7 @@ export default function ContactSection() {
 
                     "& .MuiInputLabel-shrink": {
                       top: "-10px",
+                      left: "-15px"
                     },
 
                     "& .MuiInputLabel-root": {
