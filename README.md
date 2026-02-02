@@ -1,7 +1,6 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## LinkedIn Integration ✅
-
 This frontend includes **complete LinkedIn OAuth 2.0 integration** for sharing presentations directly to LinkedIn!
 
 ### Features
