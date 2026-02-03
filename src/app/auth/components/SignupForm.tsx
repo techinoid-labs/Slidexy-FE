@@ -11,6 +11,7 @@ import {
   Checkbox,
   Link,
 } from '@mui/material';
+import NextLink from 'next/link';
 
 // Props interface
 export interface FormProps {
@@ -38,11 +39,13 @@ const SignupForm: React.FC<FormProps> = ({ formData, handleChange, handleSubmit,
       }}
     >
       <Box>
-        <img
-          src="/images/Logo.svg"
-          alt="Slidexy Logo"
-          style={{ width: 210, height: 64, marginBottom: 20 }}
-        />
+        <NextLink href="/">
+          <img
+            src="/images/Logo.svg"
+            alt="Slidexy Logo"
+            style={{ width: 210, height: 64, marginBottom: 20, cursor: 'pointer' }}
+          />
+        </NextLink>
       </Box>
 
       <Typography
