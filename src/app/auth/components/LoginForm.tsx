@@ -34,7 +34,7 @@ const LoginForm: React.FC<FormProps> = ({ formData, handleChange, handleSubmit, 
     >
       <Box>
         <img
-          src="/Images/Logo.svg"
+          src="/images/Logo.svg"
           alt="Slidexy Logo"
           style={{ width: 210, height: 64, marginBottom: 20 }}
         />
