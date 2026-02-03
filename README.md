@@ -14,7 +14,6 @@ This frontend includes **complete LinkedIn OAuth 2.0 integration** for sharing p
 **See [`LINKEDIN_FRONTEND_GUIDE.md`](./LINKEDIN_FRONTEND_GUIDE.md)** for complete documentation.
 
 ## Getting Started
-
 First, run the development server:
 
 ```bash
