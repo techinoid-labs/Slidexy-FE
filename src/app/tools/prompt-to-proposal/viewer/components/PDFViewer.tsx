@@ -28,9 +28,9 @@ export default function PDFViewer({ pdfUrl, currentPageIndex, onPageChange }: PD
     let isMounted = true;
 
     const loadPdf = async () => {
-      const pdfjs = await import("pdfjs-dist/build/pdf");
-      const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.entry");
-      (pdfjs as any).GlobalWorkerOptions.workerSrc = pdfjsWorker;
+      const pdfjs = await import("pdfjs-dist/build/pdf.mjs");
+      const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.mjs");
+      (pdfjs as any).GlobalWorkerOptions.workerSrc = pdfjsWorker.default || pdfjsWorker;
 
       const loadingTask = (pdfjs as any).getDocument(pdfUrl);
       const pdf = await loadingTask.promise;

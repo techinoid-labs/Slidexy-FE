@@ -9,6 +9,7 @@ import LoginForm from './components/LoginForm';
 import ForgotPasswordForm from './components/ForgotPasswordForm';
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import ResetPasswordForm from './components/ResetPasswordForm';
+import Link from 'next/link';
 
 interface AuthProps {
     presentationId?: string | null;
@@ -205,11 +206,13 @@ const Auth: React.FC<AuthProps> = (
                 }}
             >
                 <Box textAlign="center">
-                    <img
-                        src="/Images/Logo.svg"
-                        alt="Slidexy Logo"
-                        style={{ width: '500px', height: 'auto', marginBottom: 16 }}
-                    />
+                    <Link href="/">
+                        <img
+                            src="/images/Logo.svg"
+                            alt="Slidexy Logo"
+                            style={{ width: '500px', height: 'auto', marginBottom: 16, cursor: 'pointer' }}
+                        />
+                    </Link>
                 </Box>
             </Box>
         </Box>
