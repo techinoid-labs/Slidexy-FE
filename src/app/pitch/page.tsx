@@ -4,22 +4,32 @@ import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import jsPDF from "jspdf";
-import PptxGenJS from "pptxgenjs";
-import {
-    Stage, Layer, Rect, Circle, Ellipse, Line, Text,
-    TextPath, Image as KonvaImage, RegularPolygon, Star,
-    Ring, Arc, Wedge, Arrow, Label, Tag, Group, Path
-} from "react-konva";
-import { getSlideDimensions } from "../../utils/slideUtils";
-import { KonvaElement } from "./types";
+import { Stage, Layer } from "react-konva";
 import { usePitch } from "@/app/context/PitchContext";
 import { processKonvaElements } from "../../utils/imageLoaderUtils";
+import { motion, AnimatePresence } from "framer-motion";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { Typography } from "@mui/material";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+// Components
+import Header from "@/app/components/headers-navbar/Header";
+import Footer from "@/app/components/home/Footer";
+import SlideRenderer from "./components/SlideRenderer";
+import SlideNavigation from "./components/SlideNavigation";
+import SlideModifier from "./components/SlideModifier";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_PITCH_DECK_BASE_URL;
 
 export default function SlidePage() {
     return (
-        <Suspense fallback={<div style={{ color: "white", padding: "24px" }}>Loading...</div>}>
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                    <p className="text-gray-500 font-medium text-lg">Loading presentation...</p>
+                </div>
+            </div>
+        }>
             <SlideContent />
         </Suspense>
     );
@@ -36,49 +46,27 @@ function SlideContent() {
     const [exporting, setExporting] = useState(false);
     const stageRef = useRef<any>(null);
 
-    const handleExport = async (format: "pdf" | "pptx" | "png") => {
+    const handleExportPDF = async () => {
         if (!pitch || !stageRef.current) return;
         setExporting(true);
 
         try {
-            if (format === "png") {
-                const dataUrl = stageRef.current.toDataURL();
-                const link = document.createElement("a");
-                link.download = `slide-${currentIndex + 1}.png`;
-                link.href = dataUrl;
-                link.click();
-            } else if (format === "pdf") {
-                const pdf = new jsPDF({
-                    orientation: "landscape",
-                    unit: "px",
-                    format: [1200, 600],
-                });
+            const pdf = new jsPDF({
+                orientation: "landscape",
+                unit: "px",
+                format: [1200, 600],
+            });
 
-                const originalIndex = currentIndex;
-                for (let i = 0; i < pitch.slides.length; i++) {
-                    setCurrentIndex(i);
-                    await new Promise((r) => setTimeout(r, 150)); // Wait for render
-                    const dataUrl = stageRef.current.toDataURL({ pixelRatio: 2 });
-                    if (i > 0) pdf.addPage([1200, 600], "landscape");
-                    pdf.addImage(dataUrl, "PNG", 0, 0, 1200, 600);
-                }
-                setCurrentIndex(originalIndex);
-                pdf.save(`${pitch.topic || "presentation"}.pdf`);
-            } else if (format === "pptx") {
-                const pptx = new PptxGenJS();
-                pptx.layout = "LAYOUT_16x9";
-
-                const originalIndex = currentIndex;
-                for (let i = 0; i < pitch.slides.length; i++) {
-                    setCurrentIndex(i);
-                    await new Promise((r) => setTimeout(r, 150)); // Wait for render
-                    const dataUrl = stageRef.current.toDataURL({ pixelRatio: 2 });
-                    const slide = pptx.addSlide();
-                    slide.addImage({ data: dataUrl, x: 0, y: 0, w: 10, h: 5.625 });
-                }
-                setCurrentIndex(originalIndex);
-                pptx.writeFile({ fileName: `${pitch.topic || "presentation"}.pptx` });
+            const originalIndex = currentIndex;
+            for (let i = 0; i < pitch.slides.length; i++) {
+                setCurrentIndex(i);
+                await new Promise((r) => setTimeout(r, 150)); // Wait for render
+                const dataUrl = stageRef.current.toDataURL({ pixelRatio: 2 });
+                if (i > 0) pdf.addPage([1200, 600], "landscape");
+                pdf.addImage(dataUrl, "PNG", 0, 0, 1200, 600);
             }
+            setCurrentIndex(originalIndex);
+            pdf.save(`${pitch.topic || "presentation"}.pdf`);
         } catch (err) {
             console.error("Export failed:", err);
             alert("Export failed. Please try again.");
@@ -89,26 +77,22 @@ function SlideContent() {
 
     const handleRegenerateSlide = async () => {
         if (!id || !editPrompt) return;
-        
+
         setRegenerating(true);
         try {
-            // slideNumber in backend seems to be 1-indexed or based on how you store it. 
-            // Most likely it matches current slide index + 1 or the slideNumber property.
             const slideNumber = pitch?.slides[currentIndex].slideNumber || (currentIndex + 1);
-            
+
             const response = await axios.patch(`${API_BASE_URL}/api/deck/${id}/slide/${slideNumber}`, {
                 prompt: editPrompt
             });
 
             if (response.data.success && response.data.slide) {
                 const updatedSlide = response.data.slide;
-                
-                // Process images if any in the new slide
                 await processKonvaElements(updatedSlide.konvaElements);
 
                 const updatedPitch = {
                     ...pitch!,
-                    slides: pitch!.slides.map((s, idx) => 
+                    slides: pitch!.slides.map((s, idx) =>
                         idx === currentIndex ? updatedSlide : s
                     )
                 };
@@ -142,8 +126,6 @@ function SlideContent() {
             fetchPitch();
         }
     }, [id, pitch, setPitch, loading]);
-
-    const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
 
     useEffect(() => {
         const hasUnprocessedImages = (elements: any[]): boolean => {
@@ -185,331 +167,167 @@ function SlideContent() {
     }, [pitch, setPitch]);
 
     if (loading) {
-        return <div style={{ color: "white", padding: "24px" }}>Loading pitch deck...</div>;
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50 text-gray-500">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                    <p className="font-medium text-lg">Loading your pitch deck...</p>
+                </div>
+            </div>
+        );
     }
 
     if (!pitch || pitch.slides.length === 0) {
-        return <div style={{ color: "white", padding: "24px" }}>No pitch data found</div>;
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
+                    <p className="text-gray-500 text-lg font-medium">No pitch data found</p>
+                    <button className="mt-4 text-purple-600 font-semibold" onClick={() => window.history.back()}>Go Back</button>
+                </div>
+            </div>
+        );
     }
 
     const slide = pitch.slides[currentIndex];
 
-    const renderElement = (el: KonvaElement, idx: number) => {
-        const baseProps = {
-            key: idx,
-            x: el.x,
-            y: el.y,
-            fill: el.fill,
-            stroke: el.stroke,
-            strokeWidth: el.strokeWidth,
-            opacity: el.opacity,
-            shadowColor: el.shadowColor,
-            shadowBlur: el.shadowBlur,
-            shadowOpacity: el.shadowOpacity,
-            lineCap: el.lineCap,
-            lineJoin: el.lineJoin,
-            shadowOffset: el.shadowOffset,
-            fillLinearGradientStartPoint: el.fillLinearGradientStartPoint,
-            fillLinearGradientEndPoint: el.fillLinearGradientEndPoint,
-            fillLinearGradientColorStops: el.fillLinearGradientColorStops,
-        };
-
-        switch (el.type) {
-            case "Rect":
-                return <Rect {...baseProps} width={el.width} height={el.height} cornerRadius={el.cornerRadius} />;
-
-            case "Circle":
-                return <Circle {...baseProps} radius={el.radius} />;
-
-            case "Ellipse":
-                return <Ellipse {...baseProps} radiusX={el.radiusX} radiusY={el.radiusY} />;
-
-            case "Line":
-                return <Line {...baseProps} points={el.points} />;
-
-            case "Arrow":
-                return <Arrow {...baseProps} points={el.points} pointerLength={el.pointerLength} pointerWidth={el.pointerWidth} />;
-
-            case "Text":
-                return (
-                    <Text
-                        {...baseProps}
-                        text={el.text}
-                        fontSize={el.fontSize}
-                        fontFamily={el.fontFamily}
-                        fontStyle={el.fontStyle}
-                        align={el.align}
-                        lineHeight={el.lineHeight}
-                        letterSpacing={el.letterSpacing}
-                        offsetY={el.offsetY}
-                        width={el.width}
-                    />
-                );
-
-            case "TextPath":
-                return <TextPath {...baseProps} text={el.text} fontSize={el.fontSize} fontFamily={el.fontFamily} data={el.data} />;
-
-            case "Image":
-                return <KonvaImage {...baseProps} image={el.image} width={el.width} height={el.height} />;
-
-            case "RegularPolygon":
-                return <RegularPolygon {...baseProps} sides={el.sides} radius={el.radius} />;
-
-            case "Star":
-                return <Star {...baseProps} numPoints={el.numPoints} innerRadius={el.innerRadius} outerRadius={el.outerRadius} />;
-
-            case "Ring":
-                return <Ring {...baseProps} innerRadius={el.innerRadius} outerRadius={el.outerRadius} />;
-
-            case "Arc":
-                return <Arc {...baseProps} innerRadius={el.innerRadius} outerRadius={el.outerRadius} angle={el.angle} clockwise={el.clockwise} />;
-
-            case "Wedge":
-                return <Wedge {...baseProps} angle={el.angle} radius={el.radius} clockwise={el.clockwise} />;
-
-            case "Path":
-                return <Path {...baseProps} data={el.data} />;
-
-            case "Label":
-                return (
-                    <Label {...baseProps}>
-                        {el.tag && <Tag fill={el.tag.fill} stroke={el.tag.stroke} cornerRadius={el.tag.cornerRadius} />}
-                        {el.text && (
-                            <Text
-                                text={el.text.text}
-                                fontSize={el.text.fontSize}
-                                fontFamily={el.text.fontFamily}
-                                fontStyle={el.text.fontStyle}
-                                align={el.text.align}
-                                fill={el.text.fill}
-                            />
-                        )}
-                    </Label>
-                );
-
-            case "Group":
-                return (
-                    <Group {...baseProps}>
-                        {el.children?.map((child, i) => renderElement(child, i))}
-                    </Group>
-                );
-
-            default:
-                console.warn("Unknown Konva type:", el);
-                return null;
-        }
-    };
-    
     return (
-        <div
-            style={{
-                padding: "24px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                backgroundColor: "#1A1A1A",
-                minHeight: "100vh",
-                color: "white",
-                fontFamily: "Arial, sans-serif",
-            }}
-        >
-            {/* Slide Title */}
-            <h1
-                style={{
-                    fontSize: "2rem",
-                    fontWeight: 700,
-                    marginBottom: "20px",
-                    textAlign: "center",
-                    color: "#F3F3F3",
-                }}
-            >
-                {slide.title}
-            </h1>
-
-            {/* Konva Stage */}
-            <div
-                style={{
-                    boxShadow: "0 8px 20px rgba(0,0,0,0.5)",
-                    borderRadius: "12px",
-                    overflow: "hidden",
-                    marginBottom: "24px",
-                }}
-            >
-                <Stage
-                    width={1200}
-                    height={600}
-                    ref={stageRef}
-                    style={{
-                        border: "2px solid #555",
-                        borderRadius: "12px",
-                        backgroundColor: "#FFFFFF",
-                    }}
-                >
-                    <Layer>{slide.konvaElements.map(renderElement)}</Layer>
-                </Stage>
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center">
+            <div className="w-full">
+                <Header />
             </div>
 
-            {/* Navigation & Export */}
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "20px",
-                    width: "100%",
-                }}
-            >
-                <div
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "16px",
-                    }}
-                >
-                    <button
-                        disabled={currentIndex === 0 || exporting}
-                        onClick={() => setCurrentIndex((i) => i - 1)}
-                        style={{
-                            padding: "10px 20px",
-                            fontSize: "16px",
-                            fontWeight: 600,
-                            borderRadius: "8px",
-                            border: "none",
-                            cursor: currentIndex === 0 || exporting ? "not-allowed" : "pointer",
-                            backgroundColor: currentIndex === 0 || exporting ? "#555" : "#6C2BD9",
-                            color: "white",
-                            transition: "background-color 0.3s",
-                        }}
+            <main className="flex-1 flex flex-col gap-16 py-12 px-6 lg:p-12 max-w-[1300px] w-full items-center">
+                {/* Top: Slide and Controls */}
+                <div className="w-full flex flex-col items-center min-w-0">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="w-full bg-white rounded-[3rem] shadow-2xl shadow-purple-500/10 border border-purple-50 overflow-hidden relative"
                     >
-                        Prev
-                    </button>
+                        <div className="aspect-[16/8] w-full overflow-hidden flex items-center justify-center bg-gray-50/50">
+                            {/* Scaled Stage Container with Better Responsiveness */}
+                            <div className="flex items-center justify-center scale-[0.45] sm:scale-[0.55] md:scale-[0.75] lg:scale-[0.85] xl:scale-[1.0] transition-transform duration-500 ease-out">
+                                <div className="shadow-2xl shadow-black/10 rounded-lg overflow-hidden border border-gray-200">
+                                    <Stage
+                                        width={1200}
+                                        height={600}
+                                        ref={stageRef}
+                                        style={{ backgroundColor: "#FFFFFF" }}
+                                    >
+                                        <Layer>
+                                            <AnimatePresence mode="wait">
+                                                {slide.konvaElements.map((el: any, idx: number) => (
+                                                    <SlideRenderer key={`${currentIndex}-${idx}`} element={el} />
+                                                ))}
+                                            </AnimatePresence>
+                                        </Layer>
+                                    </Stage>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
 
-                    <span style={{ fontSize: "16px", fontWeight: 500, color: "#DDD" }}>
-                        {currentIndex + 1} / {pitch.slideCount}
-                    </span>
+                    {/* Navigation and Info Bar */}
+                    <div className="mt-10 flex flex-col lg:flex-row items-center justify-between w-full max-w-5xl px-6 gap-8">
+                        <div className="flex items-center gap-4 min-w-[200px]">
+                            <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 font-black text-xl">
+                                {currentIndex + 1}
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Active Slide</span>
+                            </div>
+                             <div className="flex-1 flex justify-center">
+                            <SlideNavigation
+                                currentIndex={currentIndex}
+                                slideCount={pitch.slides.length}
+                                exporting={exporting}
+                                onPrev={() => setCurrentIndex((i) => i - 1)}
+                                onNext={() => setCurrentIndex((i) => i + 1)}
+                            />
+                        </div>
+                                                <button
+                            onClick={handleExportPDF}
+                            disabled={exporting}
+                            className="flex items-center gap-3 px-8 py-4 bg-white text-gray-700 border-2 border-gray-100 rounded-[1.5rem] hover:border-purple-200 hover:bg-purple-50/30 transition-all duration-300 shadow-sm disabled:opacity-50 font-bold group min-w-[200px] justify-center"
+                        >
+                            <PictureAsPdfIcon className="text-red-500 transition-transform group-hover:scale-110" />
+                            {exporting ? "Preparing..." : "Download PDF"}
+                        </button>
+                        </div>
 
-                    <button
-                        disabled={currentIndex === pitch.slideCount - 1 || exporting}
-                        onClick={() => setCurrentIndex((i) => i + 1)}
-                        style={{
-                            padding: "10px 20px",
-                            fontSize: "16px",
-                            fontWeight: 600,
-                            borderRadius: "8px",
-                            border: "none",
-                            cursor: currentIndex === pitch.slideCount - 1 || exporting ? "not-allowed" : "pointer",
-                            backgroundColor:
-                                currentIndex === pitch.slideCount - 1 || exporting ? "#555" : "#6C2BD9",
-                            color: "white",
-                            transition: "background-color 0.3s",
-                        }}
-                    >
-                        Next
-                    </button>
+
+
+                    </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "12px" }}>
-                    <button
-                        onClick={() => handleExport("png")}
-                        disabled={exporting}
-                        style={{
-                            padding: "8px 16px",
-                            backgroundColor: "#333",
-                            color: "white",
-                            border: "1px solid #555",
-                            borderRadius: "6px",
-                            cursor: exporting ? "not-allowed" : "pointer",
-                            fontSize: "14px",
+                {/* Bottom: AI Editor Panel */}
+                <div className="w-full max-w-5xl flex flex-col items-center">
+                    <Typography
+                        variant="h2"
+                        sx={{
+                            fontWeight: 700,
+                            mb: 1,
+                            color: "rgba(26, 26, 26, 1)",
+                            fontSize: { xs: "24px", md: "40px" },
+                            textAlign: "center"
                         }}
                     >
-                        Export PNG
-                    </button>
-                    <button
-                        onClick={() => handleExport("pdf")}
-                        disabled={exporting}
-                        style={{
-                            padding: "8px 16px",
-                            backgroundColor: "#333",
-                            color: "white",
-                            border: "1px solid #555",
-                            borderRadius: "6px",
-                            cursor: exporting ? "not-allowed" : "pointer",
-                            fontSize: "14px",
-                        }}
-                    >
-                        {exporting ? "Exporting PDF..." : "Export PDF"}
-                    </button>
-                    <button
-                        onClick={() => handleExport("pptx")}
-                        disabled={exporting}
-                        style={{
-                            padding: "8px 16px",
-                            backgroundColor: "#333",
-                            color: "white",
-                            border: "1px solid #555",
-                            borderRadius: "6px",
-                            cursor: exporting ? "not-allowed" : "pointer",
-                            fontSize: "14px",
-                        }}
-                    >
-                        {exporting ? "Exporting PPTX..." : "Export PPTX"}
-                    </button>
-                </div>
-            </div>
+                        AI Slide Editor
+                    </Typography>
 
-            {/* Edit Prompt UI */}
-            <div
-                style={{
-                    marginTop: "40px",
-                    width: "100%",
-                    maxWidth: "800px",
-                    padding: "20px",
-                    backgroundColor: "#2A2A2A",
-                    borderRadius: "12px",
-                    boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "12px",
-                }}
-            >
-                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 600 }}>Modify this slide</h3>
-                <p style={{ margin: 0, color: "#AAA", fontSize: "0.9rem" }}>
-                    Describe how you want to change this specific slide (e.g., "Add more details about the revenue model" or "Change the layout to a 2-column list")
-                </p>
-                <div style={{ display: "flex", gap: "10px" }}>
-                    <input
-                        type="text"
-                        value={editPrompt}
-                        onChange={(e) => setEditPrompt(e.target.value)}
-                        placeholder="Enter your instructions here..."
-                        style={{
-                            flex: 1,
-                            padding: "12px 16px",
-                            borderRadius: "8px",
-                            border: "1px solid #444",
-                            backgroundColor: "#1A1A1A",
-                            color: "white",
-                            fontSize: "16px",
-                            outline: "none",
-                        }}
-                    />
-                    <button
-                        onClick={handleRegenerateSlide}
-                        disabled={regenerating || !editPrompt}
-                        style={{
-                            padding: "12px 24px",
-                            borderRadius: "8px",
-                            border: "none",
-                            backgroundColor: (regenerating || !editPrompt) ? "#555" : "#6C2BD9",
-                            color: "white",
-                            fontWeight: 600,
-                            cursor: (regenerating || !editPrompt) ? "not-allowed" : "pointer",
-                            transition: "background-color 0.2s",
+                    <Typography
+                        sx={{
+                            color: "rgba(109, 109, 109, 1)",
+                            maxWidth: 600,
+                            mb: 6,
+                            fontSize: { xs: "0.875rem", md: "16px" },
+                            textAlign: "center"
                         }}
                     >
-                        {regenerating ? "Regenerating..." : "Regenerate"}
-                    </button>
+                        Refine your slides instantly using AI. Just describe your changes or use our smart suggestions.
+                    </Typography>
+
+                    <div className="w-full flex flex-col md:flex-row gap-8 items-stretch">
+                        <div className="flex-1 w-full">
+                            <SlideModifier
+                                editPrompt={editPrompt}
+                                regenerating={regenerating}
+                                setEditPrompt={setEditPrompt}
+                                onRegenerate={handleRegenerateSlide}
+                            />
+                        </div>
+
+                        {/* <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="w-full md:w-80 bg-gradient-to-br from-purple-50 to-indigo-50 p-8 rounded-[2rem] border border-purple-100 shadow-sm flex flex-col justify-center shrink-0"
+                        >
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                                <h4 className="text-purple-900 font-extrabold text-sm uppercase tracking-wider">Editor Guide</h4>
+                            </div>
+                            <ul className="text-xs text-purple-700/70 space-y-4 font-medium">
+                                <li className="flex items-start gap-3">
+                                    <span className="text-purple-400 font-bold">01.</span>
+                                    <span>Type specific instructions like "Add a 3-point list about market size"</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <span className="text-purple-400 font-bold">02.</span>
+                                    <span>Use "Smart Suggestions" for instant layout and color updates</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <span className="text-purple-400 font-bold">03.</span>
+                                    <span>Changes are applied instantly to the current slide</span>
+                                </li>
+                            </ul>
+                        </motion.div> */}
+                    </div>
                 </div>
+            </main>
+
+            <div className="w-full">
+                <Footer />
             </div>
         </div>
     );

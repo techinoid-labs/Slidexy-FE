@@ -31,7 +31,7 @@ import { useUser } from "@/app/context/AuthContext";
 import { usePitch } from "@/app/context/PitchContext";
 import FileUploadZone from "@/app/components/shared/FileUploadZone";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_PITCH_DECK_BASE_URL;
 
 const TEXT_ART_STYLES = [
     { value: "professional", label: "Professional" },
