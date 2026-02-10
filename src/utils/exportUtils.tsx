@@ -13,12 +13,13 @@ export const exportPresentationToPptx = async (presentation: Presentation) => {
     if (slideElement) {
       // Capture the slide as a high-res canvas image
       const canvas = await html2canvas(slideElement as HTMLElement, {
-        scale: 2,  // Higher DPI for quality
+        scale: 1.5,  // Optimized DPI for balance of quality vs size
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',  // Ensure white background for export
       });
-      const imgData = canvas.toDataURL("image/png");
+      // Use JPEG with 0.8 quality to reduce file size significantly
+      const imgData = canvas.toDataURL("image/jpeg", 0.8);
       // Add the image to the PPT slide (units in inches; 10x5.625 for 16:9)
       pptSlide.addImage({ data: imgData, x: 0, y: 0, w: 10, h: 5.625 });
     } else {
@@ -42,14 +43,15 @@ export const exportPresentationToPDF = async (presentation: Presentation) => {
     const slideElement = document.querySelector(`#slide-${slide.slide_id}`);
     if (slideElement) {
       const canvas = await html2canvas(slideElement as HTMLElement, {
-        scale: 2,
+        scale: 1.5, // Reduced from 2 for better balance of quality vs size
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
       });
-      const imgData = canvas.toDataURL("image/png");
+      // Use JPEG with 0.75 quality to reduce file size
+      const imgData = canvas.toDataURL("image/jpeg", 0.75);
       if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, 0, 10, 5.625);
+      pdf.addImage(imgData, "JPEG", 0, 0, 10, 5.625, undefined, 'FAST');
     } else {
       console.warn(`Slide element #slide-${slide.slide_id} not found for export.`);
     }

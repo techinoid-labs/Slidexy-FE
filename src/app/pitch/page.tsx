@@ -61,9 +61,18 @@ function SlideContent() {
             for (let i = 0; i < pitch.slides.length; i++) {
                 setCurrentIndex(i);
                 await new Promise((r) => setTimeout(r, 150)); // Wait for render
-                const dataUrl = stageRef.current.toDataURL({ pixelRatio: 2 });
+                
+                // Use JPEG with quality 0.8 to significantly reduce file size
+                const dataUrl = stageRef.current.toDataURL({ 
+                    pixelRatio: 1.5, // Reduced from 2 for better balance
+                    mimeType: "image/jpeg",
+                    quality: 0.8
+                });
+
                 if (i > 0) pdf.addPage([1200, 600], "landscape");
-                pdf.addImage(dataUrl, "PNG", 0, 0, 1200, 600);
+                
+                // Add as JPEG with FAST compression
+                pdf.addImage(dataUrl, "JPEG", 0, 0, 1200, 600, undefined, "FAST");
             }
             setCurrentIndex(originalIndex);
             pdf.save(`${pitch.topic || "presentation"}.pdf`);

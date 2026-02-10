@@ -68,7 +68,7 @@ export const exportSlidesAsPDF = async (
 
       try {
         const canvas = await html2canvas(container, {
-          scale: 3, // Even higher quality
+          scale: 2, // Sufficient quality while reducing file size
           useCORS: true,
           width: WIDTH,
           height: HEIGHT,
@@ -86,13 +86,15 @@ export const exportSlidesAsPDF = async (
           }
         });
 
-        const imgData = canvas.toDataURL("image/png");
+        // Use JPEG with 0.75 quality to significantly reduce file size
+        const imgData = canvas.toDataURL("image/jpeg", 0.75);
 
         if (addedPages > 0) {
           pdf.addPage([WIDTH, HEIGHT]);
         }
 
-        pdf.addImage(imgData, "PNG", 0, 0, WIDTH, HEIGHT);
+        // Add as JPEG with FAST compression
+        pdf.addImage(imgData, "JPEG", 0, 0, WIDTH, HEIGHT, undefined, 'FAST');
         addedPages++;
         console.log(`[PDF Export] Processed slide ${i + 1}/${slidesCount}`);
 
