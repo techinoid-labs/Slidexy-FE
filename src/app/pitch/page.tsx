@@ -20,6 +20,17 @@ import SlideModifier from "./components/SlideModifier";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_PITCH_DECK_BASE_URL;
 
+// Set to true to enable backend response logging
+const ENABLE_BACKEND_LOGGING = true;
+
+const logger = {
+    log: (message: string, data?: any) => {
+        if (ENABLE_BACKEND_LOGGING) {
+            console.log(`[Backend Response] ${message}`, data);
+        }
+    }
+};
+
 export default function SlidePage() {
     return (
         <Suspense fallback={
@@ -95,6 +106,8 @@ function SlideContent() {
                 prompt: editPrompt
             });
 
+            logger.log("Regenerate Slide Response:", response.data);
+
             if (response.data.success && response.data.slide) {
                 const updatedSlide = response.data.slide;
                 await processKonvaElements(updatedSlide.konvaElements);
@@ -123,6 +136,7 @@ function SlideContent() {
                 setLoading(true);
                 try {
                     const response = await axios.get(`${API_BASE_URL}/api/deck/${id}`);
+                    logger.log("Fetch Pitch Response:", response.data);
                     if (response.data) {
                         setPitch(response.data);
                     }

@@ -1,42 +1,68 @@
+// Set to true to enable image loading logs
+const ENABLE_IMAGE_LOGGING = true;
+
+const logger = {
+    log: (message: string, data?: any) => {
+        if (ENABLE_IMAGE_LOGGING) {
+            console.log(`[ImageLoader] ${message}`, data);
+        }
+    },
+    warn: (message: string, data?: any) => {
+        if (ENABLE_IMAGE_LOGGING) {
+            console.warn(`[ImageLoader] ${message}`, data);
+        }
+    }
+};
+
 export async function loadImage(src: string): Promise<HTMLImageElement> {
+    logger.log(`Loading image: ${src}`);
     try {
         // First, try to load it directly, which is fast and works for most URLs
         const img = await new Promise<HTMLImageElement>((resolve, reject) => {
             const image = new window.Image();
             image.crossOrigin = "anonymous";
             image.src = src;
-            image.onload = () => resolve(image);
+            image.onload = () => {
+                logger.log(`Direct load successful: ${src}`);
+                resolve(image);
+            };
             image.onerror = (err) => reject(err);
         });
         return img;
     } catch (e) {
-        console.warn(`Direct image load failed for ${src}, trying fetch...`, e);
+        logger.warn(`Direct image load failed for ${src}, trying fetch...`, e);
 
-        // If direct loading fails (e.g., CORS, Content-Disposition),
-        // fetch the image data and create an object URL
-        const response = await fetch(src);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        try {
+            // If direct loading fails (e.g., CORS, Content-Disposition),
+            // fetch the image data and create an object URL
+            const response = await fetch(src);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            logger.log(`Fetch successful, created object URL for: ${src}`);
+
+            const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+                const image = new window.Image();
+                image.crossOrigin = "anonymous";
+                image.src = objectUrl;
+                image.onload = () => {
+                    // It's good practice to revoke the object URL when it's no longer needed
+                    // to avoid memory leaks. We can do it after the image has loaded.
+                    URL.revokeObjectURL(objectUrl);
+                    resolve(image);
+                };
+                image.onerror = (err) => {
+                    URL.revokeObjectURL(objectUrl);
+                    reject(err);
+                };
+            });
+            return img;
+        } catch (fetchErr) {
+            logger.warn(`Fetch fallback failed for ${src}`, fetchErr);
+            throw fetchErr;
         }
-        const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
-
-        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-            const image = new window.Image();
-            image.crossOrigin = "anonymous";
-            image.src = objectUrl;
-            image.onload = () => {
-                // It's good practice to revoke the object URL when it's no longer needed
-                // to avoid memory leaks. We can do it after the image has loaded.
-                URL.revokeObjectURL(objectUrl);
-                resolve(image);
-            };
-            image.onerror = (err) => {
-                URL.revokeObjectURL(objectUrl);
-                reject(err);
-            };
-        });
-        return img;
     }
 }
 
@@ -44,14 +70,16 @@ export async function processKonvaElements(elements: any[]): Promise<void> {
     for (const el of elements) {
         if (el.type === 'Image' && el.image && typeof el.image === 'string') {
             const originalUrl = el.image;
-            const proxiedUrl = originalUrl.startsWith('http')
+            // Use proxy for all absolute URLs to avoid CORS and handle "downloadable" links
+            const targetUrl = originalUrl.startsWith('http')
                 ? `/api/image-proxy?url=${encodeURIComponent(originalUrl)}`
                 : originalUrl;
+            
             try {
-                const img = await loadImage(proxiedUrl);
+                const img = await loadImage(targetUrl);
                 el.image = img;
             } catch (err) {
-                console.warn("Failed to load image", proxiedUrl, err);
+                logger.warn("Failed to load image in processKonvaElements", { targetUrl, err });
                 
                 // create a simple placeholder image via canvas so Konva can still render something
                 const canvas = document.createElement("canvas");

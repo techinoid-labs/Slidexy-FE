@@ -1,27 +1,44 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const imageUrl = searchParams.get('url');
+export async function GET(request: NextRequest) {
+    const { searchParams } = new URL(request.url);
+    const imageUrl = searchParams.get('url');
 
-  if (!imageUrl) {
-    return new NextResponse('URL query parameter is required', { status: 400 });
-  }
-
-  try {
-    const response = await fetch(imageUrl);
-
-    if (!response.ok) {
-      return new NextResponse('Failed to fetch image', { status: response.status });
+    if (!imageUrl) {
+        return new NextResponse('Missing URL parameter', { status: 400 });
     }
 
-    const imageBlob = await response.blob();
-    const headers = new Headers();
-    headers.set('Content-Type', response.headers.get('Content-Type') || 'application/octet-stream');
-    
-    return new NextResponse(imageBlob, { status: 200, statusText: 'OK', headers });
-  } catch (error) {
-    console.error('Image proxy error:', error);
-    return new NextResponse('Error fetching image', { status: 500 });
-  }
+    try {
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+            console.error(`Failed to fetch image: ${response.status} ${response.statusText} for ${imageUrl}`);
+            return new NextResponse(`Failed to fetch image: ${response.statusText}`, { status: response.status });
+        }
+
+        const blob = await response.blob();
+        const headers = new Headers();
+        
+        // Pass through the content type if available, otherwise default to image/png
+        const contentType = response.headers.get('Content-Type');
+        if (contentType) {
+            headers.set('Content-Type', contentType);
+        } else {
+            // Try to infer from URL if possible, otherwise default
+            headers.set('Content-Type', 'image/png');
+        }
+
+        // Cache for 1 day
+        headers.set('Cache-Control', 'public, max-age=86400');
+        
+        // Ensure CORS is allowed for the frontend to use it with Konva/Canvas
+        headers.set('Access-Control-Allow-Origin', '*');
+
+        return new NextResponse(blob, {
+            status: 200,
+            headers,
+        });
+    } catch (error) {
+        console.error('Image proxy error:', error);
+        return new NextResponse('Failed to proxy image', { status: 500 });
+    }
 }
