@@ -19,10 +19,10 @@ const tools = [
         description: "Convert videos into clear, engaging presentation slides with AI-driven content extraction."
     },
     {
-        label: "Web-to-Deck",
+        label: "Prompt-to-Pitch",
         icon: "/images/tools/web-to-deck.svg",
-        route: "/tools/web-to-deck",
-        description: "Transform web pages into professional slide decks with AI-curated summaries and visuals."
+        route: "/tools/prompt-to-pitchdeck",
+        description: "Turn simple prompts into stunning, well-structured slide decks powered by AI in just seconds."
     },
     {
         label: "Prompt-to-eBook",

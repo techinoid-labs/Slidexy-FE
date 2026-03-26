@@ -46,7 +46,7 @@
     "next": "15.5.11",
     "next-auth": "^4.24.11",
     "onnxruntime-web": "^1.21.0",
-    "pdfjs-dist": "^5.4.530",
+    "pdfjs-dist": "^5.4.624",
     "pptxgenjs": "^3.11.0",
     "react": "^19.0.0",
     "react-color": "^2.19.3",

@@ -73,26 +73,17 @@ const handleSubmit = async () => {
     abortControllerRef.current = new AbortController();
 
     try {
-        const formData = new FormData();
-
-        // Optional user prompt (acts as title/focus hint)
-        if (description.trim()) {
-            formData.append("prompt", description.trim());
-        }
-
-        // View mode
-        formData.append("viewMode", orientation.toLowerCase()); // "landscape" or "portrait"
-
-        // File upload if present
-        if (selectedFile) {
-            formData.append("file", selectedFile);
-            setCurrentDetail("Extracting and summarizing uploaded file...");
-        }
-
-        // Direct call to the unified V2 endpoint
-        const res = await fetch(`${API_BASE_URL}/api/infographic`, {
+        // Direct call to the new GLM image generation endpoint
+        const res = await fetch(`${API_BASE_URL}/api/glm-image/generate`, {
             method: "POST",
-            body: formData,
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                // Appending English instruction to the prompt to ensure output language
+                prompt: `${description.trim()}. Please ensure all text in the infographic is in English.`,
+                viewMode: orientation.toLowerCase(),
+            }),
             signal: abortControllerRef.current.signal,
         });
 
@@ -103,21 +94,25 @@ const handleSubmit = async () => {
 
         const data = await res.json();
 
-        if (!data.success || !data.infographic?._id) {
-            throw new Error("Invalid response: Infographic not created properly");
+        if (!data.success || !data.imageUrl) {
+            throw new Error("Invalid response: Image not generated properly");
         }
 
-        const infographicId = data.infographic._id;
+        const imageUrl = data.imageUrl;
 
         // Update UI with success
         setCurrentMessage("✅ Infographic created successfully!");
         setCurrentDetail("Redirecting to your design...");
         setProgress(100);
-        setInfographicId(infographicId);
 
-        // Small delay for nice UX before redirect
+        // Redirect to infographic page with result data
         setTimeout(() => {
-            router.push(`/infographic/${infographicId}`);
+            const params = new URLSearchParams({
+                url: imageUrl,
+                viewMode: orientation.toLowerCase(),
+                prompt: description.trim()
+            });
+            router.push(`/infographic/result?${params.toString()}`);
         }, 800);
 
     } catch (err: any) {
@@ -145,14 +140,23 @@ const handleSubmit = async () => {
         setCurrentDetail("");
     };
 
-    const quickPrompts = [
-        "Creativity at Work",
-        "Responsive design principles",
-        "Healthy diet",
-        "UX UI guidelines",
-        "Accessibility best practices",
-        "Design system components",
-    ];
+const quickPrompts = [
+  "Daily productivity habits of successful people",
+  "Step-by-step guide to starting a small business",
+  "How the human brain processes information",
+  "Climate change causes and solutions",
+  "Beginner’s guide to personal finance",
+  "Benefits of regular exercise on the body",
+//   "The lifecycle of a product from idea to market",
+//   "Cybersecurity tips everyone should know",
+//   "Healthy morning routine checklist",
+//   "AI vs Human intelligence comparison",
+//   "Remote work advantages and challenges",
+//   "Social media impact on mental health",
+//   "How sleep affects performance and memory",
+//   "Roadmap to learning web development",
+//   "Sustainable living tips for everyday life",
+];
 
     return (
         <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>

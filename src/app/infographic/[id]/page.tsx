@@ -10,7 +10,7 @@ import Box from "@mui/material/Box";
 import { Button, Chip, Tooltip } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useMediaQuery, useTheme } from "@mui/material";
 import html2canvas from "html2canvas";
 import domtoimage from "dom-to-image-more";
@@ -21,6 +21,7 @@ export default function InfographicPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const htmlRef = useRef<HTMLDivElement>(null);
   const { id } = useParams();
+  const searchParams = useSearchParams();
   const { setInfographicId } = useTemplateSlides();
   const [isExporting, setIsExporting] = useState(false);
 
@@ -39,16 +40,30 @@ export default function InfographicPage() {
   const CANVAS_SIZES = {
     landscape: { width: 1280, height: 720 },
     portrait: { width: 800, height: 1200 },
+    square: { width: 1024, height: 1024 },
   };
 
-  const viewMode = (infographicData?.infographic?.viewMode as "landscape" | "portrait") || "landscape";
-  const isPortrait = viewMode === "portrait";
+  const viewMode = (infographicData?.infographic?.viewMode as "landscape" | "portrait" | "square") || "landscape";
 
-  const originalWidth = isPortrait ? CANVAS_SIZES.portrait.width : CANVAS_SIZES.landscape.width;
-  const originalHeight = isPortrait ? CANVAS_SIZES.portrait.height : CANVAS_SIZES.landscape.height;
+  const originalWidth = 
+    viewMode === "portrait" ? CANVAS_SIZES.portrait.width : 
+    viewMode === "square" ? CANVAS_SIZES.square.width : 
+    CANVAS_SIZES.landscape.width;
+
+  const originalHeight = 
+    viewMode === "portrait" ? CANVAS_SIZES.portrait.height : 
+    viewMode === "square" ? CANVAS_SIZES.square.height : 
+    CANVAS_SIZES.landscape.height;
 
   const [dynamicHeight, setDynamicHeight] = useState(originalHeight);
-  const stageWidth = isPortrait ? CANVAS_SIZES.portrait.width : CANVAS_SIZES.landscape.width; const stageHeight = isPortrait ? CANVAS_SIZES.portrait.height : CANVAS_SIZES.landscape.height;
+
+  // Sync dynamicHeight with originalHeight when data loads or viewMode changes
+  useEffect(() => {
+    setDynamicHeight(originalHeight);
+  }, [originalHeight]);
+
+  const stageWidth = originalWidth; 
+  const stageHeight = originalHeight;
 
   // Fetch infographic
   useEffect(() => {
@@ -56,6 +71,27 @@ export default function InfographicPage() {
       setError("Invalid infographic ID");
       setLoading(false);
       return;
+    }
+
+    // Handle GLM generated result
+    if (id === "result") {
+      const url = searchParams.get("url");
+      const vMode = searchParams.get("viewMode") as "landscape" | "portrait" | "square" || "landscape";
+      const prompt = searchParams.get("prompt") || "Generated Infographic";
+
+      if (url) {
+        setInfographicData({
+          infographic: {
+            title: prompt,
+            imageUrl: url,
+            viewMode: vMode,
+            type: "AI Generated"
+          },
+          meta: { generatedAt: new Date().toISOString() }
+        });
+        setLoading(false);
+        return;
+      }
     }
 
     const fetchInfographic = async () => {
@@ -76,7 +112,7 @@ export default function InfographicPage() {
     };
 
     fetchInfographic();
-  }, [id, API_BASE_URL, setInfographicId]);
+  }, [id, searchParams, API_BASE_URL, setInfographicId]);
 
   const cleanAndFixHtml = (html: string): string => {
     return html
@@ -337,28 +373,48 @@ const handleDownload = async (format: "png" | "jpeg") => {
           >
             <Stage
               ref={stageRef}
-              // width={originalWidth}
-              // height={dynamicHeight}
               style={{
                 background: "#fff",
-                // outline: "1px solid #fff",
               }}
               scaleX={scale}
               scaleY={scale}
-              width={originalWidth / scale}
-              height={dynamicHeight / scale}
+              width={originalWidth * scale}
+              height={dynamicHeight * scale}
             >
               <Layer>
                 <Html divProps={{ style: { pointerEvents: "none" } }}>
-                  <div
-                    ref={htmlRef}
-                    style={{
-                      width: originalWidth,
-                      minHeight: originalHeight,
-                      height: "auto",
-                    }}
-                    dangerouslySetInnerHTML={{ __html: cleanedHtml }}
-                  />
+                  {infographicData?.infographic?.imageUrl ? (
+                    <div
+                      style={{
+                        width: originalWidth,
+                        height: originalHeight,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        background: "#fff",
+                      }}
+                    >
+                      <img
+                        src={infographicData.infographic.imageUrl}
+                        alt="Infographic"
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                          objectFit: "contain",
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      ref={htmlRef}
+                      style={{
+                        width: originalWidth,
+                        minHeight: originalHeight,
+                        height: "auto",
+                      }}
+                      dangerouslySetInnerHTML={{ __html: cleanedHtml }}
+                    />
+                  )}
                 </Html>
               </Layer>
             </Stage>
@@ -373,18 +429,34 @@ const handleDownload = async (format: "png" | "jpeg") => {
             left: "-10000px",
             pointerEvents: "none",
             zIndex: -1,
-            overflow:"hidden",
+            overflow: "hidden",
           }}
         >
-          <div
-            style={{
-              width: originalWidth + 2,
-              minHeight: dynamicHeight + 2,
-              background: "#fff",
-                  padding: "1px",
-            }}
-            dangerouslySetInnerHTML={{ __html: cleanedHtml }}
-          />
+          {infographicData?.infographic?.imageUrl ? (
+            <div
+              style={{
+                width: originalWidth,
+                height: originalHeight,
+                background: "#fff",
+              }}
+            >
+              <img
+                src={infographicData.infographic.imageUrl}
+                alt="Export"
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              />
+            </div>
+          ) : (
+            <div
+              style={{
+                width: originalWidth + 2,
+                minHeight: dynamicHeight + 2,
+                background: "#fff",
+                padding: "1px",
+              }}
+              dangerouslySetInnerHTML={{ __html: cleanedHtml }}
+            />
+          )}
         </Box>
 
       </Box>

@@ -24,10 +24,13 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
-  title: "SlideXY: Smart AI Tool for Presentations & Pitch Decks",
+  title: {
+    default: "SlideXY: Smart AI Tool for Presentations & Pitch Decks",
+    template: "%s | SlideXY",
+  },
   description:
     "Build impressive presentations with AI assistance. SlideXY delivers ready-to-use slides and pitch decks for startups, sales teams, and educators in seconds.",
-    keywords: [
+  keywords: [
     "smart presentation tool",
     "AI-powered slides",
     "pitch deck automation",
@@ -41,9 +44,10 @@ export const metadata: Metadata = {
     "startup deck tool",
     "AI slide templates",
   ],
-    alternates: {
-    canonical: 'https://slidexy.ai/',
+  alternates: {
+    canonical: "https://slidexy.ai/",
   },
+  metadataBase: new URL("https://slidexy.ai"),
 };
 
 export default function RootLayout({
