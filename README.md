@@ -2,7 +2,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 ## LinkedIn Integration ✅
 
 This frontend includes **complete LinkedIn OAuth 2.0 integration** for sharing presentations directly to LinkedIn!
-
 ### Features
 - 🔐 Secure OAuth 2.0 authentication
 - 📤 Share presentation slides to LinkedIn
