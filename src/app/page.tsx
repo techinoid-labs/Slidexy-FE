@@ -3,31 +3,47 @@ import HomeClient from "./components/HomeClient";
 export default function Home() {
   return (
     <>
+      {/* Accessible sr-only H1 for SEO — visible H1 is rendered by HeroSection */}
       <h1
         style={{
           position: "absolute",
-          left: "-9999px",
-          top: "-9999px",
-          height: 1,
-          width: 1,
+          width: "1px",
+          height: "1px",
+          padding: 0,
+          margin: "-1px",
           overflow: "hidden",
+          clip: "rect(0, 0, 0, 0)",
+          whiteSpace: "nowrap",
+          borderWidth: 0,
         }}
-      >SlideXy AI Turns Your Ideas into Stunning Presentations Instantly</h1>
+      >
+        AI Presentation Maker for Slides and Pitch Decks
+      </h1>
       <p
         style={{
           position: "absolute",
-          left: "-9999px",
-          top: "-9999px",
-          height: 1,
-          width: 1,
+          width: "1px",
+          height: "1px",
+          padding: 0,
+          margin: "-1px",
           overflow: "hidden",
+          clip: "rect(0, 0, 0, 0)",
+          whiteSpace: "nowrap",
+          borderWidth: 0,
         }}
       >
-        Create slides instantly using AI. Turn ideas, voice, text, or links into
-        polished presentations in seconds.
+        SlideXY is the AI presentation maker that turns your ideas into
+        professional slide decks in seconds. Whether you are a startup founder
+        building a pitch deck, a sales team preparing a quarterly review, or an
+        educator crafting lesson slides, SlideXY handles the design so you can
+        focus on your message. Paste a prompt, upload a video, drop in a website
+        link, or speak your ideas aloud — our AI creates polished, on-brand
+        presentations instantly. No design skills needed. No templates to wrestle
+        with. Just your content, beautifully presented.
       </p>
 
       <HomeClient />
     </>
   );
 }
+

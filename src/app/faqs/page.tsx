@@ -63,12 +63,13 @@ export default function FAQPage() {
         }}
       >
         <Typography
-          variant="h4"
+          component="h1"
           sx={{
             fontWeight: 700,
             mb: 2,
             textAlign: "center",
             color: "#111827",
+            fontSize: { xs: "1.75rem", md: "2.125rem" },
           }}
         >
           Frequently Asked Questions
@@ -83,8 +84,11 @@ export default function FAQPage() {
             mx: "auto",
           }}
         >
-          Have questions? We’ve got answers. If you don’t see your question
-          here, feel free to contact us anytime.
+          Find answers to the most common questions about SlideXY. Learn
+          how our AI presentation tool works, what features are available,
+          how to customize your slides, and which pricing plan is right
+          for you. If you do not see your question here, feel free to
+          contact us anytime.
         </Typography>
 
         {/* Accordion List */}

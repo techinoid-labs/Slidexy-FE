@@ -170,11 +170,10 @@ export default function BlogPage() {
             }}
           >
             <Typography
-              variant="h2"
+              component="h1"
               gutterBottom
               sx={{
                 fontWeight: 500,
-                fontColor: "rgba(26, 26, 26, 1)",
                 fontSize: { xs: "2.5rem", md: "3.5rem" },
                 mb: 2,
                 background: "rgba(26, 26, 26, 1)",
@@ -183,7 +182,7 @@ export default function BlogPage() {
                 backgroundClip: "text",
               }}
             >
-              Our Blogs
+              SlideXY Blog
             </Typography>
             <Typography
               variant="h6"
@@ -196,8 +195,10 @@ export default function BlogPage() {
                 lineHeight: 1.6,
               }}
             >
-              Turn any thought into a polished, on-brand presentation — powered
-              by AI, styled by designers.
+              Stay up to date with the latest AI presentation tips, product
+              updates, and expert guides. Whether you are looking for ways to
+              improve your pitch deck, explore new SlideXY features, or learn
+              best practices for visual storytelling, our blog has you covered.
             </Typography>
             {isAdmin && (
               <Button
