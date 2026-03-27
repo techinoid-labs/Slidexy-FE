@@ -39,13 +39,28 @@ export default function TermsOfServicePage() {
         {/* Centered Heading */}
         <Box sx={{ textAlign: "center", mt: { xs: 4, md: 6 } }}>
           <Typography
-            variant="h4"
+            component="h1"
             sx={{ fontWeight: "bold", mb: 1, fontSize: { xs: 28, md: 36 } }}
           >
             Terms of Service
           </Typography>
           <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.8)" }}>
             Last updated and effective date: September 2025
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              mt: 2,
+              maxWidth: 600,
+              mx: "auto",
+              lineHeight: 1.6,
+            }}
+          >
+            These terms govern your use of the SlideXY platform and services.
+            By accessing our AI presentation tools you agree to be bound by
+            these conditions. Please read them carefully before creating an
+            account or using any SlideXY features.
           </Typography>
         </Box>
       </Box>

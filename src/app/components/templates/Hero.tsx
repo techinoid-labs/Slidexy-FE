@@ -38,7 +38,7 @@ export default function Hero() {
         }}
       >
         <Typography
-          variant="h4"
+          component="h1"
           sx={{
             fontWeight: 600,
             fontSize: { xs: "24px", sm: "32px", md: "48px" },
@@ -48,7 +48,7 @@ export default function Hero() {
             marginTop: { sm: "137px"},
           }}
         >
-          Present Like a Pro with Ready-to-Use Templates
+          AI Presentation Templates
         </Typography>
 
         <Typography
@@ -60,8 +60,12 @@ export default function Hero() {
             textAlign: { xs: "center", md: "left" },
           }}
         >
-          Turn any thought into a polished, on-brand presentation — powered by
-          AI, styled by designers.
+          Browse ready-to-use presentation templates designed for pitches,
+          business reports, proposals, and more. Each template is crafted
+          by professional designers and enhanced with AI so you can
+          customize colors, fonts, and layouts in seconds. Whether you
+          need a clean startup pitch deck or a data-driven quarterly
+          review, pick a template and let SlideXY handle the rest.
         </Typography>
 
         <Box

@@ -47,8 +47,9 @@ export default function OurAiTools() {
         }}
       />
 
-      {/* Heading */}
+      {/* H1 Heading */}
       <Typography
+        component="h1"
         sx={{
           color: "rgba(26, 26, 26, 1)",
           fontWeight: 600,
@@ -56,22 +57,28 @@ export default function OurAiTools() {
           mt: 1,
         }}
       >
-        Our AI Tools
+        AI Presentation Tools
       </Typography>
 
-      {/* Subtitle */}
+      {/* SEO Intro Copy */}
       <Typography
         sx={{
           color: "rgba(109, 109, 109, 1)",
           fontWeight: 400,
           fontSize: { xs: "1rem", md: "1.15rem" },
-          maxWidth: 524,
+          maxWidth: 680,
           lineHeight: 1.6,
         }}
       >
-        Turn any thought into a polished, on-brand presentation <br />
-        powered by AI, styled by designers.
+        SlideXY gives you a complete suite of AI-powered tools to create
+        presentations from any starting point. Turn a text prompt into a
+        full slide deck, convert a YouTube video into structured slides,
+        transform a website into a presentation, or generate polished
+        templates from raw notes. Each tool is purpose-built to save you
+        hours of design work while producing professional, on-brand
+        results every time.
       </Typography>
     </Box>
   );
 }
+
