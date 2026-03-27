@@ -100,6 +100,7 @@ export default function PricingSection() {
       />
 
       <Typography
+        component="h1"
         sx={{
           fontWeight: 600,
           fontSize: { xs: "30px", md: "48px" },
@@ -108,7 +109,7 @@ export default function PricingSection() {
           textAlign: "center",
         }}
       >
-        From Free to Full Power
+        SlideXY Pricing
       </Typography>
 
       <Typography
@@ -116,7 +117,6 @@ export default function PricingSection() {
           fontWeight: 700,
           fontSize: { xs: "18px", md: "18px" },
           color: "#6D6D6D",
-          // mb: 1,
           textAlign: "center",
         }}
       >
@@ -133,9 +133,11 @@ export default function PricingSection() {
           maxWidth: "40rem",
         }}
       >
-        Test SlideXy's intelligent slide generation for free. When you're ready,
-        choose a scalable plan with more features, flexibility, and export
-        control. Secure payments with a 7-day money-back guarantee.{" "}
+        SlideXY offers flexible plans for every team size and budget. Start with
+        the free tier to explore AI-powered slide generation. When you are ready
+        for more features, premium templates, and advanced export controls,
+        upgrade to a paid plan. All paid plans include a 7-day money-back
+        guarantee and secure payment through Stripe.
       </Typography>
 
       {/* Pricing Cards / Loader */}
