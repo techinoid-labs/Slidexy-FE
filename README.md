@@ -12,7 +12,6 @@ This frontend includes **complete LinkedIn OAuth 2.0 integration** for sharing p
 
 ## Getting Started
 First, run the development server:
-
 ```bash
 npm run dev
 # or
