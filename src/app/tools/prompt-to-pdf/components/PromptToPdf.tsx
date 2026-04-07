@@ -183,13 +183,7 @@ export default function PromptToPdf() {
             </Box>
 
             <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", py: { xs: 8, md: 10 }, px: { xs: 2, md: 6 } }}>
-                <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, color: "rgba(26, 26, 26, 1)", fontSize: "60px" }}>
-                    Prompt to PDF
-                </Typography>
 
-                <Typography sx={{ color: "rgba(109, 109, 109, 1)", maxWidth: 680, mb: 6, fontSize: { xs: "16px", md: "18px" }, textAlign: "center" }}>
-                    Generate beautiful LaTeX documents using Gemini AI — resumes, reports, letters, cards, and more.
-                </Typography>
 
                 <Box sx={{ width: "100%", maxWidth: "926px", bgcolor: "rgba(251, 250, 255, 0.5)", borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.06)", border: "1px solid rgba(232, 228, 255, 1)", p: { xs: 3, md: 5 }, mb: 4 }}>
                     <TextField

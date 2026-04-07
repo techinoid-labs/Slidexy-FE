@@ -65,12 +65,12 @@ export default function OurAiTools() {
         sx={{
           color: "rgba(109, 109, 109, 1)",
           fontWeight: 400,
-          fontSize: { xs: "1rem", md: "1.15rem" },
-          maxWidth: 680,
+          fontSize: { xs: "1.1rem", md: "1.25rem" },
+          maxWidth: 800,
           lineHeight: 1.6,
         }}
       >
-        SlideXY gives you a complete suite of AI-powered tools to create
+        Slidexy gives you a complete suite of AI-powered tools to create
         presentations from any starting point. Turn a text prompt into a
         full slide deck, convert a YouTube video into structured slides,
         transform a website into a presentation, or generate polished

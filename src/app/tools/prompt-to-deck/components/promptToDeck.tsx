@@ -249,31 +249,7 @@ export default function PromptToDeck() {
           textAlign: "center",
         }}
       >
-        {/* Title */}
-        <Typography
-          variant="h2"
-          sx={{
-            fontWeight: 700,
-            mb: 1,
-            color: "rgba(26, 26, 26, 1)",
-            fontSize: { xs: "16px", md: "60px" },
-          }}
-        >
-          Prompt-to-Deck
-        </Typography>
 
-        {/* Subtitle */}
-        <Typography
-          sx={{
-            color: "rgba(109, 109, 109, 1)",
-            maxWidth: 520,
-            mb: 6,
-            fontSize: { xs: "1rem", md: "18px" },
-          }}
-        >
-          Elevate your presentations with our AI-powered tool—create polished,
-          professional slides in just seconds.
-        </Typography>
 
         {/* Input Section */}
         <Box

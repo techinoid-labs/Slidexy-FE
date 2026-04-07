@@ -197,15 +197,7 @@ const quickPrompts = [
                     px: { xs: 2, md: 6 },
                 }}
             >
-                <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, color: "rgba(26, 26, 26, 1) ", fontSize: "60px" }}>
-                    Text-to-Infographics
-                </Typography>
 
-                <Typography sx={{
-                    color: "rgba(109, 109, 109, 1)", maxWidth: 520, mb: 6, fontSize: { xs: "16px", md: "18px" },
-                }}>
-                    Elevate your presentations with our AI-powered tool—create polished, professional slides in just seconds.
-                </Typography>
 
                 <Box
                     sx={{
