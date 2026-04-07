@@ -139,55 +139,8 @@ export default function Header() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               {!isMobile && (
                 <>
-                  {/* <Link href="/waiting-list" passHref>
-                    <Button
-                      variant="outlined"
-                      sx={{
-                        mt: "5px",
-                        ml: "10px",
-                        px: "20px",
-                        py: "12px",
-                        color: "#4A00E0",
-                        height: "48px",
-                        background: "#F2F0FF",
-                        borderRadius: "999px",
-                        textTransform: "none",
-                        fontWeight: 500,
-                        fontSize: "16px",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Join the Waitlist
-                    </Button>
-                  </Link> */}
 
                   <NavProfileHandler />
-
-                  {!isAcountsPage && !user && (
-                    <Link href="/tools" passHref>
-                      <Button
-                        variant="contained"
-                        sx={{
-                          mt: 0.9,
-                          mb: 1.06,
-                          backgroundColor: "#4A00E0",
-                          color: "#fff",
-                          borderRadius: "999px",
-                          px: "20px",
-                          py: "12px",
-                          maxHeight: "48px",
-                          textTransform: "none",
-                          fontWeight: 600,
-                          whiteSpace: "nowrap",
-                          "&:hover": {
-                            backgroundColor: "#3a00b8",
-                          },
-                        }}
-                      >
-                        Try for Free →
-                      </Button>
-                    </Link>
-                  )}
                 </>
               )}
 
@@ -232,13 +185,7 @@ export default function Header() {
                       );
                     })}
 
-                    <MenuItem
-                      component={Link}
-                      href="/presentation/create"
-                      onClick={handleMenuClose}
-                    >
-                      Try for Free
-                    </MenuItem>
+
                     <Divider />
                     <MenuItem
                       className="w-full flex justify-center items-center"

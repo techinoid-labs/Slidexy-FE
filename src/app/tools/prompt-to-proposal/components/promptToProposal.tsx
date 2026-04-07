@@ -129,12 +129,7 @@ export default function PromptToProposal() {
       </Box>
 
       <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", py: { xs: 8, md: 10 }, px: { xs: 2, md: 6 } }}>
-        <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, color: "#1a1a1a", fontSize: { xs: "40px", md: "60px" }, textAlign: "center" }}>
-          Prompt-to-Proposal
-        </Typography>
-        <Typography sx={{ color: "#6d6d6d", textAlign: "center", maxWidth: 520, mb: 6, fontSize: { xs: "16px", md: "18px" } }}>
-          Elevate your presentations with our AI-powered tool—create polished, professional proposals in seconds.
-        </Typography>
+
 
         <Box sx={{ width: "100%", maxWidth: "926px", bgcolor: "rgba(251, 250, 255, 0.5)", borderRadius: 1, boxShadow: "0 4px 14px rgba(0,0,0,0.05)", border: "1px solid #e8e4ff", p: { xs: 3, md: 4 }, mb: 4 }}>
           <TextField

@@ -245,31 +245,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
           <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
             Media Gallery
           </Typography>
-          {/* <Grid container spacing={3}>
-            {blog.media.map((img, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: 250,
-                    borderRadius: 3,
-                    overflow: "hidden",
-                    bgcolor: "#f5f5f5",
-                  }}
-                >
-                  <img
-                    src={img}
-                    alt={`Media ${index + 1}`}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </Box>
-              </Grid>
-            ))}
-          </Grid> */}
+
           <Grid container spacing={3}>
             {blog.media.map((img, index) => (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
@@ -428,59 +404,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
         </Box>
       )}
 
-      <Box
-        sx={{
-          background:
-            "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-          py: 8,
-          textAlign: "center",
-        }}
-      >
-        <Container maxWidth="md">
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 500,
-              fontSize: { xs: "2rem", md: "2.5rem" },
-              color: "white",
-              mb: 2,
-            }}
-          >
-            Experience the Future First
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              fontSize: "1.125rem",
-              color: "rgba(255,255,255,0.9)",
-              mb: 4,
-            }}
-          >
-            Join the waitlist today and let AI-powered innovation reach you
-            before the crowd.
-          </Typography>
-          <Link href="/waiting-list" passHref>
-            <Button
-              variant="contained"
-              sx={{
-                bgcolor: "white",
-                color: "#667eea",
-                px: 4,
-                py: 1.5,
-                borderRadius: 2,
-                fontWeight: 600,
-                textTransform: "none",
-                fontSize: "1rem",
-                "&:hover": {
-                  bgcolor: "rgba(255,255,255,0.9)",
-                },
-              }}
-            >
-              Get Started
-            </Button>
-          </Link>
-        </Container>
-      </Box>
+
 
       <Footer />
     </Box>

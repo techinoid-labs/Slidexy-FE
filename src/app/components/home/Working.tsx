@@ -17,7 +17,7 @@ export default function WorkingSection() {
       label: "home_page_to_slide_generation",
     });
 
-    router.push(`/presentation/create`);
+    router.push(`/tools`);
   };
   return (
     <Box
@@ -96,7 +96,7 @@ export default function WorkingSection() {
           }}
           endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
         >
-          Try for Free
+          Get Started
         </Button>
       </Box>
 
@@ -130,7 +130,7 @@ export default function WorkingSection() {
           display: { xs: "block", md: "none" }, // Show only in xs
         }}
       >
-        <Link href="/presentation/create" passHref>
+        <Link href="/tools" passHref>
           <Button
             variant="contained"
             sx={{
@@ -149,7 +149,7 @@ export default function WorkingSection() {
             }}
             endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
           >
-            Try for Free
+            Get Started
           </Button>
         </Link>
       </Box>

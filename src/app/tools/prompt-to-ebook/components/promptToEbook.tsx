@@ -209,13 +209,7 @@ export default function PromptToEbook() {
           px: 6,
         }}
       >
-        <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, fontSize: "60px" }}>
-          Prompt-to-eBook
-        </Typography>
 
-        <Typography sx={{ color: "#6d6d6d", maxWidth: 520, mb: 6 }}>
-          Generate fully structured eBooks with AI—fast, clean & professional.
-        </Typography>
 
         {/* Input Box */}
         <Box

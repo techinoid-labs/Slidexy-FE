@@ -579,63 +579,7 @@ export default function BlogPage() {
             </Container>
           </Box>
 
-          <Box
-            sx={{
-              background:
-                "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-              borderRadius: 0,
-              py: 8,
-              textAlign: "center",
-              width: "100vw",
-              marginLeft: "calc(-50vw + 50%)",
-              color: "white",
-              mb: 8,
-            }}
-          >
-            <Typography
-              variant="h4"
-              gutterBottom
-              sx={{
-                fontWeight: 500,
-                fontSize: { xs: "2rem", md: "2.5rem" },
-                mb: 2,
-              }}
-            >
-              Experience the Future First
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                noWrap: "normal",
-                mb: 8,
-                maxWidth: 600,
-                mx: "auto",
-                lineHeight: 1.6,
-                opacity: 0.9,
-              }}
-            >
-              Join the waitlist today and let AI-powered innovation reach you
-              before the crowd.
-            </Typography>
-            <Link href="/waiting-list" passHref>
-              <Button
-                variant="contained"
-                sx={{
-                  color: "#6412FF",
-                  background: "#FFFFFF",
-                  borderRadius: "999px",
-                  borderColor: "white",
-                  px: 3,
-                  textTransform: "none",
-                  fontWeight: 600,
-                  whiteSpace: "nowrap",
-                  mt: { xs: 0, md: -10 },
-                }}
-              >
-                Join Waitlist
-              </Button>
-            </Link>
-          </Box>
+
 
         </Container>
 

@@ -225,24 +225,7 @@ export default function UrlToWebsite() {
                     px: { xs: 2, md: 6 },
                 }}
             >
-                <Typography
-                    variant="h2"
-                    sx={{ fontWeight: 700, mb: 1, color: "rgba(26, 26, 26, 1)", fontSize: "60px" }}
-                >
-                    URL-to-Website
-                </Typography>
 
-                <Typography
-                    sx={{
-                        color: "rgba(109, 109, 109, 1)",
-                        maxWidth: 580,
-                        mb: 6,
-                        fontSize: { xs: "16px", md: "18px" },
-                        textAlign: "center",
-                    }}
-                >
-                    Generate stunning websites — from any URL or just a description.
-                </Typography>
 
                 <Box
                     sx={{
