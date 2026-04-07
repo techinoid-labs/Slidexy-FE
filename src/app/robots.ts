@@ -33,9 +33,13 @@ export default function robots(): MetadataRoute.Robots {
           // Internal logic paths
           "/slice",
           "/store",
+          "/waiting-list",
+          "/proposal",
+          "/reports",
         ],
       },
     ],
     sitemap: "https://slidexy.ai/sitemap.xml",
   };
 }
+
