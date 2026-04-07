@@ -5,11 +5,17 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import BusinessIcon from "@mui/icons-material/Business";
 import SchoolIcon from "@mui/icons-material/School";
 import PersonIcon from "@mui/icons-material/Person";
+import SpeedIcon from "@mui/icons-material/Speed";
+import PaletteIcon from "@mui/icons-material/Palette";
+import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
+import SecurityIcon from "@mui/icons-material/Security";
+import CloudDoneIcon from "@mui/icons-material/CloudDone";
 
 interface Persona {
   title: string;
   description: string;
-  icon?: "group" | "business" | "school" | "person";
+  icon?: "group" | "business" | "school" | "person" | "speed" | "design" | "ai" | "ease" | "secure" | "done";
 }
 
 interface WhoItsForProps {
@@ -22,6 +28,12 @@ export default function WhoItsFor({ personas }: WhoItsForProps) {
       case "group": return <GroupsIcon sx={{ fontSize: 40, color: "#7C3AED" }} />;
       case "business": return <BusinessIcon sx={{ fontSize: 40, color: "#7C3AED" }} />;
       case "school": return <SchoolIcon sx={{ fontSize: 40, color: "#7C3AED" }} />;
+      case "speed": return <SpeedIcon sx={{ fontSize: 40, color: "#7C3AED" }} />;
+      case "design": return <PaletteIcon sx={{ fontSize: 40, color: "#7C3AED" }} />;
+      case "ai": return <AutoFixHighIcon sx={{ fontSize: 40, color: "#7C3AED" }} />;
+      case "ease": return <ThumbUpAltIcon sx={{ fontSize: 40, color: "#7C3AED" }} />;
+      case "secure": return <SecurityIcon sx={{ fontSize: 40, color: "#7C3AED" }} />;
+      case "done": return <CloudDoneIcon sx={{ fontSize: 40, color: "#7C3AED" }} />;
       default: return <PersonIcon sx={{ fontSize: 40, color: "#7C3AED" }} />;
     }
   };
