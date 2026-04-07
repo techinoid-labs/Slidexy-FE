@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { signIn } from "next-auth/react";
 import axios from "axios";
 import { Box, Paper } from '@mui/material';
@@ -50,7 +51,15 @@ const Auth: React.FC<AuthProps> = (
     }
 
     // Track which form is active
+    const searchParams = useSearchParams();
     const [activeForm, setActiveForm] = useState<ActiveForm>('login');
+
+    useEffect(() => {
+        const formParam = searchParams.get('form');
+        if (formParam === 'signup' || formParam === 'login' || formParam === 'forgot' || formParam === 'reset') {
+            setActiveForm(formParam as ActiveForm);
+        }
+    }, [searchParams]);
 
     // Handle input changes
     const handleChange = (

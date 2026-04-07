@@ -21,7 +21,16 @@ export default function robots(): MetadataRoute.Robots {
           // API routes
           "/api/",
 
-          // Internal / low-value pages
+          // Dynamic Viewer / App State Routes (No SEO value)
+          "/infographic",
+          "/linkedin",
+          "/presentation",
+          "/text-to-template",
+          "/waiting-list",
+          "/proposal",
+          "/reports",
+
+          // Internal logic paths
           "/slice",
           "/store",
           "/waiting-list",

@@ -43,10 +43,10 @@ const tools = [
         description: "Create ready-to-use, customizable templates instantly using AI from your ideas."
     },
     {
-        label: "Url-to-Website",
+        label: "Prompt to Web",
         icon: "/images/tools/url-to-website.svg",
-        route: "/tools/url-to-website",
-        description: "Convert any URL into a fully structured, modern website layout using AI."
+        route: "https://prompt-to-web.slidexy.net/",
+        description: "Build websites, React apps, and mobile apps or clone any site, using nothing but a description or URL."
     },
     {
         label: "Prompt-to-Proposal",
@@ -163,7 +163,13 @@ export default function Services() {
                     {tools.map((tool, i) => (
                         <Box
                             key={i}
-                            onClick={() => router.push(tool.route)}
+                            onClick={() => {
+                                if (tool.route.startsWith('http')) {
+                                    window.open(tool.route, '_blank');
+                                } else {
+                                    router.push(tool.route);
+                                }
+                            }}
                             sx={{
                                 position: "relative",
                                 borderRadius: "12px",
@@ -175,7 +181,7 @@ export default function Services() {
                                 flexDirection: "column",
                                 gap: "32px",
                                 p: "24px",
-                                height: 220,
+                                minHeight: { xs: 260, md: 280 },
                                 width: { xs: "100%", sm: 280, md: 356 },
                                 transition: "all 0.3s ease",
                                 cursor: "pointer",
@@ -217,11 +223,11 @@ export default function Services() {
 
                                     {tool.label}
                                 </Typography>
-                                <Typography
+                                 <Typography
                                     sx={{
                                         fontFamily: "Raleway",
-                                        fontSize: "14px",
-                                        lineHeight: "20px",
+                                        fontSize: "16px",
+                                        lineHeight: "24px",
                                         fontWeight: 400,
                                         color: "rgba(86, 86, 86, 1)",
                                     }}

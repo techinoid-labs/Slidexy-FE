@@ -236,13 +236,7 @@ export default function PromptToVideo() {
                     textAlign: "center",
                 }}
             >
-                <Typography variant="h2" sx={{ fontWeight: 700, mb: 1, fontSize: "48px" }}>
-                    Prompt-to-Video
-                </Typography>
 
-                <Typography sx={{ color: "rgba(109,109,109,1)", maxWidth: 520, mb: 6 }}>
-                    Enter a prompt and get video explaining the Topic mentioned.
-                </Typography>
 
                 <Box
                     sx={{
