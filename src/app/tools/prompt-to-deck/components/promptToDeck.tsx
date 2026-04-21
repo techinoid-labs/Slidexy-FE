@@ -76,6 +76,32 @@ export default function PromptToDeck() {
     setError("");
   };
 
+  useEffect(() => {
+      const payloadStr = localStorage.getItem("agentPayload");
+      if (payloadStr) {
+          try {
+              const payload = JSON.parse(payloadStr);
+              localStorage.removeItem("agentPayload");
+              
+              if (payload.prompt) setDescription(payload.prompt);
+              if (payload.goal) setGoal(payload.goal);
+              if (payload.tone) setTone(payload.tone);
+              if (payload.visualStyle) setVisualStyle(payload.visualStyle);
+              if (payload.slideCount) setCount(payload.slideCount);
+
+              // If prompt exists, auto-submit
+              if (payload.prompt) {
+                   setTimeout(() => {
+                       const submitBtn = document.getElementById("deck-submit-btn");
+                       if (submitBtn) submitBtn.click();
+                   }, 1500);
+              }
+          } catch (e) {
+              console.error("Failed to parse agent payload", e);
+          }
+      }
+  }, []);
+
   const handleSubmit = async () => {
     // ---- validation -------------------------------------------------
     if (!description.trim()) {
@@ -529,6 +555,7 @@ export default function PromptToDeck() {
 
             {/* Generate Button */}
             <Button
+              id="deck-submit-btn"
               variant="contained"
               disabled={loading}
               onClick={handleSubmit}

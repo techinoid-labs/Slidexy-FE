@@ -8,6 +8,8 @@ import { ThemeProvider as ThemeContextProvider } from "./context/ThemeContext";
 import "./globals.css";
 import SessionWrapper from "@/lib/sessionWrapper";
 import { UserProvider } from "./context/AuthContext";
+import { AgentProvider } from "./context/AgentContext";
+import AiChatWidget from "./components/agent/AiChatWidget";
 
 
 import Script from "next/script";
@@ -145,10 +147,13 @@ export default function RootLayout({
             <CssBaseline />
             <SessionWrapper>
               <UserProvider>
-                <Providers>
-                  <AnalyticsTracker />
-                  {children}
-                </Providers>
+                <AgentProvider>
+                  <Providers>
+                    <AnalyticsTracker />
+                    {children}
+                    <AiChatWidget />
+                  </Providers>
+                </AgentProvider>
               </UserProvider>
             </SessionWrapper>
           </ThemeProvider>

@@ -154,6 +154,41 @@ export default function OutlinePage() {
     [pid, slidesState]
   );
 
+  // Listen for agent outline edits
+  useEffect(() => {
+    const handleAgentEditOutline = (e: any) => {
+      const payload = e.detail;
+      if (!payload || typeof payload.slideIndex !== "number") return;
+      
+      setCards((prevCards: any) => {
+        const newCards = [...prevCards];
+        const idx = payload.slideIndex;
+        
+        if (idx >= 0 && idx < newCards.length) {
+          const updatedCard = { ...newCards[idx] };
+          
+          if (payload.newTitle) {
+            updatedCard.title = payload.newTitle;
+          }
+          if (payload.newBullets && Array.isArray(payload.newBullets)) {
+            updatedCard.bullets = payload.newBullets;
+          }
+          
+          newCards[idx] = updatedCard;
+
+          // Perform auto-save with debounce
+          debouncedSave(newCards);
+        }
+        return newCards;
+      });
+    };
+
+    window.addEventListener("SLIDEXY_AGENT_EDIT_OUTLINE", handleAgentEditOutline);
+    return () => {
+      window.removeEventListener("SLIDEXY_AGENT_EDIT_OUTLINE", handleAgentEditOutline);
+    };
+  }, [debouncedSave]);
+
   // Fetch presentation on mount
   useEffect(() => {
     if (!pid) {

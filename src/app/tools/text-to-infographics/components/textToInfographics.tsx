@@ -17,7 +17,7 @@ import {
     Backdrop,
 } from "@mui/material";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 import FileUploadZone from "@/app/components/shared/FileUploadZone";
@@ -53,6 +53,38 @@ export default function TextToInfographics() {
     const removeFile = () => {
         setSelectedFile(null);
     };
+
+    // Auto-fill from Agent Context
+    useEffect(() => {
+        const payloadStr = localStorage.getItem("agentPayload");
+        if (payloadStr) {
+            try {
+                const payload = JSON.parse(payloadStr);
+                localStorage.removeItem("agentPayload");
+                
+                if (payload.prompt) {
+                    setDescription(payload.prompt);
+                }
+                
+                if (payload.orientation && ["landscape", "portrait"].includes(payload.orientation.toLowerCase())) {
+                    setOrientation(payload.orientation.toLowerCase());
+                } else {
+                    setOrientation("portrait"); // Set a safe default to allow immediate submission
+                }
+
+                // If prompt exists, auto-submit after a slight delay for visual feedback
+                if (payload.prompt) {
+                     setTimeout(() => {
+                         const submitBtn = document.getElementById("infographic-submit-btn");
+                         if (submitBtn) submitBtn.click();
+                     }, 1500);
+                }
+                
+            } catch (e) {
+                console.error("Failed to parse agent payload", e);
+            }
+        }
+    }, []);
 
 const handleSubmit = async () => {
     if (!description.trim() && !selectedFile) {
@@ -355,6 +387,7 @@ const quickPrompts = [
                             </Stack>
                         </Box>
                         <Button
+                            id="infographic-submit-btn"
                             variant="contained"
                             onClick={handleSubmit}
                             disabled={loading}

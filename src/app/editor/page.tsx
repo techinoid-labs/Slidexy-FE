@@ -63,6 +63,46 @@ const Page = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const stageRefs = useRef<any[]>([]);
+
+  // AIAgent Live Slide Text Editing Listener
+  useEffect(() => {
+     const applyAgentEdit = (payload: any) => {
+         console.log("🛠️ Received AI Slide Edit Demand:", payload);
+         if (payload && payload.newTitle) {
+             const index = payload.slideIndex !== undefined ? payload.slideIndex : selectedSlideIndex;
+             const updatedSlides = JSON.parse(JSON.stringify(slides));
+             
+             if (updatedSlides[index] && updatedSlides[index].content) {
+                 // Try finding a title element (assuming Title is often large text)
+                 const textTitleIndex = updatedSlides[index].content.findIndex(
+                     (c: any) => c.type === 'text' && c.props && (c.props.fontSize && c.props.fontSize > 20)
+                 );
+                 if (textTitleIndex !== -1) {
+                      updatedSlides[index].content[textTitleIndex].props.text = payload.newTitle;
+                      setSlides(updatedSlides);
+                      dispatch(setSlidesAction(updatedSlides));
+                 }
+             }
+         }
+     };
+
+     // 1. Check for buffered edits from another page
+     const storedEdit = localStorage.getItem("agentEditPayload");
+     if (storedEdit && slides.length > 0) { // wait until slides are loaded
+        try {
+            const payload = JSON.parse(storedEdit);
+            localStorage.removeItem("agentEditPayload");
+            setTimeout(() => applyAgentEdit(payload), 800);
+        } catch(e) {}
+     }
+
+     // 2. Listen for live edits on the current page
+     const handleAgentEvent = (e: any) => applyAgentEdit(e.detail);
+     window.addEventListener("SLIDEXY_AGENT_EDIT_SLIDE", handleAgentEvent);
+     
+     return () => window.removeEventListener("SLIDEXY_AGENT_EDIT_SLIDE", handleAgentEvent);
+  }, [slides, selectedSlideIndex, setSlides, dispatch]);
+
   const [initialSlides] = useState(() => slides);
   const [showRightPanel, setShowRightPanel] = useState(true);
   const theme = useTheme();
