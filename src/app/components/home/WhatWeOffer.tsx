@@ -93,7 +93,7 @@ export default function WhatWeOffer() {
                     }}
                 >
                     <Image
-                        src="/images/light-purple-stars.png"
+                        src="/images/light-purple-stars.webp"
                         alt="Icon"
                         width={68}
                         height={68}

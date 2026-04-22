@@ -20,9 +20,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { analyticsEvent } from "@/lib/gtag";
+import { useRef } from "react";
 
 export default function HeroSection() {
   const [inputValue, setInputValue] = useState("");
+  const [videoReady, setVideoReady] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const theme = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -72,18 +75,42 @@ export default function HeroSection() {
             height: "100%",
             overflow: "hidden",
             zIndex: 1,
+            backgroundColor: "#ffffff",
           }}
         >
+          {/* IMAGE (Primary LCP Element) */}
+          <Image
+            src="/background-video.webp"
+            alt="AI presentation maker background"
+            fill
+            priority
+            fetchPriority="high"
+            loading="eager"
+            style={{
+              objectFit: "cover",
+              opacity: 0.1,
+              zIndex: 2,
+            }}
+          />
+
+          {/* VIDEO (Secondary/Progressive Load) */}
           <video
+            ref={videoRef}
             autoPlay
             muted
             loop
             playsInline
+            onCanPlay={() => setVideoReady(true)}
             style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              opacity: "0.1"
+              opacity: videoReady ? 0.1 : 0,
+              transition: "opacity 1.5s ease",
+              zIndex: 3,
             }}
           >
             <source src="/services-background.mp4" type="video/mp4" />
