@@ -77,7 +77,31 @@ export default function HeroSection() {
             zIndex: 1,
             backgroundColor: "#ffffff",
           }}
+        >        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            mt: { xs: -6, md: -16 },
+            opacity: 0.6,
+            pointerEvents: "none",
+            width: { xs: 250, md: 450 },
+            height: { xs: 200, md: 450 },
+          }}
         >
+          <Image
+            src="/images/checkered-lines.svg"
+            alt="Checkered Background"
+            width={450}
+            height={450}
+            style={{
+              objectFit: "contain",
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        </Box>
           {/* IMAGE (Primary LCP Element) */}
           <Image
             src="/background-video.webp"
@@ -113,7 +137,7 @@ export default function HeroSection() {
               zIndex: 3,
             }}
           >
-            <source src="/services-background.mp4" type="video/mp4" />
+            <source src="/services-background.webm" type="video/webm" />
           </video>
         </Box>
         {/* Decorative Elements */}
