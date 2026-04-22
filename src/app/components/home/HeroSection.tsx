@@ -209,7 +209,7 @@ export default function HeroSection() {
                 textOverflow: "ellipsis",
               }}
             >
-              SlideXy AI Turns Your Ideas into Stunning Presentations Instantly
+              AI presentation maker
             </Typography>
 
             <Typography
@@ -219,14 +219,13 @@ export default function HeroSection() {
                 maxWidth: 600,
                 mx: "auto",
                 lineHeight: 1.3,
-                fontSize: { xs: "0.8rem", md: "1.1rem" },
+                fontSize: { xs: "0.8rem", md: "1.2rem" },
                 fontWeight: 350,
                 textAlign: "center", // Ensure text is centered
               }}
             >
               <span>
-                Create slides instantly using AI. Turn ideas, voice, text, or links into
-                polished presentations in seconds.
+                Free to use • No design skills required <br />
               </span>
               <Box
                 component="span"

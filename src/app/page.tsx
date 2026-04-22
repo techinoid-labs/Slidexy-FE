@@ -17,9 +17,9 @@ export default function Home() {
           borderWidth: 0,
         }}
       >
-        AI Presentation Maker for Slides and Pitch Decks
+        AI Presentation Maker
       </h1>
-      <p
+      {/* <p
         style={{
           position: "absolute",
           width: "1px",
@@ -40,7 +40,7 @@ export default function Home() {
         link, or speak your ideas aloud — our AI creates polished, on-brand
         presentations instantly. No design skills needed. No templates to wrestle
         with. Just your content, beautifully presented.
-      </p>
+      </p> */}
 
       <HomeClient />
     </>
