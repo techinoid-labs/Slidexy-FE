@@ -8,6 +8,7 @@ import TestimonialSection from "./components/home/Testimonial";
 import PricingSection from "./components/home/Pricing";
 import CommunitySection from "./components/home/Community";
 import ContactSection from "./components/home/ContactSection";
+import FAQSection from "./components/home/FAQSection";
 import Footer from "./components/home/Footer";
 
 export default function Home() {
@@ -41,6 +42,7 @@ export default function Home() {
       <WorkingSection />
       <TestimonialSection />
       <PricingSection />
+      <FAQSection />
       <CommunitySection />
       <ContactSection />
       <Footer />
