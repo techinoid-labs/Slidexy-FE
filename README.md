@@ -8,6 +8,7 @@ This frontend includes **complete LinkedIn OAuth 2.0 integration** for sharing p
 - 🎨 Ready-to-use React components
 - 📱 Mobile-responsive
 
+
 **See [`LINKEDIN_FRONTEND_GUIDE.md`](./LINKEDIN_FRONTEND_GUIDE.md)** for complete documentation.
 
 ## Getting Started
