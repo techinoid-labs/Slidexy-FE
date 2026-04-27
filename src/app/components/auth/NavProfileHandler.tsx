@@ -12,6 +12,7 @@ import {
   useTheme,
   ListItemIcon,
   Box,
+  Button,
 } from "@mui/material";
 import { useUser } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -121,6 +122,9 @@ const NavProfileHandler = ({ size, showMail }: any) => {
           </Menu>
         </>
       ) : (
+        <Box sx={{
+          display: "flex"
+}}>
         <Typography
           suppressHydrationWarning
           className="cursor-pointer"
@@ -149,6 +153,27 @@ const NavProfileHandler = ({ size, showMail }: any) => {
         >
           {size ? `Sign In` : `Login / Signup`}
         </Typography>
+        <Button
+        variant="contained"
+        onClick={() => router.push("/tools/prompt-to-deck")}
+        sx={{
+          ml: 2,
+          px: "20px",
+          py: "12px",
+          height: "48px",
+          borderRadius: "999px",
+          textTransform: "none",
+          fontWeight: 500,
+          fontSize: size ? "12px" : "16px",
+          background: "#4A00E0",
+          "&:hover": {
+            background: "#3a00b3",
+          },
+        }}
+        >
+          Try Without Sign Up
+        </Button>
+        </Box>
       )}
     </>
   );

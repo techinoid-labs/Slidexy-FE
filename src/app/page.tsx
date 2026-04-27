@@ -1,49 +1,52 @@
-import HomeClient from "./components/HomeClient";
+import Header from "./components/headers-navbar/Header";
+import HeroSection from "./components/home/HeroSection";
+import WhatWeOffer from "./components/home/WhatWeOffer";
+import PurposeSection from "./components/home/Purpose";
+import PresentationStyleSection from "./components/home/PresentationStyle";
+import WorkingSection from "./components/home/Working";
+import TestimonialSection from "./components/home/Testimonial";
+import PricingSection from "./components/home/Pricing";
+import CommunitySection from "./components/home/Community";
+import ContactSection from "./components/home/ContactSection";
+import FAQSection from "./components/home/FAQSection";
+import Footer from "./components/home/Footer";
 
 export default function Home() {
   return (
-    <>
-      {/* Accessible sr-only H1 for SEO — visible H1 is rendered by HeroSection */}
-      <h1
+    <main
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        backgroundColor: "#ffffff",
+        overflow: "hidden",
+      }}
+    >
+      <div
         style={{
           position: "absolute",
-          width: "1px",
-          height: "1px",
-          padding: 0,
-          margin: "-1px",
-          overflow: "hidden",
-          clip: "rect(0, 0, 0, 0)",
-          whiteSpace: "nowrap",
-          borderWidth: 0,
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          pointerEvents: "none",
         }}
-      >
-        AI Presentation Maker for Slides and Pitch Decks
-      </h1>
-      <p
-        style={{
-          position: "absolute",
-          width: "1px",
-          height: "1px",
-          padding: 0,
-          margin: "-1px",
-          overflow: "hidden",
-          clip: "rect(0, 0, 0, 0)",
-          whiteSpace: "nowrap",
-          borderWidth: 0,
-        }}
-      >
-        SlideXY is the AI presentation maker that turns your ideas into
-        professional slide decks in seconds. Whether you are a startup founder
-        building a pitch deck, a sales team preparing a quarterly review, or an
-        educator crafting lesson slides, SlideXY handles the design so you can
-        focus on your message. Paste a prompt, upload a video, drop in a website
-        link, or speak your ideas aloud — our AI creates polished, on-brand
-        presentations instantly. No design skills needed. No templates to wrestle
-        with. Just your content, beautifully presented.
-      </p>
-
-      <HomeClient />
-    </>
+      ></div>
+      <Header />
+      <HeroSection />
+      <WhatWeOffer />
+      <PurposeSection />
+      <PresentationStyleSection />
+      <WorkingSection />
+      <TestimonialSection />
+      <PricingSection />
+      <FAQSection />
+      <CommunitySection />
+      <ContactSection />
+      <Footer />
+    </main>
   );
 }
 

@@ -20,9 +20,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { analyticsEvent } from "@/lib/gtag";
+import { useRef } from "react";
 
 export default function HeroSection() {
   const [inputValue, setInputValue] = useState("");
+  const [videoReady, setVideoReady] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const theme = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -72,21 +75,69 @@ export default function HeroSection() {
             height: "100%",
             overflow: "hidden",
             zIndex: 1,
+            backgroundColor: "#ffffff",
+          }}
+        >        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            mt: { xs: -6, md: -16 },
+            opacity: 0.6,
+            pointerEvents: "none",
+            width: { xs: 250, md: 450 },
+            height: { xs: 200, md: 450 },
           }}
         >
+          <Image
+            src="/images/checkered-lines.svg"
+            alt="Checkered Background"
+            width={450}
+            height={450}
+            style={{
+              objectFit: "contain",
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        </Box>
+          {/* IMAGE (Primary LCP Element) */}
+          <Image
+            src="/background-video.webp"
+            alt="AI presentation maker background"
+            fill
+            priority
+            fetchPriority="high"
+            loading="eager"
+            style={{
+              objectFit: "cover",
+              opacity: 0.1,
+              zIndex: 2,
+            }}
+          />
+
+          {/* VIDEO (Secondary/Progressive Load) */}
           <video
+            ref={videoRef}
             autoPlay
             muted
             loop
             playsInline
+            onCanPlay={() => setVideoReady(true)}
             style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              opacity: "0.1"
+              opacity: videoReady ? 0.1 : 0,
+              transition: "opacity 1.5s ease",
+              zIndex: 3,
             }}
           >
-            <source src="/services-background.mp4" type="video/mp4" />
+            <source src="/services-background.webm" type="video/webm" />
           </video>
         </Box>
         {/* Decorative Elements */}
@@ -209,7 +260,7 @@ export default function HeroSection() {
                 textOverflow: "ellipsis",
               }}
             >
-              SlideXy AI Turns Your Ideas into Stunning Presentations Instantly
+              AI presentation maker
             </Typography>
 
             <Typography
@@ -219,14 +270,13 @@ export default function HeroSection() {
                 maxWidth: 600,
                 mx: "auto",
                 lineHeight: 1.3,
-                fontSize: { xs: "0.8rem", md: "1.1rem" },
+                fontSize: { xs: "0.8rem", md: "1.2rem" },
                 fontWeight: 350,
                 textAlign: "center", // Ensure text is centered
               }}
             >
               <span>
-                Create slides instantly using AI. Turn ideas, voice, text, or links into
-                polished presentations in seconds.
+                Free to use • No design skills required <br />
               </span>
               <Box
                 component="span"

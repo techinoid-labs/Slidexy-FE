@@ -93,7 +93,7 @@ export default function Services() {
                 }}
             >
                 <Image
-                    src="/images/light-purple-stars.png"
+                    src="/images/light-purple-stars.webp"
                     alt="Stars"
                     width={36}
                     height={36}
