@@ -264,7 +264,7 @@ export default function HeroSection() {
             </Typography>
 
             <Typography
-              variant="h6"
+              variant="body1"
               sx={{
                 color: "text.secondary",
                 maxWidth: 600,

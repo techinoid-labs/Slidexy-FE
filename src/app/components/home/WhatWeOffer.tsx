@@ -12,8 +12,6 @@ import Image from "next/image";
 import ResponsivePageWrapper from "@/lib/responsive-page-wrapper";
 import { ArrowForward } from "@mui/icons-material";
 import { useState } from "react";
-import Lottie from "lottie-react";
-import templateAnimation from "@/json/Gif8-template-section.json";
 import { useRouter } from "next/navigation";
 
 export default function WhatWeOffer() {
@@ -129,7 +127,7 @@ export default function WhatWeOffer() {
 
                     {/* Heading */}
                     <Typography
-                        variant="h3"
+                        variant="h2"
                         align="center"
                         sx={{
                             fontWeight: 500,
@@ -201,10 +199,10 @@ export default function WhatWeOffer() {
                                         }}
                                     >
                                         <Box
-                                        sx={{
-                                            display: 'flex',
-                                            gap: 2
-                                        }}
+                                            sx={{
+                                                display: 'flex',
+                                                gap: 2
+                                            }}
                                         >
                                             <Image
                                                 src={tool.icon}
@@ -280,11 +278,15 @@ export default function WhatWeOffer() {
                                 height: "100%",
                             }}
                         >
-                            <Lottie
-                                animationData={templateAnimation}
-                                loop
-                                autoplay
-                                style={{ width: "100%", height: "100%", borderRadius: "32px" }}
+                            <img
+                                src="/images/whatWeOffer.webp"
+                                alt="What We Offer"
+                                style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    borderRadius: "32px",
+                                }}
                             />
                         </Box>
                     </Box>

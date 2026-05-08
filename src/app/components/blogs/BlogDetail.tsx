@@ -82,7 +82,7 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
           }}
         >
           <Typography
-            variant="h2"
+            variant="h1"
             sx={{
               fontWeight: 700,
               fontSize: { xs: "2rem", md: "2.5rem" },
