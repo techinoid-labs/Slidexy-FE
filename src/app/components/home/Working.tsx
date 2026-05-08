@@ -2,8 +2,7 @@
 
 import { Box, Typography, Chip, Button } from "@mui/material";
 import Link from "next/link";
-import Lottie from "lottie-react";
-import Gif10ContextAware from "@/json/Gif10-context-aware.json";
+import Image from "next/image";
 import StepsAccordion from "./components/working/StepsAccordion";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
@@ -168,7 +167,6 @@ export default function WorkingSection() {
         <StepsAccordion />
 
         {/* Right Image */}
-        {/* Right Lottie Animation */}
         <Box
           sx={{
             width: { xs: "100%", md: 500 },
@@ -183,9 +181,11 @@ export default function WorkingSection() {
             overflow: "hidden", // keep animation contained
           }}
         >
-          <Lottie
-            animationData={Gif10ContextAware}
-            loop
+          <Image
+            src="/images/context-image.svg"
+            alt="How it Works"
+            width={500}
+            height={400}
             style={{
               width: "100%",
               height: "100%",

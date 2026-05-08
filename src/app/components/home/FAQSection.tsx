@@ -13,29 +13,44 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const faqs = [
   {
-    question: "What is SlideXY?",
+    question: "How can I create a presentation using AI for free?",
     answer:
-      "SlideXY is an AI-powered presentation maker that helps you create professional slide decks in seconds. Simply input your topic, prompt, or content, and our AI generates beautifully designed slides instantly.",
+      "You can create a presentation using an AI presentation maker by simply entering your topic or text. The tool automatically generates structured slides within seconds, saving time and effort.",
   },
   {
-    question: "Do I need design skills to use SlideXY?",
+    question: "What is the best free AI presentation maker online?",
     answer:
-      "No, you do not need any design skills. SlideXY takes care of the layout, structure, and design for you, so you can focus purely on your message. It's built for everyone from startup founders to educators.",
+      "The best AI presentation maker should be fast, easy to use, and require minimal input. Tools like Slidexy.ai allow users to generate professional slides instantly without complex design skills.",
   },
   {
-    question: "Can I export my presentations?",
+    question: "Can I convert text into PowerPoint slides automatically?",
     answer:
-      "Yes! You can export your generated presentations to popular formats like PPTX and PDF, making it easy to share them with your team, clients, or audience.",
+      "Yes, AI tools can convert plain text into fully designed PowerPoint slides. Just paste your content, and the AI will organize it into headings, bullet points, and visuals.",
   },
   {
-    question: "Is there a free version available?",
+    question: "Is there an AI tool that creates slides without signup?",
     answer:
-      "We offer a free version so you can try out our core AI presentation generation features without any commitment. When you're ready for advanced features, you can upgrade to one of our affordable premium plans.",
+      "Yes, some AI presentation tools allow users to generate a few slides without signing up. This helps users test the tool before creating an account.",
   },
   {
-    question: "How does SlideXY compare to tools like Gamma or Canva?",
+    question: "How does an AI PPT generator work?",
     answer:
-      "SlideXY is uniquely focused on presentation generation speed and regional pricing accessibility. While tools like Canva are broad graphic design suites, SlideXY offers an uncluttered, hyper-focused presentation generation experience designed to be highly affordable.",
+      "An AI PPT generator analyzes your input text, understands the context, and transforms it into a well-structured presentation with relevant formatting and layout.",
+  },
+    {
+    question: "Can students use AI tools to make presentations easily?",
+    answer:
+      "Yes, students can use AI presentation makers to quickly create assignments, project slides, and class presentations without spending hours on design.",
+  },
+      {
+    question: "Are AI-generated presentations customizable?",
+    answer:
+      "Yes, most AI-generated presentations can be edited. You can customize text, design, colors, and layout according to your needs.",
+  },
+        {
+    question: "Is it safe to use AI tools for presentations?",
+    answer:
+      "Yes, reliable AI presentation tools are safe to use. Always ensure you are using a trusted platform and avoid sharing sensitive information.",
   },
 ];
 

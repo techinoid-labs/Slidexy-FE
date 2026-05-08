@@ -2,8 +2,7 @@
 
 import { Box, Typography, Chip, Button } from "@mui/material";
 import Link from "next/link";
-import Lottie from "lottie-react";
-import templateAnimation from "@/json/Gif8-template-section.json";
+import Image from "next/image";
 
 export default function PresentationStyleSection() {
   return (
@@ -155,7 +154,7 @@ export default function PresentationStyleSection() {
           </Link>
         </Box>
 
-        {/* Right Lottie Animation (replaces Image) */}
+        {/* Right Side Image */}
         <Box
           sx={{
             flex: 1,
@@ -166,11 +165,17 @@ export default function PresentationStyleSection() {
             height: "100%",
           }}
         >
-          <Lottie
-            animationData={templateAnimation}
-            loop
-            autoplay
-            style={{ width: "100%", height: "100%", borderRadius: "32px" }}
+          <Image
+            src="/images/whatWeOffer.webp"
+            alt="What We Offer"
+            width={600}
+            height={400}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              borderRadius: "32px",
+            }}
           />
         </Box>
       </Box>

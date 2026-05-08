@@ -131,7 +131,7 @@ export default function Footer() {
           color: "#888",
         }}
       >
-        Copyright © 2025. All Rights Reserved.
+        Copyright © 2026. All Rights Reserved.
       </Typography>
     </Box>
   );

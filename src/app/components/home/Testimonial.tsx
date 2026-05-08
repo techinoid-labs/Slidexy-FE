@@ -6,26 +6,53 @@ import { ArrowBack, ArrowForward, Star } from "@mui/icons-material";
 
 const testimonials = [
   {
-    text: "Slidexy cut my slide prep time in half! The AI presentation generator is a game-changer.",
-    name: "John D.",
-    role: "Vice President, GoPro",
+    quote: "This AI presentation maker saved me hours of work.",
+    text: "I just entered my topic and got a complete slide deck within seconds. Perfect for quick client presentations.",
+    name: "Ali R.",
+    role: "Marketing Executive",
     avatar: "/images/avatar1.jpg",
     rating: 5,
   },
   {
-    text: "From video uploads to full decks—this AI PPT maker saves me hours every week.",
-    name: "Emily K.",
-    role: "Product Manager, Figma",
+    quote: "Best free AI PPT generator I’ve tried so far.",
+    text: "The interface is simple, and the slides look professional. I love that I can try it without signing up.",
+    name: "Sara K.",
+    role: "Freelancer",
     avatar: "/images/avatar2.jpg",
     rating: 5,
   },
-  // {
-  //   text: "An amazing tool for presentations. Saves hours of design work.",
-  //   name: "Robert Fox",
-  //   role: "CEO, TechCorp",
-  //   avatar: "/images/avatar3.jpg",
-  //   rating: 4,
-  // },
+  {
+    quote: "Super helpful for students!",
+    text: "I used this tool to create my university presentation, and it worked flawlessly. It made everything so much easier.",
+    name: "Hassan M.",
+    role: "Student",
+    avatar: "/images/avatar3.jpg",
+    rating: 5,
+  },
+  {
+    quote: "Fast, clean, and very easy to use.",
+    text: "No complicated steps — just enter text and get slides instantly. Great tool for beginners and professionals alike.",
+    name: "Ayesha S.",
+    role: "Business Owner",
+    avatar: "/images/avatar1.jpg",
+    rating: 5,
+  },
+  {
+    quote: "Great tool for converting text into slides.",
+    text: "I had a long document, and this AI turned it into a structured presentation in seconds. Highly recommended.",
+    name: "Usman T.",
+    role: "Project Manager",
+    avatar: "/images/avatar2.jpg",
+    rating: 5,
+  },
+  {
+    quote: "Perfect for quick presentations without design skills.",
+    text: "I’m not good at design, but this tool handled everything. The output looked clean and ready to use.",
+    name: "Zain A.",
+    role: "Consultant",
+    avatar: "/images/avatar3.jpg",
+    rating: 5,
+  },
 ];
 
 export default function TestimonialSection() {
@@ -39,7 +66,7 @@ export default function TestimonialSection() {
     setIndex((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
   };
 
-  const { text, name, role, avatar, rating } = testimonials[index];
+  const { quote, text, name, role, avatar, rating } = testimonials[index];
 
   return (
     <Box
@@ -97,14 +124,27 @@ export default function TestimonialSection() {
         <Typography
           sx={{
             color: "#333",
-            fontWeight: 600,
-            maxWidth: 500,
-            fontSize: { xs: "1.25rem", md: "1.4rem" },
-            mb: 4,
+            fontWeight: 700,
+            maxWidth: 600,
+            fontSize: { xs: "1.3rem", md: "1.5rem" },
+            mb: 1,
             px: 2,
           }}
         >
-          "{text}"
+          “{quote}”
+        </Typography>
+        <Typography
+          sx={{
+            color: "#555",
+            fontWeight: 400,
+            maxWidth: 550,
+            fontSize: { xs: "1rem", md: "1.1rem" },
+            mb: 4,
+            px: 2,
+            lineHeight: 1.6,
+          }}
+        >
+          {text}
         </Typography>
 
         {/* Profile */}
@@ -118,7 +158,7 @@ export default function TestimonialSection() {
         >
           <Avatar src={avatar} alt={name} sx={{ width: 56, height: 56 }} />
           <Typography sx={{ fontWeight: 600 }}>{name}</Typography>
-          {/* <Typography sx={{ fontSize: 14, color: "gray" }}>{role}</Typography> */}
+          <Typography sx={{ fontSize: 14, color: "gray" }}>{role}</Typography>
 
           {/* Stars */}
           <Box sx={{ display: "flex", gap: 0.5, mt: 1 }}>

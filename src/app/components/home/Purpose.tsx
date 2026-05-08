@@ -2,12 +2,6 @@
 
 import { Box, Typography, Chip } from "@mui/material";
 import Image from "next/image";
-import Lottie from "lottie-react";
-import exportAnimationData from "@/json/Final7.json";
-import infographicsAnimationData from "@/json/Gif5-infographics.json";
-import Gif10ContextAware from "@/json/Gif10-context-aware.json";
-import voiceGenerationAnimation from "@/json/Gif9-voice-generation.json";
-import regenerateIageAnimationData from "@/json/Gif4-image-regenerate.json";
 
 export default function PurposeSection() {
   return (
@@ -198,10 +192,11 @@ export default function PurposeSection() {
               mb: "40px",
             }}
           >
-            <Lottie
-              animationData={Gif10ContextAware}
-              loop
-              autoplay
+            <Image
+              src="/images/context-image.svg"
+              alt="Context-aware content generation"
+              width={530}
+              height={580}
               style={{
                 width: "100%",
                 height: "100%",
@@ -295,10 +290,11 @@ export default function PurposeSection() {
               // height: { xs: "auto", md: "240px" },
             }}
           >
-            <Lottie
-              animationData={regenerateIageAnimationData}
-              loop
-              autoplay
+            <Image
+              src="/images/regen-img.webp"
+              alt="AI Image Regeneration"
+              width={300}
+              height={200}
               style={{
                 width: "100%",
                 maxWidth: "300px",
@@ -396,13 +392,14 @@ export default function PurposeSection() {
               maxWidth: { xs: "100%", md: "300px" },
             }}
           >
-            <Lottie
-              animationData={exportAnimationData}
-              loop
-              autoplay
+            <Image
+              src="/images/export-image.svg"
+              alt="One Click Export"
+              width={300}
+              height={200}
               style={{
-                width: "500px",
-                height: "100%",
+                width: "100%",
+                height: "auto",
                 borderRadius: "8px",
                 objectFit: "cover",
               }}
@@ -495,12 +492,12 @@ export default function PurposeSection() {
             justifyContent: "center",
           }}
         >
-          <Lottie
-            animationData={voiceGenerationAnimation}
-            loop
-            autoplay
-            style={{ height: 350 }}
-            rendererSettings={{ preserveAspectRatio: "xMidYMid meet" }}
+          <Image
+            src="/images/VoiceAssistant.svg"
+            alt="AI Voice Assistance"
+            width={450}
+            height={350}
+            style={{ height: 350, width: "auto" }}
           />
         </Box>
       </Box>
