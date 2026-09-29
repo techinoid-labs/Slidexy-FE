@@ -275,6 +275,19 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
             const originalSlide = updatedSlides[index];
             if (!originalSlide) return;
 
+            // Block-template slides carry their whole content in `blockSpec`.
+            // They have no layout variants and no loose `elements`, so the
+            // variant mapping below does not apply to them.
+            if (updatedSlide.blockSpec) {
+              originalSlide.blockSpec = updatedSlide.blockSpec;
+              if (updatedSlide.slide_title) {
+                originalSlide.slide_title = updatedSlide.slide_title;
+              }
+              updatedSlides[index] = originalSlide;
+              onSetSlides(updatedSlides);
+              return;
+            }
+
             // Preserve variant index
             const variantIndex = originalSlide.currentVariantIndex ?? 0;
 
@@ -404,12 +417,15 @@ const SlideEditor = ({ slides = [], onDeselect, openPanel, deselectAllRef, scale
     // Any slide missing layouts always needs generating (covers newly added slides,
     // which the previous `layoutsInitialized` flag silently skipped).
     const hasSlideWithoutLayouts = current.some(
-      (slide: any) => !slide.layouts || slide.layouts.length === 0
+      (slide: any) => !slide.blockSpec && (!slide.layouts || slide.layouts.length === 0)
     );
 
     if (!themeChanged && !hasSlideWithoutLayouts) return;
 
     const updatedSlides = current.map((slide: any) => {
+      // Block slides are themed by `templateThemeId`, not by the palette
+      // variant generator — leave them exactly as they are.
+      if (slide.blockSpec) return slide;
       if (slide.layouts && slide.layouts.length > 0 && !themeChanged) {
         return slide;
       }

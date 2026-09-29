@@ -291,6 +291,15 @@ const SlideEditor = ({ slides = [] }: any) => {
                   const orig = updatedSlides[index];
                   if (!orig) return;
 
+                  // See SlideEditor.tsx — block slides bypass variant mapping.
+                  if (updatedSlide.blockSpec) {
+                    orig.blockSpec = updatedSlide.blockSpec;
+                    if (updatedSlide.slide_title) orig.slide_title = updatedSlide.slide_title;
+                    updatedSlides[index] = orig;
+                    setSlides(updatedSlides);
+                    return;
+                  }
+
                   const variantIndex = orig.currentVariantIndex ?? 0;
 
                   // Update common slide-level fields

@@ -11,6 +11,10 @@ import { QuoteSlideHTML } from '../layouts/QuoteSlideHTML';
 import { ConclusionSlideHTML } from '../layouts/ConclusionSlideHTML';
 import { FullImageTextOverlayHTML } from '../layouts/FullImageTextOverlayHTML';
 import { TemplateHTMLSlide, TEMPLATE_REGISTRY } from '../layouts/TemplateHTMLSlide';
+import { SlideSpecRenderer } from '@/templates/SlideSpecRenderer';
+import { applyBlockTextEdit } from '@/templates/applyEdit';
+import { isBlockSlide, themeForSlide } from '@/templates/toDeck';
+import { DEFAULT_THEME } from '@/templates/themes';
 
 interface HTMLSlideRendererProps {
     slide: any;
@@ -33,6 +37,39 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
     onElementClick,
     slideIndex = 0,
 }) => {
+    // Block-based template slides own their whole rendering path: the layout,
+    // the theme and the editing plumbing all come from the spec. Checked first
+    // so it wins over layout_type and templateStyle.
+    if (isBlockSlide(slide)) {
+        return (
+            <SlideSpecRenderer
+                spec={slide.blockSpec}
+                theme={themeForSlide(slide, DEFAULT_THEME)}
+                isEditing={isEditing}
+                slideIndex={slideIndex}
+                slideNumber={slideIndex + 1}
+                onTextChange={(blockId, path, value) => {
+                    if (!onSlideUpdate) return;
+                    const nextSpec = applyBlockTextEdit(slide.blockSpec, blockId, path, value);
+                    if (nextSpec === slide.blockSpec) return;
+
+                    // Keep slide_title in sync so the carousel, outline and
+                    // export filename follow the heading the user just edited.
+                    const headingBlock: any = nextSpec.blocks.find((b) => b.type === 'heading');
+                    onSlideUpdate({
+                        ...slide,
+                        blockSpec: nextSpec,
+                        slide_title: {
+                            ...(slide.slide_title ?? {}),
+                            text: headingBlock?.title?.text ?? slide.slide_title?.text ?? '',
+                        },
+                    });
+                }}
+                onSelect={(elementId) => onElementClick?.(elementId, 'text', -1)}
+            />
+        );
+    }
+
     const layoutType = slide.layout_type || 'cover-hero';
 
     // ✅ FIX: Determine which variant to render. 
