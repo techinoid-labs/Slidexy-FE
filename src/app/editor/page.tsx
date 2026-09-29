@@ -33,6 +33,8 @@ import { getRandomSlide } from "@/utils/slideUtils";
 import { generateSlideVariants } from "@/utils/variantGenerator";
 import { getSlideDimensions } from "@/utils/slideUtils";
 import { SHELL } from "../components/modify-presentation/shellTheme";
+import BlockInspector from "../components/modify-presentation/BlockInspector";
+import { parseBlockElementId } from "@/templates/mutate";
 
 
 const Page = () => {
@@ -241,6 +243,29 @@ const Page = () => {
 
   // Derived selection flags - simplified and unified
   const isTextSelected = !!selectedTextId;
+
+  // Block-template slides have their own property panel. The legacy
+  // Text/Image/Shape panels address `slide.elements`, which block slides do
+  // not use, so they would render inert controls here.
+  const activeSlideForPanel: any = slides?.[selectedSlideIndex];
+  const activeBlockSpec = activeSlideForPanel?.blockSpec;
+  const selectedBlockRef = parseBlockElementId(selectedTextId);
+
+  const updateActiveBlockSpec = (nextSpec: any) => {
+    const updated = structuredClone(slides);
+    if (!updated[selectedSlideIndex]) return;
+    updated[selectedSlideIndex].blockSpec = nextSpec;
+    const headingBlock: any = nextSpec.blocks.find((b: any) => b.type === "heading");
+    if (headingBlock?.title?.text) {
+      const existing: any = updated[selectedSlideIndex].slide_title ?? {};
+      updated[selectedSlideIndex].slide_title = {
+        ...existing,
+        konva_component: existing.konva_component ?? "Konva.Text",
+        text: headingBlock.title.text,
+      };
+    }
+    setSlides(updated);
+  };
   const isImageSelected = selectedImageIndex !== null || !!selectedImage || !!selectedImageId;
   const isShapeSelected = selectedShapeIndex !== null || !!selectedShapeId;
 
@@ -536,15 +561,29 @@ const Page = () => {
                     : "opacity-100"
                     }`}
                 >
-                  {isTextSelected && !isShapeSelected && (
-                    <TextSettingsPanel resetAll={resetAll} />
-                  )}
-                  {isImageSelected && <ImageSettingsPanel />}
-                  {isShapeSelected && (
-                    <ShapeSettingsPanel resetAll={resetAll} />
-                  )}
-                  {!isTextSelected && !isImageSelected && !isShapeSelected && (
-                    <ThemePanel parsedSlides={slides} resetAll={resetAll} />
+                  {activeBlockSpec ? (
+                    selectedBlockRef ? (
+                      <BlockInspector
+                        spec={activeBlockSpec}
+                        blockId={selectedBlockRef.blockId}
+                        onChange={updateActiveBlockSpec}
+                      />
+                    ) : (
+                      <ThemePanel parsedSlides={slides} resetAll={resetAll} />
+                    )
+                  ) : (
+                    <>
+                      {isTextSelected && !isShapeSelected && (
+                        <TextSettingsPanel resetAll={resetAll} />
+                      )}
+                      {isImageSelected && <ImageSettingsPanel />}
+                      {isShapeSelected && (
+                        <ShapeSettingsPanel resetAll={resetAll} />
+                      )}
+                      {!isTextSelected && !isImageSelected && !isShapeSelected && (
+                        <ThemePanel parsedSlides={slides} resetAll={resetAll} />
+                      )}
+                    </>
                   )}
                 </div>
               </div>
