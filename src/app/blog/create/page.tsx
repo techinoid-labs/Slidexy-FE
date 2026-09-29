@@ -6,7 +6,6 @@ import BlogPostForm from "../../components/blogs/BlogPostForm";
 import { Container, Alert, Snackbar } from "@mui/material";
 import { redirect, useRouter } from "next/navigation";
 import { useUser } from "../../context/AuthContext";
-import Header from "@/app/components/headers-navbar/Header";
 
 export default function CreateBlogPage() {
   // redirect("/");
@@ -40,7 +39,6 @@ export default function CreateBlogPage() {
   return (
     <>
       <StepsHeader />
-      <Header />
       <Container maxWidth={false} disableGutters sx={{ py: 0 }}>
         <BlogPostForm onSubmit={handleSubmit} onError={handleError} />
       </Container>

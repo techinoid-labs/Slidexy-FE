@@ -58,21 +58,17 @@ export default function CTASection({
           <Link href={href} style={{ textDecoration: "none" }}>
             <Button
               variant="contained"
+              size="large"
+              disableElevation
               endIcon={<ArrowForwardIcon />}
               sx={{
                 bgcolor: "#fff",
                 color: "#4A00E0",
                 px: 6,
-                py: 2,
-                borderRadius: "999px",
                 fontSize: "1.1rem",
-                fontWeight: 700,
-                textTransform: "none",
                 boxShadow: "0 10px 20px -5px rgba(0, 0, 0, 0.2)",
-                transition: "all 0.3s",
                 "&:hover": {
                   bgcolor: "#F3F4F6",
-                  transform: "translateY(-4px)",
                   boxShadow: "0 15px 30px -10px rgba(0, 0, 0, 0.3)",
                 },
               }}

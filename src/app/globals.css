@@ -4,16 +4,40 @@
 
 /* ===== CSS VARIABLES ===== */
 :root {
-  /* Color Palette */
+  /* Color Palette — elevated purple system */
   --primary-purple: #8e2de2;
   --secondary-purple: #4a00e0;
+  --violet-deep: #1a0b2e;
+  --violet-mid: #2d1b4e;
+  --violet-glow: #c084fc;
+  --violet-mist: #f5f0ff;
+  --violet-soft: #ebe4ff;
+  --ink: #0f0a19;
+  --ink-muted: #5b5568;
   --white: #ffffff;
   --black: #000000;
+
+  /* Typography */
+  --font-display: var(--font-raleway), "Raleway", sans-serif;
+  --font-body: var(--font-raleway), "Raleway", sans-serif;
 
   /* Gradient Variations */
   --gradient-primary: linear-gradient(135deg,
       var(--primary-purple),
       var(--secondary-purple));
+  --gradient-hero: linear-gradient(145deg,
+      #1a0b2e 0%,
+      #2d1b4e 40%,
+      #4a00e0 100%);
+  --gradient-mesh: radial-gradient(ellipse 80% 50% at 20% 40%,
+      rgba(142, 45, 226, 0.35) 0%,
+      transparent 55%),
+    radial-gradient(ellipse 60% 40% at 80% 20%,
+      rgba(74, 0, 224, 0.28) 0%,
+      transparent 50%),
+    radial-gradient(ellipse 50% 60% at 60% 80%,
+      rgba(192, 132, 252, 0.18) 0%,
+      transparent 45%);
   --gradient-light: linear-gradient(135deg,
       rgba(142, 45, 226, 0.1),
       rgba(74, 0, 224, 0.05));
@@ -24,11 +48,15 @@
       rgba(142, 45, 226, 0.2) 0%,
       rgba(142, 45, 226, 0.08) 40%,
       transparent 70%);
+  --gradient-shimmer: linear-gradient(110deg,
+      transparent 25%,
+      rgba(255, 255, 255, 0.35) 45%,
+      transparent 65%);
 
-  /* Text Colors - You control these */
-  --text-primary: var(--black);
-  --text-secondary: rgba(0, 0, 0, 0.7);
-  --text-muted: rgba(0, 0, 0, 0.5);
+  /* Text Colors */
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink-muted);
+  --text-muted: rgba(15, 10, 25, 0.45);
   --text-on-purple: var(--white);
 
   /* Spacing */
@@ -45,6 +73,7 @@
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
+  --radius-2xl: 24px;
   --radius-full: 9999px;
 
   /* Shadows */
@@ -55,11 +84,21 @@
     0 4px 6px -2px rgba(142, 45, 226, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(142, 45, 226, 0.1),
     0 10px 10px -5px rgba(142, 45, 226, 0.04);
+  --shadow-glow: 0 0 40px rgba(142, 45, 226, 0.35),
+    0 0 80px rgba(74, 0, 224, 0.15);
+  --shadow-elevated: 0 24px 48px -12px rgba(74, 0, 224, 0.28),
+    0 8px 20px rgba(15, 10, 25, 0.06);
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(142, 45, 226, 0.12);
+  --glass-blur: blur(16px) saturate(1.4);
 
   /* Transitions */
   --transition-fast: 0.15s ease-in-out;
   --transition-normal: 0.3s ease-in-out;
   --transition-slow: 0.5s ease-in-out;
+  --ease-expo: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ===== RESET & BASE STYLES ===== */
@@ -73,17 +112,22 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
-  font-family: "Raleway", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    sans-serif;
+body,
+.slidexy-body {
+  font-family: var(--font-body);
   background: var(--white);
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
   position: relative;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Centered Purple Gradient Background */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Soft ambient purple wash */
 body::before {
   content: "";
   position: fixed;
@@ -92,11 +136,10 @@ body::before {
   transform: translate(-50%, -50%);
   width: 100vw;
   height: 100vh;
-  background: radial-gradient(circle at center,
-      rgba(142, 45, 226, 0.07) 0%,
-      rgba(142, 45, 226, 0.035) 18%,
-      rgba(142, 45, 226, 0.01) 36%,
-      transparent 60%);
+  background: radial-gradient(ellipse 70% 50% at 50% 0%,
+      rgba(142, 45, 226, 0.09) 0%,
+      rgba(142, 45, 226, 0.03) 40%,
+      transparent 70%);
   z-index: -1;
   pointer-events: none;
 }
@@ -115,28 +158,28 @@ h6 {
 }
 
 h1 {
-  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
   font-weight: 800;
 }
 
 h2 {
-  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-size: clamp(1.375rem, 2.4vw, 2rem);
 }
 
 h3 {
-  font-size: clamp(1.25rem, 2.5vw, 1.875rem);
+  font-size: clamp(1.125rem, 1.8vw, 1.5rem);
 }
 
 h4 {
-  font-size: clamp(1.25rem, 2.5vw, 1.875rem);
+  font-size: clamp(1.0625rem, 1.6vw, 1.375rem);
 }
 
 h5 {
-  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-size: clamp(1rem, 1.4vw, 1.1875rem);
 }
 
 h6 {
-  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-size: clamp(0.9375rem, 1.2vw, 1.0625rem);
 }
 
 p {
@@ -1314,4 +1357,47 @@ a:hover {
 /* Drop Shadow for Text */
 .drop-shadow-2xl {
   filter: drop-shadow(0 25px 25px rgba(0, 0, 0, 0.15));
+}
+/* ===== SLIDEXY REVAMP MOTION ===== */
+@keyframes sx-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes sx-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes sx-pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  70% { transform: scale(1.15); opacity: 0; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+@keyframes sx-gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes sx-fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sx-float { animation: sx-float 5s ease-in-out infinite; }
+.sx-shimmer-btn {
+  background-size: 200% 100%;
+  animation: sx-shimmer 2.5s linear infinite;
+}
+.sx-gradient-animate {
+  background-size: 200% 200%;
+  animation: sx-gradient-shift 8s ease infinite;
+}
+.sx-glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+.sx-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
 }

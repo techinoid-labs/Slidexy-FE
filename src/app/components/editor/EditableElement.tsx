@@ -16,6 +16,9 @@ interface EditableElementProps {
     elementProperties?: any; // Element properties from slide data (fontSize, fontFamily, fill, etc.)
 }
 
+/** How long typing pauses before the edit is pushed into the slide store. */
+const COMMIT_DEBOUNCE_MS = 300;
+
 /**
  * A generic editable element wrapper.
  * Renders as a standard HTML tag when not in editing mode.
@@ -36,7 +39,31 @@ export const EditableElement: React.FC<EditableElementProps> = ({
     elementProperties,
 }) => {
     const contentRef = useRef<HTMLElement>(null);
-    const [localText, setLocalText] = useState(text);
+
+    // Typing writes to the DOM immediately (contentEditable handles that itself)
+    // but only reaches the slide store on a debounce, and always on blur.
+    // Previously every keystroke pushed a full deck update through Redux, which
+    // re-rendered the editor and re-serialised the whole presentation.
+    const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pendingTextRef = useRef<string | null>(null);
+    const onChangeRef = useRef(onChange);
+    onChangeRef.current = onChange;
+
+    const flushCommit = React.useCallback(() => {
+        if (commitTimerRef.current) {
+            clearTimeout(commitTimerRef.current);
+            commitTimerRef.current = null;
+        }
+        if (pendingTextRef.current !== null) {
+            const value = pendingTextRef.current;
+            pendingTextRef.current = null;
+            onChangeRef.current?.(value);
+        }
+    }, []);
+
+    // Never drop an in-flight edit when the element unmounts (slide switch,
+    // variant change, panel close).
+    useEffect(() => flushCommit, [flushCommit]);
 
     // Helper: Convert element properties to CSS styles
     const getStyleFromProperties = (props = elementProperties): React.CSSProperties => {
@@ -65,25 +92,38 @@ export const EditableElement: React.FC<EditableElementProps> = ({
         return cssStyle;
     };
 
-    // Sync with prop updates IF not currently focused (to avoid cursor jumps)
+    // Push external text changes (undo/redo, layout variant switch, AI rewrite)
+    // into the DOM.
+    //
+    // The guard is "is there an uncommitted local edit", NOT "is this focused".
+    // Keying off focus meant an undo performed while the caret was still in the
+    // box updated the store but left the old text on screen.
     useEffect(() => {
-        if (contentRef.current && document.activeElement !== contentRef.current) {
-            if (contentRef.current.innerText !== text) {
-                setLocalText(text);
-                contentRef.current.innerText = text;
-            }
+        const el = contentRef.current;
+        if (!el) return;
+
+        // Mid-edit: the user's own keystrokes win until they settle.
+        if (pendingTextRef.current !== null) return;
+
+        // Equality check keeps the caret still when the store simply echoes
+        // back what we just committed.
+        if (el.innerText !== text) {
+            el.innerText = text;
         }
     }, [text]);
 
     const handleInput = (e: React.FormEvent<HTMLElement>) => {
         const newText = e.currentTarget.innerText;
-        setLocalText(newText);
-        if (onChange) {
-            onChange(newText);
-        }
+        // Deliberately NOT calling setLocalText here: the DOM already shows the
+        // typed character, and a state update would re-render mid-keystroke.
+        pendingTextRef.current = newText;
+
+        if (commitTimerRef.current) clearTimeout(commitTimerRef.current);
+        commitTimerRef.current = setTimeout(flushCommit, COMMIT_DEBOUNCE_MS);
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLElement>) => {
+        flushCommit();
         if (onBlur) onBlur();
     };
 

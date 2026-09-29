@@ -54,18 +54,18 @@ export default function ContextualFAQ({
                 "&:before": { display: "none" },
                 overflow: "hidden",
                 "&.Mui-expanded": {
-                  border: "1px solid #7C3AED",
+                  border: "1px solid #8E2DE2",
                 },
               }}
             >
               <AccordionSummary
-                expandIcon={<ExpandMoreIcon sx={{ color: "#7C3AED" }} />}
+                expandIcon={<ExpandMoreIcon sx={{ color: "#8E2DE2" }} />}
                 sx={{
                   fontWeight: 600,
                   color: "#111827",
                   py: 1,
                   "&.Mui-expanded": {
-                    bgcolor: "rgba(124, 58, 237, 0.02)",
+                    bgcolor: "rgba(142, 45, 226, 0.02)",
                   },
                 }}
               >
@@ -76,7 +76,7 @@ export default function ContextualFAQ({
                   color: "text.secondary",
                   lineHeight: 1.6,
                   fontSize: "0.95rem",
-                  bgcolor: "rgba(124, 58, 237, 0.02)",
+                  bgcolor: "rgba(142, 45, 226, 0.02)",
                 }}
               >
                 {faq.answer}

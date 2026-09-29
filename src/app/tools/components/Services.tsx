@@ -1,244 +1,227 @@
 "use client";
 
-import { Box, Container, Typography, Chip, IconButton } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import { ArrowOutward } from "@mui/icons-material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 
 const tools = [
-    {
-        label: "Prompt-to-Deck",
-        icon: "/images/tools/prompt-to-deck.svg",
-        route: "/tools/prompt-to-deck",
-        description: "Turn simple prompts into stunning, well-structured slide decks powered by AI in just seconds."
-    },
-    {
-        label: "Video-to-Deck",
-        icon: "/images/tools/video-to-deck.svg",
-        route: "/tools/video-to-deck",
-        description: "Convert videos into clear, engaging presentation slides with AI-driven content extraction."
-    },
-    {
-        label: "Web-to-Deck",
-        icon: "/images/tools/web-to-deck.svg",
-        route: "/tools/web-to-deck",
-        description: "Transform web pages into professional slide decks with AI-curated summaries and visuals."
-    },
-    {
-        label: "Prompt-to-eBook",
-        icon: "/images/tools/prompt-to-ebook.svg",
-        route: "/tools/prompt-to-ebook",
-        description: "Generate well-formatted, high-quality eBooks instantly using AI from simple text prompts."
-    },
-    {
-        label: "Text-to-Infographics",
-        icon: "/images/tools/text-to-infographics.svg",
-        route: "/tools/text-to-infographics",
-        description: "Turn plain text into visually compelling infographics with AI-powered design intelligence."
-    },
-    {
-        label: "Prompt-to-Template",
-        icon: "/images/tools/prompt-to-template.svg",
-        route: "/tools/prompt-to-template",
-        description: "Create ready-to-use, customizable templates instantly using AI from your ideas."
-    },
-    {
-        label: "Prompt to Web",
-        icon: "/images/tools/url-to-website.svg",
-        route: "https://prompt-to-web.slidexy.net/",
-        description: "Build websites, React apps, and mobile apps or clone any site, using nothing but a description or URL."
-    },
-    {
-        label: "Prompt-to-Proposal",
-        icon: "/images/tools/prompt-to-pdf.svg",
-        route: "/tools/prompt-to-proposal",
-        description: "Generate professional business proposals instantly with AI-powered formatting and content."
-    },
-    {
-        label: "Prompt-to-Video",
-        icon: "/images/tools/prompt-to-deck.svg",
-        route: "/tools/prompt-to-video",
-        description: "Create engaging videos from simple prompts using AI-driven storytelling and visuals."
-    },
+  {
+    label: "Prompt-to-Deck",
+    icon: "/images/tools/prompt-to-deck.svg",
+    route: "/tools/prompt-to-deck",
+    description:
+      "Turn simple prompts into stunning, well-structured slide decks powered by AI in just seconds.",
+  },
+  {
+    label: "Video-to-Deck",
+    icon: "/images/tools/video-to-deck.svg",
+    route: "/tools/video-to-deck",
+    description:
+      "Convert videos into clear, engaging presentation slides with AI-driven content extraction.",
+  },
+  {
+    label: "Web-to-Deck",
+    icon: "/images/tools/web-to-deck.svg",
+    route: "/tools/web-to-deck",
+    description:
+      "Transform web pages into professional slide decks with AI-curated summaries and visuals.",
+  },
+  {
+    label: "Prompt-to-eBook",
+    icon: "/images/tools/prompt-to-ebook.svg",
+    route: "/tools/prompt-to-ebook",
+    description:
+      "Generate well-formatted, high-quality eBooks instantly using AI from simple text prompts.",
+  },
+  {
+    label: "Text-to-Infographics",
+    icon: "/images/tools/text-to-infographics.svg",
+    route: "/tools/text-to-infographics",
+    description:
+      "Turn plain text into visually compelling infographics with AI-powered design intelligence.",
+  },
+  {
+    label: "Prompt-to-Template",
+    icon: "/images/tools/prompt-to-template.svg",
+    route: "/tools/prompt-to-template",
+    description:
+      "Create ready-to-use, customizable templates instantly using AI from your ideas.",
+  },
+  {
+    label: "Prompt to Web",
+    icon: "/images/tools/url-to-website.svg",
+    route: "https://prompt-to-web.slidexy.net/",
+    description:
+      "Build websites, React apps, and mobile apps or clone any site, using nothing but a description or URL.",
+  },
+  {
+    label: "Prompt-to-Proposal",
+    icon: "/images/tools/prompt-to-pdf.svg",
+    route: "/tools/prompt-to-proposal",
+    description:
+      "Generate professional business proposals instantly with AI-powered formatting and content.",
+  },
+  {
+    label: "Prompt-to-Video",
+    icon: "/images/tools/prompt-to-deck.svg",
+    route: "/tools/prompt-to-video",
+    description:
+      "Create engaging videos from simple prompts using AI-driven storytelling and visuals.",
+  },
 ];
 
 export default function Services() {
-    const router = useRouter();
+  const router = useRouter();
 
-    return (
+  const go = (route: string) => {
+    if (route.startsWith("http")) {
+      window.open(route, "_blank");
+    } else {
+      router.push(route);
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        background: "#fff",
+        py: { xs: 6, md: 10 },
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <Container
+        maxWidth="lg"
+        component={motion.div}
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+        sx={{ position: "relative", zIndex: 2 }}
+      >
         <Box
-            sx={{
-                width: "100%",
-                background: "#fff",
-                py: { xs: 6, md: 18 },
-                position: "relative",
-                overflow: "hidden",
-                display: "flex",
-                justifyContent: "center",
-            }}
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
+            },
+            gap: { xs: 2, md: 3 },
+          }}
         >
-            {/* ✨ Stars Animation */}
+          {tools.map((tool, i) => (
             <Box
-                sx={{
-                    position: "absolute",
-                    top: { xs: 10, md: 40 },
-                    left: { xs: 20, md: 60 },
-                    width: { xs: 24, md: 72 },
-                    height: { xs: 24, md: 80 },
-                    animation: "sparkle 2s ease-in-out infinite",
-                    "@keyframes sparkle": {
-                        "0%, 100%": { opacity: 0.7, transform: "scale(1)" },
-                        "50%": { opacity: 1, transform: "scale(1.1)" },
-                    },
-                }}
+              key={tool.label}
+              component={motion.div}
+              variants={fadeUp}
+              custom={i}
+              role="button"
+              tabIndex={0}
+              aria-label={tool.label}
+              onClick={() => go(tool.route)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  go(tool.route);
+                }
+              }}
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.25 }}
+              sx={{
+                position: "relative",
+                borderRadius: "20px",
+                background: "linear-gradient(160deg, #FBFAFF 0%, #fff 100%)",
+                border: "1px solid rgba(142, 45, 226, 0.12)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 2.5,
+                p: 3,
+                minHeight: 240,
+                cursor: "pointer",
+                boxShadow: "0 4px 20px rgba(74, 0, 224, 0.04)",
+                transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+                overflow: "hidden",
+                "&:hover": {
+                  boxShadow: "0 16px 40px rgba(142, 45, 226, 0.16)",
+                  borderColor: "rgba(142, 45, 226, 0.35)",
+                  "& .sx-tool-arrow": {
+                    opacity: 1,
+                    transform: "translate(0, 0)",
+                  },
+                  "& .sx-tool-icon": {
+                    background: "linear-gradient(135deg, #8E2DE2, #4A00E0)",
+                    "& img": { filter: "brightness(0) invert(1)" },
+                  },
+                },
+                "&:focus-visible": {
+                  outline: "2px solid #8E2DE2",
+                  outlineOffset: "2px",
+                },
+              }}
             >
-                <Image
-                    src="/images/light-purple-stars.png"
-                    alt="Stars"
-                    width={36}
-                    height={36}
-                    style={{ width: "75%", height: "75%" }}
-                />
-            </Box>
+              <Box
+                className="sx-tool-icon"
+                sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(242, 240, 255, 1)",
+                  transition: "background 0.25s ease",
+                }}
+              >
+                <Image src={tool.icon} alt="" width={24} height={24} />
+              </Box>
 
-            {/* 🧩 Checkered background */}
-            <Box
-                sx={{
-                    position: "absolute",
-                    top: "25%",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    opacity: 0.45,
-                    mixBlendMode: "multiply",
-                    pointerEvents: "none",
-                    width: { xs: 300, md: 550 },
-                    height: { xs: 220, md: 500 },
-                    zIndex: 0,
-                }}
-            >
-                <Image
-                    src="/images/checkered-lines.svg"
-                    alt="Checkered"
-                    width={600}
-                    height={600}
-                    style={{
-                        objectFit: "contain",
-                        width: "100%",
-                        height: "100%",
-                    }}
-                />
-            </Box>
-
-            {/* Cards Grid */}
-            <Container
-                maxWidth="lg"
-                sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: { xs: 3, md: 4 },
-                    zIndex: 2,
-                }}
-            >
-                <Box
-                    sx={{
-                        display: "grid",
-                        gridTemplateColumns: {
-                            xs: "1fr",
-                            sm: "repeat(2, 1fr)",
-                            md: "repeat(3, 1fr)",
-                            lg: "repeat(3, 1fr)",
-                        },
-                        gap: { xs: 2, sm: 3, md: 4 },
-                        justifyItems: "center",
-                        alignItems: "center",
-                        justifyContent: {
-                            xs: "center",
-                            sm: "center",
-                            md: "center",
-                            lg: "center",
-                        },
-                    }}
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  className="sx-display"
+                  sx={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "1.25rem",
+                    fontWeight: 700,
+                    color: "#0F0A19",
+                    mb: 1,
+                    letterSpacing: "-0.02em",
+                  }}
                 >
-                    {tools.map((tool, i) => (
-                        <Box
-                            key={i}
-                            onClick={() => {
-                                if (tool.route.startsWith('http')) {
-                                    window.open(tool.route, '_blank');
-                                } else {
-                                    router.push(tool.route);
-                                }
-                            }}
-                            sx={{
-                                position: "relative",
-                                borderRadius: "12px",
-                                background: "#fff",
-                                boxShadow: "5.25px 6px 60.75px rgba(0,0,0,0.05)",
-                                backdropFilter: "blur(8px)",
-                                border: "1px solid rgba(232, 228, 255, 1)",
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "32px",
-                                p: "24px",
-                                minHeight: { xs: 260, md: 280 },
-                                width: { xs: "100%", sm: 280, md: 356 },
-                                transition: "all 0.3s ease",
-                                cursor: "pointer",
-                                bgcolor: "rgba(251, 250, 255, 0.6)",
-                                "&:hover": {
-                                    transform: "translateY(-5px)",
-                                    boxShadow: "0px 10px 25px rgba(123, 97, 255, 0.2)",
-                                },
+                  {tool.label}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: "0.95rem",
+                    lineHeight: 1.6,
+                    color: "#5B5568",
+                  }}
+                >
+                  {tool.description}
+                </Typography>
+              </Box>
 
-                            }}
-                        >
-                            <Image
-                                src={tool.icon}
-                                alt="service-icon"
-                                width={25}
-                                height={25}
-                            // style={{
-                            //     objectFit: "contain",
-                            //     width: "100%",
-                            //     height: "100%",
-                            // }}
-                            />
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: "10px", // 👈 exact 10px gap
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontFamily: "Raleway",
-                                        fontSize: "24px",
-                                        lineHeight: "32px",
-                                        fontWeight: 700,
-                                        color: "#1A1A1A",
-                                    }}
-                                >
-
-                                    {tool.label}
-                                </Typography>
-                                 <Typography
-                                    sx={{
-                                        fontFamily: "Raleway",
-                                        fontSize: "16px",
-                                        lineHeight: "24px",
-                                        fontWeight: 400,
-                                        color: "rgba(86, 86, 86, 1)",
-                                    }}
-                                >
-                                    {tool.description}
-                                </Typography>
-                            </Box>
-                        </Box>
-                    ))}
-                </Box>
-            </Container>
+              <ArrowOutward
+                className="sx-tool-arrow"
+                sx={{
+                  position: "absolute",
+                  top: 20,
+                  right: 20,
+                  fontSize: 20,
+                  color: "#8E2DE2",
+                  opacity: 0,
+                  transform: "translate(-4px, 4px)",
+                  transition: "opacity 0.25s ease, transform 0.25s ease",
+                }}
+              />
+            </Box>
+          ))}
         </Box>
-    );
+      </Container>
+    </Box>
+  );
 }

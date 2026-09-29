@@ -3,6 +3,15 @@ import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
 import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
+import { getBulletIcon } from '@/utils/bulletIcons';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import FlagIcon from '@mui/icons-material/Flag';
+
+const getStepIcon = (text: string, index: number, total: number) => {
+    if (index === 0) return RocketLaunchIcon;
+    if (index === total - 1) return FlagIcon;
+    return getBulletIcon(text, index);
+};
 
 interface TimelineSlideHTMLProps {
     slide: any;
@@ -112,6 +121,8 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
 
                     {bullets.map((bullet: any) => {
                         const actualIndex = slide.elements.indexOf(bullet);
+                        const stepIndex = bullets.indexOf(bullet);
+                        const StepIcon = getStepIcon(bullet.text, stepIndex, bullets.length);
                         return (
                             <div key={bullet.id || actualIndex} style={{
                                 display: 'grid',
@@ -123,24 +134,20 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                                     <div style={{
                                         position: 'absolute',
                                         top: 0,
-                                        left: '4px',
-                                        width: '24px',
-                                        height: '24px',
+                                        left: '2px',
+                                        width: '28px',
+                                        height: '28px',
                                         borderRadius: '50%',
                                         background: '#ffffff',
                                         border: `2px solid ${accent}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: `0 2px 8px ${accent}30`,
                                         zIndex: 2
-                                    }} />
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '7px',
-                                        left: '11px',
-                                        width: '10px',
-                                        height: '10px',
-                                        borderRadius: '50%',
-                                        background: accent,
-                                        zIndex: 3
-                                    }} />
+                                    }}>
+                                        <StepIcon style={{ fontSize: '15px', color: accent }} />
+                                    </div>
                                 </div>
 
                                 <div style={{
@@ -233,6 +240,8 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
 
                     {bullets.map((bullet: any) => {
                         const actualIndex = slide.elements.indexOf(bullet);
+                        const stepIndex = bullets.indexOf(bullet);
+                        const StepIcon = getStepIcon(bullet.text, stepIndex, bullets.length);
                         return (
                             <div key={bullet.id || actualIndex} style={{
                                 flex: 1,
@@ -247,17 +256,15 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                                     width: '50px',
                                     height: '50px',
                                     borderRadius: '50%',
-                                    background: accent,
+                                    background: `linear-gradient(135deg, ${accent}, ${accent2})`,
                                     color: '#ffffff',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontWeight: 'bold',
-                                    fontSize: '1.5rem',
                                     marginBottom: '1.5rem',
-                                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                                 }}>
-                                    {bullets.indexOf(bullet) + 1}
+                                    <StepIcon style={{ fontSize: '22px', color: '#fff' }} />
                                 </div>
                                 <EditableElement
                                     id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
@@ -333,7 +340,9 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
 
                     {bullets.map((bullet: any) => {
                         const actualIndex = slide.elements.indexOf(bullet);
-                        const isLeft = bullets.indexOf(bullet) % 2 === 0;
+                        const stepIndex = bullets.indexOf(bullet);
+                        const isLeft = stepIndex % 2 === 0;
+                        const StepIcon = getStepIcon(bullet.text, stepIndex, bullets.length);
                         return (
                             <div key={bullet.id || actualIndex} style={{
                                 display: 'flex',
@@ -375,13 +384,18 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                                     left: '50%',
                                     top: '50%',
                                     transform: 'translate(-50%, -50%)',
-                                    width: '20px',
-                                    height: '20px',
+                                    width: '32px',
+                                    height: '32px',
                                     borderRadius: '50%',
-                                    background: accent,
+                                    background: `linear-gradient(135deg, ${accent}, ${accent2})`,
                                     border: '4px solid #ffffff',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                }} />
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}>
+                                    <StepIcon style={{ fontSize: '14px', color: '#fff' }} />
+                                </div>
                             </div>
                         );
                     })}
@@ -433,25 +447,41 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                 }}>
                     {bullets.map((bullet: any) => {
                         const actualIndex = slide.elements.indexOf(bullet);
+                        const stepIndex = bullets.indexOf(bullet);
+                        const stepColor = stepIndex % 2 === 0 ? accent : accent2;
+                        const StepIcon = getStepIcon(bullet.text, stepIndex, bullets.length);
                         return (
                             <div key={bullet.id || actualIndex} style={{
                                 background: '#ffffff',
                                 padding: '2rem',
                                 borderRadius: '16px',
-                                borderTop: `6px solid ${bullets.indexOf(bullet) % 2 === 0 ? accent : accent2}`,
+                                borderTop: `6px solid ${stepColor}`,
                                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: '1rem'
                             }}>
-                                <span style={{
-                                    fontSize: '2rem',
-                                    fontWeight: 900,
-                                    color: bullets.indexOf(bullet) % 2 === 0 ? accent : accent2,
-                                    opacity: 0.5
-                                }}>
-                                    0{bullets.indexOf(bullet) + 1}
-                                </span>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <span style={{
+                                        fontSize: '2rem',
+                                        fontWeight: 900,
+                                        color: stepColor,
+                                        opacity: 0.5
+                                    }}>
+                                        0{stepIndex + 1}
+                                    </span>
+                                    <div style={{
+                                        width: '36px',
+                                        height: '36px',
+                                        borderRadius: '10px',
+                                        background: `${stepColor}18`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}>
+                                        <StepIcon style={{ fontSize: '18px', color: stepColor }} />
+                                    </div>
+                                </div>
                                 <EditableElement
                                     id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}
@@ -520,6 +550,8 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
             }}>
                 {bullets.map((bullet: any) => {
                     const actualIndex = slide.elements.indexOf(bullet);
+                    const stepIndex = bullets.indexOf(bullet);
+                    const StepIcon = getStepIcon(bullet.text, stepIndex, bullets.length);
                     return (
                         <div key={bullet.id || actualIndex} style={{
                             display: 'flex',
@@ -532,12 +564,16 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                             boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
                         }}>
                             <div style={{
-                                fontSize: '1.5rem',
-                                fontWeight: 700,
-                                color: accent,
-                                minWidth: '40px'
+                                width: '40px',
+                                height: '40px',
+                                minWidth: '40px',
+                                borderRadius: '10px',
+                                background: `${accent}18`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                             }}>
-                                {bullets.indexOf(bullet) + 1}.
+                                <StepIcon style={{ fontSize: '19px', color: accent }} />
                             </div>
                             <EditableElement
                                 id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}

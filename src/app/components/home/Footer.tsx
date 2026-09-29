@@ -2,13 +2,15 @@
 
 import { Box, Typography, Link, Stack } from "@mui/material";
 import Image from "next/image";
-import { usePathname } from "next/navigation"; // ✅ for active route
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 
 export default function Footer() {
-  const pathname = usePathname(); // ✅ current route
+  const pathname = usePathname();
 
   const navLinks = [
     { title: "Home", link: "/" },
+    { title: "Tools", link: "/tools" },
     { title: "Templates", link: "/templates" },
     { title: "Privacy", link: "/privacy-policy" },
     { title: "FAQ's", link: "/faqs" },
@@ -20,42 +22,56 @@ export default function Footer() {
     <Box
       component="footer"
       sx={{
-        backgroundColor: "#fff",
+        background:
+          "linear-gradient(180deg, #fff 0%, #F8F5FF 60%, #F3F0FF 100%)",
         textAlign: "center",
         py: { xs: 5, md: 6 },
         px: 2,
-        borderTop: "1px solid #f2f2f2",
+        borderTop: "1px solid rgba(142, 45, 226, 0.1)",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      {/* Logo */}
       <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "60%",
+          height: 1,
+          background:
+            "linear-gradient(90deg, transparent, rgba(142,45,226,0.4), transparent)",
+        }}
+      />
+
+      <Box
+        component={motion.div}
+        whileHover={{ scale: 1.03 }}
         sx={{
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          my: 4,
+          my: 3,
         }}
       >
         <Link href="/" style={{ textDecoration: "none" }}>
-          <Box sx={{ display: "flex" }}>
-            <Image
-              src="/images/Logo.svg"
-              alt="Slides Logo"
-              width={236}
-              height={36}
-              className="object-cover sm:w-[236px] w-auto"
-            />
-          </Box>
+          <Image
+            src="/images/Logo.svg"
+            alt="Slidexy"
+            width={200}
+            height={48}
+            style={{ objectFit: "contain" }}
+          />
         </Link>
       </Box>
 
-      {/* Nav Links */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
-        spacing={{ xs: 2, sm: 4 }}
+        spacing={{ xs: 1.5, sm: 3 }}
         justifyContent="center"
         alignItems="center"
-        sx={{ mb: 3 }}
+        sx={{ mb: 3, flexWrap: "wrap" }}
       >
         {navLinks.map((item) => {
           const isActive = pathname === item.link;
@@ -65,9 +81,11 @@ export default function Footer() {
               href={item.link}
               underline="none"
               sx={{
-                color: isActive ? "#000" : "#555", // ✅ highlight active
-                fontSize: { xs: "0.95rem", md: "1rem" },
-                fontWeight: isActive ? 600 : 400, // ✅ bold active
+                color: isActive ? "#4A00E0" : "#5B5568",
+                fontSize: { xs: "0.95rem", md: "0.95rem" },
+                fontWeight: isActive ? 600 : 450,
+                transition: "color 0.2s ease",
+                "&:hover": { color: "#8E2DE2" },
               }}
             >
               {item.title}
@@ -76,10 +94,9 @@ export default function Footer() {
         })}
       </Stack>
 
-      {/* Social Icons */}
       <Stack
         direction="row"
-        spacing={2}
+        spacing={1.5}
         justifyContent="center"
         alignItems="center"
         sx={{ mb: 3 }}
@@ -90,11 +107,6 @@ export default function Footer() {
             alt: "Facebook",
             link: "https://web.facebook.com/Slidexy",
           },
-          // {
-          //   src: "/images/x-icon.svg",
-          //   alt: "Twitter",
-          //   link: "https://web.facebook.com/Slidexy",
-          // },
           {
             src: "/images/social-ico/instagram-ico.svg",
             alt: "Instagram",
@@ -102,36 +114,51 @@ export default function Footer() {
           },
           {
             src: "/images/social-ico/linkedin-ico.svg",
-            alt: "linkedin",
+            alt: "LinkedIn",
             link: "https://www.linkedin.com/company/slidexy/",
           },
           {
             src: "/images/social-ico/tiktok-ico.svg",
-            alt: "tiktok",
+            alt: "TikTok",
             link: "https://www.tiktok.com/@slidexy_ai",
           },
-        ].map((icon, idx) => (
-          <Link key={idx} href={icon.link} target="_blank" underline="none">
-            <img
-              src={icon.src}
-              alt={icon.alt}
-              width={25}
-              height={25}
-              className="object-cover hover:p-[20px] hover:bg-[#E8E4FF] rounded-full"
-              style={{ display: "block", cursor: "pointer" }}
-            />
+        ].map((icon) => (
+          <Link
+            key={icon.alt}
+            href={icon.link}
+            target="_blank"
+            underline="none"
+            component={motion.a}
+            whileHover={{ y: -3, scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "rgba(255,255,255,0.8)",
+              border: "1px solid rgba(142, 45, 226, 0.12)",
+              transition: "background 0.2s ease, border-color 0.2s ease",
+              "&:hover": {
+                bgcolor: "#E8E4FF",
+                borderColor: "rgba(142, 45, 226, 0.3)",
+              },
+            }}
+          >
+            <img src={icon.src} alt={icon.alt} width={20} height={20} />
           </Link>
         ))}
       </Stack>
 
-      {/* Copyright */}
       <Typography
         sx={{
-          fontSize: { xs: "0.8rem", md: "0.875rem" },
+          fontSize: "0.85rem",
           color: "#888",
         }}
       >
-        Copyright © 2025. All Rights Reserved.
+        Copyright © {new Date().getFullYear()} Slidexy. All rights reserved.
       </Typography>
     </Box>
   );

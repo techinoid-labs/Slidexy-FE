@@ -266,19 +266,15 @@ export default function PricingSection() {
                       {/* Button */}
                       <Button
                         variant="contained"
+                        disableElevation
+                        size="large"
                         sx={{
                           background: styles.color,
                           color: styles.textColor,
-                          borderRadius: "999px",
-                          px: 4,
-                          py: 1.5,
-                          fontWeight: 600,
-                          fontSize: "1.1rem",
-                          textTransform: "none",
                           width: "100%",
                           mb: 3,
                           boxShadow: "none",
-                          "&:hover": { background: styles.btnHover },
+                          "&:hover": { background: styles.btnHover, boxShadow: "none" },
                         }}
                         endIcon={<span style={{ fontSize: 22 }}>→</span>}
                         onClick={() => {

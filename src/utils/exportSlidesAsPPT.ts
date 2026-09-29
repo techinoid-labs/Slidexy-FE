@@ -1,93 +1,74 @@
 import PptxGenJS from "pptxgenjs";
 import html2canvas from "html2canvas";
+import { OffscreenSlideStage } from "./offscreenSlideStage";
 
 /**
- * Export slides as PowerPoint by capturing HTML visual state.
- * Uses html2canvas to screenshot each slide and places it as a full-slide image in PPT.
- * This ensures 100% visual fidelity (WYSIWYG).
+ * Export slides as PowerPoint.
+ *
+ * Each slide is rendered into a dedicated off-screen stage and placed as a
+ * full-bleed image, so the .pptx matches the editor exactly.
+ *
+ * Note: this produces a picture-per-slide deck. Text is not editable in
+ * PowerPoint. A native-shape export is tracked separately.
  */
-export async function exportSlidesAsPPT(slides: any[]) {
+/** Matches the PDF exporter: 1920x1080 per slide, JPEG rather than PNG. */
+const EXPORT_SCALE = 2;
+const EXPORT_JPEG_QUALITY = 0.92;
+
+export async function exportSlidesAsPPT(slides: any[], theme?: any) {
   const slidesCount = slides.length;
+  const WIDTH = 960;
+  const HEIGHT = 540;
+
+  if (slidesCount === 0) {
+    console.warn("[PPT Export] No slides to export");
+    return false;
+  }
+
+  let stage: OffscreenSlideStage | null = null;
+
   try {
     const pptx = new PptxGenJS();
     const pptFileName = localStorage.getItem("fileName") || "Presentation";
 
-    // Set layout to match our 960x540 aspect ratio (16:9)
+    const resolvedTheme = theme ?? readPersistedTheme();
+
     pptx.defineLayout({ name: "WIDE", width: 10, height: 5.625 });
     pptx.layout = "WIDE";
 
     console.log(`[PPT Export] Starting export for ${slidesCount} slides...`);
 
-    // Create a temporary container for rendering slides "off-screen"
-    const container = document.createElement("div");
-    container.style.position = "fixed";
-    container.style.top = "0";
-    container.style.left = "-10000px";
-    container.style.width = "960px";
-    container.style.height = "540px";
-    container.style.overflow = "hidden";
-    document.body.appendChild(container);
+    stage = new OffscreenSlideStage(WIDTH, HEIGHT);
 
     let exportedCount = 0;
 
     for (let i = 0; i < slidesCount; i++) {
-      // Find the actual slide node in the DOM
-      const sourceNode = document.getElementById(`slide-node-${i}`);
-      if (!sourceNode) {
-        console.warn(`[PPT Export] Could not find DOM node for slide ${i}`);
-        continue;
-      }
-
-      // Clone the node deeply
-      const clone = sourceNode.cloneNode(true) as HTMLElement;
-
-      // Reset styles for capture
-      clone.style.transform = "none";
-      clone.style.position = "absolute";
-      clone.style.top = "0";
-      clone.style.left = "0";
-      clone.style.visibility = "visible";
-      clone.style.opacity = "1";
-      clone.style.border = "none";
-      clone.style.boxShadow = "none";
-
-      // Append to temp container
-      container.innerHTML = "";
-      container.appendChild(clone);
-
-      // Wait for fonts to be ready
-      if (document.fonts) {
-        await document.fonts.ready;
-      }
-
-      // Small delay to ensure layout stabilizer
-      await new Promise(r => setTimeout(r, 100));
-
       try {
-        const canvas = await html2canvas(container, {
-          scale: 3, // Higher quality
+        const node = await stage.render(slides[i], resolvedTheme);
+
+        const canvas = await html2canvas(node, {
+          scale: EXPORT_SCALE,
           useCORS: true,
-          width: 960,
-          height: 540,
+          width: WIDTH,
+          height: HEIGHT,
           backgroundColor: "#ffffff",
           logging: false,
           onclone: (clonedDoc) => {
-            const textNodes = clonedDoc.querySelectorAll('p, div, h1, h2, h3, h4, span');
+            const textNodes = clonedDoc.querySelectorAll(
+              "p, div, h1, h2, h3, h4, span"
+            );
             textNodes.forEach((node: any) => {
               if (node.style) {
-                node.style.letterSpacing = 'normal';
+                node.style.letterSpacing = "normal";
               }
             });
-          }
+          },
         });
 
-        const imgData = canvas.toDataURL("image/png");
+        const imgData = canvas.toDataURL("image/jpeg", EXPORT_JPEG_QUALITY);
 
-        // Add slide to PPT
-        const slide = pptx.addSlide();
-
-        // Add the captured image covering the entire slide
-        slide.addImage({
+        const pptSlide = pptx.addSlide();
+        pptSlide.addImage({
           data: imgData,
           x: 0,
           y: 0,
@@ -97,28 +78,33 @@ export async function exportSlidesAsPPT(slides: any[]) {
 
         exportedCount++;
         console.log(`[PPT Export] Processed slide ${i + 1}/${slidesCount}`);
-
       } catch (err) {
         console.error(`[PPT Export] Failed to capture slide ${i}`, err);
       }
     }
 
-    // Cleanup
-    document.body.removeChild(container);
-
     if (exportedCount === 0) {
       throw new Error("No slides were successfully exported");
     }
 
-    // Save file
     await pptx.writeFile({ fileName: `${pptFileName}.pptx` });
     console.log(`[PPT Export] Successfully saved ${pptFileName}.pptx`);
 
     return true;
-
   } catch (error) {
     console.error("[PPT Export] Fatal error:", error);
     alert("Failed to export PowerPoint. Please try again.");
     return false;
+  } finally {
+    stage?.destroy();
+  }
+}
+
+function readPersistedTheme(): any {
+  try {
+    const raw = localStorage.getItem("slidesTheme");
+    return raw ? JSON.parse(raw) : undefined;
+  } catch {
+    return undefined;
   }
 }

@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from "uuid";
 import { removeBackground } from "@imgly/background-removal";
 import CropModal from "./../new-ui/CropModal";
 import { useSlides, KonvaComponent } from "@/app/context/SlidesContext";
+import { PANEL } from "./panelTheme";
 
 const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
   sidebarHeight,
@@ -460,42 +461,47 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
 
   return (
     <Box
-      className="w-[300px] min-w-[250px] bg-white flex flex-col overflow-y-auto border-r border-gray-200"
-      sx={{ height: sidebarHeight || "100vh" }}
+      className="w-[300px] min-w-[250px] flex flex-col overflow-y-auto"
+      sx={{ height: sidebarHeight || "100vh", bgcolor: PANEL.surface, borderLeft: `1px solid ${PANEL.border}` }}
     >
       {/* Header */}
       <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: 16, color: "#000" }}>
+        <Typography sx={{ fontWeight: 600, fontSize: 16, color: PANEL.text }}>
           Image Settings
         </Typography>
       </Box>
 
       {/* Size */}
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography
-            sx={{ fontWeight: 500, fontSize: 16, flex: 1, color: "#454545" }}
+            sx={{ fontWeight: 500, fontSize: 16, flex: 1, color: PANEL.textMuted }}
           >
             Size
           </Typography>
-          <IconButton size="small">
+          <IconButton size="small" sx={{ color: PANEL.textMuted }}>
             <ArrowDropDownIcon />
           </IconButton>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 5, mb: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography variant="caption" sx={{ fontSize: 20 }}>
+            <Typography variant="caption" sx={{ fontSize: 20, color: PANEL.textMuted }}>
               W
             </Typography>
             <Box
               sx={{
-                bgcolor: "#fff",
-                border: "1px solid #F6F6F6",
-                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
-                borderRadius: 0.5,
+                bgcolor: PANEL.surfaceSunken,
+                border: `1.5px solid ${PANEL.border}`,
+                boxShadow: "0 1px 3px rgba(142, 45, 226, 0.08)",
+                borderRadius: 1.5,
                 px: 1.5,
                 py: 0.5,
+                transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+                "&:focus-within": {
+                  borderColor: PANEL.accent,
+                  boxShadow: `0 0 0 4px ${PANEL.accentBg}`,
+                },
               }}
             >
               <InputBase
@@ -513,24 +519,29 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                   width: 50,
                   fontSize: 16,
                   input: { textAlign: "center" },
-                  color: "#6D6D6D",
+                  color: PANEL.text,
                 }}
                 inputProps={{ style: { textAlign: "center" } }}
               />
             </Box>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography variant="caption" sx={{ fontSize: 20 }}>
+            <Typography variant="caption" sx={{ fontSize: 20, color: PANEL.textMuted }}>
               H
             </Typography>
             <Box
               sx={{
-                bgcolor: "#fff",
-                border: "1px solid #F6F6F6",
-                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
-                borderRadius: 0.5,
+                bgcolor: PANEL.surfaceSunken,
+                border: `1.5px solid ${PANEL.border}`,
+                boxShadow: "0 1px 3px rgba(142, 45, 226, 0.08)",
+                borderRadius: 1.5,
                 px: 1.5,
                 py: 0.5,
+                transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+                "&:focus-within": {
+                  borderColor: PANEL.accent,
+                  boxShadow: `0 0 0 4px ${PANEL.accentBg}`,
+                },
               }}
             >
               <InputBase
@@ -548,7 +559,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                   width: 50,
                   fontSize: 16,
                   input: { textAlign: "center" },
-                  color: "#6D6D6D",
+                  color: PANEL.text,
                 }}
                 inputProps={{ style: { textAlign: "center" } }}
               />
@@ -558,15 +569,15 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       </Box>
 
       {/* Effects */}
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography
-            sx={{ fontWeight: 500, fontSize: 16, flex: 1, color: "#454545" }}
+            sx={{ fontWeight: 500, fontSize: 16, flex: 1, color: PANEL.textMuted }}
           >
             Effects
           </Typography>
-          <IconButton size="small">
+          <IconButton size="small" sx={{ color: PANEL.textMuted }}>
             <ArrowDropDownIcon />
           </IconButton>
         </Box>
@@ -579,12 +590,18 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
               mb: 1,
             }}
           >
-            <Typography sx={{ fontSize: 14, color: "#454545" }}>
+            <Typography sx={{ fontSize: 14, color: PANEL.textMuted }}>
               Opacity
             </Typography>
             <IconButton
               onClick={() => setIsOpacityOpen(!isOpacityOpen)}
               size="small"
+              sx={{
+                color: PANEL.textMuted,
+                transition: "transform 0.2s ease, background-color 0.18s ease",
+                transform: isOpacityOpen ? "rotate(180deg)" : "rotate(0deg)",
+                "&:hover": { bgcolor: PANEL.accentBg },
+              }}
             >
               <ArrowDropDownIcon />
             </IconButton>
@@ -596,9 +613,9 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                 onChange={handleOpacityChange}
                 min={0}
                 max={100}
-                sx={{ width: "100%" }}
+                sx={{ width: "100%", color: PANEL.accent }}
               />
-              <Typography sx={{ fontSize: 12, color: "#6D6D6D" }}>
+              <Typography sx={{ fontSize: 12, color: PANEL.textFaint }}>
                 {Math.round(opacity * 100)}%
               </Typography>
             </Box>
@@ -613,12 +630,18 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
               mb: 1,
             }}
           >
-            <Typography sx={{ fontSize: 14, color: "#454545" }}>
+            <Typography sx={{ fontSize: 14, color: PANEL.textMuted }}>
               Shadow
             </Typography>
             <IconButton
               onClick={() => setIsShadowOpen(!isShadowOpen)}
               size="small"
+              sx={{
+                color: PANEL.textMuted,
+                transition: "transform 0.2s ease, background-color 0.18s ease",
+                transform: isShadowOpen ? "rotate(180deg)" : "rotate(0deg)",
+                "&:hover": { bgcolor: PANEL.accentBg },
+              }}
             >
               <ArrowDropDownIcon />
             </IconButton>
@@ -627,7 +650,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
             <Box sx={{ px: 2, py: 1 }}>
               <Typography
                 variant="caption"
-                sx={{ color: "#454545", mb: 1, fontWeight: 500 }}
+                sx={{ color: PANEL.textMuted, mb: 1, fontWeight: 500 }}
               >
                 Shadow Offset X
               </Typography>
@@ -638,11 +661,11 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                 }
                 min={-50}
                 max={50}
-                sx={{ mb: 2 }}
+                sx={{ mb: 2, color: PANEL.accent }}
               />
               <Typography
                 variant="caption"
-                sx={{ color: "#454545", mb: 1, fontWeight: 500 }}
+                sx={{ color: PANEL.textMuted, mb: 1, fontWeight: 500 }}
               >
                 Shadow Offset Y
               </Typography>
@@ -653,11 +676,11 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                 }
                 min={-50}
                 max={50}
-                sx={{ mb: 2 }}
+                sx={{ mb: 2, color: PANEL.accent }}
               />
               <Typography
                 variant="caption"
-                sx={{ color: "#454545", mb: 1, fontWeight: 500 }}
+                sx={{ color: PANEL.textMuted, mb: 1, fontWeight: 500 }}
               >
                 Shadow Blur
               </Typography>
@@ -666,7 +689,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                 onChange={(e, val) => handleShadowChange("blur", val as number)}
                 min={0}
                 max={100}
-                sx={{ mb: 2 }}
+                sx={{ mb: 2, color: PANEL.accent }}
               />
             </Box>
           </Collapse>
@@ -680,12 +703,18 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
               mb: 1,
             }}
           >
-            <Typography sx={{ fontSize: 14, color: "#454545" }}>
+            <Typography sx={{ fontSize: 14, color: PANEL.textMuted }}>
               Border Radius
             </Typography>
             <IconButton
               onClick={() => setIsRadiusOpen(!isRadiusOpen)}
               size="small"
+              sx={{
+                color: PANEL.textMuted,
+                transition: "transform 0.2s ease, background-color 0.18s ease",
+                transform: isRadiusOpen ? "rotate(180deg)" : "rotate(0deg)",
+                "&:hover": { bgcolor: PANEL.accentBg },
+              }}
             >
               <ArrowDropDownIcon />
             </IconButton>
@@ -697,9 +726,9 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                 onChange={handleRadiusChange}
                 min={0}
                 max={500}
-                sx={{ mb: 2 }}
+                sx={{ mb: 2, color: PANEL.accent }}
               />
-              <Typography sx={{ fontSize: 12, color: "#6D6D6D" }}>
+              <Typography sx={{ fontSize: 12, color: PANEL.textFaint }}>
                 {borderRadius}px
               </Typography>
             </Box>
@@ -708,15 +737,15 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       </Box>
 
       {/* Content */}
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography
-            sx={{ fontWeight: 500, fontSize: 16, flex: 1, color: "#454545" }}
+            sx={{ fontWeight: 500, fontSize: 16, flex: 1, color: PANEL.textMuted }}
           >
             Content
           </Typography>
-          <IconButton size="small">
+          <IconButton size="small" sx={{ color: PANEL.textMuted }}>
             <ArrowDropDownIcon />
           </IconButton>
         </Box>
@@ -728,6 +757,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
             overflow: "hidden",
             mb: 1.5,
             position: "relative",
+            border: `1px solid ${PANEL.border}`,
           }}
         >
           <img
@@ -748,15 +778,21 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              bgcolor: "rgba(0,0,0,0.5)",
+              bgcolor: "rgba(15, 10, 25, 0.55)",
               color: "#fff",
-              borderRadius: 2,
+              borderRadius: "999px",
               px: 2,
               py: 0.5,
               fontWeight: 600,
               fontSize: 15,
               textTransform: "none",
               minWidth: 0,
+              backdropFilter: "blur(4px)",
+              transition: "background-color 0.2s ease, transform 0.2s ease",
+              "&:hover": {
+                bgcolor: "rgba(142, 45, 226, 0.85)",
+                transform: "translate(-50%, -50%) scale(1.05)",
+              },
             }}
           >
             Replace
@@ -772,22 +808,16 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       </Box>
 
       {/* Actions Section */}
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
       <Box sx={{ px: 3, mb: 2 }}>
         <Typography
-          sx={{ fontWeight: 500, fontSize: 14, color: "#000", mb: 1 }}
+          sx={{ fontWeight: 500, fontSize: 14, color: PANEL.text, mb: 1 }}
         >
           Actions
         </Typography>
         <Box sx={{ display: "flex", gap: 4, mb: 1 }}>
           <Button
-            sx={{
-              fontColor: "#1a1a1a",
-              height: 47,
-              width: 150,
-              fontSize: 14,
-              fontWeight: 500,
-            }}
+            sx={{ height: 47, width: 150 }}
             variant="outlined"
             size="small"
             onClick={handleDuplicateImage}
@@ -795,13 +825,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
             Duplicate
           </Button>
           <Button
-            sx={{
-              fontColor: "#1a1a1a",
-              height: 47,
-              width: 150,
-              fontSize: 14,
-              fontWeight: 500,
-            }}
+            sx={{ height: 47, width: 150 }}
             variant="outlined"
             size="small"
             color="error"
@@ -813,7 +837,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
         <Box sx={{ display: "flex", gap: 4 }}>
           <Button
             variant="outlined"
-            sx={{ fontColor: "#1a1a1a", height: 47, width: 150 }}
+            sx={{ height: 47, width: 150 }}
             size="small"
             onClick={handleRemoveBackground}
             disabled={isLoading}
@@ -824,21 +848,11 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
                 Processing...
               </>
             ) : (
-              <Typography
-                sx={{ whiteSpace: "nowrap", fontSize: 14, fontWeight: 500 }}
-              >
-                BG Remover
-              </Typography>
+              "BG Remover"
             )}
           </Button>
           <Button
-            sx={{
-              fontColor: "#1a1a1a",
-              height: 47,
-              width: 150,
-              fontSize: 14,
-              fontWeight: 500,
-            }}
+            sx={{ height: 47, width: 150 }}
             variant="outlined"
             size="small"
             onClick={() => setIsCropModalOpen(true)}
@@ -849,7 +863,7 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
       </Box>
 
       {/* Layer Controls */}
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
       <Box sx={{ px: 3, mb: 2, display: "flex", gap: 2 }}>
         <Button
           onClick={() => {
@@ -859,38 +873,14 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
           }}
           disabled={selectedImageIndex === null || selectedImageIndex === -99}
           variant="outlined"
+          sx={{ flex: 1, whiteSpace: "nowrap", color: PANEL.textMuted, borderColor: PANEL.border, "&:hover": { borderColor: PANEL.accentBorder, bgcolor: PANEL.accentBg } }}
           endIcon={
             <img
-              src="/forward-icon.svg"
-              alt="Forward"
+              src="/backward-icon.svg"
+              alt="Backward"
               style={{ width: 20, height: 20 }}
             />
           }
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            maxHeight: "50px",
-            borderRadius: 1,
-            fontWeight: 400,
-            fontSize: 15,
-            bgcolor: "#F8F8FA",
-            borderColor: "#E0E0E0",
-            color: "#222",
-            flex: 1,
-            textTransform: "none",
-            whiteSpace: "nowrap",
-            "&:hover": {
-              bgcolor: "#F3EDFF",
-              borderColor: "#7B4AE2",
-              color: "#7B4AE2",
-            },
-            "&:disabled": {
-              bgcolor: "#F0F0F0",
-              color: "#999",
-              borderColor: "#E0E0E0",
-            },
-          }}
         >
           Send Backward
         </Button>
@@ -902,38 +892,14 @@ const ImageSettingsPanel: React.FC<{ sidebarHeight?: string | number }> = ({
           }}
           disabled={selectedImageIndex === null || selectedImageIndex === -99}
           variant="outlined"
+          sx={{ flex: 1, whiteSpace: "nowrap", color: PANEL.textMuted, borderColor: PANEL.border, "&:hover": { borderColor: PANEL.accentBorder, bgcolor: PANEL.accentBg } }}
           endIcon={
             <img
-              src="/backward-icon.svg"
-              alt="Backward"
+              src="/forward-icon.svg"
+              alt="Forward"
               style={{ width: 20, height: 20 }}
             />
           }
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            maxHeight: "50px",
-            borderRadius: 1,
-            fontWeight: 400,
-            fontSize: 15,
-            bgcolor: "#F8F8FA",
-            borderColor: "#E0E0E0",
-            color: "#222",
-            flex: 1,
-            textTransform: "none",
-            whiteSpace: "nowrap",
-            "&:hover": {
-              bgcolor: "#F3EDFF",
-              borderColor: "#7B4AE2",
-              color: "#7B4AE2",
-            },
-            "&:disabled": {
-              bgcolor: "#F0F0F0",
-              color: "#999",
-              borderColor: "#E0E0E0",
-            },
-          }}
         >
           Bring Forward
         </Button>

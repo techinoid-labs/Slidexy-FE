@@ -12,6 +12,7 @@ import BenefitsList from '@/app/components/seo/BenefitsList'
 import ContextualFAQ from '@/app/components/seo/ContextualFAQ'
 import InternalLinks from '@/app/components/seo/InternalLinks'
 import CTASection from '@/app/components/seo/CTASection'
+import Reveal from '@/app/components/shared/Reveal'
 
 export const metadata: Metadata = {
   title: 'Prompt to Video — AI Video Presentation Maker',
@@ -24,27 +25,27 @@ export const metadata: Metadata = {
 
 export default function Page() {
   const personas = [
-    { title: "Social Media Managers", description: "Quickly turn educational threads and ideas into engaging video content for LinkedIn and Instagram.", icon: "group" as const },
-    { title: "SaaS Product Managers", description: "Create high-impact product walkthroughs and feature explainer videos in minutes.", icon: "business" as const },
-    { title: "YouTube Educators", description: "Generate slide-based video lessons without expensive editing software or voice recording.", icon: "school" as const },
+    { title: "Social Media Managers", description: "Turn a thread or a rough idea into a video that's actually ready to post on LinkedIn or Instagram.", icon: "group" as const },
+    { title: "Product Managers", description: "Put together a product walkthrough without waiting on the design team's calendar.", icon: "business" as const },
+    { title: "YouTube Educators", description: "Make a slide-based lesson video without opening editing software or recording your voice.", icon: "school" as const },
   ];
 
   const steps = [
-    { number: 1, title: "Brief Your Idea", description: "Enter a topic, a script, or just a few sentences about your video's goal." },
-    { number: 2, title: "AI Animates Slides", description: "SlideXY builds the slides and applies professional transitions and effects." },
-    { number: 3, title: "Export and Share", description: "Download your video in MP4 format and publish it to any social platform." },
+    { number: 1, title: "Describe the video", description: "A topic, a rough script, or a few sentences about what it's for." },
+    { number: 2, title: "Slidexy builds it", description: "It lays out the slides and adds transitions between them." },
+    { number: 3, title: "Export and share", description: "Download as MP4 and post it wherever you need." },
   ];
 
   const benefits = [
-    { title: "No Editing Required", description: "Our AI handles all keyframes, transitions, and timings automatically.", icon: "speed" as const },
-    { title: "Professional Visuals", description: "High-quality animations and background effects are applied to every slide.", icon: "design" as const },
-    { title: "Social-Ready Output", description: "Generate videos optimized for professional platforms and marketing channels.", icon: "done" as const },
+    { title: "Nothing to edit by hand", description: "Transitions and timing are handled for you — no keyframes to fiddle with.", icon: "speed" as const },
+    { title: "Doesn't look thrown together", description: "Every slide gets a real layout, not a text box on a plain background.", icon: "design" as const },
+    { title: "Ready to post", description: "Sized and formatted for the platforms you're actually sharing to.", icon: "done" as const },
   ];
 
   const faqs = [
-    { question: "What video formats are supported?", answer: "Currently, SlideXY exports videos as high-quality MP4 files, compatible with all major social media platforms and websites." },
-    { question: "Can I add music or voiceover?", answer: "Yes, our video tool allows you to select from a library of background tracks or use integrated AI Text-to-Speech for professional narration." },
-    { question: "How long can each video be?", answer: "SlideXY is optimized for 'short-to-medium' form content, generally ranging from 30 seconds to 5 minutes, ideal for explainers and social ads." },
+    { question: "What video formats are supported?", answer: "Videos export as MP4, which works across all the major social platforms." },
+    { question: "Can I add music or voiceover?", answer: "Yes — pick from a library of background tracks, or use built-in text-to-speech for narration." },
+    { question: "How long can each video be?", answer: "It's built for short-to-medium content, generally 30 seconds to 5 minutes — a good fit for explainers and social ads." },
   ];
 
   const relatedLinks = [
@@ -61,64 +62,72 @@ export default function Page() {
         component="section"
         sx={{
           textAlign: 'center',
-          pt: { xs: 6, md: 10 },
-          pb: { xs: 4, md: 6 },
+          pt: { xs: 5, md: 7 },
+          pb: { xs: 2, md: 2 },
           px: { xs: 3, md: 6 },
-          maxWidth: 800,
+          maxWidth: 720,
           mx: 'auto',
         }}
       >
         <Typography
           component="h1"
+          className="sx-display"
           sx={{
+            fontFamily: 'var(--font-display)',
             fontWeight: 700,
-            fontSize: { xs: '2.25rem', md: '3.5rem' },
-            color: '#111827',
+            fontSize: { xs: '1.85rem', md: '2.75rem' },
+            letterSpacing: '-0.03em',
+            color: '#0F0A19',
             mb: 2,
           }}
         >
-          Prompt to Video
+          Turn a prompt into a video
         </Typography>
         <Typography
           sx={{
             color: 'text.secondary',
-            fontSize: { xs: '1.05rem', md: '1.2rem' },
+            fontSize: { xs: '1.05rem', md: '1.15rem' },
             lineHeight: 1.7,
-            mb: 4,
+            mb: 2,
           }}
         >
-          Describe your video topic and SlideXY AI creates an animated,
-          slide-based video presentation complete with professional transitions. 
-          Perfect for explainers, social media content, and product demos.
+          Describe the topic. Slidexy builds the slides, adds transitions,
+          and exports a video that's ready to share.
         </Typography>
       </Box>
 
       {/* Main Tool Component */}
       <PromptToVideo />
 
-      <ProblemSolution 
-        problem="Creating animated video explainers traditionally requires expensive subscriptions to tools like Adobe After Effects or hiring specialized editors. The process is slow and often costs thousands of dollars for a single minute of content."
-        solution="SlideXY's Prompt-to-Video tool democratizes video production. You provide the idea, and our AI logic handles the entire production pipeline—from slide design to animation—producing a professional result in under 2 minutes."
-      />
+      <Reveal>
+        <ProblemSolution
+          problem="Animated explainer videos usually mean a subscription to something like After Effects, or hiring an editor — slow, and expensive for a minute of content."
+          solution="Slidexy handles the whole pipeline from idea to finished video — slide design, transitions, and export — so you get a shareable result in a couple of minutes instead of a couple of days."
+        />
+      </Reveal>
 
-      <WhoItsFor personas={personas} />
+      <Reveal><WhoItsFor personas={personas} /></Reveal>
 
-      <WorkflowSteps steps={steps} />
+      <Reveal><WorkflowSteps steps={steps} /></Reveal>
 
-      <BenefitsList benefits={benefits} />
+      <Reveal><BenefitsList benefits={benefits} /></Reveal>
 
-      <ContextualFAQ 
-        title="Video Generation FAQ" 
-        subtitle="Learn how to create impactful animated explainers with AI."
-        faqs={faqs} 
-      />
+      <Reveal>
+        <ContextualFAQ
+          title="Video Generation FAQ"
+          subtitle="What to know before you make your first one."
+          faqs={faqs}
+        />
+      </Reveal>
 
-      <InternalLinks title="Explore More Tools" links={relatedLinks} />
+      <Reveal><InternalLinks title="Explore More Tools" links={relatedLinks} /></Reveal>
 
-      <CTASection 
-        title="Start making professional videos"
-        subtitle="Experience the speed of AI-driven video production."
-      />
+      <Reveal>
+        <CTASection
+          title="Make your first video"
+          subtitle="No credit card required to try it."
+        />
+      </Reveal>
 
 
       <Footer />

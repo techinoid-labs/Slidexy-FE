@@ -12,11 +12,12 @@ import BenefitsList from '@/app/components/seo/BenefitsList'
 import ContextualFAQ from '@/app/components/seo/ContextualFAQ'
 import InternalLinks from '@/app/components/seo/InternalLinks'
 import CTASection from '@/app/components/seo/CTASection'
+import Reveal from '@/app/components/shared/Reveal'
 
 export const metadata: Metadata = {
   title: 'Video to Deck — Convert Videos into Slide Presentations',
   description:
-    'Upload a video and SlideXY AI extracts key points, structures them into slides, and generates a complete presentation deck automatically.',
+    'Paste a YouTube link and Slidexy extracts the key points and structures them into a complete slide deck.',
   alternates: {
     canonical: 'https://slidexy.ai/tools/video-to-deck',
   },
@@ -24,27 +25,27 @@ export const metadata: Metadata = {
 
 export default function Page() {
   const personas = [
-    { title: "Students & Learners", description: "Convert long university lectures and online courses into structured study decks instantly.", icon: "school" as const },
-    { title: "Corporate Trainers", description: "Turn recorded webinars and training sessions into professional onboarding decks for teams.", icon: "business" as const },
-    { title: "Content Marketers", description: "Repurpose YouTube videos and interviews into shareable slide decks for social media.", icon: "group" as const },
+    { title: "Students", description: "Turn a long lecture or course video into a study deck without re-watching the whole thing.", icon: "school" as const },
+    { title: "Trainers", description: "Turn a recorded webinar or training session into an onboarding deck for the team.", icon: "business" as const },
+    { title: "Content creators", description: "Repurpose a video or interview into a shareable deck for social.", icon: "group" as const },
   ];
 
   const steps = [
-    { number: 1, title: "Upload or Link Video", description: "Paste a YouTube link or upload your MP4 file to SlideXY." },
-    { number: 2, title: "AI Analyzes Speech", description: "SlideXY transcribes the audio, identifies key points, and captures visual frames." },
-    { number: 3, title: "Generate Deck", description: "Get a complete presentation with structured content and layouts derived from the video." },
+    { number: 1, title: "Paste a YouTube link", description: "Any public video works — the clearer the audio, the better the result." },
+    { number: 2, title: "Slidexy watches it", description: "It transcribes the audio, pulls out the key points, and grabs relevant frames." },
+    { number: 3, title: "Get your deck", description: "A structured presentation built from what's actually in the video." },
   ];
 
   const benefits = [
-    { title: "Automated Summarization", description: "Don't spend hours re-watching videos. Our AI extracts only the most important insights.", icon: "speed" as const },
-    { title: "Context-Aware Layouts", description: "The deck's design and visuals are automatically aligned with the video's subject matter.", icon: "ai" as const },
-    { title: "Multi-Modal Support", description: "We support diverse video sources, including technical lectures, product demos, and interviews.", icon: "done" as const },
+    { title: "No re-watching required", description: "Skip pausing and note-taking — Slidexy pulls out what matters.", icon: "speed" as const },
+    { title: "Layouts that fit the topic", description: "The deck's design lines up with what the video is actually about.", icon: "ai" as const },
+    { title: "Works across formats", description: "Lectures, product demos, interviews — most spoken-word video works.", icon: "done" as const },
   ];
 
   const faqs = [
-    { question: "Which YouTube links are supported?", answer: "We support all public YouTube URLs. Just ensure the video has clear audio for the best AI transcription results." },
-    { question: "How long can the video be?", answer: "SlideXY can process videos up to 60 minutes long, depending on your plan tier. For longer videos, the AI efficiently summarizes key highlights." },
-    { question: "Can I export to PowerPoint?", answer: "Yes, every deck generated from a video can be exported as a fully editable PPTX file or shared as a PDF." },
+    { question: "Which YouTube links are supported?", answer: "Any public YouTube URL. Clear audio gives the best transcription results." },
+    { question: "How long can the video be?", answer: "Up to 60 minutes depending on your plan. Longer videos get summarized to the key highlights." },
+    { question: "Can I export to PowerPoint?", answer: "Yes — every generated deck can be exported as an editable PPTX or shared as a PDF." },
   ];
 
   const relatedLinks = [
@@ -56,70 +57,76 @@ export default function Page() {
   return (
     <Box component="main">
       <Header />
-      
+
       <Box
         component="section"
         sx={{
           textAlign: 'center',
-          pt: { xs: 6, md: 10 },
-          pb: { xs: 4, md: 6 },
+          pt: { xs: 5, md: 7 },
+          pb: { xs: 2, md: 2 },
           px: { xs: 3, md: 6 },
-          maxWidth: 800,
+          maxWidth: 720,
           mx: 'auto',
         }}
       >
         <Typography
           component="h1"
+          className="sx-display"
           sx={{
+            fontFamily: "var(--font-display)",
             fontWeight: 700,
-            fontSize: { xs: '2.25rem', md: '3.5rem' },
-            color: '#111827',
+            fontSize: { xs: '1.85rem', md: '2.75rem' },
+            letterSpacing: "-0.03em",
+            color: '#0F0A19',
             mb: 2,
           }}
         >
-          Video to Deck
+          Turn a video into a deck
         </Typography>
         <Typography
           sx={{
             color: 'text.secondary',
-            fontSize: { xs: '1.05rem', md: '1.2rem' },
+            fontSize: { xs: '1.05rem', md: '1.15rem' },
             lineHeight: 1.7,
-            mb: 4,
+            mb: 2,
           }}
         >
-          Upload a video or paste a link and SlideXY AI watches it, 
-          identifies the key talking points, and builds a complete slide deck. 
-          The ultimate tool for repurposing webinars, lectures, and conference talks.
+          Paste a YouTube link. Slidexy listens, pulls out the key points,
+          and builds a slide deck around them.
         </Typography>
       </Box>
 
-      {/* Main Tool Component */}
       <VideoToDeck />
 
-      <ProblemSolution 
-        problem="Manually summarizing a 30-minute video into a 10-slide presentation is an arduous task. It requires constant pausing, note-taking, and then designing layouts from scratch, which can take an entire afternoon."
-        solution="SlideXY's Video-to-Deck tool automates the entire analytical and creative process. Our AI transcribes, summarizes, and designs simultaneously, producing a polished presentation that captures the video's core message in minutes."
-      />
+      <Reveal>
+        <ProblemSolution
+          problem="Turning a 30-minute video into a 10-slide deck by hand means constant pausing, note-taking, then building layouts from scratch — usually an afternoon gone."
+          solution="Video-to-Deck transcribes, summarizes, and lays out the deck at once, so what took an afternoon takes a couple of minutes."
+        />
+      </Reveal>
 
-      <WhoItsFor personas={personas} />
+      <Reveal><WhoItsFor personas={personas} /></Reveal>
 
-      <WorkflowSteps steps={steps} />
+      <Reveal><WorkflowSteps steps={steps} /></Reveal>
 
-      <BenefitsList benefits={benefits} />
+      <Reveal><BenefitsList benefits={benefits} /></Reveal>
 
-      <ContextualFAQ 
-        title="Video-to-Deck FAQ" 
-        subtitle="Common questions about converting video content into presentations."
-        faqs={faqs} 
-      />
+      <Reveal>
+        <ContextualFAQ
+          title="Video-to-Deck FAQ"
+          subtitle="Common questions about turning video content into a presentation."
+          faqs={faqs}
+        />
+      </Reveal>
 
-      <InternalLinks title="Explore More Tools" links={relatedLinks} />
+      <Reveal><InternalLinks title="Explore More Tools" links={relatedLinks} /></Reveal>
 
-      <CTASection 
-        title="Repurpose your videos instantly"
-        subtitle="Turn any video content into a professional presentation today."
-      />
-
+      <Reveal>
+        <CTASection
+          title="Turn your next video into a deck"
+          subtitle="Paste a link and see what Slidexy builds. No credit card required."
+        />
+      </Reveal>
 
       <Footer />
     </Box>

@@ -1,33 +1,50 @@
 "use client";
 
-import React, { forwardRef } from "react";
-import { Box, Button, Typography, IconButton } from "@mui/material";
+import React, { forwardRef, useState } from "react";
+import { Box, Button, Typography, IconButton, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import { motion } from "framer-motion";
 import { useSlides } from "@/app/context/SlidesContext";
+import { useSlideThemeContext } from "@/app/context/ThemeContext";
+import {
+  PANEL,
+  panelContainerSx,
+  panelHeaderSx,
+  panelTitleSx,
+  panelCloseButtonSx,
+} from "./panelTheme";
 
 interface TextEditorProps {
   sidebarHeight?: string | number;
   onClose?: () => void;
 }
 
+const FONT_OPTIONS = ["Raleway", "Roboto", "Poppins", "Lato", "Montserrat"];
+const DEFAULT_COLORS = ["#E5E7EB", "#6C63FF", "#F59E0B", "#34D399"];
+
 const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
   ({ sidebarHeight = "100vh", onClose }, ref) => {
     const { addText } = useSlides();
+    const { selectedTheme } = useSlideThemeContext();
+
+    const [font, setFont] = useState(FONT_OPTIONS[0]);
+    const swatchColors = selectedTheme?.artPalette?.length
+      ? Array.from(new Set([selectedTheme.artPalette[0], selectedTheme.artPalette[1], "#E5E7EB", "#111827"]))
+      : DEFAULT_COLORS;
+    const [color, setColor] = useState(swatchColors[0]);
 
     const handleAddTextElement = (
       text: string,
       fontSize: number,
-      fontWeight: number,
-      color = "#222"
+      fontWeight: number
     ) => {
-      // ✅ FIXED: Use addText from context which handles variants correctly
       addText({
         text,
         fontSize,
         fontWeight: fontWeight.toString(),
         fill: color,
-        fontFamily: "Raleway",
+        fontFamily: font,
         x: 200,
         y: 300,
       });
@@ -38,57 +55,95 @@ const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
     return (
       <Box
         ref={ref}
-        sx={{
-          width: 300,
-          bgcolor: "#fff",
-          height: sidebarHeight,
-          position: "absolute",
-          left: 80,
-          top: 0,
-          borderRight: "1px solid #E0E0E0",
-          zIndex: 10,
-          boxShadow: 2,
-          display: "flex",
-          flexDirection: "column",
-          p: 0,
-        }}
+        component={motion.div}
+        initial={{ x: -24, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: -24, opacity: 0 }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        sx={panelContainerSx(300, sidebarHeight)}
       >
         {/* Header */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            p: 3,
-            pb: 2,
-          }}
-        >
-          <Typography sx={{ fontWeight: 600, fontSize: 20 }}>Text</Typography>
-          <IconButton size="small" onClick={onClose}>
-            <CloseIcon />
+        <Box sx={panelHeaderSx}>
+          <Typography sx={panelTitleSx}>Text</Typography>
+          <IconButton size="small" onClick={onClose} sx={panelCloseButtonSx}>
+            <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
 
+        {/* Font family picker */}
+        <Box sx={{ px: 3, pt: 2.25 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 12.5, color: PANEL.textMuted, mb: 1, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            Font
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+            {FONT_OPTIONS.map((f) => (
+              <Box
+                key={f}
+                component="button"
+                type="button"
+                onClick={() => setFont(f)}
+                sx={{
+                  fontFamily: f,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: font === f ? PANEL.accentSoft : PANEL.textMuted,
+                  bgcolor: font === f ? PANEL.accentBg : PANEL.surfaceSunken,
+                  border: `1px solid ${font === f ? PANEL.accentBorder : PANEL.border}`,
+                  borderRadius: "999px",
+                  px: 1.5,
+                  py: 0.6,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  "&:hover": { borderColor: PANEL.accentBorder, color: PANEL.accentSoft },
+                }}
+              >
+                {f}
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Color swatches */}
+        <Box sx={{ px: 3, pt: 2 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 12.5, color: PANEL.textMuted, mb: 1, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            Color
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            {swatchColors.map((c) => (
+              <Tooltip key={c} title={c}>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={() => setColor(c)}
+                  sx={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: "50%",
+                    bgcolor: c,
+                    cursor: "pointer",
+                    border: color === c ? `2px solid ${PANEL.accent}` : `1px solid ${PANEL.border}`,
+                    boxShadow: color === c ? `0 0 0 2px ${PANEL.accentBg}` : "none",
+                    transition: "transform 0.15s ease",
+                    "&:hover": { transform: "scale(1.12)" },
+                  }}
+                />
+              </Tooltip>
+            ))}
+          </Box>
+        </Box>
+
         {/* Add Text Box Button */}
-        <Box sx={{ px: 3, mb: 2 }}>
+        <Box sx={{ px: 3, pt: 2.5, mb: 1 }}>
           <Button
             fullWidth
             variant="outlined"
             startIcon={<AddIcon />}
             sx={{
-              borderRadius: 8,
               height: 44,
-              fontWeight: 600,
-              fontSize: 17,
-              bgcolor: "#F8F8FA",
-              borderColor: "#E0E0E0",
-              color: "#222",
-              mb: 1,
-              "&:hover": {
-                bgcolor: "#F3EDFF",
-                borderColor: "#7B4AE2",
-                color: "#7B4AE2",
-              },
+              fontSize: 14,
+              color: PANEL.accentSoft,
+              borderColor: PANEL.accentBorder,
+              "&:hover": { borderColor: PANEL.accent, bgcolor: PANEL.accentBg },
             }}
             onClick={() => handleAddTextElement("New Text Box", 24, 600)}
           >
@@ -103,72 +158,45 @@ const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
             mb: 2,
             display: "flex",
             flexDirection: "column",
-            gap: 1.5,
+            gap: 1.25,
           }}
         >
-          <Button
-            fullWidth
-            sx={{
-              bgcolor: "#F8F8FA",
-              borderRadius: 3,
-              height: 48,
-              fontWeight: 700,
-              fontSize: 24,
-              color: "#222",
-              mb: 0.5,
-              textTransform: "none",
-            }}
-            onClick={() => handleAddTextElement("Title Text", 32, 700)}
-          >
-            Add a Title
-          </Button>
-          <Button
-            fullWidth
-            sx={{
-              bgcolor: "#F8F8FA",
-              borderRadius: 3,
-              height: 44,
-              fontWeight: 600,
-              fontSize: 20,
-              color: "#222",
-              mb: 0.5,
-              textTransform: "none",
-            }}
-            onClick={() => handleAddTextElement("Headline Text", 26, 600)}
-          >
-            Add a Headline
-          </Button>
-          <Button
-            fullWidth
-            sx={{
-              bgcolor: "#F8F8FA",
-              borderRadius: 3,
-              height: 44,
-              fontWeight: 500,
-              fontSize: 18,
-              color: "#222",
-              mb: 0.5,
-              textTransform: "none",
-            }}
-            onClick={() => handleAddTextElement("Sub Headline Text", 20, 500)}
-          >
-            Add a Sub Headline
-          </Button>
-          <Button
-            fullWidth
-            sx={{
-              bgcolor: "#F8F8FA",
-              borderRadius: 3,
-              height: 44,
-              fontWeight: 400,
-              fontSize: 16,
-              color: "#888",
-              textTransform: "none",
-            }}
-            onClick={() => handleAddTextElement("Body Text", 16, 400, "#888")}
-          >
-            Add Body Text
-          </Button>
+          {[
+            { label: "Add a Title", text: "Title Text", fontSize: 24, fontWeight: 700, height: 48, textFontSize: 32, textWeight: 700 },
+            { label: "Add a Headline", text: "Headline Text", fontSize: 20, fontWeight: 600, height: 44, textFontSize: 26, textWeight: 600 },
+            { label: "Add a Sub Headline", text: "Sub Headline Text", fontSize: 18, fontWeight: 500, height: 44, textFontSize: 20, textWeight: 500 },
+            { label: "Add Body Text", text: "Body Text", fontSize: 16, fontWeight: 400, height: 44, textFontSize: 16, textWeight: 400 },
+          ].map((v) => (
+            <Button
+              key={v.label}
+              component={motion.button}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              fullWidth
+              sx={{
+                bgcolor: PANEL.surfaceSunken,
+                border: `1px solid ${PANEL.border}`,
+                borderRadius: 3,
+                height: v.height,
+                fontFamily: font,
+                fontWeight: v.textWeight,
+                fontSize: v.fontSize,
+                color: PANEL.text,
+                textTransform: "none",
+                justifyContent: "flex-start",
+                px: 2.5,
+                transition: "background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease",
+                "&:hover": {
+                  bgcolor: PANEL.accentBg,
+                  borderColor: PANEL.accentBorder,
+                  boxShadow: `0 4px 14px -4px ${PANEL.accentBg}`,
+                },
+              }}
+              onClick={() => handleAddTextElement(v.text, v.textFontSize, v.textWeight)}
+            >
+              {v.label}
+            </Button>
+          ))}
         </Box>
       </Box>
     );

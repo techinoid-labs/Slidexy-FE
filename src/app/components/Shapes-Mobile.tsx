@@ -297,7 +297,16 @@ const MobileShapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
           {shapes.map((shape, idx) => (
             <Box
               key={idx}
+              role="button"
+              tabIndex={0}
+              aria-label={`Add ${shape.name} shape`}
               onClick={() => handleShapeClick(shape)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleShapeClick(shape);
+                }
+              }}
               sx={{
                 bgcolor: "#F8F8FA",
                 borderRadius: 3,
@@ -309,9 +318,14 @@ const MobileShapes = ({ sidebarHeight = "100vh", onClose }: ShapedProps) => {
                 boxShadow: "none",
                 border: "1px solid #ECECEC",
                 cursor: "pointer",
+                transition: "border-color 0.15s ease, box-shadow 0.15s ease",
                 "&:hover": {
-                  borderColor: "#7B4AE2",
-                  boxShadow: "0 2px 8px 0 #7B4AE222",
+                  borderColor: "#8E2DE2",
+                  boxShadow: "0 2px 8px 0 rgba(142,45,226,0.13)",
+                },
+                "&:focus-visible": {
+                  outline: "2px solid #8E2DE2",
+                  outlineOffset: "2px",
                 },
               }}
             >

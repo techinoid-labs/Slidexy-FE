@@ -62,12 +62,15 @@ function EditorContent() {
         }}
       >
         <Typography
-          variant="h2"
+          component="h1"
+          className="sx-display"
           sx={{
+            fontFamily: "var(--font-display)",
             fontWeight: 700,
             mb: 1,
-            color: "rgba(26, 26, 26, 1)",
-            fontSize: "60px",
+            color: "#0F0A19",
+            letterSpacing: "-0.03em",
+            fontSize: { xs: "1.75rem", md: "2.5rem" },
           }}
         >
           Prompt-to-PDF Editor

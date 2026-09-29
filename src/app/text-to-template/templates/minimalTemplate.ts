@@ -131,7 +131,7 @@ const extractImages = (backendSlide: BackendSlide): string[] => {
   return images;
 };
 
-export const createMinimalistTemplate = (backendSlide: BackendSlide, slideIndex: number): Slide => {
+export const createMinimalTemplate = (backendSlide: BackendSlide, slideIndex: number): Slide => {
   const { slide_id, slide_title, textBlock, titleBlock } = backendSlide;
   const elements: Slide["elements"] = [];
 

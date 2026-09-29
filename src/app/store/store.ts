@@ -3,6 +3,8 @@ import slidesReducer from "../slice/slidesSlice";
 import { get, set, del } from "idb-keyval";
 
 const PERSIST_KEY = "slidesX_slides";
+// Written by the removed Konva snapshot pipeline; cleared opportunistically.
+const LEGACY_SNAPSHOT_KEY = "slidesX_snapshots";
 const PERSIST_DEBOUNCE = 5000; // ✅ Increased from 800ms to 5 seconds
 
 // ✅ FIXED: Strip non-serializable data before persisting
@@ -49,23 +51,23 @@ const loadState = async () => {
   }
 };
 
-// ✅ FIXED: Optimized save with differential updates
-let lastSavedState: string | null = null;
+// Change detection by reference, not by serialising the whole deck.
+// Redux hands back a new `slidesData` object whenever anything changes, so an
+// identity check is both cheaper and more accurate than a JSON hash.
+let lastSavedSlidesData: any = null;
 
 const saveState = async (state: any) => {
   try {
     const slidesData = state.slidesData;
-    const sanitized = sanitizeSlideData(slidesData);
-    
-    // ✅ FIXED: Only save if state actually changed
-    const stateHash = JSON.stringify(sanitized);
-    if (stateHash === lastSavedState) {
-      console.log('[Store] State unchanged, skipping save');
+
+    if (slidesData === lastSavedSlidesData) {
       return;
     }
-    
+
+    const sanitized = sanitizeSlideData(slidesData);
+
     await set(PERSIST_KEY, sanitized);
-    lastSavedState = stateHash;
+    lastSavedSlidesData = slidesData;
     console.log('[Store] State persisted to IndexedDB');
   } catch (err) {
     console.error("Error saving Redux state to IndexedDB:", err);
@@ -74,14 +76,14 @@ const saveState = async (state: any) => {
     if (err instanceof DOMException && err.name === 'QuotaExceededError') {
       console.warn('[Store] Quota exceeded, attempting cleanup...');
       try {
-        // Clear snapshots cache to free up space
-        const { default: snapshotsCache } = await import('@/utils/snapshotsCache');
-        await snapshotsCache.clearAll();
-        
+        // Free space by dropping the legacy Konva thumbnail cache. Nothing
+        // writes it any more, but older sessions may still have it on disk.
+        await del(LEGACY_SNAPSHOT_KEY);
+
         // Retry save
         const sanitized = sanitizeSlideData(state.slidesData);
         await set(PERSIST_KEY, sanitized);
-        lastSavedState = JSON.stringify(sanitized);
+        lastSavedSlidesData = state.slidesData;
         console.log('[Store] State persisted after cleanup');
       } catch (retryErr) {
         console.error('[Store] Failed to save even after cleanup:', retryErr);
@@ -170,7 +172,7 @@ export const setStoreInstance = (store: AppStore) => {
 // Clear persisted slides
 export const clearPersistedSlides = async () => {
   await del(PERSIST_KEY);
-  lastSavedState = null;
+  lastSavedSlidesData = null;
   console.log('[Store] Cleared persisted slides');
 };
 

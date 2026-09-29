@@ -15,8 +15,8 @@ import {
     AlertTitle,
     LinearProgress,
     IconButton,
-    Backdrop,
 } from "@mui/material";
+import GenerationOverlay from "@/app/components/shared/GenerationOverlay";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -186,7 +186,7 @@ export default function UrlToWebsite() {
         ];
 
     return (
-        <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
+        <Box sx={{ position: "relative", width: "100%" }}>
             <Box
                 sx={{
                     position: "absolute",
@@ -198,45 +198,50 @@ export default function UrlToWebsite() {
                     zIndex: -1,
                 }}
             >
-                <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        opacity: "0.1",
+                {/* white radial wash replaces video */}
+                <Box
+                    sx={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(142,45,226,0.07) 0%, transparent 60%)",
+                        pointerEvents: "none",
                     }}
-                >
-                    <source src="/services-background.mp4" type="video/mp4" />
-                </video>
+                />
             </Box>
 
             <Box
                 sx={{
                     width: "100%",
-                    minHeight: "100vh",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    py: { xs: 8, md: 10 },
+                    py: { xs: 4, md: 5 },
                     px: { xs: 2, md: 6 },
                 }}
             >
-
 
                 <Box
                     sx={{
                         width: "100%",
                         maxWidth: "926px",
-                        bgcolor: "rgba(251, 250, 255, 0.5)",
-                        borderRadius: 3,
-                        boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-                        border: "1px solid rgba(232, 228, 255, 1)",
+                        bgcolor: "rgba(255,255,255,0.92)",
+                        backdropFilter: "blur(12px)",
+                        borderRadius: "24px",
+                        border: "1px solid rgba(142, 45, 226, 0.14)",
+                        boxShadow: "0 28px 60px -20px rgba(142, 45, 226, 0.28), 0 8px 24px rgba(15, 10, 25, 0.04)",
                         p: { xs: 3, md: 5 },
                         mb: 4,
+                        position: "relative",
+                        overflow: "hidden",
+                        "&::before": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0, left: 0, right: 0,
+                            height: 4,
+                            background: "linear-gradient(90deg, #8E2DE2, #C084FC, #4A00E0)",
+                            backgroundSize: "200% 100%",
+                            animation: "sx-gradient-shift 4s ease infinite",
+                        },
                     }}
                 >
                     <TextField
@@ -306,20 +311,11 @@ export default function UrlToWebsite() {
                         {/* Generate Button (same row) */}
                         <Button
                             variant="contained"
+                            size="large"
                             onClick={handleSubmit}
                             disabled={loading}
                             startIcon={<AutoAwesome />}
-                            sx={{
-                                backgroundColor: "#6C2BD9",
-                                color: "#fff",
-                                borderRadius: "32px",
-                                width: "160px",
-                                height: "48px",
-                                fontWeight: 600,
-                                boxShadow: "0 4px 12px rgba(108,43,217,0.3)",
-                                "&:hover": { backgroundColor: "#5B21B6" },
-                                "&:disabled": { backgroundColor: "#ccc" },
-                            }}
+                            sx={{ width: "160px" }}
                         >
                             {loading ? "Generating..." : "Generate"}
                         </Button>
@@ -337,39 +333,12 @@ export default function UrlToWebsite() {
                 </Box>
 
                 {loading && (
-                    <Backdrop
+                    <GenerationOverlay
                         open={loading}
-                        sx={{
-                            zIndex: (theme) => theme.zIndex.drawer + 1,
-                            backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                            }}
-                        >
-                            <img
-                                src="/Loader.gif"
-                                alt="Generating..."
-                                style={{ width: 470, height: 160 }}
-                            />
-
-                            <Typography
-                                sx={{
-                                    fontFamily: "Raleway",
-                                    fontSize: "24px",
-                                    fontWeight: 700,
-                                    color: "#fff",
-                                    mt: 1,
-                                }}
-                            >
-                                {currentMessage}...
-                            </Typography>
-                        </Box>
-                    </Backdrop>
+                        progress={progress}
+                        message={currentMessage || "Generating your website"}
+                        detail={currentDetail}
+                    />
                 )}
 
 

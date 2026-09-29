@@ -186,18 +186,9 @@ export default function TemplatesSection() {
               key={label}
               onClick={() => setSelectedCategory(label)}
               variant={selectedCategory === label ? "contained" : "outlined"}
-              sx={{
-                textTransform: "none",
-                whiteSpace: "nowrap",
-                backgroundColor:
-                  selectedCategory === label ? "black" : "transparent",
-                color: selectedCategory === label ? "#fff" : "#000",
-                borderColor: "#ccc",
-                "&:hover": {
-                  backgroundColor:
-                    selectedCategory === label ? "black" : "rgba(0,0,0,0.05)",
-                },
-              }}
+              size="small"
+              color="primary"
+              sx={{ whiteSpace: "nowrap" }}
             >
               {label}
             </Button>

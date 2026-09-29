@@ -76,6 +76,8 @@ export default function StepsHeader() {
               onClick={() => {
                 handleGoBack();
               }}
+              variant="outlined"
+              color="inherit"
               startIcon={
                 <Image
                   src="/arrow-left.svg"
@@ -85,16 +87,13 @@ export default function StepsHeader() {
                 />
               }
               sx={{
-                textTransform: "none",
-                fontWeight: 500,
                 color: "#1A1A1A",
+                borderColor: "rgba(0,0,0,0.12)",
                 fontSize: { xs: "0.8rem", md: "1rem" },
-                backgroundColor: "#F6F6F6",
                 "&:hover": {
-                  backgroundColor: "#f3f0ff",
+                  borderColor: "rgba(142, 45, 226, 0.4)",
+                  backgroundColor: "rgba(142, 45, 226, 0.06)",
                 },
-                px: 2,
-                py: 1,
               }}
             >
               {!isMobile ? "Go back" : ""}
@@ -126,20 +125,12 @@ export default function StepsHeader() {
                 removeSlides();
                 handleGoBack();
               }}
-              // startIcon={
-              //   <Image src="/arrow-left.svg" alt="Back" width={19} height={19} />
-              // }
+              variant="text"
+              color="inherit"
               sx={{
-                textTransform: "none",
-                fontWeight: 500,
                 color: "#1A1A1A",
                 fontSize: { xs: "0.8rem", md: "1rem" },
-                backgroundColor: "#F6F6F6",
-                "&:hover": {
-                  backgroundColor: "#f3f0ff",
-                },
-                px: 2,
-                py: 1,
+                mr: 1,
               }}
             >
               Cancel

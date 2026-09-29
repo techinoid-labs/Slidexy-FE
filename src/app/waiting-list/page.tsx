@@ -205,15 +205,8 @@ export default function WaitingList() {
                       section.scrollIntoView({ behavior: "smooth" });
                     }
                   }}
-                  sx={{
-                    boxShadow: "0px 1px 2px 0.4px rgba(0, 0, 0, 0.25)",
-                    px: { xs: "24px", sm: "24px" },
-                    py: { xs: "12px", sm: "12px" },
-                    fontSize: { xs: "16px", sm: "16px" },
-                    fontWeight: "700",
-                    borderRadius: "30px", // keeps rounded shape
-                    backgroundColor: "white", // optional, makes shadow more visible
-                  }}
+                  variant="contained"
+                  size="large"
                 >
                   Join Waitlist
                   <Box
@@ -425,17 +418,7 @@ export default function WaitingList() {
               />
               <Button
                 variant="contained"
-                sx={{
-                  px: { xs: "16px", md: "20px" },
-                  py: { xs: "12px", md: "14px" },
-                  textTransform: "none",
-                  fontSize: { xs: "14px", md: "16px" },
-                  fontWeight: 500,
-                  borderRadius: "30px",
-                  background: "#8E2DE2",
-                  color: "white",
-                  width: { xs: "auto", sm: "fit-content" },
-                }}
+                sx={{ width: { xs: "auto", sm: "fit-content" } }}
                 onClick={async () => {
                   if (!email) {
                     setMessage("Please enter an email");

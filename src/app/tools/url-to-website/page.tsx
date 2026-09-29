@@ -12,6 +12,7 @@ import BenefitsList from '@/app/components/seo/BenefitsList'
 import ContextualFAQ from '@/app/components/seo/ContextualFAQ'
 import InternalLinks from '@/app/components/seo/InternalLinks'
 import CTASection from '@/app/components/seo/CTASection'
+import Reveal from '@/app/components/shared/Reveal'
 
 export const metadata: Metadata = {
   title: 'URL to Website — AI Website Generator',
@@ -24,27 +25,27 @@ export const metadata: Metadata = {
 
 export default function Page() {
   const personas = [
-    { title: "Growth Marketers", description: "Quickly spin up high-converting landing pages derived from existing blog posts or product pages.", icon: "group" as const },
-    { title: "SaaS Founders", description: "Prototype new product pages or microsites without needing a full development team.", icon: "business" as const },
-    { title: "Web Designers", description: "Explore new layout directions and architectural ideas based on current URLs in seconds.", icon: "design" as const },
+    { title: "Growth Marketers", description: "Spin up a landing page from an existing blog post or product page without starting from a blank canvas.", icon: "group" as const },
+    { title: "Founders", description: "Prototype a new product page or microsite without pulling in a developer.", icon: "business" as const },
+    { title: "Web Designers", description: "Try out a different layout direction for an existing URL in seconds, not a full mockup session.", icon: "design" as const },
   ];
 
   const steps = [
-    { number: 1, title: "Paste a URL", description: "Provide the link to any webpage, article, or existing landing page." },
-    { number: 2, title: "AI Analyzes Content", description: "SlideXY crawls the URL, extracts key messaging, and maps it to a new design." },
-    { number: 3, title: "Launch and Refine", description: "Preview your responsive website design and refine it in our designer suite." },
+    { number: 1, title: "Paste a URL", description: "Any public webpage, article, or landing page." },
+    { number: 2, title: "Slidexy reads it", description: "It pulls out the key messaging and maps it onto a new design." },
+    { number: 3, title: "Preview and refine", description: "Check the responsive layout, then adjust it in the editor." },
   ];
 
   const benefits = [
-    { title: "Instant Prototyping", description: "See your existing content in a completely new layout in under 60 seconds.", icon: "speed" as const },
-    { title: "Responsive by Design", description: "Every generated website is automatically optimized for mobile, tablet, and desktop.", icon: "done" as const },
-    { title: "Content-Driven Architecture", description: "Our AI ensures the structure of your new site follows logical user intent derived from the source.", icon: "ai" as const },
+    { title: "See it differently, fast", description: "The same content, in a new layout, in under a minute.", icon: "speed" as const },
+    { title: "Responsive by default", description: "Every generated site works across mobile, tablet, and desktop out of the box.", icon: "done" as const },
+    { title: "Structure that makes sense", description: "The new site follows the logic of the content it came from, not a generic template.", icon: "ai" as const },
   ];
 
   const faqs = [
-    { question: "What kind of URLs can I use?", answer: "You can use any public URL, including blog posts, product landing pages, or even competitor sites, to generate new design inspiration." },
-    { question: "Is the generated site SEO-friendly?", answer: "Yes, SlideXY ensures that all sections follow semantic HTML practices and core SEO principles out of the box." },
-    { question: "Can I export the code?", answer: "SlideXY Pro users can export the generated design or share it via a live link for hosting on our platform." },
+    { question: "What kind of URLs can I use?", answer: "Any public URL — a blog post, a product page, even a competitor's site — as design inspiration." },
+    { question: "Is the generated site SEO-friendly?", answer: "Yes, sections follow semantic HTML and standard on-page SEO practices by default." },
+    { question: "Can I export the code?", answer: "Pro users can export the generated design or share it via a live link for hosting." },
   ];
 
   const relatedLinks = [
@@ -61,64 +62,72 @@ export default function Page() {
         component="section"
         sx={{
           textAlign: 'center',
-          pt: { xs: 6, md: 10 },
-          pb: { xs: 4, md: 6 },
+          pt: { xs: 5, md: 7 },
+          pb: { xs: 2, md: 2 },
           px: { xs: 3, md: 6 },
-          maxWidth: 800,
+          maxWidth: 720,
           mx: 'auto',
         }}
       >
         <Typography
           component="h1"
+          className="sx-display"
           sx={{
+            fontFamily: 'var(--font-display)',
             fontWeight: 700,
-            fontSize: { xs: '2.25rem', md: '3.5rem' },
-            color: '#111827',
+            fontSize: { xs: '1.85rem', md: '2.75rem' },
+            letterSpacing: '-0.03em',
+            color: '#0F0A19',
             mb: 2,
           }}
         >
-          URL to Website
+          Turn a page into a new website
         </Typography>
         <Typography
           sx={{
             color: 'text.secondary',
-            fontSize: { xs: '1.05rem', md: '1.2rem' },
+            fontSize: { xs: '1.05rem', md: '1.15rem' },
             lineHeight: 1.7,
-            mb: 4,
+            mb: 2,
           }}
         >
-          Paste any URL and SlideXY AI analyzes the content to
-          generate a fresh website design with responsive layouts and clean code. 
-          The perfect tool for rapid redesigns and prototyping microsites.
+          Paste a URL. Slidexy reads the content and rebuilds it as a
+          fresh, responsive site you can edit.
         </Typography>
       </Box>
 
       {/* Main Tool Component */}
       <UrlToWebsite />
 
-      <ProblemSolution 
-        problem="Redesigning a landing page or building a microsite from existing documentation is often a slow, manual process. You have to extract the content, plan the architecture, and then design it, which can take days or weeks."
-        solution="SlideXY's URL-to-Website tool automates the entire migration. Our AI reads your existing content and instantly maps it to modern, high-converting layouts, giving you a functional prototype that's ready to customize."
-      />
+      <Reveal>
+        <ProblemSolution
+          problem="Redesigning a landing page or spinning up a microsite from existing content is usually slow — pulling out the copy, planning the structure, then actually designing it can eat days."
+          solution="Slidexy reads your existing content and maps it onto a new, modern layout automatically, so you get a working prototype to customize instead of a blank page."
+        />
+      </Reveal>
 
-      <WhoItsFor personas={personas} />
+      <Reveal><WhoItsFor personas={personas} /></Reveal>
 
-      <WorkflowSteps steps={steps} />
+      <Reveal><WorkflowSteps steps={steps} /></Reveal>
 
-      <BenefitsList benefits={benefits} />
+      <Reveal><BenefitsList benefits={benefits} /></Reveal>
 
-      <ContextualFAQ 
-        title="URL to Website FAQ" 
-        subtitle="Learn how to transform existing content into new web designs."
-        faqs={faqs} 
-      />
+      <Reveal>
+        <ContextualFAQ
+          title="URL to Website FAQ"
+          subtitle="What to know before you turn a page into a site."
+          faqs={faqs}
+        />
+      </Reveal>
 
-      <InternalLinks title="Explore More Tools" links={relatedLinks} />
+      <Reveal><InternalLinks title="Explore More Tools" links={relatedLinks} /></Reveal>
 
-      <CTASection 
-        title="Transform your content into a website"
-        subtitle="Experience the fastest way to prototype and redesign landing pages."
-      />
+      <Reveal>
+        <CTASection
+          title="Turn a page into a site"
+          subtitle="No credit card required to try it."
+        />
+      </Reveal>
 
 
       <Footer />

@@ -234,21 +234,21 @@ export default function ViewerPage() {
 
 
   return (
-    <Box sx={{ minHeight: "100vh", py: 4, px: { xs: 2, md: 4 } }}>
+    <Box sx={{ py: 4, px: { xs: 2, md: 4 } }}>
       {/* Header */}
       <Box sx={{ maxWidth: "1600px", mx: "auto", mb: 4 }}>
         <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "stretch", sm: "center" }} spacing={2}>
-          <Button startIcon={<ArrowBack />} onClick={() => router.push("/tools/prompt-to-proposal")} sx={{ color: "#6C2BD9", fontWeight: 600 }}>
+          <Button variant="text" startIcon={<ArrowBack />} onClick={() => router.push("/tools/prompt-to-proposal")}>
             Back to Tool
           </Button>
 
           <Stack direction="row" spacing={2} flexWrap="wrap">
-            <Button variant="outlined" startIcon={<Edit />} onClick={handleRegenerate} disabled={loading} sx={{ borderColor: "#6C2BD9", color: "#6C2BD9", fontWeight: 600 }}>
+            <Button variant="outlined" startIcon={<Edit />} onClick={handleRegenerate} disabled={loading}>
               UPDATE
             </Button>
 
             {generatedPdfUrl && (
-              <Button variant="contained" startIcon={<Download />} component="a" href={generatedPdfUrl} target="_blank" download={`${proposalTitle || "proposal"}.pdf`} sx={{ bgcolor: "#6C2BD9", fontWeight: 600 }}>
+              <Button variant="contained" startIcon={<Download />} component="a" href={generatedPdfUrl} target="_blank" download={`${proposalTitle || "proposal"}.pdf`}>
                 Download PDF
               </Button>
             )}

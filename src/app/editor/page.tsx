@@ -23,15 +23,16 @@ import TextSettingsPanelMobile from "@/app/components/new-ui/Text-Panel";
 import ShapeSettingsPanelMobile from "@/app/components/modify-presentation/ShapePanelMobile";
 import ThemePanelMobile from "../components/modify-presentation/ThemePalleteMobile";
 import SlideShowPlayer from "@/app/components/modify-presentation/Slide-Preview";
+import EditorEmptyState from "@/app/components/modify-presentation/EditorEmptyState";
 import { useSlideThemeContext } from "../context/ThemeContext";
 import { useSession } from "next-auth/react";
 import AuthModal from "../components/auth/AuthModal";
 import { useTemplateSlides } from "../context/TemplateSlidesContext";
 import { useUser } from "../context/AuthContext";
-import { getContrastingBackground } from "@/utils/colorUtils";
 import { getRandomSlide } from "@/utils/slideUtils";
 import { generateSlideVariants } from "@/utils/variantGenerator";
-import snapshotsCache from "@/utils/snapshotsCache";
+import { getSlideDimensions } from "@/utils/slideUtils";
+import { SHELL } from "../components/modify-presentation/shellTheme";
 
 
 const Page = () => {
@@ -62,9 +63,12 @@ const Page = () => {
   const { presentationId } = useTemplateSlides();
   const dispatch = useDispatch();
   const router = useRouter();
-  const stageRefs = useRef<any[]>([]);
   const [initialSlides] = useState(() => slides);
   const [showRightPanel, setShowRightPanel] = useState(true);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const [fitScale, setFitScale] = useState(1);
+  const [zoomOverride, setZoomOverride] = useState<number | null>(null);
+  const scale = zoomOverride ?? fitScale;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isLGScreen = useMediaQuery(theme.breakpoints.up("lg"));
@@ -100,15 +104,18 @@ const Page = () => {
                   artPalette: ['#000', '#333', '#000', '#fff', '#fff']
                 }
               );
-              const variant0 = newLayouts[0] || slide;
+              const savedVariantIndex = typeof slide.currentVariantIndex === 'number' ? slide.currentVariantIndex : 0;
+              // Clamp to available layouts count so it never goes out of bounds
+              const clampedVariantIndex = Math.min(savedVariantIndex, newLayouts.length - 1);
+              const variantSlide = newLayouts[clampedVariantIndex] || newLayouts[0] || slide;
               return {
                 ...slide,
                 layouts: newLayouts,
-                currentVariantIndex: 0,
-                slide_title: variant0.slide_title || slide.slide_title,
-                subtitle: variant0.subtitle || slide.subtitle,
-                background: variant0.background || slide.background,
-                elements: variant0.elements || slide.elements,
+                currentVariantIndex: clampedVariantIndex,
+                slide_title: variantSlide.slide_title || slide.slide_title,
+                subtitle: variantSlide.subtitle || slide.subtitle,
+                background: variantSlide.background || slide.background,
+                elements: variantSlide.elements || slide.elements,
               };
             });
 
@@ -204,7 +211,7 @@ const Page = () => {
       setShowAuthModal(false);
       setIsExportingPDF(true);
       try {
-        await exportSlidesAsPDF(slides);
+        await exportSlidesAsPDF(slides, selectedTheme);
       } catch (err) {
         console.error("PDF Export failed:", err);
       } finally {
@@ -221,7 +228,7 @@ const Page = () => {
       setShowAuthModal(false);
       setIsExportingPPTX(true);
       try {
-        await exportSlidesAsPPT(slides);
+        await exportSlidesAsPPT(slides, selectedTheme);
       } catch (err) {
         console.error("PPTX Export failed:", err);
       } finally {
@@ -251,6 +258,43 @@ const Page = () => {
 
   const handleCloseThemePanel = () => {
     setIsThemePanelOpen(false);
+  };
+
+  // Auto-fit the slide canvas to the available workspace. PAD_X is fixed
+  // regardless of whether a rail panel is open — the panels overlay the
+  // canvas (see panelTheme.ts) rather than resizing it, so this permanent
+  // reservation (rail 56px + panel 300px + margin) keeps the slide clear of
+  // them without the canvas ever having to resize/shift when one opens.
+  useEffect(() => {
+    const el = canvasContainerRef.current;
+    if (!el || isMobile) return;
+
+    const THUMBNAIL_STRIP_HEIGHT = 120; // bottom slide-thumbnail carousel (152px-wide thumbnails)
+    const PAD_X = 640;
+    const PAD_Y = 96;
+
+    const compute = () => {
+      const { SLIDE_WIDTH, SLIDE_HEIGHT } = getSlideDimensions();
+      const availW = el.clientWidth - PAD_X;
+      const availH = el.clientHeight - THUMBNAIL_STRIP_HEIGHT - PAD_Y;
+      const next = Math.min(availW / SLIDE_WIDTH, availH / SLIDE_HEIGHT, 0.8);
+      setFitScale(Math.max(next, 0.35));
+    };
+
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isMobile]);
+
+  const handleZoomIn = () => {
+    setZoomOverride(Math.min((zoomOverride ?? fitScale) + 0.1, 1.5));
+  };
+  const handleZoomOut = () => {
+    setZoomOverride(Math.max((zoomOverride ?? fitScale) - 0.1, 0.35));
+  };
+  const handleZoomFit = () => {
+    setZoomOverride(null);
   };
 
   const handleDeselect = () => {
@@ -301,20 +345,17 @@ const Page = () => {
           display: "flex",
           flexDirection: "column",
           height: "100vh",
-          background: getContrastingBackground(
-            selectedTheme?.primaryColor || "#1a1a1a"
-          ),
+          background: SHELL.bg,
           maxWidth: "100%",
           overflow: "hidden",
-          transition: "background 0.5s ease-in-out",
+          transition: "background 0.3s ease-in-out",
         }}
-        className="animated-bg"
       >
         {!isMobile ? (
           <div
             style={{
               flexShrink: 0,
-              height: "80px",
+              height: "56px",
               zIndex: 20,
             }}
           >
@@ -329,6 +370,11 @@ const Page = () => {
               setShowAuthModal={setShowAuthModal}
               isExportingPDF={isExportingPDF}
               isExportingPPT={isExportingPPTX}
+              zoomPercent={Math.round(scale * 100)}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onZoomFit={handleZoomFit}
+              isZoomFit={zoomOverride === null}
             />
           </div>
         ) : (
@@ -352,15 +398,21 @@ const Page = () => {
                 showTemplatePanel={showTemplatePanel}
                 setShowTemplatePanel={setShowTemplatePanel}
               />
-              <SlideEditorMobile slides={slides} stageRefs={stageRefs} onDeselect={handleDeselect} />
-              <SlideShowPlayer
-                slides={slides}
-                open={previewOpen}
-                onClose={() => setPreviewOpen(false)}
-                theme={selectedTheme}
-                forceCleanPreview={previewOpen}
-                key={previewOpen ? "clean" : "normal"}
-              />
+              {slides.length === 0 ? (
+                <EditorEmptyState />
+              ) : (
+                <>
+                  <SlideEditorMobile slides={slides} onDeselect={handleDeselect} />
+                  <SlideShowPlayer
+                    slides={slides}
+                    open={previewOpen}
+                    onClose={() => setPreviewOpen(false)}
+                    theme={selectedTheme}
+                    forceCleanPreview={previewOpen}
+                    key={previewOpen ? "clean" : "normal"}
+                  />
+                </>
+              )}
               {isTextSelected && !isShapeSelected && (
                 <TextSettingsPanelMobile
                   resetAll={resetAll}
@@ -411,23 +463,42 @@ const Page = () => {
                 />
               </div>
               <div
+                ref={canvasContainerRef}
                 className="flex-1 overflow-auto z-0"
-                style={{ marginTop: 12 }}
+                style={{
+                  marginTop: 0,
+                  background: "#FAFAFA",
+                  backgroundImage: [
+                    "radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px)",
+                    "linear-gradient(45deg, #F0F0F1 25%, transparent 25%)",
+                    "linear-gradient(-45deg, #F0F0F1 25%, transparent 25%)",
+                    "linear-gradient(45deg, transparent 75%, #F0F0F1 75%)",
+                    "linear-gradient(-45deg, transparent 75%, #F0F0F1 75%)",
+                  ].join(", "),
+                  backgroundSize: "28px 28px, 48px 48px, 48px 48px, 48px 48px, 48px 48px",
+                  backgroundPosition: "0 0, 0 0, 0 24px, 24px -24px, -24px 0px",
+                }}
               >
-                <SlideEditor slides={slides} stageRefs={stageRefs} onDeselect={handleDeselect} slideCount={slides.length} deselectAllRef={deselectAllRef} />
-                <SlideShowPlayer
-                  slides={slides}
-                  theme={selectedTheme}
-                  open={previewOpen}
-                  onClose={() => setPreviewOpen(false)}
-                  forceCleanPreview={previewOpen}
-                  key={previewOpen ? "clean" : "normal"}
-                />
+                {slides.length === 0 ? (
+                  <EditorEmptyState />
+                ) : (
+                  <>
+                    <SlideEditor slides={slides} onDeselect={handleDeselect} slideCount={slides.length} deselectAllRef={deselectAllRef} scale={scale} />
+                    <SlideShowPlayer
+                      slides={slides}
+                      theme={selectedTheme}
+                      open={previewOpen}
+                      onClose={() => setPreviewOpen(false)}
+                      forceCleanPreview={previewOpen}
+                      key={previewOpen ? "clean" : "normal"}
+                    />
+                  </>
+                )}
               </div>
               <div
                 className={`
                   ${isLGScreen ? "relative" : "fixed top-0 right-0 h-full z-40"}
-                  bg-white shadow-md transition-all duration-300 ease-in-out flex scrollbar-hide 
+                  transition-all duration-300 ease-in-out flex scrollbar-hide
                   ${!isLGScreen && showRightPanel
                     ? "w-96"
                     : isLGScreen
@@ -435,20 +506,27 @@ const Page = () => {
                       : "w-0"
                   }
                 `}
+                style={{
+                  background: SHELL.bg,
+                  borderLeft: `1px solid ${SHELL.border}`,
+                  boxShadow: "-4px 0 24px rgba(74, 0, 224, 0.04)",
+                }}
               >
                 {!isLGScreen && (
                   <div
                     className={`
                       absolute -left-5 top-24
-                      bg-white border-r-0 border border-gray-200 shadow-xl
-                      rounded-l-md px-2 py-2 cursor-pointer z-50
+                      border-r-0 border border-purple-100 shadow-xl
+                      rounded-l-xl px-2 py-2 cursor-pointer z-50
+                      transition-transform duration-150 ease-out hover:scale-110 active:scale-95
                     `}
+                    style={{ background: SHELL.bg }}
                     onClick={() => setShowRightPanel(!showRightPanel)}
                   >
                     {showRightPanel ? (
-                      <CloseIcon color="primary" fontSize="small" />
+                      <CloseIcon sx={{ color: SHELL.accent }} fontSize="small" />
                     ) : (
-                      <SettingsIcon color="primary" fontSize="small" />
+                      <SettingsIcon sx={{ color: SHELL.accent }} fontSize="small" />
                     )}
                   </div>
                 )}

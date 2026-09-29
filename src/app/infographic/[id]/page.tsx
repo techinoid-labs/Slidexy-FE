@@ -275,15 +275,7 @@ const handleDownload = async (format: "png" | "jpeg") => {
               size="large"
               startIcon={<DownloadIcon />}
               onClick={() => handleDownload('png')}
-              sx={{
-                px: 5,
-                py: 1.8,
-                borderRadius: 3,
-                fontSize: "1.1rem",
-                fontWeight: 700,
-                background: "linear-gradient(135deg, #8e24aa, #6a1b9a)",
-                "&:hover": { background: "#6a1b9a" },
-              }}
+              sx={{ fontSize: "1.1rem", px: 5 }}
             >
               Download PNG
             </Button>
@@ -292,15 +284,7 @@ const handleDownload = async (format: "png" | "jpeg") => {
               size="large"
               startIcon={<DownloadIcon />}
               onClick={() => handleDownload('jpeg')}
-              sx={{
-                px: 5,
-                py: 1.8,
-                borderRadius: 3,
-                fontSize: "1.1rem",
-                fontWeight: 700,
-                borderColor: "#8e24aa",
-                color: "#8e24aa",
-              }}
+              sx={{ fontSize: "1.1rem", px: 5 }}
             >
               Download JPG
             </Button>

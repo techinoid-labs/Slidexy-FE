@@ -142,17 +142,11 @@ export default function ReviewSlidesPage() {
             >
               <Button
                 variant="contained"
+                size="large"
                 sx={{
                   width: { xs: "100%", sm: "60%", md: 320 },
-                  borderRadius: "999px",
                   fontSize: { xs: "1rem", md: "1.15rem" },
-                  fontWeight: 600,
-                  textTransform: "none",
-                  margin:{sm:"auto"},
-                  background:
-                    "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-                  boxShadow: "none",
-                  "&:hover": { background: "#4A00E0" },
+                  margin: { sm: "auto" },
                 }}
               >
                 Regenerate Outlines
@@ -329,18 +323,12 @@ export default function ReviewSlidesPage() {
         >
           <Button
             variant="contained"
+            size="large"
             sx={{
               width: { xs: "80%", sm: "60%", md: 320 },
               maxWidth: "100%",
-              borderRadius: "999px",
               py: { xs: 1.2, md: 2.5 },
               fontSize: { xs: "1rem", md: "1.15rem" },
-              fontWeight: 600,
-              textTransform: "none",
-              background:
-                "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-              boxShadow: "none",
-              "&:hover": { background: "#4A00E0" },
             }}
           >
             Continue

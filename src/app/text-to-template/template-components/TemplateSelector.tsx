@@ -78,21 +78,36 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selectedTemplate, o
           return (
             <Box
               key={template.id}
+              role="button"
+              tabIndex={0}
+              aria-pressed={isSelected}
               sx={{
                 minWidth: 200,
                 flexShrink: 0,
-                borderRadius: 1,
+                borderRadius: 2,
                 backgroundColor: "#fff",
-                border: isSelected ? "2px solid #4A00E0" : "1px solid #ccc",
-                boxShadow: isSelected ? "0 6px 20px rgba(0,0,0,0.12)" : "0 2px 8px rgba(0,0,0,0.06)",
+                border: isSelected ? "2px solid #8E2DE2" : "1px solid #E5E1EF",
+                boxShadow: isSelected ? "0 6px 20px rgba(142,45,226,0.18)" : "0 2px 8px rgba(0,0,0,0.06)",
                 p: 2,
                 cursor: "pointer",
                 transition: "all 0.25s ease",
                 display: "flex",
                 flexDirection: "column",
-                
+                "&:hover": {
+                  borderColor: "#8E2DE2",
+                },
+                "&:focus-visible": {
+                  outline: "2px solid #8E2DE2",
+                  outlineOffset: "2px",
+                },
               }}
               onClick={() => onTemplateChange(template.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onTemplateChange(template.id);
+                }
+              }}
             >
               <Box sx={{ mb: 1 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>

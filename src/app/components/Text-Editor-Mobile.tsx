@@ -112,19 +112,12 @@ const TextEditor: React.FC<TextEditorProps> = ({
           variant="outlined"
           startIcon={<AddIcon />}
           sx={{
-            borderRadius: 8,
             height: 44,
-            fontWeight: 600,
             fontSize: 17,
             bgcolor: "#F8F8FA",
             borderColor: "#E0E0E0",
             color: "#222",
             mb: 1,
-            "&:hover": {
-              bgcolor: "#F3EDFF",
-              borderColor: "#7B4AE2",
-              color: "#7B4AE2",
-            },
           }}
           onClick={() => handleAddTextElement("New Text Box", 24, "600")}
         >

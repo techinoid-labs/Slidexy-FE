@@ -44,9 +44,13 @@ export default function InternalLinks({
                     justifyContent: "space-between",
                     transition: "all 0.2s",
                     "&:hover": {
-                      borderColor: "#7C3AED",
+                      borderColor: "#8E2DE2",
                       transform: "translateY(-4px)",
                       boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    },
+                    "&:focus-visible": {
+                      outline: "2px solid #8E2DE2",
+                      outlineOffset: "2px",
                     },
                   }}
                 >
@@ -70,7 +74,7 @@ export default function InternalLinks({
                   </Box>
                   <Typography
                     sx={{
-                      color: "#7C3AED",
+                      color: "#8E2DE2",
                       fontWeight: 600,
                       fontSize: "0.9rem",
                       display: "flex",

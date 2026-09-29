@@ -3,6 +3,7 @@ import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
 import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
+import { getBulletIcon } from '@/utils/bulletIcons';
 
 interface ContentLeftImageHTMLProps {
     slide: any;
@@ -134,25 +135,23 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.3rem' }}>
                         {bullets.slice(0, 4).map((bullet: any) => {
                             const actualIndex = slide.elements.indexOf(bullet);
+                            const bulletIndex = bullets.indexOf(bullet);
+                            const BulletIcon = getBulletIcon(bullet.text, bulletIndex);
                             return (
                                 <div key={actualIndex} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                                     <div style={{
-                                        width: '24px',
-                                        height: '24px',
-                                        borderRadius: '50%',
-                                        background: `${accentColor}20`,
-                                        marginTop: '0.2rem',
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '10px',
+                                        background: `linear-gradient(135deg, ${accentColor}22, ${accentColor}0d)`,
+                                        border: `1px solid ${accentColor}30`,
+                                        marginTop: '0.1rem',
                                         flexShrink: 0,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                     }}>
-                                        <div style={{
-                                            width: '8px',
-                                            height: '8px',
-                                            borderRadius: '50%',
-                                            background: accentColor,
-                                        }} />
+                                        <BulletIcon style={{ fontSize: '17px', color: accentColor }} />
                                     </div>
                                     <EditableElement
                                         id={`bullet-${actualIndex}`}
@@ -278,6 +277,8 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                         {bullets.slice(0, 4).map((bullet: any) => {
                             const actualIndex = slide.elements.indexOf(bullet);
+                            const bulletIndex = bullets.indexOf(bullet);
+                            const BulletIcon = getBulletIcon(bullet.text, bulletIndex);
                             return (
                                 <div key={actualIndex} style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
                                     <div style={{
@@ -288,12 +289,9 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontWeight: 700,
-                                        color: accentColor,
-                                        fontSize: '0.95rem',
                                         marginTop: '0.1rem',
                                     }}>
-                                        {bullets.indexOf(bullet) + 1}
+                                        <BulletIcon style={{ fontSize: '16px', color: accentColor }} />
                                     </div>
                                     <EditableElement
                                         id={`bullet-${actualIndex}`}
@@ -394,17 +392,23 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {bullets.slice(0, 4).map((bullet: any) => {
                             const actualIndex = slide.elements.indexOf(bullet);
+                            const bulletIndex = bullets.indexOf(bullet);
+                            const BulletIcon = getBulletIcon(bullet.text, bulletIndex);
                             return (
                                 <div key={actualIndex}>
-                                    <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
+                                    <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
                                         <div style={{
-                                            width: '6px',
-                                            height: '6px',
-                                            borderRadius: '50%',
-                                            background: accentColor,
-                                            marginTop: '0.7rem',
+                                            width: '24px',
+                                            height: '24px',
+                                            borderRadius: '7px',
+                                            background: `${accentColor}16`,
                                             flexShrink: 0,
-                                        }} />
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}>
+                                            <BulletIcon style={{ fontSize: '13px', color: accentColor }} />
+                                        </div>
                                         <EditableElement
                                             id={`bullet-${actualIndex}`}
                                             text={bullet.text}
@@ -527,6 +531,8 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
                         {bullets.slice(0, 4).map((bullet: any) => {
                             const actualIndex = slide.elements.indexOf(bullet);
+                            const bulletIndex = bullets.indexOf(bullet);
+                            const BulletIcon = getBulletIcon(bullet.text, bulletIndex);
                             return (
                                 <div key={actualIndex} style={{ display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
                                     <div style={{
@@ -539,12 +545,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                                         justifyContent: 'center',
                                         marginTop: '0.1rem',
                                     }}>
-                                        <div style={{
-                                            width: '6px',
-                                            height: '6px',
-                                            borderRadius: '50%',
-                                            background: accentColor,
-                                        }} />
+                                        <BulletIcon style={{ fontSize: '14px', color: accentColor }} />
                                     </div>
                                     <EditableElement
                                         id={`bullet-${actualIndex}`}

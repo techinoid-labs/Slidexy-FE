@@ -3,6 +3,26 @@
 import { Box, Container, Typography, Chip, useTheme } from "@mui/material";
 import ResponsivePageWrapper from "@/lib/responsive-page-wrapper";
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { fadeUp, staggerContainer } from "@/lib/motion";
+
+const features = [
+  {
+    icon: "/images/voice-to-deck.svg",
+    title: "AI Slide Generator",
+    desc: "Transcribe spoken ideas to auto-build slides with key points and speaker notes.",
+  },
+  {
+    icon: "/images/smart-icon.svg",
+    title: "Prompt to Deck",
+    desc: "Turn a prompt into structured, styled slides—complete with sections, tone, goals, and keywords.",
+  },
+  {
+    icon: "/images/video-to-deck.svg",
+    title: "Video to Slides",
+    desc: "Upload a video and generate narrative slides by extracting speech, visuals, and highlights.",
+  },
+];
 
 export default function FeaturesSection() {
   const theme = useTheme();
@@ -12,7 +32,7 @@ export default function FeaturesSection() {
         sx={{
           position: "relative",
           background: "#FBFAFF",
-          py: { xs: 8, md: 12 },
+          py: { xs: 5, md: 7 },
         }}
         className="flex flex-col items-center w-full"
       >
@@ -99,20 +119,25 @@ export default function FeaturesSection() {
           </Typography>
           {/* Features Flex Layout */}
           <Box
+            component={motion.div}
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
             sx={{
               display: "flex",
               flexDirection: { xs: "column", md: "row" },
               justifyContent: "center",
-              alignItems: "center",
+              alignItems: "stretch",
               gap: { xs: 3, md: 4 },
               mb: 2,
               position: "relative",
-              minHeight: { xs: 350, md: 400 },
+              minHeight: { xs: 260, md: 300 },
               maxWidth: { xs: "100%", md: 1100 },
               mx: "auto",
-              py: { xs: 3, md: 5 },
+              py: { xs: 2, md: 3 },
             }}
-            className="flex flex-col md:flex-row items-center justify-center w-full"
+            className="flex flex-col md:flex-row items-stretch justify-center w-full"
           >
             {/* Checkered Background */}
             <Box
@@ -137,173 +162,69 @@ export default function FeaturesSection() {
                 }}
               />
             </Box>
-            {/* Feature 1 */}
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 200,
-                maxWidth: 320,
-                textAlign: "center",
-                px: 2,
-                position: "relative",
-                zIndex: 1,
-              }}
-              className="flex flex-col items-center justify-center text-center"
-            >
-              <Image
-                src="/images/voice-to-deck.svg"
-                alt="Voice-to-Deck"
-                width={40}
-                height={40}
-                style={{ width: "40px", height: "40px" }}
-                className="md:w-[60px] md:h-[60px]"
-              />
-              <Typography
-                sx={{
-                  mt: 1,
-                  mb: 2,
-                  fontWeight: 400,
-                  color: "#18181B",
-                  fontSize: { xs: "1.1rem", md: "1.8rem" },
-                }}
-              >
-                AI Slide Generator
-              </Typography>
-              <Typography
-                sx={{
-                  color: "#757575",
-                  fontSize: { xs: "0.9rem", md: "1rem" },
-                  lineHeight: 1.6,
-                }}
-              >
-                Transcribe spoken ideas to auto-build slides with key points and
-                speaker notes.
-              </Typography>
-            </Box>
-            {/* Divider 2 */}
-            <Box
-              sx={{
-                display: { xs: "none", md: "flex" },
-                alignItems: "center",
-                mx: 0,
-                height: 300,
-                alignSelf: "center",
-              }}
-            >
+
+            {features.map((feature, i) => (
               <Box
+                key={feature.title}
+                component={motion.div}
+                variants={fadeUp}
+                custom={i}
+                whileHover={{ y: -8 }}
                 sx={{
-                  width: "2px",
-                  height: 200,
-                  background: "#E9E9FF",
-                  borderRadius: 1,
+                  flex: 1,
+                  minWidth: 200,
+                  maxWidth: 320,
+                  textAlign: "center",
+                  px: 3,
+                  py: 2,
+                  position: "relative",
+                  zIndex: 1,
+                  borderRadius: "18px",
+                  border: "1px solid transparent",
+                  transition: "border-color 0.25s ease, box-shadow 0.25s ease",
+                  "&:hover": {
+                    borderColor: "rgba(142, 45, 226, 0.14)",
+                    boxShadow: "0 20px 40px -20px rgba(142,45,226,0.28)",
+                  },
                 }}
-              />
-            </Box>
-            {/* Feature 2 */}
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 200,
-                maxWidth: 320,
-                textAlign: "center",
-                px: 2,
-                position: "relative",
-                zIndex: 1,
-              }}
-              className="flex flex-col items-center justify-center text-center"
-            >
-              <Image
-                src="/images/smart-icon.svg"
-                alt="Smart Prompt Generator"
-                width={40}
-                height={40}
-                style={{ width: "40px", height: "40px" }}
-                className="md:w-[60px] md:h-[60px]"
-              />
-              <Typography
-                sx={{
-                  mt: 1,
-                  mb: 2,
-                  fontWeight: 400,
-                  color: "#18181B",
-                  fontSize: { xs: "1.1rem", md: "1.8rem" },
-                }}
+                className="flex flex-col items-center justify-center text-center"
               >
-                Prompt to Deck
-              </Typography>
-              <Typography
-                sx={{
-                  color: "#757575",
-                  fontSize: { xs: "0.9rem", md: "1rem" },
-                  lineHeight: 1.6,
-                }}
-              >
-                Turn a prompt into structured, styled slides—complete with
-                sections, tone, goals, and keywords.
-              </Typography>
-            </Box>
-            {/* Divider 2 */}
-            <Box
-              sx={{
-                display: { xs: "none", md: "flex" },
-                alignItems: "center",
-                mx: 0,
-                height: 300,
-                alignSelf: "center",
-              }}
-            >
-              <Box
-                sx={{
-                  width: "2px",
-                  height: 200,
-                  background: "#E9E9FF",
-                  borderRadius: 1,
-                }}
-              />
-            </Box>
-            {/* Feature 3 */}
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 200,
-                maxWidth: 320,
-                textAlign: "center",
-                px: 2,
-                position: "relative",
-                zIndex: 1,
-              }}
-              className="flex flex-col items-center justify-center text-center"
-            >
-              <Image
-                src="/images/video-to-deck.svg"
-                alt="Video-to-Deck Summarizer"
-                width={40}
-                height={40}
-                style={{ width: "40px", height: "40px" }}
-                className="md:w-[60px] md:h-[60px]"
-              />
-              <Typography
-                sx={{
-                  mt: 1,
-                  mb: 2,
-                  fontWeight: 400,
-                  color: "#18181B",
-                  fontSize: { xs: "1.1rem", md: "1.8rem" },
-                }}
-              >
-                Video to Slides
-              </Typography>
-              <Typography
-                sx={{
-                  color: "#757575",
-                  fontSize: { xs: "0.8rem", md: "1.05rem" },
-                  lineHeight: 1.6,
-                }}
-              >
-                Upload a video and generate narrative slides by extracting
-                speech, visuals, and highlights.
-              </Typography>
-            </Box>
+                <Box
+                  component={motion.div}
+                  whileHover={{ scale: 1.12, rotate: 4 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                >
+                  <Image
+                    src={feature.icon}
+                    alt={feature.title}
+                    width={40}
+                    height={40}
+                    style={{ width: "40px", height: "40px" }}
+                    className="md:w-[60px] md:h-[60px]"
+                  />
+                </Box>
+                <Typography
+                  sx={{
+                    mt: 1,
+                    mb: 2,
+                    fontWeight: 400,
+                    color: "#18181B",
+                    fontSize: { xs: "1.1rem", md: "1.8rem" },
+                  }}
+                >
+                  {feature.title}
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "#757575",
+                    fontSize: { xs: "0.9rem", md: "1rem" },
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {feature.desc}
+                </Typography>
+              </Box>
+            ))}
           </Box>
         </Container>
       </Box>

@@ -83,6 +83,8 @@ interface SlidesContextType {
   }) => void;
   addSlide: () => void;
   deleteSlide: (index: number) => void;
+  duplicateSlide: (index: number) => void;
+  reorderSlides: (fromIndex: number, toIndex: number) => void;
 }
 
 const SlidesContext = createContext<SlidesContextType>({} as SlidesContextType);
@@ -120,64 +122,37 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
   const [aiThemes, setAiThemes] = useState<Theme[]>([]);
   const [isMobileImageSelected, setIsMobileImageSelected] = useState(false);
 
-  // FIXED: Recursive deepEqual without JSON.stringify (handles objects/arrays safely)
-  const deepEqual = (a: any, b: any): boolean => {
-    // Quick checks
-    try {
-      return JSON.stringify(a) === JSON.stringify(b);
-    } catch {
-      if (a === b) return true;
-      if (a == null || b == null) return a === b; // null/undefined
-      if (typeof a !== typeof b) return false;
-      if (typeof a !== 'object') return a === b; // Primitives
-
-      // Arrays
-      if (Array.isArray(a) !== Array.isArray(b)) return false;
-      if (Array.isArray(a)) {
-        if (a.length !== b.length) return false;
-        return a.every((val, idx) => deepEqual(val, b[idx]));
-      }
-
-      // Objects
-      const keysA = Object.keys(a);
-      const keysB = Object.keys(b);
-      if (keysA.length !== keysB.length) return false;
-      return keysA.every(key => deepEqual(a[key], b[key]));
-    }
-  };
+  /** How many undo steps to retain. */
+  const HISTORY_LIMIT = 50;
 
   const handleSetSlides = (newSlides: SlidesType) => {
-    // ✅ FIXED: Always force update if elements changed (shallow diff fallback)
-    const hasElementsChange = !deepEqual(slides, newSlides) ||
-      slides.some((s, i) => (s.elements?.length || 0) !== (newSlides[i]?.elements?.length || 0));
+    // Callers always build a new array (spread or structuredClone) when they
+    // change something, so reference inequality is a reliable "this is a real
+    // edit" signal. The previous implementation ran JSON.stringify over the
+    // ENTIRE deck twice on every call — on every keystroke — purely to decide
+    // whether to dispatch.
+    if (slides === newSlides) return;
 
-    if (hasElementsChange) {
-      setPastSlides((prev) => [...prev.slice(-10), structuredClone(slides)]);
-      setFutureSlides([]);
-      dispatch(setSlides(newSlides));
-    }
+    setPastSlides((prev) => [...prev.slice(-(HISTORY_LIMIT - 1)), slides]);
+    setFutureSlides([]);
+    dispatch(setSlides(newSlides));
   };
 
+  // History stores plain references, not deep clones. Every writer in the app
+  // builds its next deck with structuredClone(slides) before mutating, so the
+  // array we hand to history is never modified in place afterwards.
   const handleDeleteSlides = () => {
-    console.log("[SlidesContext] handleDeleteSlides called");
-    setPastSlides((prev) => {
-      const newPast = [...prev, structuredClone(slides)];
-      console.log("[SlidesContext] Updated pastSlides for delete:", newPast);
-      return newPast;
-    });
+    setPastSlides((prev) => [...prev.slice(-(HISTORY_LIMIT - 1)), slides]);
     setFutureSlides([]);
     dispatch(setSlides([]));
   };
 
   const undo = () => {
-    if (pastSlides.length === 0) {
-      console.log("[SlidesContext] Cannot undo, pastSlides is empty");
-      return;
-    }
+    if (pastSlides.length === 0) return;
+
     const previous = pastSlides[pastSlides.length - 1];
-    const newPast = pastSlides.slice(0, -1);
-    setPastSlides(newPast);
-    setFutureSlides((prev) => [structuredClone(slides), ...prev]);
+    setPastSlides(pastSlides.slice(0, -1));
+    setFutureSlides((prev) => [slides, ...prev].slice(0, HISTORY_LIMIT));
     dispatch(setSlides(previous));
 
     // Clear all selections on undo
@@ -187,28 +162,14 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     setSelectedShapeId(null);
     setSelectedShapeIndex(null);
     setSelectedTextId(null);
-
-    console.log("[SlidesContext] Undo performed, restored state:", previous);
-    console.log("[SlidesContext] New pastSlides:", newPast);
-    console.log("[SlidesContext] New futureSlides:", [
-      structuredClone(slides),
-      ...futureSlides,
-    ]);
   };
 
   const redo = () => {
-    if (futureSlides.length === 0) {
-      console.log("[SlidesContext] Cannot redo, futureSlides is empty");
-      return;
-    }
+    if (futureSlides.length === 0) return;
+
     const next = futureSlides[0];
-    const newFuture = futureSlides.slice(1);
-    setFutureSlides(newFuture);
-    setPastSlides((prev) => {
-      const newPast = [...prev, structuredClone(slides)];
-      console.log("[SlidesContext] Updated pastSlides for redo:", newPast);
-      return newPast;
-    });
+    setFutureSlides(futureSlides.slice(1));
+    setPastSlides((prev) => [...prev.slice(-(HISTORY_LIMIT - 1)), slides]);
     dispatch(setSlides(next));
 
     // Clear all selections on redo
@@ -218,9 +179,6 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     setSelectedShapeId(null);
     setSelectedShapeIndex(null);
     setSelectedTextId(null);
-
-    console.log("[SlidesContext] Redo performed, restored state:", next);
-    console.log("[SlidesContext] New futureSlides:", newFuture);
   };
 
   const canUndo = pastSlides.length > 0;
@@ -696,6 +654,42 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const duplicateSlide = (index: number) => {
+    if (index < 0 || index >= slides.length) return;
+    const duplicated = { ...structuredClone(slides[index]), slide_id: uuidv4() };
+    const newSlides = [
+      ...slides.slice(0, index + 1),
+      duplicated,
+      ...slides.slice(index + 1),
+    ];
+    handleSetSlides(newSlides);
+    setSelectedSlideIndex(index + 1);
+  };
+
+  const reorderSlides = (fromIndex: number, toIndex: number) => {
+    if (
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= slides.length ||
+      toIndex >= slides.length
+    ) {
+      return;
+    }
+    const newSlides = [...slides];
+    const [moved] = newSlides.splice(fromIndex, 1);
+    newSlides.splice(toIndex, 0, moved);
+    handleSetSlides(newSlides);
+
+    if (selectedSlideIndex === fromIndex) {
+      setSelectedSlideIndex(toIndex);
+    } else if (fromIndex < selectedSlideIndex && toIndex >= selectedSlideIndex) {
+      setSelectedSlideIndex(selectedSlideIndex - 1);
+    } else if (fromIndex > selectedSlideIndex && toIndex <= selectedSlideIndex) {
+      setSelectedSlideIndex(selectedSlideIndex + 1);
+    }
+  };
+
   return (
     <SlidesContext.Provider
       value={{
@@ -737,6 +731,8 @@ export const SlidesProvider = ({ children }: { children: React.ReactNode }) => {
         addShape,
         addSlide,
         deleteSlide,
+        duplicateSlide,
+        reorderSlides,
       }}
     >
       {children}

@@ -35,7 +35,7 @@ const OpacityPanel: React.FC<PanelProps & { initialValues: { opacity: number } }
   return (
     <Box sx={{ position: "fixed", bottom: 143, width: "90%", backgroundColor: "#fff", borderTopLeftRadius: "10px", borderTopRightRadius: "10px", boxShadow: 3, right: "5%", p: 2, zIndex: 4, overflowY: "auto" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <IconButton onClick={onClose} sx={{ color: "#000000" }}><CloseIcon /></IconButton>
+        <IconButton onClick={onClose} sx={{ color: "#000000", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.08)" } }}><CloseIcon /></IconButton>
         <Typography variant="h6" sx={{ fontSize: 16, color: "#000000", textAlign: "center", flexGrow: 1 }}>Opacity</Typography>
         <div style={{ width: 48 }} />
       </Box>
@@ -49,7 +49,7 @@ const OpacityPanel: React.FC<PanelProps & { initialValues: { opacity: number } }
         </Box>
       </Box>
       <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-        <Button variant="contained" sx={{ background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)", color: "#fff", px: 4, py: 1, "&:hover": { backgroundColor: "#5A3ED9" }, width: 290, height: 35, fontSize: 10, fontWeight: 500 }} onClick={handleApply}>Apply</Button>
+        <Button variant="contained" size="small" sx={{ width: 290, fontSize: 12 }} onClick={handleApply}>Apply</Button>
       </Box>
     </Box>
   );
@@ -70,7 +70,7 @@ const ShadowPanel: React.FC<PanelProps & { initialValues: { shadow: { offsetX: n
   return (
     <Box sx={{ position: "fixed", bottom: 143, width: "90%", backgroundColor: "#fff", borderTopLeftRadius: "10px", borderTopRightRadius: "10px", boxShadow: 3, right: "5%", p: 2, zIndex: 4, overflowY: "auto" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <IconButton onClick={onClose} sx={{ color: "#000000" }}><CloseIcon /></IconButton>
+        <IconButton onClick={onClose} sx={{ color: "#000000", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.08)" } }}><CloseIcon /></IconButton>
         <Typography variant="h6" sx={{ fontSize: 16, color: "#000000", textAlign: "center", flexGrow: 1 }}>Shadow</Typography>
         <div style={{ width: 48 }} />
       </Box>
@@ -83,7 +83,7 @@ const ShadowPanel: React.FC<PanelProps & { initialValues: { shadow: { offsetX: n
         <Slider value={shadow.blur} onChange={(e, val) => handleChange("blur", val as number)} min={0} max={100} sx={{ mb: 2 }} />
       </Box>
       <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-        <Button variant="contained" sx={{ background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)", color: "#fff", px: 4, py: 1, "&:hover": { backgroundColor: "#5A3ED9" }, width: 290, height: 35, fontSize: 10, fontWeight: 500 }} onClick={handleApply}>Apply</Button>
+        <Button variant="contained" size="small" sx={{ width: 290, fontSize: 12 }} onClick={handleApply}>Apply</Button>
       </Box>
     </Box>
   );
@@ -104,7 +104,7 @@ const RadiusPanel: React.FC<PanelProps & { initialValues: { borderRadius: number
   return (
     <Box sx={{ position: "fixed", bottom: 143, width: "90%", backgroundColor: "#fff", borderTopLeftRadius: "10px", borderTopRightRadius: "10px", boxShadow: 3, right: "5%", p: 2, zIndex: 4, overflowY: "auto" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <IconButton onClick={onClose} sx={{ color: "#000000" }}><CloseIcon /></IconButton>
+        <IconButton onClick={onClose} sx={{ color: "#000000", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.08)" } }}><CloseIcon /></IconButton>
         <Typography variant="h6" sx={{ fontSize: 16, color: "#000000", textAlign: "center", flexGrow: 1 }}>Border Radius</Typography>
         <div style={{ width: 48 }} />
       </Box>
@@ -114,7 +114,7 @@ const RadiusPanel: React.FC<PanelProps & { initialValues: { borderRadius: number
         <Typography sx={{ fontSize: 14 }}>{borderRadius}px</Typography>
       </Box>
       <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-        <Button variant="contained" sx={{ background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)", color: "#fff", px: 4, py: 1, "&:hover": { backgroundColor: "#5A3ED9" }, width: 290, height: 35, fontSize: 10, fontWeight: 500 }} onClick={handleApply}>Apply</Button>
+        <Button variant="contained" size="small" sx={{ width: 290, fontSize: 12 }} onClick={handleApply}>Apply</Button>
       </Box>
     </Box>
   );
@@ -379,44 +379,44 @@ const ImageSettingsPanelMobile: React.FC<ImageSettingsPanelMobileProps> = ({ onC
     <>
       <Box sx={{ width: "100%", height: 60, bgcolor: "#fff", borderTop: "1px solid #E0E0E0", display: "flex", flexDirection: "row", justifyContent: "center", py: 1.2, overflow: "auto", zIndex: 3, boxSizing: "border-box", position: "fixed", bottom: 83, paddingLeft: 20, paddingRight: 3, left: 10, gap: 1.5 }}>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <IconButton onClick={handleDuplicateImage} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }}><img src="/duplicate-icon.svg" alt="duplicate" style={{ width: 15, height: 15 }} /></IconButton>
+          <IconButton onClick={handleDuplicateImage} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, borderRadius: "8px", transition: "background-color 0.15s ease, color 0.15s ease", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" }, "&.Mui-disabled": { opacity: 0.4 } }}><img src="/duplicate-icon.svg" alt="duplicate" style={{ width: 15, height: 15 }} /></IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5 }}>Duplicate</Typography>
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <IconButton onClick={handleDeleteImage} sx={{ color: "#C00", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }}><img src="/delete-icon.svg" alt="delete" style={{ width: 15, height: 15 }} /></IconButton>
+          <IconButton onClick={handleDeleteImage} sx={{ color: "#C00", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, borderRadius: "8px", transition: "background-color 0.15s ease", "&:hover": { backgroundColor: "rgba(239, 68, 68, 0.12)" } }}><img src="/delete-icon.svg" alt="delete" style={{ width: 15, height: 15 }} /></IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5 }}>Delete</Typography>
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <IconButton onClick={() => fileInputRef.current?.click()} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }}><img src="/replace.svg" alt="replace" style={{ width: 15, height: 15 }} /></IconButton>
+          <IconButton onClick={() => fileInputRef.current?.click()} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, borderRadius: "8px", transition: "background-color 0.15s ease, color 0.15s ease", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" }, "&.Mui-disabled": { opacity: 0.4 } }}><img src="/replace.svg" alt="replace" style={{ width: 15, height: 15 }} /></IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5 }}>Replace</Typography>
           <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleImageChange} />
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <IconButton onClick={handleRemoveBackground} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }} disabled={isLoading}>{isLoading ? <CircularProgress size={15} sx={{ color: "#222" }} /> : <img src="/bg-remove.svg" alt="remove-bg" style={{ width: 15, height: 15 }} />}</IconButton>
+          <IconButton onClick={handleRemoveBackground} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, borderRadius: "8px", transition: "background-color 0.15s ease, color 0.15s ease", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" }, "&.Mui-disabled": { opacity: 0.4 } }} disabled={isLoading}>{isLoading ? <CircularProgress size={15} sx={{ color: "#222" }} /> : <img src="/bg-remove.svg" alt="remove-bg" style={{ width: 15, height: 15 }} />}</IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5, whiteSpace: "nowrap" }}>BG Remover</Typography>
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <IconButton onClick={() => selectedImageIndex !== null && bringElementForward(selectedImageIndex)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }} disabled={selectedImageIndex === null}><img src="/backward.svg" alt="backward" style={{ width: 15, height: 15 }} /></IconButton>
+          <IconButton onClick={() => selectedImageIndex !== null && bringElementForward(selectedImageIndex)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, borderRadius: "8px", transition: "background-color 0.15s ease, color 0.15s ease", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" }, "&.Mui-disabled": { opacity: 0.4 } }} disabled={selectedImageIndex === null}><img src="/backward.svg" alt="backward" style={{ width: 15, height: 15 }} /></IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5 }}>Backward</Typography>
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <IconButton onClick={() => selectedImageIndex !== null && sendElementBackward(selectedImageIndex)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }} disabled={selectedImageIndex === null}><img src="/forward.svg" alt="forward" style={{ width: 15, height: 15 }} /></IconButton>
+          <IconButton onClick={() => selectedImageIndex !== null && sendElementBackward(selectedImageIndex)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, borderRadius: "8px", transition: "background-color 0.15s ease, color 0.15s ease", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" }, "&.Mui-disabled": { opacity: 0.4 } }} disabled={selectedImageIndex === null}><img src="/forward.svg" alt="forward" style={{ width: 15, height: 15 }} /></IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5 }}>Forward</Typography>
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <IconButton onClick={() => setIsCropModalOpen(true)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }} disabled={!imageObj?.properties?.imageSrc}><img src="/crop.svg" alt="crop" style={{ width: 15, height: 15 }} /></IconButton>
+          <IconButton onClick={() => setIsCropModalOpen(true)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, borderRadius: "8px", transition: "background-color 0.15s ease, color 0.15s ease", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" }, "&.Mui-disabled": { opacity: 0.4 } }} disabled={!imageObj?.properties?.imageSrc}><img src="/crop.svg" alt="crop" style={{ width: 15, height: 15 }} /></IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5 }}>Crop</Typography>
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <IconButton onClick={() => setIsOpacityPanelOpen(!isOpacityPanelOpen)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }}><img src="/opacity-icon.svg" alt="opacity" style={{ width: 15, height: 15 }} /></IconButton>
+          <IconButton onClick={() => setIsOpacityPanelOpen(!isOpacityPanelOpen)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, borderRadius: "8px", transition: "background-color 0.15s ease, color 0.15s ease", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" }, "&.Mui-disabled": { opacity: 0.4 } }}><img src="/opacity-icon.svg" alt="opacity" style={{ width: 15, height: 15 }} /></IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5 }}>Opacity</Typography>
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <IconButton onClick={() => setIsShadowPanelOpen(!isShadowPanelOpen)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }}><img src="/shadow.svg" alt="shadow" style={{ width: 15, height: 15 }} /></IconButton>
+          <IconButton onClick={() => setIsShadowPanelOpen(!isShadowPanelOpen)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, borderRadius: "8px", transition: "background-color 0.15s ease, color 0.15s ease", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" }, "&.Mui-disabled": { opacity: 0.4 } }}><img src="/shadow.svg" alt="shadow" style={{ width: 15, height: 15 }} /></IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5 }}>Shadow</Typography>
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <IconButton onClick={() => setIsRadiusPanelOpen(!isRadiusPanelOpen)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2 }}><img src="/radius-icon.svg" alt="radius" style={{ width: 15, height: 15 }} /></IconButton>
+          <IconButton onClick={() => setIsRadiusPanelOpen(!isRadiusPanelOpen)} sx={{ color: "#222", backgroundColor: "#F8F8FA", padding: "2px", width: 32, height: 30, mb: 0.2, borderRadius: "8px", transition: "background-color 0.15s ease, color 0.15s ease", "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" }, "&.Mui-disabled": { opacity: 0.4 } }}><img src="/radius-icon.svg" alt="radius" style={{ width: 15, height: 15 }} /></IconButton>
           <Typography sx={{ fontSize: "9px", color: "#222", textTransform: "none", letterSpacing: "0.5px", marginBottom: 0.5 }}>Radius</Typography>
         </Box>
       </Box>

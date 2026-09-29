@@ -76,11 +76,7 @@ const AccountSettings: React.FC = () => {
                 john.doe@gmail.com
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{ borderRadius: 1.2, textTransform: "none" }}
-            >
+            <Button variant="outlined" size="small">
               Change
             </Button>
           </Box>

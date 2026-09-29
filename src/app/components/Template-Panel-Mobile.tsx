@@ -412,6 +412,9 @@ const MobileTemplatePanel = ({
             {themes.map((theme, i) => (
               <Box
                 key={i}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${theme.font} theme`}
                 sx={{
                   display: "flex",
                   gap: 2,
@@ -432,8 +435,18 @@ const MobileTemplatePanel = ({
                   "&:hover": {
                     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                   },
+                  "&:focus-visible": {
+                    outline: "2px solid #8E2DE2",
+                    outlineOffset: "2px",
+                  },
                 }}
                 onClick={() => handleThemeSelect(theme)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleThemeSelect(theme);
+                  }
+                }}
               >
                 {theme.image_url && theme.image_url.startsWith("data:image") ? (
                   <img

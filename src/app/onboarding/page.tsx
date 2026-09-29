@@ -140,23 +140,11 @@ export default function OnboardingForm() {
 
         <Button
           type="submit"
+          variant="outlined"
           disabled={isSubmitting}
           fullWidth
-          sx={{
-            mt: 3,
-            py: 1.5,
-            fontSize: "1rem",
-            fontWeight: 600,
-            textTransform: "none",
-            color: isSubmitting ? "#fff" : "#8E2DE2",
-            border: "2px solid #8E2DE2",
-            borderRadius: "999px",
-            backgroundColor: "#fff",
-            position: "relative",
-            "&:hover": {
-              backgroundColor: "#f3eaff",
-            },
-          }}
+          size="large"
+          sx={{ mt: 3 }}
         >
           {isSubmitting ? "Submitting..." : "Submit"}
         </Button>

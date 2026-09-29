@@ -160,6 +160,14 @@ const BlogList: React.FC<BlogListProps> = ({
                 },
               }}
               onClick={() => router.push(`/blog/${slugify(blog.title)}`)}
+              role="link"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  router.push(`/blog/${slugify(blog.title)}`);
+                }
+              }}
             >
               <Box sx={{ position: "relative", overflow: "hidden" }}>
                 {blog.coverImage ? (

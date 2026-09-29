@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Box, Typography, IconButton, Avatar } from "@mui/material";
 import { ArrowBack, ArrowForward, Star } from "@mui/icons-material";
+import { AnimatePresence, motion } from "framer-motion";
+import { easeOutExpo } from "@/lib/motion";
 
 const testimonials = [
   {
@@ -19,13 +21,6 @@ const testimonials = [
     avatar: "/images/avatar2.jpg",
     rating: 5,
   },
-  // {
-  //   text: "An amazing tool for presentations. Saves hours of design work.",
-  //   name: "Robert Fox",
-  //   role: "CEO, TechCorp",
-  //   avatar: "/images/avatar3.jpg",
-  //   rating: 4,
-  // },
 ];
 
 export default function TestimonialSection() {
@@ -34,7 +29,6 @@ export default function TestimonialSection() {
   const handlePrev = () => {
     setIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
   };
-
   const handleNext = () => {
     setIndex((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
   };
@@ -45,103 +39,111 @@ export default function TestimonialSection() {
     <Box
       sx={{
         width: "100%",
-        background: "#F9F9FB",
-        px: { xs: 2, md: "200px" },
-        py: { xs: 6, md: "96px" },
+        background:
+          "radial-gradient(ellipse 70% 80% at 50% 50%, rgba(142,45,226,0.06) 0%, #FBFAFF 50%, #fff 100%)",
+        px: { xs: 2, md: 10 },
+        py: { xs: 6, md: 10 },
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        gap: 4,
+        gap: { xs: 1, md: 4 },
         boxSizing: "border-box",
       }}
     >
-      {/* Left Arrow */}
       <IconButton
         onClick={handlePrev}
+        aria-label="Previous testimonial"
         sx={{
-          border: "1px solid #E0E0E0",
+          border: "1px solid rgba(142, 45, 226, 0.15)",
           width: 48,
           height: 48,
+          bgcolor: "#fff",
+          "&:hover": {
+            bgcolor: "rgba(242, 240, 255, 1)",
+            borderColor: "#8E2DE2",
+          },
         }}
       >
         <ArrowBack />
       </IconButton>
 
-      {/* Testimonial Content */}
       <Box
         sx={{
           flex: 1,
-          maxWidth: 700,
+          maxWidth: 640,
           textAlign: "center",
           mx: "auto",
-          height: { sx: 400, md: 300 }, // fixed height so it doesn't jump
+          minHeight: { xs: 280, md: 260 },
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        {/* Quote Image */}
-        <Box sx={{ mb: 2 }}>
-          <img
-            src="/images/quote-mark.svg"
-            alt="Quote Icon"
-            width={40}
-            height={40}
-            style={{ width: 40, height: 40 }}
-          />
-        </Box>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.4, ease: easeOutExpo }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Box sx={{ display: "flex", gap: 0.5, mb: 2.5 }}>
+              {Array.from({ length: rating }).map((_, i) => (
+                <Star key={i} sx={{ color: "#8E2DE2", fontSize: 22 }} />
+              ))}
+            </Box>
 
-        {/* Testimonial Text */}
-        <Typography
-          sx={{
-            color: "#333",
-            fontWeight: 600,
-            maxWidth: 500,
-            fontSize: { xs: "1.25rem", md: "1.4rem" },
-            mb: 4,
-            px: 2,
-          }}
-        >
-          "{text}"
-        </Typography>
+            <Typography
+              className="sx-display"
+              sx={{
+                fontFamily: "var(--font-display)",
+                fontSize: { xs: "1.2rem", md: "1.5rem" },
+                fontWeight: 600,
+                color: "#0F0A19",
+                lineHeight: 1.5,
+                mb: 3,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              &ldquo;{text}&rdquo;
+            </Typography>
 
-        {/* Profile */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          <Avatar src={avatar} alt={name} sx={{ width: 56, height: 56 }} />
-          <Typography sx={{ fontWeight: 600 }}>{name}</Typography>
-          {/* <Typography sx={{ fontSize: 14, color: "gray" }}>{role}</Typography> */}
-
-          {/* Stars */}
-          <Box sx={{ display: "flex", gap: 0.5, mt: 1 }}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                sx={{
-                  fontSize: 22,
-                  color: i < rating ? "#6C3DFF" : "#E0E0E0",
-                }}
-              />
-            ))}
-          </Box>
-        </Box>
+            <Avatar
+              src={avatar}
+              alt={name}
+              sx={{
+                width: 56,
+                height: 56,
+                mb: 1.5,
+                border: "2px solid rgba(142, 45, 226, 0.3)",
+                boxShadow: "0 4px 16px rgba(142, 45, 226, 0.2)",
+              }}
+            />
+            <Typography sx={{ fontWeight: 600, color: "#0F0A19" }}>{name}</Typography>
+            <Typography sx={{ fontSize: "0.9rem", color: "#5B5568" }}>{role}</Typography>
+          </motion.div>
+        </AnimatePresence>
       </Box>
 
-      {/* Right Arrow */}
       <IconButton
         onClick={handleNext}
+        aria-label="Next testimonial"
         sx={{
-          border: "1px solid #E0E0E0",
+          border: "1px solid rgba(142, 45, 226, 0.15)",
           width: 48,
           height: 48,
+          bgcolor: "#fff",
+          "&:hover": {
+            bgcolor: "rgba(242, 240, 255, 1)",
+            borderColor: "#8E2DE2",
+          },
         }}
       >
         <ArrowForward />

@@ -12,6 +12,7 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { useState } from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -65,7 +66,7 @@ export default function ContactSection() {
       component="section"
       id="contact-section"
       sx={{
-        py: { xs: 8, md: 12 },
+        py: { xs: 5, md: 7 },
         px: { xs: 2, md: 6 },
         backgroundColor: "#ffffff",
         textAlign: "center",
@@ -73,7 +74,11 @@ export default function ContactSection() {
     >
       {/* Form Wrapper */}
       <Paper
-        // elevation={3}
+        component={motion.div}
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         sx={{
           maxWidth: { xs: "100%", md: "1120px" },
           height: { xs: "auto", md: "505px" },
@@ -84,6 +89,11 @@ export default function ContactSection() {
           border: "1px solid rgba(232, 228, 255, 1)",
           justifyContent: 'center',
           boxShadow: "none",
+          transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+          "&:hover": {
+            boxShadow: "0 20px 44px -22px rgba(142,45,226,0.25)",
+            borderColor: "rgba(142, 45, 226, 0.25)",
+          },
         }}
       >
         {/* Title */}
@@ -91,7 +101,7 @@ export default function ContactSection() {
           sx={{
             fontFamily: "Raleway",
             fontWeight: 500,
-            fontSize: "40px",
+            fontSize: "32px",
             lineHeight: "100%",
             letterSpacing: "0px",
             textAlign: "center",
@@ -153,34 +163,11 @@ export default function ContactSection() {
                       md: "360px",
                       lg: "486px",
                     },
-                    height: "48px",
-                    opacity: 1,
                     backgroundColor: "#fff",
-                    border: "1px solid rgba(231, 231, 231, 1)",
-                    borderRadius: "12px",
-
-                    "& .MuiInputLabel-shrink": {
-                      top: "-10px",
-                      left: "-15px"
-                    },
-
                     "& .MuiInputLabel-root": {
                       color: "rgba(176, 176, 176, 1)",
                       fontWeight: 400,
                     },
-
-                    "& fieldset": {
-                      border: "none",
-                    },
-
-                    "&:hover fieldset": {
-                      border: "none",
-                    },
-
-                    "&.Mui-focused fieldset": {
-                      border: "none",
-                    },
-
                     "& .MuiInputBase-input": {
                       paddingTop: "14px",
                       paddingBottom: "14px",
@@ -223,34 +210,11 @@ export default function ContactSection() {
                       md: "360px",
                       lg: "486px",
                     },
-                    height: "48px",
-                    opacity: 1,
                     backgroundColor: "#fff",
-                    border: "1px solid rgba(231, 231, 231, 1)",
-                    borderRadius: "12px",
-
-                    "& .MuiInputLabel-shrink": {
-                      top: "-10px",
-                      left: "-15px"
-                    },
-
                     "& .MuiInputLabel-root": {
                       color: "rgba(176, 176, 176, 1)",
                       fontWeight: 400,
                     },
-
-                    "& fieldset": {
-                      border: "none",
-                    },
-
-                    "&:hover fieldset": {
-                      border: "none",
-                    },
-
-                    "&.Mui-focused fieldset": {
-                      border: "none",
-                    },
-
                     "& .MuiInputBase-input": {
                       paddingTop: "14px",
                       paddingBottom: "14px",
@@ -282,31 +246,10 @@ export default function ContactSection() {
                     md: "740px",
                     lg: "992px",
                   },
-                  height: "96px",
-                  opacity: 1,
                   backgroundColor: "#fff",
-                  border: "1px solid rgba(231, 231, 231, 1)",
-                  borderRadius: "12px",
-
-                  "& .MuiInputLabel-shrink": {
-                    top: "-10px",
-                  },
-
                   "& .MuiInputLabel-root": {
                     color: "rgba(176, 176, 176, 1)",
                     fontWeight: 400,
-                  },
-
-                  "& fieldset": {
-                    border: "none",
-                  },
-
-                  "&:hover fieldset": {
-                    border: "none",
-                  },
-
-                  "&.Mui-focused fieldset": {
-                    border: "none",
                   },
                 }}
               />
@@ -317,24 +260,9 @@ export default function ContactSection() {
             <Button
               type="submit"
               variant="contained"
+              size="large"
               disabled={loading}
-              sx={{
-                width: { sm: "350px", md: "100%", lg: "992px", },
-                background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-                boxShadow: "0px 1px 2px 0px rgba(16, 24, 40, 0.05)",
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: "1rem",
-                borderRadius: "44px",
-                px: 5,
-                py: 1.4,
-                transition: "all 0.2s ease-in-out",
-                "&:hover": {
-                  backgroundColor: "#6D28D9",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0px 4px 12px rgba(124, 58, 237, 0.3)",
-                },
-              }}
+              sx={{ width: { sm: "350px", md: "100%", lg: "992px" } }}
             >
               {loading ? "Sending..." : "Send Message"}
             </Button>

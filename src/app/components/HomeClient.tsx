@@ -3,7 +3,6 @@
 import Header from "@/app/components/headers-navbar/Header";
 import HeroSection from "@/app/components/home/HeroSection";
 import { Box } from "@mui/material";
-import FeaturesSection from "@/app/components/home/Features";
 import PurposeSection from "@/app/components/home/Purpose";
 import PresentationStyleSection from "@/app/components/home/PresentationStyle";
 import WorkingSection from "@/app/components/home/Working";
@@ -13,6 +12,7 @@ import CommunitySection from "@/app/components/home/Community";
 import ContactSection from "@/app/components/home/ContactSection";
 import Footer from "@/app/components/home/Footer";
 import WhatWeOffer from "./home/WhatWeOffer";
+import Reveal from "@/app/components/shared/Reveal";
 
 export default function HomeClient() {
   return (
@@ -25,32 +25,32 @@ export default function HomeClient() {
         overflow: "hidden",
       }}
     >
-      {/* BACKGROUND LAYER */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          pointerEvents: "none",
-        }}
-      ></Box>
-
-      {/* FOREGROUND CONTENT */}
       <Header />
       <HeroSection />
-      <WhatWeOffer />
-      <PurposeSection />
-      <PresentationStyleSection />
-      <WorkingSection />
-      <TestimonialSection />
-      <PricingSection />
-      <CommunitySection />
-      <ContactSection />
+      <Reveal>
+        <WhatWeOffer />
+      </Reveal>
+      <Reveal delay={0.05}>
+        <PurposeSection />
+      </Reveal>
+      <Reveal delay={0.05}>
+        <PresentationStyleSection />
+      </Reveal>
+      <Reveal>
+        <WorkingSection />
+      </Reveal>
+      <Reveal>
+        <TestimonialSection />
+      </Reveal>
+      <Reveal>
+        <PricingSection />
+      </Reveal>
+      <Reveal>
+        <CommunitySection />
+      </Reveal>
+      <Reveal>
+        <ContactSection />
+      </Reveal>
       <Footer />
     </Box>
   );

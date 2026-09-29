@@ -115,7 +115,7 @@ const CropModal: React.FC<CropModalProps> = ({
           )}
         </Box>
         <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 2 }}>
-          <IconButton onClick={handleZoomOut} disabled={zoom <= 1} sx={{color:" rgba(100, 18, 255, 1)"}}>
+          <IconButton onClick={handleZoomOut} disabled={zoom <= 1} color="primary">
             <RemoveIcon />
           </IconButton>
           <Slider
@@ -124,24 +124,22 @@ const CropModal: React.FC<CropModalProps> = ({
             min={1}
             max={3}
             step={0.1}
-            sx={{ width: 150, color : "rgba(147, 114, 255, 1)" }}
+            sx={{ width: 150 }}
             aria-label="Zoom"
           />
-          <IconButton onClick={handleZoomIn} disabled={zoom >= 3} sx={{color:" rgba(100, 18, 255, 1)"}}>
+          <IconButton onClick={handleZoomIn} disabled={zoom >= 3} color="primary">
             <AddIcon />
           </IconButton>
         </Box>
-        <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between", gap : 2 }}>
-          <Button variant="outlined" onClick={onClose} sx={{ outlineColor: "rgba(74, 0, 224, 1)", height : 36, width : 100, fontSize: 15}}>
+        <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between", gap: 2 }}>
+          <Button variant="outlined" onClick={onClose} sx={{ height: 36, width: 100, fontSize: 15 }}>
             Cancel
           </Button>
           <Button
             variant="contained"
-            
             onClick={getCroppedImage}
             disabled={!croppedAreaPixels || !imageSrc}
-            sx={{ background : "rgba(74, 0, 224, 1)", height : 36, width : 100, fontSize: 15}}
-
+            sx={{ height: 36, width: 100, fontSize: 15 }}
           >
             Crop
           </Button>

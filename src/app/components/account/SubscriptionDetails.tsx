@@ -665,12 +665,7 @@ const SubscriptionDetails: React.FC = () => {
                   <Button
                     variant="outlined"
                     size="small"
-                    sx={{
-                      textTransform: "none",
-                      mt: 1,
-                      borderRadius: 1.2,
-                      border: "none",
-                    }}
+                    sx={{ mt: 1 }}
                     startIcon={<ReceiptLongRoundedIcon />}
                     href={latestInvoice?.hostedInvoiceUrl as string}
                     target="_blank"
@@ -704,7 +699,6 @@ const SubscriptionDetails: React.FC = () => {
                   color="error"
                   size="small"
                   onClick={() => setConfirmOpen(true)}
-                  sx={{ borderRadius: 1.2, textTransform: "none", px: 2 }}
                 >
                   Cancel Renewal
                 </Button>
@@ -819,7 +813,6 @@ const SubscriptionDetails: React.FC = () => {
             onClick={() => setConfirmOpen(false)}
             disabled={cancelLoading}
             size="small"
-            sx={{ borderRadius: 1.2, textTransform: "none" }}
           >
             Keep Subscription
           </Button>
@@ -829,7 +822,6 @@ const SubscriptionDetails: React.FC = () => {
             variant="contained"
             disabled={cancelLoading}
             size="small"
-            sx={{ borderRadius: 1.2, textTransform: "none" }}
           >
             {cancelLoading ? "Cancelling…" : "Yes, Cancel Renewal"}
           </Button>

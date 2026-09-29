@@ -84,6 +84,8 @@ const EditMenuCard: React.FC<EditMenuCardProps> = ({ open, anchorEl, onClose, on
         {menuItems.map((item, idx) => (
           <React.Fragment key={item.key}>
             <Box
+              role="button"
+              tabIndex={0}
               sx={{
                 display: 'flex',
                 alignItems: 'flex-start',
@@ -92,10 +94,17 @@ const EditMenuCard: React.FC<EditMenuCardProps> = ({ open, anchorEl, onClose, on
                 py: { xs: 0.5, sm: 2, md: 2.7 },   // less padding for mobile
                 cursor: 'pointer',
                 '&:hover': { bgcolor: '#F2F0FF' },
+                '&:focus-visible': { bgcolor: '#F2F0FF', outline: '2px solid #8E2DE2', outlineOffset: '-2px' },
                 borderRadius: idx === 0 ? { xs: '3px 3px 0 0', md: '5px 5px 0 0' } : idx === menuItems.length - 1 ? { xs: '0 0 3px 3px', md: '0 0 5px 5px' } : 0,
                 transition: 'background 0.2s',
               }}
               onClick={() => onAction(item.key)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onAction(item.key);
+                }
+              }}
             >
               <img src={item.icon} alt={item.title + ' icon'} width={18} height={18} style={{ flexShrink: 0 }} /> {/* smaller icon for mobile */}
               <Box>

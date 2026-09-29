@@ -3,7 +3,7 @@ import { createModernTemplate } from "../app/text-to-template/templates/modernTe
 import { createCorporateTemplate } from "../app/text-to-template/templates/corporateTemplate"
 import { createCreativeTemplate } from "../app/text-to-template/templates/creativeTemplate"
 import { createBoldTemplate } from "../app/text-to-template/templates/boldTemplate"
-import { createMinimalistTemplate } from "../app/text-to-template/templates/minimalTemplate"
+import { createMinimalTemplate } from "../app/text-to-template/templates/minimalTemplate"
 import { createVyntraTemplate } from "@/app/text-to-template/templates/vyntraTemplate"
 import {createCivoraTemplate} from "@/app/text-to-template/templates/civoraTemplate"
 import { createFluxeraTemplate } from "@/app/text-to-template/templates/fluxeraTemplate"
@@ -30,7 +30,7 @@ export const convertPresentation = (
         case "bold":
           return createBoldTemplate(backendSlide, index)
         case "minimal":
-          return createMinimalistTemplate(backendSlide, index)
+          return createMinimalTemplate(backendSlide, index)
         case "Vyntra":
           return createVyntraTemplate(backendSlide, index)
         case "civora":

@@ -58,7 +58,8 @@ export default function Viewer() {
                             </Typography>
                             <Button
                                 variant="contained"
-                                sx={{ borderRadius: "30px", minWidth: "200px" }}
+                                size="large"
+                                sx={{ minWidth: "200px" }}
                                 onClick={() => {
                                     const a = document.createElement("a");
                                     a.href = pdfUrl;

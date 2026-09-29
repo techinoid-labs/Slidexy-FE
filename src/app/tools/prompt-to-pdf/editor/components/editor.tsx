@@ -205,17 +205,16 @@ export default function Editor({ sessionId }: EditorProps) {
         </Typography>
 
         <Button
-          variant="outlined"
+          variant="contained"
+          disableElevation
           onClick={handleDownload}
           disabled={!pdfUrl || regenerating}
           startIcon={<DownloadIcon />}
           sx={{
-            borderRadius: "30px",
-            px: 3,
-            py: 1,
-            fontWeight: 500,
             bgcolor: "rgba(242, 240, 255, 1)",
-            "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
+            color: "rgba(74, 0, 224, 1)",
+            boxShadow: "none",
+            "&:hover": { bgcolor: "rgba(230, 226, 255, 1)", boxShadow: "none" },
           }}
         >
           Download PDF
@@ -274,17 +273,10 @@ export default function Editor({ sessionId }: EditorProps) {
           <Button
             fullWidth
             variant="contained"
+            size="large"
             onClick={handleModify}
             disabled={regenerating || !prompt.trim()}
             startIcon={<AutoAwesome />}
-            sx={{
-              bgcolor: "#6C2BD9",
-              height: 48,
-              borderRadius: "32px",
-              fontWeight: 600,
-              boxShadow: "0 4px 12px rgba(108,43,217,0.3)",
-              "&:hover": { bgcolor: "#5B21B6" },
-            }}
           >
             {regenerating ? "Applying Changes..." : "Apply Changes"}
           </Button>

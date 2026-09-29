@@ -3,6 +3,7 @@ import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
 import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
+import { getBulletIcon } from '@/utils/bulletIcons';
 
 interface InfographicBulletsHTMLProps {
     slide: any;
@@ -109,14 +110,14 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                     flex: 1,
                     alignContent: 'start'
                 }}>
-                    {bullets.map((bullet: any) => {
+                    {bullets.map((bullet: any, index: number) => {
                         const actualIndex = slide.elements.indexOf(bullet);
                         const { metric, description } = parseMetric(bullet.text || '');
                         const color = getAccentColor(bullets.indexOf(bullet));
 
                         return (
                             <div
-                                key={bullet.id}
+                                key={bullet.id ?? `bullet-${index}`}
                                 style={{
                                     background: `linear-gradient(135deg, ${color}15 0%, ${color}08 100%)`,
                                     border: `2px solid ${color}30`,
@@ -241,14 +242,16 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                     flex: 1,
                     alignContent: 'start'
                 }}>
-                    {bullets.map((bullet: any) => {
+                    {bullets.map((bullet: any, index: number) => {
                         const actualIndex = slide.elements.indexOf(bullet);
                         const { metric, description } = parseMetric(bullet.text || '');
-                        const color = getAccentColor(bullets.indexOf(bullet));
+                        const bulletIndex = bullets.indexOf(bullet);
+                        const color = getAccentColor(bulletIndex);
+                        const BulletIcon = getBulletIcon(bullet.text, bulletIndex);
 
                         return (
                             <div
-                                key={bullet.id}
+                                key={bullet.id ?? `bullet-${index}`}
                                 style={{
                                     backgroundColor: '#ffffff',
                                     border: '1px solid #e2e8f0',
@@ -270,11 +273,9 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontSize: '1.1rem',
-                                    fontWeight: 700,
                                     flexShrink: 0
                                 }}>
-                                    {bullets.indexOf(bullet) + 1}
+                                    <BulletIcon style={{ fontSize: '19px', color: '#fff' }} />
                                 </div>
 
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -370,14 +371,14 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                     flex: 1,
                     alignContent: 'start'
                 }}>
-                    {bullets.map((bullet: any) => {
+                    {bullets.map((bullet: any, index: number) => {
                         const actualIndex = slide.elements.indexOf(bullet);
                         const { metric, description } = parseMetric(bullet.text || '');
                         const color = getAccentColor(bullets.indexOf(bullet));
 
                         return (
                             <div
-                                key={bullet.id}
+                                key={bullet.id ?? `bullet-${index}`}
                                 style={{
                                     backgroundColor: '#ffffff',
                                     border: `2px solid ${color}20`,
@@ -508,7 +509,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
 
                         return (
                             <div
-                                key={bullet.id}
+                                key={bullet.id ?? `bullet-${index}`}
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -609,15 +610,16 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                 flex: 1,
                 alignContent: 'start'
             }}>
-                {bullets.map((bullet: any) => {
+                {bullets.map((bullet: any, index: number) => {
                     const actualIndex = slide.elements.indexOf(bullet);
                     const { metric, description } = parseMetric(bullet.text || '');
-                    const color = getAccentColor(bullets.indexOf(bullet));
-                    const icons = ['📊', '🎯', '💡', '🚀', '⚡', '✨'];
+                    const bulletIndex = bullets.indexOf(bullet);
+                    const color = getAccentColor(bulletIndex);
+                    const BulletIcon = getBulletIcon(bullet.text, bulletIndex);
 
                     return (
                         <div
-                            key={bullet.id}
+                            key={bullet.id ?? `bullet-${index}`}
                             style={{
                                 backgroundColor: '#ffffff',
                                 border: `2px solid ${color}15`,
@@ -638,10 +640,9 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                fontSize: '1.5rem',
                                 flexShrink: 0
                             }}>
-                                {icons[bullets.indexOf(bullet) % icons.length]}
+                                <BulletIcon style={{ fontSize: '22px', color }} />
                             </div>
 
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>

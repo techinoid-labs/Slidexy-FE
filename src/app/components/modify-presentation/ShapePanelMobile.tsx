@@ -250,14 +250,14 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                 width: window.innerWidth * 0.84,
                 height: window.innerHeight * 0.46,
                 bgcolor: "#fff",
-                border: "1px solid #E0E0E0",
+                border: "1px solid rgba(142, 45, 226, 0.12)",
                 zIndex: 10,
-                boxShadow: 3,
+                boxShadow: "0 -8px 32px rgba(15, 10, 25, 0.12)",
                 display: "flex",
                 flexDirection: "column",
                 padding: "24px",
-                borderTopLeftRadius: "16px",
-                borderTopRightRadius: "16px",
+                borderTopLeftRadius: "20px",
+                borderTopRightRadius: "20px",
                 overflowY: "auto",
             }}
         >
@@ -265,12 +265,18 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                 <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
                     Shape Settings
                 </Typography>
-                <IconButton onClick={onClose}>
+                <IconButton
+                    onClick={onClose}
+                    sx={{
+                        transition: "background-color 0.18s ease, transform 0.18s ease",
+                        "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.08)", transform: "scale(1.06)" },
+                    }}
+                >
                     <CloseIcon />
                 </IconButton>
             </Box>
 
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 2, borderColor: "rgba(142, 45, 226, 0.1)" }} />
 
             {/* Color Section */}
             <Box sx={{ mb: 2 }}>
@@ -279,7 +285,11 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                         Color
                     </Typography>
                     <IconButton
-                        sx={{ color: "#000000" }}
+                        sx={{
+                            color: "#8E2DE2",
+                            transition: "background-color 0.18s ease, transform 0.18s ease",
+                            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.08)", transform: "scale(1.08)" },
+                        }}
                         onClick={() => setIsColorPickerOpen(true)}
                     >
                         <AddIcon />
@@ -291,9 +301,11 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                     sx={{
                         mb: 2,
                         cursor: "pointer",
-                        border: "1px solid #E0E0E0",
-                        borderRadius: "8px",
+                        border: "1px solid rgba(142, 45, 226, 0.16)",
+                        borderRadius: "12px",
                         p: 1.5,
+                        transition: "border-color 0.18s ease, background-color 0.18s ease",
+                        "&:hover": { borderColor: "#8E2DE2", backgroundColor: "rgba(142, 45, 226, 0.04)" },
                     }}
                     onClick={() => setIsColorPickerOpen(true)}
                 >
@@ -302,12 +314,12 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                             width: 40,
                             height: 40,
                             backgroundColor: fill,
-                            borderRadius: "8px",
-                            border: "2px solid #E0E0E0",
+                            borderRadius: "10px",
+                            border: "2px solid rgba(142, 45, 226, 0.16)",
                             mb: 1
                         }}
                     />
-                    <Typography sx={{ fontSize: 12, color: "#666" }}>
+                    <Typography sx={{ fontSize: 12, color: "#5B5568" }}>
                         {fill.toUpperCase()}
                     </Typography>
                 </Box>
@@ -315,15 +327,15 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                 {/* Custom Color Picker */}
                 {isColorPickerOpen && (
                     <Box sx={{ mb: 2 }}>
-                        <Typography variant="caption" sx={{ color: "#7B4AE2", mb: 1, display: "block" }}>
+                        <Typography variant="caption" sx={{ color: "#8E2DE2", mb: 1, display: "block" }}>
                             Custom Color
                         </Typography>
                         <Box
                             sx={{
-                                border: "1px solid #E0E0E0",
-                                borderRadius: "8px",
+                                border: "1px solid rgba(142, 45, 226, 0.14)",
+                                borderRadius: "12px",
                                 p: 2,
-                                backgroundColor: "#f9f9f9",
+                                backgroundColor: "#faf7ff",
                             }}
                         >
                             {/* Centered ChromePicker */}
@@ -339,7 +351,7 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                 )}
             </Box>
 
-            <Divider sx={{ my: 2, mt: 3 }} />
+            <Divider sx={{ my: 2, mt: 3, borderColor: "rgba(142, 45, 226, 0.1)" }} />
 
             {/* Effects */}
             <Box sx={{ mb: 2 }}>
@@ -348,14 +360,14 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                         Effects
                     </Typography>
                 </Box>
-                <Typography sx={{ fontSize: 14, color: "#666", mb: 1 }}>
+                <Typography sx={{ fontSize: 14, color: "#5B5568", mb: 1 }}>
                     Opacity
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <Slider
                         value={Math.round(opacity * 100)}
                         onChange={(_, v) => updateShapeProperty("opacity", Number(v) / 100)}
-                        sx={{ color: "#7B4AE2", flex: 1 }}
+                        sx={{ color: "#8E2DE2", flex: 1 }}
                         min={0}
                         max={100}
                     />
@@ -366,8 +378,8 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                             width: 64,
                             fontWeight: 600,
                             fontSize: 16,
-                            bgcolor: "#F8F8FA",
-                            borderRadius: 2,
+                            bgcolor: "rgba(142, 45, 226, 0.06)",
+                            borderRadius: "10px",
                             px: 1.5,
                             py: 0.5,
                             textAlign: "center",
@@ -376,7 +388,7 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                 </Box>
             </Box>
 
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 2, borderColor: "rgba(142, 45, 226, 0.1)" }} />
 
             {/* Actions */}
             <Box sx={{ px: 3, mb: 2 }}>
@@ -387,50 +399,32 @@ const ShapeSettingsPanelMobile: React.FC<ShapeSettingsPanelMobileProps> = ({
                 </Box>
 
                 <Box sx={{ display: "flex", gap: 2 }}>
-                    <Box
+                    <Button
+                        variant="outlined"
+                        size="small"
                         onClick={handleDuplicateShape}
                         sx={{
+                            bgcolor: "rgba(142, 45, 226, 0.04)",
+                            borderColor: "rgba(142, 45, 226, 0.2)",
+                            color: "#4A00E0",
                             flex: 1,
-                            borderRadius: 2,
-                            fontWeight: 600,
-                            fontSize: 12,
-                            py: 1.5,
-                            textAlign: "center",
-                            bgcolor: "#F8F8FA",
-                            border: "1px solid #E0E0E0",
-                            color: "#222",
-                            cursor: "pointer",
                             "&:hover": {
-                                bgcolor: "#F3EDFF",
-                                borderColor: "#7B4AE2",
-                                color: "#7B4AE2",
+                                bgcolor: "rgba(142, 45, 226, 0.08)",
+                                borderColor: "#8E2DE2",
                             },
                         }}
                     >
                         Duplicate
-                    </Box>
-                    <Box
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        color="error"
                         onClick={handleDeleteShape}
-                        sx={{
-                            flex: 1,
-                            borderRadius: 2,
-                            fontWeight: 600,
-                            fontSize: 12,
-                            py: 1.5,
-                            textAlign: "center",
-                            bgcolor: "#F8F8FA",
-                            border: "1px solid #E0E0E0",
-                            color: "#222",
-                            cursor: "pointer",
-                            "&:hover": {
-                                bgcolor: "#FFF3F3",
-                                borderColor: "#C00",
-                                color: "#C00",
-                            },
-                        }}
+                        sx={{ flex: 1 }}
                     >
                         Delete
-                    </Box>
+                    </Button>
                 </Box>
             </Box>
         </Box>

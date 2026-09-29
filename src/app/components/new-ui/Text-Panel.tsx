@@ -635,6 +635,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             width: 32,
             height: 30,
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
         >
           <img
@@ -710,6 +713,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             width: 32,
             height: 30,
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
         >
           <img
@@ -745,13 +751,16 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
         <IconButton
           onClick={toggleBold}
           sx={{
-            color: isBold ? "#000" : "#555",
-            backgroundColor: isBold ? "#E0E0E0" : "#F8F8FA",
+            color: isBold ? "#4A00E0" : "#555",
+            backgroundColor: isBold ? "rgba(142, 45, 226, 0.12)" : "#F8F8FA",
             padding: "2px",
             width: 32,
             height: 30,
             fontWeight: "1px",
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
           title={isBold ? "Remove Bold" : "Bold"}
         >
@@ -775,13 +784,16 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
         <IconButton
           onClick={toggleItalic}
           sx={{
-            color: isItalic ? "#000" : "#555",
-            backgroundColor: isItalic ? "#E0E0E0" : "#F8F8FA",
+            color: isItalic ? "#4A00E0" : "#555",
+            backgroundColor: isItalic ? "rgba(142, 45, 226, 0.12)" : "#F8F8FA",
             padding: "2px",
             width: 32,
             height: 30,
             fontWeight: "1px",
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
           title={isItalic ? "Remove Italic" : "Italic"}
         >
@@ -811,6 +823,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             width: 32,
             height: 30,
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
           title={`Align ${currentAlign.charAt(0).toUpperCase() + currentAlign.slice(1)
             }`}
@@ -849,6 +864,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             width: 32,
             height: 30,
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
           title={isBulleted ? "Remove Bullet Points" : "Add Bullet Points"}
         >
@@ -883,6 +901,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             width: 32,
             height: 30,
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
         >
           <img
@@ -925,6 +946,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             width: 32,
             height: 30,
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
         >
           <img
@@ -967,6 +991,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             width: 32,
             height: 30,
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
         >
           <img
@@ -1001,6 +1028,9 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             width: 32,
             height: 30,
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(239, 68, 68, 0.12)" },
           }}
         >
           <img
@@ -1032,12 +1062,15 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             }
           }}
           sx={{
-            color: "#C00",
+            color: "#222",
             backgroundColor: "#F8F8FA",
             padding: "2px",
             width: 32,
             height: 30,
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
         >
           <img
@@ -1070,12 +1103,15 @@ const TextSettingsPanelMobile: React.FC<TextSettingsPanelProps> = ({
             }
           }}
           sx={{
-            color: "#C00",
+            color: "#222",
             backgroundColor: "#F8F8FA",
             padding: "2px",
             width: 32,
             height: 30,
             mb: 0.2,
+            borderRadius: "8px",
+            transition: "background-color 0.15s ease, color 0.15s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.12)", color: "#4A00E0" },
           }}
         >
           <img

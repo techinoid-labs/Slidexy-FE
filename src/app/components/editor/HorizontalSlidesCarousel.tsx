@@ -13,6 +13,8 @@ interface HorizontalSlidesCarouselProps {
   thumbnailHeight?: number;
   onAddSlide?: () => void;
   onDeleteSlide?: (index: number) => void;
+  onDuplicateSlide?: (index: number) => void;
+  onReorderSlide?: (fromIndex: number, toIndex: number) => void;
 }
 
 const HorizontalSlidesCarousel: React.FC<HorizontalSlidesCarouselProps> = ({
@@ -25,6 +27,8 @@ const HorizontalSlidesCarousel: React.FC<HorizontalSlidesCarouselProps> = ({
   thumbnailHeight = 80,
   onAddSlide,
   onDeleteSlide,
+  onDuplicateSlide,
+  onReorderSlide,
 }) => {
   // Update scroll buttons
   const updateScrollButtons = () => {
@@ -78,6 +82,8 @@ const HorizontalSlidesCarousel: React.FC<HorizontalSlidesCarouselProps> = ({
         onSelect={onSelectSlide}
         onAddSlide={onAddSlide || (() => {})}
         onDeleteSlide={onDeleteSlide || (() => {})}
+        onDuplicateSlide={onDuplicateSlide || (() => {})}
+        onReorderSlide={onReorderSlide || (() => {})}
       />
     </Box>
   );

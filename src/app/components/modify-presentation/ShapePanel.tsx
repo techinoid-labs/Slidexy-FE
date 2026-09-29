@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useTheme, useMediaQuery, Box, Divider, Typography, Slider, InputBase, Button } from "@mui/material";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
+import { PANEL } from "./panelTheme";
 
 interface ShapeSettingsPanelProps {
   sidebarHeight?: string | number;
@@ -275,50 +276,50 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
   };
 
   return (
-    <Box className="w-[300px] min-w-[250px] md:min-w-[250px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
-      <Box sx={{ display: "flex", alignItems: "center", px: 2, pt: 2, pb: 1 }}>
-        <Box
-          sx={{
-            bgcolor: "#F5F5F5",
-            color: "#222",
-            fontWeight: 600,
-            borderRadius: 2,
-            px: 2.5,
-            py: 1,
-            fontSize: 15,
-            mr: 2,
-          }}
-        >
+    <Box className="w-[300px] min-w-[250px] md:min-w-[250px] flex flex-col overflow-y-auto" sx={{ bgcolor: PANEL.surface, borderLeft: `1px solid ${PANEL.border}` }}>
+      <Box sx={{ display: "flex", alignItems: "center", px: 3, pt: 2.5, pb: 1.5 }}>
+        <Typography sx={{ fontWeight: 600, fontSize: 16, color: PANEL.text }}>
           Shape Settings
-        </Box>
+        </Typography>
       </Box>
 
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
 
       <Box sx={{ px: 3, mb: 2 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1 }}>
+        <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1, color: PANEL.text }}>
           Color
         </Typography>
-        <Box className="w-12 h-12 rounded-full">
-          <input
-            type="color"
-            value={resolvedColor}
-            className="w-12 h-12 rounded-full cursor-pointer"
-            onChange={(e) => {
-              const newColor = e.target.value;
-              updateShapeProperty("fill", newColor);
-              updateShapeProperty("stroke", newColor);
-              setShapeFillAndDisableTheme(newColor);
-            }}
-          />
-        </Box>
+        <Box
+          component="input"
+          type="color"
+          value={resolvedColor}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const newColor = e.target.value;
+            updateShapeProperty("fill", newColor);
+            updateShapeProperty("stroke", newColor);
+            setShapeFillAndDisableTheme(newColor);
+          }}
+          sx={{
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            cursor: "pointer",
+            border: `3px solid ${PANEL.surface}`,
+            boxShadow: "0 0 0 1.5px rgba(142, 45, 226, 0.25), 0 4px 12px rgba(142, 45, 226, 0.15)",
+            transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            "&:hover": {
+              transform: "scale(1.08)",
+              boxShadow: `0 0 0 1.5px ${PANEL.accent}, 0 6px 16px rgba(142, 45, 226, 0.25)`,
+            },
+          }}
+        />
       </Box>
 
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
 
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1, color: PANEL.text }}>
             Opacity
           </Typography>
         </Box>
@@ -326,7 +327,7 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
           <Slider
             value={Math.round(opacity * 100)}
             onChange={(_, v) => updateShapeProperty("opacity", Number(v) / 100)}
-            sx={{ color: "#7B4AE2", flex: 1 }}
+            sx={{ color: PANEL.accent, flex: 1 }}
           />
           <InputBase
             value={`${Math.round(opacity * 100)}%`}
@@ -335,7 +336,8 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
               width: 64,
               fontWeight: 600,
               fontSize: 16,
-              bgcolor: "#F8F8FA",
+              color: PANEL.text,
+              bgcolor: PANEL.surfaceSunken,
               borderRadius: 2,
               px: 1.5,
               py: 0.5,
@@ -345,55 +347,28 @@ const ShapeSettingsPanel: React.FC<ShapeSettingsPanelProps> = ({
         </Box>
       </Box>
 
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1, color: PANEL.text }}>
             Actions
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
+            size="small"
             onClick={handleDuplicateShape}
-            sx={{
-              borderRadius: 2,
-              fontWeight: 600,
-              fontSize: 12,
-              bgcolor: "#F8F8FA",
-              borderColor: "#E0E0E0",
-              color: "#222",
-              textTransform: "none",
-              whiteSpace: "nowrap",
-              flex: 1,
-              "&:hover": {
-                bgcolor: "#F3EDFF",
-                borderColor: "#7B4AE2",
-                color: "#7B4AE2",
-              },
-            }}
+            sx={{ flex: 1 }}
           >
             Duplicate
           </Button>
           <Button
             variant="outlined"
+            size="small"
+            color="error"
             onClick={handleDeleteShape}
-            sx={{
-              borderRadius: 2,
-              fontWeight: 600,
-              fontSize: 12,
-              bgcolor: "#F8F8FA",
-              borderColor: "#E0E0E0",
-              color: "#222",
-              textTransform: "none",
-              whiteSpace: "nowrap",
-              flex: 1,
-              "&:hover": {
-                bgcolor: "#FFF3F3",
-                borderColor: "#C00",
-                color: "#C00",
-              },
-            }}
+            sx={{ flex: 1 }}
           >
             Delete
           </Button>

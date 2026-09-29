@@ -184,8 +184,22 @@ const TemplateNavBar: React.FC<{
               ) : (
                 <Typography
                   variant="subtitle1"
+                  role="button"
+                  tabIndex={0}
                   onClick={handleEdit}
-                  sx={{ cursor: "pointer" }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleEdit();
+                    }
+                  }}
+                  sx={{
+                    cursor: "pointer",
+                    "&:focus-visible": {
+                      outline: "2px solid #8E2DE2",
+                      outlineOffset: "2px",
+                    },
+                  }}
                 >
                   {templateFileName || "Untitled"}
                 </Typography>
@@ -200,46 +214,28 @@ const TemplateNavBar: React.FC<{
             {!isMobile && (
               <>
                 <Button
+                  variant="contained"
                   onClick={() => handleExportClick("pptx")}
                   disabled={slideTemplates.length <= 0 || isExportingPPTX}
-                  sx={{
-                    bgcolor:
-                      slideTemplates.length > 0 && !isExportingPPTX
-                        ? "#4A00E0"
-                        : "#ccc",
-                    color: "#fff",
-                    borderRadius: "999px",
-                    px: 2,
-                    mr: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                  }}
+                  startIcon={
+                    isExportingPPTX ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : undefined
+                  }
+                  sx={{ mr: 1 }}
                 >
-                  {isExportingPPTX && (
-                    <CircularProgress size={16} color="inherit" />
-                  )}
                   Export as PPTX
                 </Button>
                 <Button
+                  variant="contained"
                   onClick={() => handleExportClick("pdf")}
                   disabled={slideTemplates.length <= 0 || isExportingPDF}
-                  sx={{
-                    bgcolor:
-                      slideTemplates.length > 0 && !isExportingPDF
-                        ? "#4A00E0"
-                        : "#ccc",
-                    color: "#fff",
-                    borderRadius: "999px",
-                    px: 2,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                  }}
+                  startIcon={
+                    isExportingPDF ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : undefined
+                  }
                 >
-                  {isExportingPDF && (
-                    <CircularProgress size={16} color="inherit" />
-                  )}
                   Export as PDF
                 </Button>
               </>
@@ -297,9 +293,10 @@ const TemplateNavBar: React.FC<{
         >
           <Typography variant="body2">Export Error: {exportError}</Typography>
           <Button
+            variant="text"
             size="small"
             onClick={() => setExportError(null)}
-            sx={{ color: "white", mt: 1 }}
+            sx={{ color: "white", mt: 1, "&:hover": { backgroundColor: "rgba(255,255,255,0.15)" } }}
           >
             Dismiss
           </Button>

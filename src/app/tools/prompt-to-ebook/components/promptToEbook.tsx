@@ -8,28 +8,37 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   IconButton,
   Chip,
   Stack,
   Alert,
   AlertTitle,
-  Backdrop,
 } from "@mui/material";
+import GenerationOverlay from "@/app/components/shared/GenerationOverlay";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useEbook } from "@/app/context/EbookContext";
-
-const loadingMessages = [
-  "Analyzing your prompt",
-  "Generating outlines",
-  "Designing visual layout",
-  "Enhancing Design",
-  "Finalizing your Book",
-];
+import AnimatedOrb from "@/app/components/shared/AnimatedOrb";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 
 const API_URL = process.env.NEXT_PUBLIC_EBOOK_API_BASE_URL;
+
+const controlSx = {
+  height: 44,
+  borderRadius: "12px",
+  bgcolor: "rgba(248, 246, 255, 1)",
+  border: "1px solid rgba(142, 45, 226, 0.1)",
+  "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+  "& .MuiSelect-select": { py: "10px", fontSize: "0.9rem" },
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "&:hover": { borderColor: "rgba(142, 45, 226, 0.3)" },
+  "&.Mui-focused, &:focus-within": {
+    borderColor: "#8E2DE2",
+    boxShadow: "0 0 0 3px rgba(142, 45, 226, 0.1)",
+  },
+};
 
 export default function PromptToEbook() {
   const [topic, setTopic] = useState("");
@@ -38,12 +47,9 @@ export default function PromptToEbook() {
   const [progress, setProgress] = useState(0);
   const [currentMessage, setCurrentMessage] = useState("");
   const [error, setError] = useState("");
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const router = useRouter();
 
   const { setPdfBlob } = useEbook();
-  const [jobId, setJobId] = useState<string | null>(null);
-
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const quickPrompts = [
@@ -54,10 +60,6 @@ export default function PromptToEbook() {
     "Cybersecurity",
   ];
 
-
-  /** ---------------------------
-   *  Step 1: Generate eBook
-   *  --------------------------*/
   const handleSubmit = async () => {
     if (!topic.trim()) {
       setError("Please enter a topic for the eBook.");
@@ -65,7 +67,6 @@ export default function PromptToEbook() {
     }
 
     setError("");
-    // setPdfUrl(null);
     setLoading(true);
     setProgress(0);
     setCurrentMessage("Starting eBook generation...");
@@ -116,12 +117,8 @@ export default function PromptToEbook() {
 
       if (!data.job_id) throw new Error("Failed to start job.");
 
-      setJobId(data.job_id);
-      setCurrentMessage("AI is generating your eBook...");
+      setCurrentMessage("Writing your eBook...");
 
-      /** ---------------------------
-       * Step 2: Poll job status
-       * --------------------------*/
       intervalRef.current = setInterval(async () => {
         const jobRes = await fetch(`${API_URL}/jobs/${data.job_id}`);
         const job = await jobRes.json();
@@ -150,9 +147,6 @@ export default function PromptToEbook() {
     }
   };
 
-  /** ---------------------------
-   * Step 3: Download PDF + Preview
-   * --------------------------*/
   const downloadPdf = async (job_id: string) => {
     try {
       const res = await fetch(`${API_URL}/ebook/download/${job_id}`);
@@ -161,11 +155,7 @@ export default function PromptToEbook() {
         throw new Error("Server returned an error.");
       }
 
-      // Fetch PDF as binary (Blob)
       const blob = await res.blob();
-
-      // Preview URL for iframe
-      const url = URL.createObjectURL(blob);
       setPdfBlob(blob);
       router.push(`/tools/prompt-to-ebook/viewer?title=${topic}`);
     } catch (err) {
@@ -175,77 +165,89 @@ export default function PromptToEbook() {
   };
 
   return (
-    <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
-      {/* Background */}
-      <Box
-        sx={{
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          overflow: "hidden",
-          zIndex: -1,
-        }}
-      >
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          style={{ width: "100%", height: "100%", objectFit: "cover", opacity: "0.1" }}
-        >
-          <source src="/services-background.mp4" type="video/mp4" />
-        </video>
-      </Box>
+    <Box
+      sx={{
+        position: "relative",
+        width: "100%",
+        minHeight: "60vh",
+        overflow: "hidden",
+        background:
+          "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(142,45,226,0.1) 0%, transparent 55%)",
+      }}
+    >
+      <AnimatedOrb size={300} top="-5%" left="-5%" color="rgba(142, 45, 226, 0.15)" blur={60} />
+      <AnimatedOrb size={260} bottom="10%" right="-5%" color="rgba(74, 0, 224, 0.12)" blur={50} delay={1} />
 
-      {/* Main Content */}
       <Box
+        component={motion.div}
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
         sx={{
           width: "100%",
-          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          py: 10,
-          px: 6,
+          py: { xs: 3, md: 4 },
+          px: { xs: 2, md: 6 },
+          position: "relative",
+          zIndex: 1,
         }}
       >
-
-
-        {/* Input Box */}
         <Box
+          component={motion.div}
+          variants={fadeUp}
           sx={{
+            position: "relative",
             width: "100%",
-            maxWidth: "926px",
-            bgcolor: "rgba(251, 250, 255, 0.5)",
-            borderRadius: 1,
-            boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
-            border: "1px solid rgba(232, 228, 255, 1)",
-            p: 4,
+            maxWidth: 920,
+            bgcolor: "rgba(255,255,255,0.92)",
+            backdropFilter: "blur(12px)",
+            borderRadius: "24px",
+            border: "1px solid rgba(142, 45, 226, 0.14)",
+            boxShadow:
+              "0 28px 60px -20px rgba(142, 45, 226, 0.28), 0 8px 24px rgba(15, 10, 25, 0.04)",
+            p: { xs: 3, md: 4 },
             mb: 4,
+            overflow: "hidden",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 4,
+              background: "linear-gradient(90deg, #8E2DE2, #C084FC, #4A00E0)",
+              backgroundSize: "200% 100%",
+              animation: "sx-gradient-shift 4s ease infinite",
+            },
           }}
         >
-          {/* Topic */}
           <TextField
             fullWidth
             multiline
             minRows={4}
-            placeholder="Enter eBook topic..."
+            placeholder="Enter your eBook topic or a chapter outline…"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             sx={{
-              mt: -3,
-              mb: 1.5,
-              "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-              borderBottom: "1px solid #f2f0ff",
-              "& .MuiInputBase-input": { fontSize: "15px", lineHeight: 1.6 },
-              minHeight: 224,
+              mb: 2,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "14px",
+                bgcolor: "rgba(248, 246, 255, 0.5)",
+              },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(142, 45, 226, 0.12)",
+              },
+              "& .MuiInputBase-input": {
+                fontSize: "1rem",
+                lineHeight: 1.65,
+              },
             }}
           />
 
-          {/* Genre + Generate Row */}
           <Box
             sx={{
-              mt: 2,
               display: "flex",
               flexDirection: { xs: "column", sm: "row" },
               alignItems: "center",
@@ -253,65 +255,33 @@ export default function PromptToEbook() {
               gap: 2,
             }}
           >
-
-            {/* Genre Selector */}
-            <FormControl
-              sx={{
-                display: "flex",
-                width: { xs: "100%", sm: "130px", md: "160px" },
-                height: "44px",
-                borderRadius: "4px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                backgroundColor: " rgba(255, 255, 255, 1)",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: "none",
-                },
-                "& .MuiSelect-select": {
-                  py: "8px",
-                },
-              }}
-            >
-              {/* <InputLabel>Genre</InputLabel> */}
+            <FormControl variant="outlined" sx={{ ...controlSx, minWidth: 160 }}>
               <Select
                 value={genre}
-                label="Genre"
                 onChange={(e) => setGenre(e.target.value)}
                 disabled={loading}
-
-                sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      mt: 1.8,
-                      borderRadius: "10px",
-                    },
-                  },
-                }}
+                sx={{ height: 44, color: "#5B5568" }}
               >
-                <MenuItem sx={{ fontSize: "12px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Select Genre" hidden>
+                <MenuItem value="Select Genre" hidden>
                   Select Genre
                 </MenuItem>
-                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Technology">Technology</MenuItem>
-                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Business">Business</MenuItem>
-                <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61 , 1)", width: "147px" }} value="Education">Education</MenuItem>
+                <MenuItem value="Technology">Technology</MenuItem>
+                <MenuItem value="Business">Business</MenuItem>
+                <MenuItem value="Education">Education</MenuItem>
               </Select>
             </FormControl>
 
-            {/* Generate Button */}
             <Button
               variant="contained"
+              size="large"
               disabled={loading}
               onClick={handleSubmit}
-              sx={{
-                backgroundColor: "#6C2BD9",
-                color: "#fff",
-                borderRadius: "32px",
-                px: 4,
-                py: 1.2,
-                whiteSpace: "nowrap",
-                height: "44px",
-              }}
               startIcon={<AutoAwesome />}
+              sx={{
+                minWidth: { xs: "100%", sm: 150 },
+                py: 1.35,
+                whiteSpace: "nowrap",
+              }}
             >
               Generate
             </Button>
@@ -319,11 +289,11 @@ export default function PromptToEbook() {
 
           {error && (
             <Alert
-              sx={{ mt: 2 }}
+              sx={{ mt: 2, borderRadius: "12px" }}
               severity="error"
               action={
                 <IconButton size="small" onClick={() => setError("")}>
-                  <CloseIcon />
+                  <CloseIcon fontSize="small" />
                 </IconButton>
               }
             >
@@ -333,74 +303,36 @@ export default function PromptToEbook() {
           )}
         </Box>
 
-        {/* Loading Box */}
-        {/* {loading && (
-          <Box
-            sx={{
-              borderRadius: 2,
-              bgcolor: "white",
-              boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
-              border: "1px solid #f0f0f0",
-              width: "100%",
-              maxWidth: 800,
-            }}
-          >
-            <Typography variant="h6" color="#8E2DE2">
-              {currentMessage}
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1 }}>
-              Progress: {progress}%
-            </Typography>
-          </Box>
-        )} */}
-        {loading && (
-          <Backdrop
-            open={loading}
-            sx={{
-              zIndex: (theme) => theme.zIndex.drawer + 1,
-              backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <img
-                src="/Loader.gif"
-                alt="Generating..."
-                style={{ width: 470, height: 160 }}
-              />
+        <GenerationOverlay
+          open={loading}
+          progress={progress}
+          message={currentMessage || "Writing your eBook"}
+        />
 
-              <Typography
-                sx={{
-                  fontFamily: "Raleway",
-                  fontSize: "24px",
-                  fontWeight: 700,
-                  color: "#fff",
-                  mt: 1,
-                }}
-              >
-                {currentMessage || 'Thinking'}.....
-              </Typography>
-            </Box>
-          </Backdrop>
-        )}
-
-        {/* Quick Prompts */}
-        <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
-          <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
+        <Box component={motion.div} variants={fadeUp} sx={{ textAlign: "center", maxWidth: 800, mt: 1 }}>
+          <Typography sx={{ color: "text.secondary", fontSize: "0.9rem", fontWeight: 500, mb: 2 }}>
+            Not sure where to start? Try one of these
+          </Typography>
+          <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={1.5}>
             {quickPrompts.map((text, i) => (
               <Chip
                 key={i}
                 label={text}
                 onClick={() => setTopic(text)}
                 sx={{
-                  border: "1px solid rgba(246, 246, 246, 1)",
-                  bgcolor: "rgba(248, 248, 248, 0.14)",
-                  "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
+                  border: "1px solid rgba(142, 45, 226, 0.14)",
+                  bgcolor: "rgba(255,255,255,0.8)",
+                  color: "#0F0A19",
+                  fontWeight: 450,
+                  borderRadius: "999px",
+                  cursor: "pointer",
+                  transition: "transform 0.2s ease, background 0.2s ease, border-color 0.2s ease",
+                  "&:hover": {
+                    bgcolor: "rgba(242, 240, 255, 1)",
+                    borderColor: "rgba(142, 45, 226, 0.35)",
+                    transform: "translateY(-2px)",
+                  },
+                  px: 1,
                 }}
               />
             ))}

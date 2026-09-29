@@ -89,17 +89,8 @@ const OpacityPanel: React.FC<OpacityPanelProps> = ({ opacity: initialOpacity, on
       <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
         <Button
           variant="contained"
-          sx={{
-            background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-            color: "#fff",
-            px: 4,
-            py: 1,
-            "&:hover": { backgroundColor: "#5A3ED9" },
-            width: 290,
-            height: 35,
-            fontSize: 10,
-            fontWeight: 500,
-          }}
+          size="small"
+          sx={{ width: 290 }}
           onClick={handleApply}
         >
           Apply

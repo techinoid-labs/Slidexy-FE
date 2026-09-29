@@ -12,11 +12,12 @@ import BenefitsList from '@/app/components/seo/BenefitsList'
 import ContextualFAQ from '@/app/components/seo/ContextualFAQ'
 import InternalLinks from '@/app/components/seo/InternalLinks'
 import CTASection from '@/app/components/seo/CTASection'
+import Reveal from '@/app/components/shared/Reveal'
 
 export const metadata: Metadata = {
-  title: 'Text to Infographics — AI Infographic Generator',
+  title: 'Text to Infographics — Turn Data into Visuals',
   description:
-    'Transform text into stunning infographics with SlideXY AI. Generate data-driven visual graphics for reports, social media, and presentations automatically.',
+    'Paste your data or key points and Slidexy turns them into a clean, shareable infographic.',
   alternates: {
     canonical: 'https://slidexy.ai/tools/text-to-infographics',
   },
@@ -24,27 +25,27 @@ export const metadata: Metadata = {
 
 export default function Page() {
   const personas = [
-    { title: "Data Analysts", description: "Convert complex research findings into easy-to-digest visual summaries for stakeholders.", icon: "business" as const },
-    { title: "PR Professionals", description: "Turn press release statistics into high-impact graphics for media distribution.", icon: "group" as const },
-    { title: "Content Creators", description: "Generate viral-ready infographics for LinkedIn and Instagram from blog post snippets.", icon: "person" as const },
+    { title: "Data analysts", description: "Turn a dense research finding into something a stakeholder can skim in seconds.", icon: "business" as const },
+    { title: "PR teams", description: "Turn press release numbers into a graphic that's actually shareable.", icon: "group" as const },
+    { title: "Content creators", description: "Turn a blog post's key stats into something built for LinkedIn or Instagram.", icon: "person" as const },
   ];
 
   const steps = [
-    { number: 1, title: "Paste Your Data", description: "Provide raw text, bullet points, or specific statistics you want to visualize." },
-    { number: 2, title: "AI Identifies Patterns", description: "SlideXY extracts key metrics and chooses the best visual representation (charts, icons, etc.)." },
-    { number: 3, title: "Download Graphic", description: "Export your high-resolution infographic in PNG or PDF format instantly." },
+    { number: 1, title: "Paste your data", description: "Raw text, bullet points, or the specific stats you want visualized." },
+    { number: 2, title: "Slidexy finds the pattern", description: "It picks out the key metrics and the visual form that fits them best." },
+    { number: 3, title: "Download", description: "Export as a high-resolution PNG or PDF, ready to share." },
   ];
 
   const benefits = [
-    { title: "Zero Design Knowledge", description: "You don't need to be a graphic designer to create agency-level infographics.", icon: "design" as const },
-    { title: "Automated Visualization", description: "Our AI understands which chart types and icons best represent your specific data points.", icon: "ai" as const },
-    { title: "Fast Turnaround", description: "Go from raw text to a finished infographic in under 60 seconds.", icon: "speed" as const },
+    { title: "No design skills needed", description: "You don't need to know a design tool to get something that looks designed.", icon: "design" as const },
+    { title: "Picks the right visual", description: "Charts and icons are chosen based on what your data actually shows.", icon: "ai" as const },
+    { title: "Fast", description: "From raw text to a finished graphic in under a minute.", icon: "speed" as const },
   ];
 
   const faqs = [
-    { question: "What data formats are supported?", answer: "You can paste plain text, CSV-style lists, or detailed paragraphs. Our AI excels at extracting numeric data from natural language." },
-    { question: "Can I customize the colors?", answer: "Yes, SlideXY Pro users can apply their brand's specific color palette to every generated graphic." },
-    { question: "What are the export resolutions?", answer: "We provide high-resolution exports suitable for social media sharing, blog embedding, and high-quality printing." },
+    { question: "What data formats are supported?", answer: "Plain text, CSV-style lists, or full paragraphs — numeric data gets pulled out from natural language automatically." },
+    { question: "Can I customize the colors?", answer: "Yes, Pro users can apply their brand's color palette to every generated graphic." },
+    { question: "What are the export resolutions?", answer: "High-resolution exports suitable for social sharing, blog embedding, or printing." },
   ];
 
   const relatedLinks = [
@@ -61,64 +62,71 @@ export default function Page() {
         component="section"
         sx={{
           textAlign: 'center',
-          pt: { xs: 6, md: 10 },
-          pb: { xs: 4, md: 6 },
+          pt: { xs: 5, md: 7 },
+          pb: { xs: 2, md: 2 },
           px: { xs: 3, md: 6 },
-          maxWidth: 800,
+          maxWidth: 720,
           mx: 'auto',
         }}
       >
         <Typography
           component="h1"
+          className="sx-display"
           sx={{
+            fontFamily: "var(--font-display)",
             fontWeight: 700,
-            fontSize: { xs: '2.25rem', md: '3.5rem' },
-            color: '#111827',
+            fontSize: { xs: '1.85rem', md: '2.75rem' },
+            letterSpacing: "-0.03em",
+            color: '#0F0A19',
             mb: 2,
           }}
         >
-          Text to Infographics
+          Turn data into something worth sharing
         </Typography>
         <Typography
           sx={{
             color: 'text.secondary',
-            fontSize: { xs: '1.05rem', md: '1.2rem' },
+            fontSize: { xs: '1.05rem', md: '1.15rem' },
             lineHeight: 1.7,
-            mb: 4,
+            mb: 2,
           }}
         >
-          Paste your data, statistics, or key points and SlideXY AI turns
-          them into visually striking infographics. The perfect tool for data 
-          visualization in reports, social media, and presentations.
+          Paste your stats or key points. Slidexy turns them into a clean,
+          designed infographic — ready for a report or a social post.
         </Typography>
       </Box>
 
-      {/* Main Tool Component */}
       <TextToInfographics />
 
-      <ProblemSolution 
-        problem="Data-heavy text is boring and hard to process. Converting statistics into professional infographics usually requires expensive design software and hours of manual alignment and icon hunting."
-        solution="SlideXY's Text-to-Infographics tool automates the visual storytelling process. Our AI identifies core data points and maps them to designer-grade layouts, ensuring your insights are both beautiful and easy to understand."
-      />
+      <Reveal>
+        <ProblemSolution
+          problem="Data-heavy text is hard to skim, and turning stats into a real infographic usually means design software and hours of manual alignment."
+          solution="Text-to-Infographics finds the key data points and maps them to a layout that's actually easy to read — no design tool required."
+        />
+      </Reveal>
 
-      <WhoItsFor personas={personas} />
+      <Reveal><WhoItsFor personas={personas} /></Reveal>
 
-      <WorkflowSteps steps={steps} />
+      <Reveal><WorkflowSteps steps={steps} /></Reveal>
 
-      <BenefitsList benefits={benefits} />
+      <Reveal><BenefitsList benefits={benefits} /></Reveal>
 
-      <ContextualFAQ 
-        title="Infographic Generation FAQ" 
-        subtitle="Learn how to visualize your data effortlessly with AI."
-        faqs={faqs} 
-      />
+      <Reveal>
+        <ContextualFAQ
+          title="Infographic Generation FAQ"
+          subtitle="How to turn raw data into something visual."
+          faqs={faqs}
+        />
+      </Reveal>
 
-      <InternalLinks title="Explore More Tools" links={relatedLinks} />
+      <Reveal><InternalLinks title="Explore More Tools" links={relatedLinks} /></Reveal>
 
-      <CTASection 
-        title="Visualize your data today"
-        subtitle="Turn boring reports into stunning visuals in seconds."
-      />
+      <Reveal>
+        <CTASection
+          title="Visualize your data"
+          subtitle="Turn a paragraph of stats into a graphic in under a minute."
+        />
+      </Reveal>
 
 
       <Footer />

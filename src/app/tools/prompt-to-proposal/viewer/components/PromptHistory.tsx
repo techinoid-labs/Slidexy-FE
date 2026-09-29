@@ -44,7 +44,7 @@ export default function PromptHistory({
     }}>
       <ListItemButton onClick={onToggleExpand} sx={{ p: 3 }}>
         <Stack direction="row" spacing={2} alignItems="center">
-          <History sx={{ color: "#6C2BD9", fontSize: 20 }} />
+          <History sx={{ color: "#8E2DE2", fontSize: 20 }} />
           <Typography variant="h6" sx={{ fontWeight: 700, color: "#1a1a1a" }}>
             Prompt History
           </Typography>

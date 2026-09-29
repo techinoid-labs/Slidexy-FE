@@ -37,7 +37,7 @@ export default function WorkflowSteps({ title = "How it works", steps }: Workflo
                     width: 48,
                     height: 48,
                     borderRadius: "50%",
-                    bgcolor: "#7C3AED",
+                    bgcolor: "#8E2DE2",
                     color: "#fff",
                     display: "flex",
                     alignItems: "center",
@@ -46,7 +46,7 @@ export default function WorkflowSteps({ title = "How it works", steps }: Workflo
                     fontWeight: 700,
                     mx: "auto",
                     mb: 4,
-                    boxShadow: "0 4px 6px -1px rgba(124, 58, 237, 0.3)",
+                    boxShadow: "0 4px 6px -1px rgba(142, 45, 226, 0.3)",
                   }}
                 >
                   {step.number || index + 1}

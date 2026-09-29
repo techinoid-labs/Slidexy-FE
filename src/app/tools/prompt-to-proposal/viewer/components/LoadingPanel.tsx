@@ -10,14 +10,14 @@ export default function LoadingPanel({ message }: LoadingPanelProps) {
     <Paper elevation={0} sx={{
       p: 4,
       borderRadius: 3,
-      border: "2px solid #6C2BD9",
+      border: "2px solid #8E2DE2",
       bgcolor: "white",
       boxShadow: "0 4px 20px rgba(108, 43, 217, 0.15)"
     }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 3, mb: 3 }}>
-        <CircularProgress size={52} sx={{ color: "#6C2BD9" }} />
+        <CircularProgress size={52} sx={{ color: "#8E2DE2" }} />
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#6C2BD9", mb: 0.5 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: "#8E2DE2", mb: 0.5 }}>
             {message}
           </Typography>
           <Typography variant="body2" sx={{ color: "#6d6d6d" }}>
@@ -36,7 +36,7 @@ export default function LoadingPanel({ message }: LoadingPanelProps) {
           <Typography variant="body2" sx={{ color: "#4a4a4a", fontWeight: 600 }}>
             ⏱️ Estimated completion time
           </Typography>
-          <Chip label="20-30 seconds" size="small" sx={{ bgcolor: "rgba(108, 43, 217, 0.1)", color: "#6C2BD9", fontWeight: 600 }} />
+          <Chip label="20-30 seconds" size="small" sx={{ bgcolor: "rgba(108, 43, 217, 0.1)", color: "#8E2DE2", fontWeight: 600 }} />
         </Box>
         <Typography variant="caption" sx={{ color: "#8b6fbf", display: "block" }}>
           🤖 AI is analyzing your requirements and generating custom content tailored to your needs

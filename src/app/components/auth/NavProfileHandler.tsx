@@ -5,6 +5,7 @@ import {
   Avatar,
   Typography,
   IconButton,
+  Button,
   Menu,
   MenuItem,
   Divider,
@@ -121,34 +122,18 @@ const NavProfileHandler = ({ size, showMail }: any) => {
           </Menu>
         </>
       ) : (
-        <Typography
+        <Button
           suppressHydrationWarning
-          className="cursor-pointer"
-           onClick={() => router.push("/auth")}
+          onClick={() => router.push("/auth")}
+          variant="outlined"
+          size={size ? "small" : "medium"}
           sx={{
             ml: "10px",
-            px: "20px",
-            py: "12px",
-            color: "#4A00E0",
-            height: "48px",
-            background: "#F2F0FF",
-            borderRadius: "999px",
-            textTransform: "none",
-            fontWeight: 500,
-            fontSize: size ? "12px" : "16px",
             whiteSpace: "nowrap",
-            transition: "all 0.2s ease",
-            "&:hover": {
-              background: "#E8E3FF",
-              boxShadow: "0 2px 6px rgba(74, 0, 224, 0.15)",
-            },
-            "&:active": {
-              transform: "scale(0.97)",
-            },
           }}
         >
           {size ? `Sign In` : `Login / Signup`}
-        </Typography>
+        </Button>
       )}
     </>
   );

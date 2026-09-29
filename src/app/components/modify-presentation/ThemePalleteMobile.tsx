@@ -306,9 +306,18 @@ const ThemePanelMobile = ({ onClose }: ThemePanelMobileProps) => {
         overflow: "hidden"
       }}
     >
-      <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #f0f0f0" }}>
+      <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(142, 45, 226, 0.1)" }}>
         <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Theme & Layout</Typography>
-        <IconButton onClick={onClose} size="small"><CloseIcon /></IconButton>
+        <IconButton
+          onClick={onClose}
+          size="small"
+          sx={{
+            transition: "background-color 0.18s ease, transform 0.18s ease",
+            "&:hover": { backgroundColor: "rgba(142, 45, 226, 0.08)", transform: "scale(1.08)" },
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
       </Box>
 
       <Box sx={{ p: 2, overflowY: "auto", flex: 1 }}>
@@ -317,12 +326,24 @@ const ThemePanelMobile = ({ onClose }: ThemePanelMobileProps) => {
           {palettes.map((palette, i) => (
             <Box
               key={i}
+              role="button"
+              tabIndex={0}
               onClick={() => handlePaletteClick(palette)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handlePaletteClick(palette);
+                }
+              }}
               sx={{
                 p: "4px",
                 borderRadius: "50%",
-                border: selectedPaletteIdx === i ? "2px solid #7B4AE2" : "2px solid transparent",
-                transition: "all 0.2s"
+                cursor: "pointer",
+                border: selectedPaletteIdx === i ? "2px solid #8E2DE2" : "2px solid transparent",
+                transition: "all 0.2s",
+                "&:hover": { transform: "scale(1.08)", border: "2px solid rgba(142, 45, 226, 0.4)" },
+                "&:active": { transform: "scale(0.95)" },
+                "&:focus-visible": { outline: "2px solid #8E2DE2", outlineOffset: "2px" },
               }}
             >
               <PaletteStack colors={palette} size={36} />
@@ -358,14 +379,6 @@ const ThemePanelMobile = ({ onClose }: ThemePanelMobileProps) => {
           fullWidth
           variant="contained"
           onClick={handleReset}
-          sx={{
-            py: 1.2,
-            borderRadius: "12px",
-            bgcolor: "#7B4AE2",
-            textTransform: "none",
-            fontWeight: 600,
-            "&:hover": { bgcolor: "#5F2EEA" }
-          }}
         >
           Reset Theme
         </Button>

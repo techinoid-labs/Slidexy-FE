@@ -11,6 +11,7 @@ import BenefitsList from '@/app/components/seo/BenefitsList'
 import ContextualFAQ from '@/app/components/seo/ContextualFAQ'
 import InternalLinks from '@/app/components/seo/InternalLinks'
 import CTASection from '@/app/components/seo/CTASection'
+import Reveal from '@/app/components/shared/Reveal'
 
 export const metadata: Metadata = {
   title: "Prompt to Proposal — AI Proposal Generator",
@@ -23,27 +24,27 @@ export const metadata: Metadata = {
 
 export default function Page() {
   const personas = [
-    { title: "Freelancers", description: "Quickly respond to RFPs with professional-grade proposals that demonstrate authority.", icon: "person" as const },
-    { title: "Agencies", description: "Scale your sales operation by generating initial project proposals in minutes instead of days.", icon: "business" as const },
-    { title: "Sales Teams", description: "Convert prospect calls into formal documentation instantly with our AI narrative builder.", icon: "group" as const },
+    { title: "Freelancers", description: "Respond to an RFP the same day it lands, with a proposal that reads like you had a week to write it.", icon: "person" as const },
+    { title: "Agencies", description: "Get a first-draft proposal in front of a prospect in minutes instead of blocking out an afternoon.", icon: "business" as const },
+    { title: "Sales Teams", description: "Turn notes from a discovery call into a formal document before the follow-up email goes out.", icon: "group" as const },
   ];
 
   const steps = [
-    { number: 1, title: "Input Project Details", description: "Briefly describe the client, the problem, and your proposed solution." },
-    { number: 2, title: "AI Builds Narrative", description: "SlideXY generates the executive summary, scope, timeline, and pricing sections." },
-    { number: 3, title: "Customize and Sign", description: "Adjust the details, add your branding, and send it to your client as a PDF." },
+    { number: 1, title: "Describe the project", description: "The client, the problem, and roughly what you're proposing to do about it." },
+    { number: 2, title: "Slidexy drafts it", description: "Executive summary, scope, timeline, and pricing — structured the way clients expect to see them." },
+    { number: 3, title: "Adjust and send", description: "Fix anything that's off, drop in your branding, and export as a PDF." },
   ];
 
   const benefits = [
-    { title: "Expert Formatting", description: "Our AI understands standard business proposal structures preferred by enterprise companies.", icon: "done" as const },
-    { title: "Save Hours Daily", description: "Stop copying and pasting from old documents. Generate a fresh, tailored proposal every time.", icon: "speed" as const },
-    { title: "High Conversion", description: "Professionally designed layouts and logical narratives help you win more business.", icon: "ai" as const },
+    { title: "Structure that reads right", description: "Sections are laid out the way enterprise buyers expect a proposal to be organized.", icon: "done" as const },
+    { title: "No more copy-paste drafts", description: "Every proposal starts fresh instead of being stitched together from the last one.", icon: "speed" as const },
+    { title: "Built to win, not just fill space", description: "Clear structure and language that makes it easier to say yes.", icon: "ai" as const },
   ];
 
   const faqs = [
-    { question: "Can I include pricing tables?", answer: "Yes, our proposal generator includes a dedicated section for pricing, deliverables, and payment terms." },
-    { question: "What sections are included?", answer: "A standard proposal includes an Executive Summary, Problem Definition, Scope of Work, Timeline, Pricing, and About Us section." },
-    { question: "Is the content industry-specific?", answer: "Absolutely. Whether you're in IT, Marketing, or Construction, our AI adjusts the tone and terminology accordingly." },
+    { question: "Can I include pricing tables?", answer: "Yes — there's a dedicated section for pricing, deliverables, and payment terms." },
+    { question: "What sections are included?", answer: "A standard proposal covers an executive summary, problem definition, scope of work, timeline, pricing, and an about-us section." },
+    { question: "Is the content industry-specific?", answer: "It adapts tone and terminology to your industry, whether that's IT, marketing, or construction." },
   ];
 
   const relatedLinks = [
@@ -60,65 +61,72 @@ export default function Page() {
         component="section"
         sx={{
           textAlign: "center",
-          pt: { xs: 6, md: 10 },
-          pb: { xs: 4, md: 6 },
+          pt: { xs: 5, md: 7 },
+          pb: { xs: 2, md: 2 },
           px: { xs: 3, md: 6 },
-          maxWidth: 800,
+          maxWidth: 720,
           mx: "auto",
         }}
       >
         <Typography
           component="h1"
+          className="sx-display"
           sx={{
+            fontFamily: "var(--font-display)",
             fontWeight: 700,
-            fontSize: { xs: "2.25rem", md: "3.5rem" },
-            color: "#111827",
+            fontSize: { xs: "1.85rem", md: "2.75rem" },
+            letterSpacing: "-0.03em",
+            color: "#0F0A19",
             mb: 2,
           }}
         >
-          Prompt to Proposal
+          Turn a brief into a proposal
         </Typography>
         <Typography
           sx={{
             color: "text.secondary",
-            fontSize: { xs: "1.05rem", md: "1.2rem" },
+            fontSize: { xs: "1.05rem", md: "1.15rem" },
             lineHeight: 1.7,
-            mb: 4,
+            mb: 2,
           }}
         >
-          Enter your project details and SlideXY AI builds a complete
-          business proposal with an executive summary, scope of work,
-          timeline, and pricing. Win more clients with 
-          professionally structured proposals generated in seconds.
+          Describe the client and the job. Slidexy drafts the summary,
+          scope, timeline, and pricing — ready to send.
         </Typography>
       </Box>
 
       {/* Main Tool Component */}
       <PromptToProposal />
 
-      <ProblemSolution 
-        problem="Drafting business proposals is one of the most time-consuming parts of the sales cycle. Reusing old templates often leads to errors, while starting from scratch is slow and repetitive."
-        solution="SlideXY's Prompt-to-Proposal tool acts as your dedicated sales assistant. It analyzes your input to generate a coherent, persuasive document that covers every essential section of a winning business proposal."
-      />
+      <Reveal>
+        <ProblemSolution
+          problem="Drafting a proposal is one of the slowest parts of the sales cycle. Reusing an old template invites mistakes, and starting from a blank page eats an afternoon."
+          solution="Slidexy's Prompt-to-Proposal tool turns a short project brief into a coherent, well-structured document — every section a proposal needs, without the copy-paste."
+        />
+      </Reveal>
 
-      <WhoItsFor personas={personas} />
+      <Reveal><WhoItsFor personas={personas} /></Reveal>
 
-      <WorkflowSteps steps={steps} />
+      <Reveal><WorkflowSteps steps={steps} /></Reveal>
 
-      <BenefitsList benefits={benefits} />
+      <Reveal><BenefitsList benefits={benefits} /></Reveal>
 
-      <ContextualFAQ 
-        title="Proposal Generation FAQ" 
-        subtitle="Learn how to win more clients with AI-driven documentation."
-        faqs={faqs} 
-      />
+      <Reveal>
+        <ContextualFAQ
+          title="Proposal Generation FAQ"
+          subtitle="How to get a proposal ready to send in minutes, not hours."
+          faqs={faqs}
+        />
+      </Reveal>
 
-      <InternalLinks title="Explore More Tools" links={relatedLinks} />
+      <Reveal><InternalLinks title="Explore More Tools" links={relatedLinks} /></Reveal>
 
-      <CTASection 
-        title="Start winning more business"
-        subtitle="Generate your first professional proposal in under a minute."
-      />
+      <Reveal>
+        <CTASection
+          title="Draft your first proposal"
+          subtitle="No credit card required to try it."
+        />
+      </Reveal>
 
 
       <Footer />

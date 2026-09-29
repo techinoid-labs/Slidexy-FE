@@ -480,17 +480,10 @@ export default function OutlinePage() {
       >
         <Button
           variant="contained"
+          size="large"
           onClick={handleContinue}
           disabled={isSaving}
-          sx={{
-            width: { xs: "80%", md: 320 },
-            borderRadius: "999px",
-            py: 2,
-            fontSize: "1.1rem",
-            fontWeight: 600,
-            background: isSaving ? "#ccc" : "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-            "&:hover": { background: isSaving ? "#ccc" : "#4A00E0" },
-          }}
+          sx={{ width: { xs: "80%", md: 320 }, fontSize: "1.1rem" }}
         >
           {isSaving ? "Saving..." : "Continue"}
         </Button>

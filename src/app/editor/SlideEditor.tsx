@@ -1,20 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
-import useImage from "use-image";
+import React, { useEffect, useState, useRef, memo } from "react";
 import { Box } from "@mui/material";
-import SlideImage from "./KonvaComponents/KonvaSlideImage";
-import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor";
-import AnimatedKonvaText from "./KonvaComponents/AnimatedKonvaText";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
-import SlidePreviews from "./slidesPreview";
-import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import HorizontalSlidesCarousel from "@/app/components/editor/HorizontalSlidesCarousel";
 import { useSlides } from "../context/SlidesContext";
 import { getSlideDimensions } from "../../utils/slideUtils";
 import { generateSlideVariants } from "../../utils/variantGenerator";
-import { getStageCanvas } from "../../utils/snapShotUtils";
-import snapshotsCache from "@/utils/snapshotsCache";
-import { getContrastTextColor } from "../../utils/colorUtils";
 import { HTMLSlideRenderer } from "../components/editor/HTMLSlideRenderer";
 
 type SelectedElement = {
@@ -31,7 +21,6 @@ const getDynamicConstants = () => {
 interface SlideRendererProps {
   slides: any[];
   selectedSlideIndex: number;
-  stageRefs: React.MutableRefObject<any[]>;
   selectedImageIndex: number | null;
   selectedShapeId: string | null;
   selectedTextId: string | null;
@@ -54,12 +43,11 @@ interface SlideRendererProps {
 }
 
 /**
- * Renders a single slide's Konva stage with all elements
+ * Renders a single slide as editable HTML.
  */
 const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlide: any }> = ({
   slides,
   selectedSlideIndex,
-  stageRefs,
   selectedImageIndex,
   selectedShapeId,
   selectedTextId,
@@ -156,17 +144,6 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
   };
 
   const slide = getCurrentVariantSlide(originalSlide);
-  const title = slide.slide_title;
-  const titleProps = title?.properties || {};
-
-  let renderBgUrl = "";
-  if (slide.background?.type === "image" && slide.background.url) {
-    renderBgUrl = slide.background.url;
-  } else if (selectedTheme?.image_url) {
-    renderBgUrl = selectedTheme.image_url;
-  }
-
-  const [bgImage] = useImage(renderBgUrl);
 
   const handleElementClickFromHTML = (
     elementId: string,
@@ -262,22 +239,17 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
       data-slide-index={index}
       id={`slide-node-${index}`}
       sx={{
-        border: "1px solid #939393ff",
+        border: "1px solid rgba(255,255,255,0.08)",
         backgroundColor: "#fff",
         position: "absolute",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        // Render all slides but only show the selected one
-        // Hidden slides are positioned off-screen so snapshots can be generated
-        visibility: index === selectedSlideIndex ? "visible" : "hidden",
-        opacity: index === selectedSlideIndex ? 1 : 0,
-        pointerEvents: index === selectedSlideIndex ? "auto" : "none",
+        boxShadow: "0 8px 48px rgba(0,0,0,0.7), 0 2px 12px rgba(0,0,0,0.4)",
         transform: `scale(${scale})`,
-        left: index === selectedSlideIndex ? 0 : -99999,
+        left: 0,
         width: getDynamicConstants().SLIDE_WIDTH,
         height: getDynamicConstants().SLIDE_HEIGHT,
       }}
     >
-      {/* HTML Overlay for editing - visible and interactive */}
+      {/* HTML Overlay — primary visible renderer for editing */}
       <Box
         data-slide-container="true"
         sx={{
@@ -323,7 +295,25 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
             // If this slide has layouts/variants, map back into the current variant
             if (originalSlide.layouts && originalSlide.layouts.length > 0) {
               const currentVariant = originalSlide.layouts[variantIndex] || { elements: [] };
-              const variantCount = (currentVariant.elements || []).length;
+
+              // Title and subtitle must be written into the variant too.
+              // HTMLSlideRenderer reads `variant.slide_title` in preference to
+              // `slide.slide_title`, so writing only the slide-level copy meant
+              // every title/subtitle edit was silently discarded on the next
+              // re-render (switching slides, changing theme, undo).
+              if (updatedSlide.slide_title) {
+                currentVariant.slide_title = updatedSlide.slide_title;
+              }
+              if (updatedSlide.subtitle) {
+                currentVariant.subtitle = updatedSlide.subtitle;
+              }
+              if (typeof updatedSlide.image_url !== "undefined") {
+                currentVariant.image_url = updatedSlide.image_url;
+              }
+              if (updatedSlide.background) {
+                currentVariant.background = updatedSlide.background;
+              }
+              originalSlide.layouts[variantIndex] = currentVariant;
 
               // The HTML renderer provides elements as [ ...variant.elements, ...userShapes ]
               if (Array.isArray(updatedSlide.elements)) {
@@ -359,285 +349,11 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
           }}
         />
       </Box>
-
-      {/* Konva Stage - hidden but used for export */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          visibility: "hidden",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      >
-        <Box
-          sx={{
-            pointerEvents: openPanel ? "none" : "auto",
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          <Stage
-            width={getDynamicConstants().SLIDE_WIDTH}
-            height={getDynamicConstants().SLIDE_HEIGHT}
-            ref={(node) => {
-              stageRefs.current[index] = node;
-            }}
-          >
-            <Layer>
-              {/* Background */}
-              {bgImage && renderBgUrl ? (
-                <KonvaImage
-                  image={bgImage}
-                  x={0}
-                  y={0}
-                  width={getDynamicConstants().SLIDE_WIDTH}
-                  height={getDynamicConstants().SLIDE_HEIGHT}
-                  name="background"
-                  listening={false}
-                />
-              ) : slide.background?.type === "linear" && slide.background.gradient ? (
-                <Rect
-                  width={getDynamicConstants().SLIDE_WIDTH}
-                  height={getDynamicConstants().SLIDE_HEIGHT}
-                  fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                  fillLinearGradientEndPoint={{
-                    x: getDynamicConstants().SLIDE_WIDTH,
-                    y: getDynamicConstants().SLIDE_HEIGHT,
-                  }}
-                  fillLinearGradientColorStops={
-                    slide.background.gradient.stops || [
-                      0,
-                      slide.background.gradient.start,
-                      1,
-                      slide.background.gradient.end,
-                    ]
-                  }
-                  cornerRadius={8}
-                  name="background"
-                  listening={false}
-                />
-              ) : (
-                <Rect
-                  width={getDynamicConstants().SLIDE_WIDTH}
-                  height={getDynamicConstants().SLIDE_HEIGHT}
-                  fill={slide.background?.color || selectedTheme?.backgroundColor || "#ffffff"}
-                  cornerRadius={8}
-                  name="background"
-                  listening={false}
-                />
-              )}
-
-              {/* Shapes */}
-              <KonvaShapeRenderer
-                elements={slide.elements || []}
-                selectedShapeId={selectedShapeId}
-                selectedShapeIndex={selectedShapeIndex}
-                onSelectShape={(shapeIndex, shapeId, e) => {
-                  onHandleSelect(
-                    { id: shapeId!, type: "shape", index: shapeIndex! },
-                    e.evt.ctrlKey
-                  );
-                  onSetSelectedShapeId(shapeId!);
-                  onSetSelectedShapeIndex(shapeIndex!);
-                  onSetSelectedTextId(null);
-                  onSetSelectedImageIndex(null);
-                  onSetSelectedImage(null);
-                }}
-              />
-
-              {/* Title */}
-              {title?.text && (
-                <AnimatedKonvaText
-                  key={`title-${index}`}
-                  id={`title-${index}`}
-                  text={title.text}
-                  x={titleProps.x || 25}
-                  y={titleProps.y || 40}
-                  width={titleProps.width || 800}
-                  fontSize={titleProps.fontSize || 36}
-                  fontWeight={titleProps.fontWeight || "700"}
-                  fontFamily={titleProps.fontFamily || "Raleway"}
-                  opacity={titleProps.opacity || 1}
-                  fill={
-                    title.useThemeColor !== false
-                      ? getContrastTextColor(selectedTheme?.backgroundColor || "#ffffff")
-                      : titleProps.fill || "#000000"
-                  }
-                  align={titleProps.align || "center"}
-                  isSelected={selectedElements.some((s) => s.id === `title-${index}`)}
-                  onSelect={(e) => {
-                    onHandleSelect({ id: `title-${index}`, type: "text", index: -1 }, e.evt.ctrlKey);
-                    onSetSelectedTextId(`title-${index}`);
-                    onSetSelectedImageIndex(null);
-                    onSetSelectedImage(null);
-                    onSetSelectedShapeIndex(null);
-                  }}
-                  enableTypewriter={false}
-                  enableLayoutAnimation={false}
-                />
-              )}
-
-              {/* Subtitle */}
-              {slide.subtitle?.text && (
-                <AnimatedKonvaText
-                  key={`subtitle-${index}`}
-                  id={`subtitle-${index}`}
-                  text={slide.subtitle.text || ""}
-                  x={slide.subtitle.properties?.x || 80}
-                  y={slide.subtitle.properties?.y || 320}
-                  width={slide.subtitle.properties?.width || 800}
-                  height={slide.subtitle.properties?.height || 80}
-                  fontSize={slide.subtitle.properties?.fontSize || 26}
-                  fontWeight={slide.subtitle.properties?.fontWeight || "400"}
-                  fontFamily={slide.subtitle.properties?.fontFamily || "Raleway"}
-                  opacity={slide.subtitle.properties?.opacity ?? 1}
-                  fill={
-                    slide.subtitle.useThemeColor !== false
-                      ? getContrastTextColor(selectedTheme?.backgroundColor || "#ffffff")
-                      : slide.subtitle.properties?.fill || "#000000"
-                  }
-                  align={slide.subtitle.properties?.align || "center"}
-                  lineHeight={slide.subtitle.properties?.lineHeight || 1.5}
-                  isSelected={selectedElements.some((s) => s.id === `subtitle-${index}`)}
-                  onSelect={(e) => {
-                    onHandleSelect(
-                      { id: `subtitle-${index}`, type: "text", index: -2 },
-                      e.evt.ctrlKey
-                    );
-                    onSetSelectedTextId(`subtitle-${index}`);
-                    onSetSelectedImageIndex(null);
-                    onSetSelectedImage(null);
-                    onSetSelectedShapeIndex(null);
-                  }}
-                  onChange={(newText) => {
-                    const updatedSlides = [...slides];
-                    const currentSlide = updatedSlides[selectedSlideIndex];
-                    if (currentSlide?.subtitle) {
-                      currentSlide.subtitle.text = newText;
-                      // Also update current variant if exists
-                      if (currentSlide.layouts?.[currentSlide.currentVariantIndex ?? 0]) {
-                        const variant = currentSlide.layouts[currentSlide.currentVariantIndex ?? 0];
-                        if (variant.subtitle) {
-                          variant.subtitle.text = newText;
-                        }
-                      }
-                      onSetSlides(updatedSlides);
-                    }
-                  }}
-                  enableTypewriter={false}
-                  enableLayoutAnimation={false}
-                />
-              )}
-
-              {/* Text elements */}
-              {slide.elements?.map((el: any, i: number) => {
-                if (
-                  el.element_type === "text" ||
-                  el.element_type === "bullet_point" ||
-                  el.element_type === "quote" ||
-                  el.element_type === "author" ||
-                  el.element_type === "context"
-                ) {
-                  return (
-                    <AnimatedKonvaText
-                      key={`${el.id || `el-${index}-${i}`}`}
-                      id={el.id || `el-${index}-${i}`}
-                      text={el.text || ""}
-                      x={el.properties?.x || 0}
-                      y={el.properties?.y || 0}
-                      width={el.properties?.width || 300}
-                      height={el.properties?.height || 100}
-                      fontSize={el.properties?.fontSize || 16}
-                      fontFamily={el.properties?.fontFamily || "Raleway"}
-                      fontWeight={el.properties?.fontWeight || "400"}
-                      opacity={el.properties?.opacity ?? 1}
-                      fill={
-                        el.useThemeColor !== false
-                          ? getContrastTextColor(selectedTheme?.backgroundColor || "#ffffff")
-                          : el.properties?.fill || "#000000"
-                      }
-                      align={el.properties?.align || "left"}
-                      lineHeight={el.properties?.lineHeight || 1.4}
-                      wrap="word"
-                      isSelected={selectedElements.some((s) => s.id === (el.id || `el-${index}-${i}`))}
-                      onSelect={(e) => {
-                        const elementId = el.id || `el-${index}-${i}`;
-                        onHandleSelect({ id: elementId, type: "text", index: i }, e.evt.ctrlKey);
-                        onSetSelectedTextId(elementId);
-                        onSetSelectedImageIndex(null);
-                        onSetSelectedImage(null);
-                        onSetSelectedShapeIndex(null);
-                      }}
-                      onChange={(newText) => {
-                        const updatedSlides = [...slides];
-                        const currentSlide = updatedSlides[selectedSlideIndex];
-                        if (currentSlide?.elements?.[i]) {
-                          currentSlide.elements[i].text = newText;
-                          onSetSlides(updatedSlides);
-                        }
-                      }}
-                      enableLayoutAnimation={false}
-                    />
-                  );
-                }
-                return null;
-              })}
-
-              {/* Images */}
-              {slide.elements?.map((el: any, i: number) => {
-                if (el.element_type === "image") {
-                  const imageId = el.image_id || el.properties?.image_id || `img-${i}`;
-
-                  return (
-                    <SlideImage
-                      key={`${el.id || `el-${index}-${i}`}`}
-                      image_id={el.id || `el-${index}-${i}`}
-                      imageSrc={el.properties?.imageSrc}
-                      x={el.properties?.x || 0}
-                      y={el.properties?.y || 0}
-                      width={el.properties?.width || 200}
-                      height={el.properties?.height || 200}
-                      opacity={el.properties?.opacity ?? 1}
-                      shadow={el.properties?.shadow}
-                      zIndex={el.properties?.zIndex}
-                      borderRadius={el.properties?.borderRadius || 0}
-                      isSelected={selectedElements.some((s) => s.id === imageId)}
-                      onSelect={(e) => {
-                        onHandleSelect({ id: imageId, type: "image", index: i }, e.evt.ctrlKey);
-                        onSetSelectedImageId(imageId);
-                        onSetSelectedImageIndex(i);
-                        onSetSelectedImage({
-                          ...el,
-                          image_id: imageId,
-                          konva_component: el.konva_component || "Konva.Image",
-                          element_type: "image",
-                          properties: {
-                            ...el.properties,
-                            image_id: imageId,
-                          },
-                        });
-                        onSetSelectedTextId(null);
-                        onSetSelectedShapeIndex(null);
-                        onSetSelectedShapeId(null);
-                      }}
-                    />
-                  );
-                }
-                return null;
-              })}
-            </Layer>
-          </Stage>
-        </Box>
-      </Box>
     </Box>
   );
 };
 
-const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAllRef }: any) => {
+const SlideEditor = ({ slides = [], onDeselect, openPanel, deselectAllRef, scale: scaleProp }: any) => {
   const {
     selectedImageIndex,
     selectedShapeId,
@@ -659,114 +375,41 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
     setSelectedSlideIndex,
     addSlide,
     deleteSlide,
+    duplicateSlide,
+    reorderSlides,
   } = useSlides();
 
   const { setSelectedTheme, selectedTheme } = useSlideThemeContext();
-  const [scale, setScale] = useState(1);
+  const scale = scaleProp ?? 1;
   const [selectedElements, setSelectedElements] = useState<SelectedElement[]>([]);
+  const activeSlide = slides[selectedSlideIndex];
 
-  const layoutsInitializedRef = useRef(false);
   const lastThemeRef = useRef<any>(null);
 
-  // Snapshot generation - generate for all slides to show in carousel immediately
+  // Keep a live reference to slides so the variant effect can read them
+  // WITHOUT re-running on every edit (it calls setSlides, which would loop).
+  const slidesRef = useRef(slides);
+  slidesRef.current = slides;
+
+  // Theme changes and variant generation.
+  // Runs when the theme changes or when slides are added/removed — never on
+  // a plain content edit.
   useEffect(() => {
-    if (slides.length === 0) return;
-
-    // Wait a bit for stages to render, then generate snapshots
-    const timer = setTimeout(() => {
-      const generateAllSnapshots = async () => {
-        // Generate snapshots for all slides
-        for (let i = 0; i < slides.length; i++) {
-          const slide = slides[i];
-          const stage = stageRefs.current[i];
-
-          if (!stage) {
-            console.warn(`[SlideEditor] No stage ref for slide index ${i}`);
-            continue;
-          }
-
-          try {
-            const canvas = stage.toCanvas ? stage.toCanvas() : null;
-            if (!canvas) {
-              console.warn(`[SlideEditor] Failed to get canvas for slide ${slide.slide_id}`);
-              continue;
-            }
-
-            await snapshotsCache.generateFromCanvas(slide.slide_id, canvas)
-              .catch((err) => {
-                console.warn(`[SlideEditor] generateFromCanvas failed for slide ${slide.slide_id}:`, err);
-              });
-          } catch (err) {
-            console.error(`[SlideEditor] Error generating snapshot for slide ${slide.slide_id}:`, err);
-          }
-
-          // Small delay between slides to avoid blocking
-          await new Promise(resolve => setTimeout(resolve, 50));
-        }
-      };
-
-      generateAllSnapshots();
-    }, 500); // Wait 500ms for stages to mount and render
-
-    return () => clearTimeout(timer);
-  }, [slides]);
-
-  // Periodic snapshot regeneration for ALL slides while editing
-  useEffect(() => {
-    const lastSnapshotAt = { value: 0 } as { value: number };
-    const MIN_SNAPSHOT_INTERVAL = 1500; // Regenerate every 1.5s while editing
-
-    const updateAllSnapshots = async () => {
-      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
-
-      const now = Date.now();
-      if (now - lastSnapshotAt.value < MIN_SNAPSHOT_INTERVAL) return;
-      lastSnapshotAt.value = now;
-
-      // Regenerate snapshots for ALL slides, not just the selected one
-      // This ensures carousel shows updated variants even before selection
-      for (let i = 0; i < slides.length; i++) {
-        const slide = slides[i];
-        const stage = stageRefs.current[i];
-
-        if (!stage) continue;
-
-        try {
-          const canvas = stage.toCanvas ? stage.toCanvas() : null;
-          if (!canvas) continue;
-
-          await snapshotsCache.generateFromCanvas(slide.slide_id, canvas).catch((err) => {
-            console.warn(`[SlideEditor] Snapshot regeneration failed for slide ${slide.slide_id}:`, err);
-          });
-        } catch (err) {
-          console.error(`[SlideEditor] Error regenerating snapshot for slide ${i}:`, err);
-        }
-
-        // Small delay between slides to avoid blocking
-        await new Promise(resolve => setTimeout(resolve, 30));
-      }
-    };
-
-    const timer = setTimeout(updateAllSnapshots, 500);
-    return () => clearTimeout(timer);
-  }, [slides, selectedSlideIndex]);
-
-  // Theme changes and variant generation
-  useEffect(() => {
-    if (!selectedTheme || slides.length === 0) return;
+    const current = slidesRef.current;
+    if (!selectedTheme || current.length === 0) return;
 
     const themeChanged =
       JSON.stringify(lastThemeRef.current) !== JSON.stringify(selectedTheme);
 
-    const needsRegeneration =
-      !layoutsInitializedRef.current ||
-      (themeChanged && slides.some((slide: any) => slide.layouts && slide.layouts.length > 0));
+    // Any slide missing layouts always needs generating (covers newly added slides,
+    // which the previous `layoutsInitialized` flag silently skipped).
+    const hasSlideWithoutLayouts = current.some(
+      (slide: any) => !slide.layouts || slide.layouts.length === 0
+    );
 
-    if (!needsRegeneration) {
-      return;
-    }
+    if (!themeChanged && !hasSlideWithoutLayouts) return;
 
-    const updatedSlides = slides.map((slide: any) => {
+    const updatedSlides = current.map((slide: any) => {
       if (slide.layouts && slide.layouts.length > 0 && !themeChanged) {
         return slide;
       }
@@ -781,53 +424,15 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
       };
     });
 
-    setSlides(updatedSlides);
-    layoutsInitializedRef.current = true;
     lastThemeRef.current = selectedTheme;
-
-    // CRITICAL: Regenerate snapshots after variants are applied
-    // This ensures carousel shows actual slides with variants applied
-    setTimeout(() => {
-      const regenerateSnapshots = async () => {
-        for (let i = 0; i < updatedSlides.length; i++) {
-          const slide = updatedSlides[i];
-          const stage = stageRefs.current[i];
-
-          if (!stage) continue;
-
-          try {
-            const canvas = stage.toCanvas ? stage.toCanvas() : null;
-            if (!canvas) continue;
-
-            await snapshotsCache.generateFromCanvas(slide.slide_id, canvas).catch((err) => {
-              console.warn(`[SlideEditor] Snapshot regeneration after variant failed:`, err);
-            });
-          } catch (err) {
-            console.error(`[SlideEditor] Error regenerating snapshot after variant:`, err);
-          }
-
-          await new Promise(resolve => setTimeout(resolve, 50));
-        }
-      };
-
-      regenerateSnapshots();
-    }, 100); // Small delay to let Stage render the variant
-  }, [selectedTheme, slides]);
+    setSlides(updatedSlides);
+  }, [selectedTheme, slides.length]);
 
   useEffect(() => {
     const preservedThemeData = localStorage.getItem("slidesTheme");
     if (preservedThemeData) {
       setSelectedTheme(JSON.parse(preservedThemeData));
     }
-  }, []);
-
-  useEffect(() => {
-    const updateScale = () => {
-      setScale(window.innerWidth < 1366 ? 0.85 : 1);
-    };
-    updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
   }, []);
 
   const deselectAll = () => {
@@ -915,6 +520,8 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
       slideHeight={getDynamicConstants().SLIDE_HEIGHT}
       onAddSlide={addSlide}
       onDeleteSlide={deleteSlide}
+      onDuplicateSlide={duplicateSlide}
+      onReorderSlide={reorderSlides}
     >
       <Box
         sx={{
@@ -927,12 +534,15 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
           overflow: "hidden",
         }}
       >
-        {slides.map((originalSlide: any, index: number) => (
+        {/* Only the active slide is mounted. Previously every slide in the deck
+            was rendered at once (parked off-screen) so the Konva snapshot loop
+            could reach them; that loop is gone, so there is nothing to keep
+            alive. Export mounts its own copies on demand — see exportSlides.ts. */}
+        {activeSlide && (
           <SlideRenderer
-            key={`${originalSlide.slide_id}-variant-${originalSlide.currentVariantIndex}`}
+            key={activeSlide.slide_id}
             slides={slides}
             selectedSlideIndex={selectedSlideIndex}
-            stageRefs={stageRefs}
             selectedImageIndex={selectedImageIndex}
             selectedShapeId={selectedShapeId}
             selectedTextId={selectedTextId}
@@ -952,10 +562,10 @@ const SlideEditor = ({ slides = [], stageRefs, onDeselect, openPanel, deselectAl
             onSetSelectedTextIndex={setSelectedTextIndex}
             onSetSelectedShapeIndex={setSelectedShapeIndex}
             onSetSlides={setSlides}
-            index={index}
-            originalSlide={originalSlide}
+            index={selectedSlideIndex}
+            originalSlide={activeSlide}
           />
-        ))}
+        )}
       </Box>
     </HorizontalSlidesCarousel>
   );

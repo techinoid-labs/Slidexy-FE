@@ -10,6 +10,7 @@ import { TimelineSlideHTML } from '../layouts/TimelineSlideHTML';
 import { QuoteSlideHTML } from '../layouts/QuoteSlideHTML';
 import { ConclusionSlideHTML } from '../layouts/ConclusionSlideHTML';
 import { FullImageTextOverlayHTML } from '../layouts/FullImageTextOverlayHTML';
+import { TemplateHTMLSlide, TEMPLATE_REGISTRY } from '../layouts/TemplateHTMLSlide';
 
 interface HTMLSlideRendererProps {
     slide: any;
@@ -94,10 +95,23 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
         theme,
         isEditing,
         onSlideUpdate,
-        variant: (variantIndex + 1) as 1 | 2 | 3 | 4 | 5
+        variant: (variantIndex + 1) as any  // supports 1-10 variants
     };
 
     console.log(`[HTMLSlideRenderer] Rendering ${layoutType} with variant ${commonProps.variant} (currentVariantIndex: ${variantIndex})`);
+
+    // Template styles override the layout-type system entirely
+    if (currentSlide.templateStyle && TEMPLATE_REGISTRY[currentSlide.templateStyle]) {
+        return (
+            <TemplateHTMLSlide
+                slide={currentSlide}
+                templateStyle={currentSlide.templateStyle}
+                slideIndex={slideIndex}
+                isEditing={isEditing}
+                onSlideUpdate={onSlideUpdate}
+            />
+        );
+    }
 
     // Render based on layout type
     switch (layoutType) {

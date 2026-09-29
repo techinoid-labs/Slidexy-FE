@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -63,11 +65,11 @@ export default function PricingSection() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        pt: { xs: 6, md: "80px" },
-        px: { xs: 2, md: "162px" },
+        pt: { xs: 4, md: "48px" },
+        px: { xs: 2, md: "100px" },
         boxSizing: "border-box",
         mx: "auto",
-        mb: '50px'
+        mb: '32px'
       }}
     >
       {/* Badge */}
@@ -104,7 +106,7 @@ export default function PricingSection() {
       {/* Heading */}
       <Typography
         sx={{
-          fontSize: { xs: "30px", md: "48px" },
+          fontSize: { xs: "22px", md: "32px" },
           color: "#222",
           mt: 2,
           mb: 4,
@@ -135,6 +137,11 @@ export default function PricingSection() {
         <>
           {error && <Alert severity="error">{error}</Alert>}
           <Box
+            component={motion.div}
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
             sx={{
               display: "flex",
               flexDirection: { xs: "column", md: "row" },
@@ -145,19 +152,33 @@ export default function PricingSection() {
             }}
           >
             {plans.length &&
-              plans?.map((plan) => {
+              plans?.map((plan, i) => {
                 const styles = styleMap[plan.name] || styleMap["Basic"];
                 const tenure = getTenure(plan.billingPeriod);
+                const isFeatured = plan.name === "Exclusive";
 
                 return (
                   <Box
                     key={plan._id}
+                    component={motion.div}
+                    variants={fadeUp}
+                    custom={i}
+                    whileHover={{ y: -8 }}
                     sx={{
                       width: { xs: "352px" },
                       background: "#fff",
                       borderRadius: "20px",
-                      border: `1px solid rgba(246, 246, 246, 1);`,
-                      boxShadow: 'none',
+                      border: isFeatured
+                        ? "1.5px solid rgba(142, 45, 226, 0.35)"
+                        : "1px solid rgba(246, 246, 246, 1)",
+                      boxShadow: isFeatured
+                        ? "0 20px 44px -18px rgba(142,45,226,0.35)"
+                        : "none",
+                      transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+                      "&:hover": {
+                        boxShadow: "0 20px 44px -18px rgba(142,45,226,0.3)",
+                        borderColor: "rgba(142, 45, 226, 0.3)",
+                      },
                       pt: { sm: "40px", xs: "30px" },
                       display: "flex",
                       flexDirection: "column",
@@ -221,20 +242,15 @@ export default function PricingSection() {
                     <Link href="/pricing" passHref>
                       <Button
                         variant="contained"
+                        disableElevation
+                        size="large"
                         sx={{
                           background: styles.color,
                           color: styles.textColor,
-                          borderRadius: "999px",
-                          px: 4,
-                          py: 1.5,
-                          fontWeight: 600,
-                          fontSize: "1.1rem",
-                          textTransform: "none",
-                          width: "292px",
-                          height: "48.000003814697266",
-                          mb: 3,
                           boxShadow: "none",
-                          "&:hover": { background: styles.btnHover },
+                          width: "292px",
+                          mb: 3,
+                          "&:hover": { background: styles.btnHover, boxShadow: "none" },
                         }}
                         endIcon={
                           <span style={{ fontSize: 22, marginLeft: 4 }}>→</span>

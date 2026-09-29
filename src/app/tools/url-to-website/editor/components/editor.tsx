@@ -557,21 +557,10 @@ export default function RightPanel({ presentationId }: EditorProps) {
                         onClick={handleDownload}
                         disabled={!websiteData?.zipUrl}
                         sx={{
-                            textTransform: "none",
-                            borderRadius: "30px",
-                            border: "none",
-                            px: { xs: 1, sm: 3 },
-                            py: 1,
-                            fontWeight: 500,
-                            display: "flex",
-                            alignItems: "center",
                             gap: 1,
                             bgcolor: "rgba(242, 240, 255, 1)",
                             minWidth: { xs: 40, sm: "auto" },
-                            justifyContent: "center",
-                            "&:hover": {
-                                bgcolor: "rgba(230, 226, 255, 1)",
-                            },
+                            px: { xs: 1, sm: 3 },
                         }}
                     >
                         <Typography sx={{ display: { xs: "none", sm: "inline" } }}>
@@ -589,22 +578,9 @@ export default function RightPanel({ presentationId }: EditorProps) {
                         variant="outlined"
                         onClick={() => setFullPreview(true)}
                         sx={{
-                            textTransform: "none",
-                            borderRadius: "30px",
-                            border: "1px solid rgba(108, 43, 217, 0.3)",
-                            px: { xs: 1, sm: 3 },
-                            py: 1,
-                            fontWeight: 500,
-                            display: "flex",
-                            alignItems: "center",
                             gap: 1,
-                            color: "rgba(108, 43, 217, 1)",
                             minWidth: { xs: 40, sm: "auto" },
-                            justifyContent: "center",
-                            "&:hover": {
-                                bgcolor: "rgba(108, 43, 217, 0.05)",
-                                borderColor: "rgba(108, 43, 217, 0.5)",
-                            },
+                            px: { xs: 1, sm: 3 },
                         }}
                     >
                         <Typography sx={{ display: { xs: "none", sm: "inline" } }}>

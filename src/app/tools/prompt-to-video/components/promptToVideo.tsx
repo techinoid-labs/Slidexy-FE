@@ -14,9 +14,10 @@ import {
     MenuItem,
     Select,
     Chip,
-    Backdrop,
 } from "@mui/material";
+import GenerationOverlay from "@/app/components/shared/GenerationOverlay";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
+import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
@@ -47,11 +48,11 @@ export default function PromptToVideo() {
     const { user } = useUser();
 
     const quickPrompts = [
-        "Artificial Intelligence",
-        "Healthy Diet",
-        "UX UI Guidelines",
-        "Design Systems",
-        "Cybersecurity",
+        "Product feature walkthrough",
+        "Onboarding guide for new users",
+        "Company culture and values",
+        "Quarterly results explainer",
+        "How-to tutorial for a tool",
     ];
 
     const loadingMessages = [
@@ -199,34 +200,53 @@ export default function PromptToVideo() {
     }, []);
 
     return (
-        <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
-            {/* Background video */}
+        <Box
+            sx={{
+                position: "relative",
+                width: "100%",
+                minHeight: "60vh",
+                overflow: "hidden",
+                background:
+                    "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(142,45,226,0.1) 0%, transparent 55%)",
+            }}
+        >
             <Box
+                component={motion.div}
+                animate={{ y: [0, -24, 0], x: [0, 16, 0], scale: [1, 1.08, 1] }}
+                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                 sx={{
                     position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    overflow: "hidden",
-                    zIndex: -1,
+                    top: "-5%",
+                    left: "-5%",
+                    width: 300,
+                    height: 300,
+                    borderRadius: "50%",
+                    background: "radial-gradient(circle, rgba(142,45,226,0.15) 0%, transparent 70%)",
+                    filter: "blur(60px)",
+                    pointerEvents: "none",
                 }}
-            >
-                <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.1 }}
-                >
-                    <source src="/services-background.mp4" type="video/mp4" />
-                </video>
-            </Box>
+            />
+            <Box
+                component={motion.div}
+                animate={{ y: [0, -24, 0], x: [0, 16, 0], scale: [1, 1.08, 1] }}
+                transition={{ duration: 10, delay: 1, repeat: Infinity, ease: "easeInOut" }}
+                sx={{
+                    position: "absolute",
+                    bottom: "10%",
+                    right: "-5%",
+                    width: 260,
+                    height: 260,
+                    borderRadius: "50%",
+                    background: "radial-gradient(circle, rgba(74,0,224,0.12) 0%, transparent 70%)",
+                    filter: "blur(50px)",
+                    pointerEvents: "none",
+                }}
+            />
 
             <Box
                 sx={{
                     width: "100%",
-                    minHeight: "100vh",
+                    minHeight: "60vh",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
@@ -242,12 +262,24 @@ export default function PromptToVideo() {
                     sx={{
                         width: "100%",
                         maxWidth: "926px",
-                        backgroundColor: "rgba(251,250,255,0.5)",
-                        borderRadius: 1,
-                        boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
-                        border: "1px solid rgba(232,228,255,1)",
+                        bgcolor: "rgba(255,255,255,0.92)",
+                        backdropFilter: "blur(12px)",
+                        borderRadius: "24px",
+                        border: "1px solid rgba(142, 45, 226, 0.14)",
+                        boxShadow: "0 28px 60px -20px rgba(142, 45, 226, 0.28), 0 8px 24px rgba(15, 10, 25, 0.04)",
                         p: { xs: 3, md: 4 },
                         mb: 4,
+                        position: "relative",
+                        overflow: "hidden",
+                        "&::before": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0, left: 0, right: 0,
+                            height: 4,
+                            background: "linear-gradient(90deg, #8E2DE2, #C084FC, #4A00E0)",
+                            backgroundSize: "200% 100%",
+                            animation: "sx-gradient-shift 4s ease infinite",
+                        },
                     }}
                 >
                     <TextField
@@ -326,20 +358,10 @@ export default function PromptToVideo() {
 
                         <Button
                             variant="contained"
+                            size="large"
                             disabled={loading}
                             onClick={handleSubmit}
-                            sx={{
-                                backgroundColor: "#6C2BD9",
-                                color: "#fff",
-                                borderRadius: "32px",
-                                width: { xs: "100%", sm: "160px" },
-                                px: 4,
-                                py: 1.2,
-                                height: "56px",
-                                fontWeight: 600,
-                                whiteSpace: "nowrap",
-                                "&:hover": { backgroundColor: "#5B21B6" },
-                            }}
+                            sx={{ width: { xs: "100%", sm: "160px" }, whiteSpace: "nowrap" }}
                             startIcon={<AutoAwesome />}
                         >
                             Generate
@@ -348,39 +370,11 @@ export default function PromptToVideo() {
                 </Box>
 
                 {loading && (
-                    <Backdrop
+                    <GenerationOverlay
                         open={loading}
-                        sx={{
-                            zIndex: (theme) => theme.zIndex.drawer + 1,
-                            backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                            }}
-                        >
-                            <img
-                                src="/Loader.gif"
-                                alt="Generating..."
-                                style={{ width: 470, height: 160 }}
-                            />
-
-                            <Typography
-                                sx={{
-                                    fontFamily: "Raleway",
-                                    fontSize: "24px",
-                                    fontWeight: 700,
-                                    color: "#fff",
-                                    mt: 1,
-                                }}
-                            >
-                                {loadingMessages[loadingMessageIndex]}.....
-                            </Typography>
-                        </Box>
-                    </Backdrop>
+                        progress={progress}
+                        message={loadingMessages[loadingMessageIndex] || "Creating your video"}
+                    />
                 )}
                 {error && (
                     <Alert

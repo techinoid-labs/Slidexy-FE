@@ -8,26 +8,27 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   IconButton,
   Chip,
   Stack,
-  LinearProgress,
   Alert,
   AlertTitle,
-  Backdrop,
 } from "@mui/material";
+import GenerationOverlay from "@/app/components/shared/GenerationOverlay";
 import {
   Add,
   Remove,
   AutoAwesome,
   Close as CloseIcon,
 } from "@mui/icons-material";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 import { useUser } from "@/app/context/AuthContext";
+import AnimatedOrb from "@/app/components/shared/AnimatedOrb";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -41,13 +42,19 @@ const TEXT_ART_STYLES = [
   { value: "Minimal Abstract", label: "Minimal Abstract" },
 ];
 
-const getProgressMessage = (progress: number) => {
-  if (progress < 8) return "Initializing…";
-  if (progress < 17) return "Analyzing your idea…";
-  if (progress < 24) return "Thinking deeply…";
-  if (progress < 43) return "Building content…";
-  if (progress < 76) return "Generating visuals…";
-  return "Finalizing your deck…";
+const controlSx = {
+  height: 44,
+  borderRadius: "12px",
+  bgcolor: "rgba(248, 246, 255, 1)",
+  border: "1px solid rgba(142, 45, 226, 0.1)",
+  "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+  "& .MuiSelect-select": { py: "10px", fontSize: "0.9rem" },
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "&:hover": { borderColor: "rgba(142, 45, 226, 0.3)" },
+  "&.Mui-focused, &:focus-within": {
+    borderColor: "#8E2DE2",
+    boxShadow: "0 0 0 3px rgba(142, 45, 226, 0.1)",
+  },
 };
 
 export default function VideoToDeck() {
@@ -70,21 +77,17 @@ export default function VideoToDeck() {
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-
   const isValidYoutubeUrl = (url: string): boolean => {
     try {
       const u = new URL(url.trim());
       const host = u.hostname.toLowerCase().replace(/^www\./, "");
 
-      // youtu.be short links
       if (host === "youtu.be") return true;
 
-      // All official YouTube domains
       if (
         host.endsWith("youtube.com") ||
         host.endsWith("youtube-nocookie.com")
       ) {
-        // /watch?v=…  /embed/…  /shorts/…  /live/…
         return (
           u.searchParams.has("v") ||
           u.pathname.startsWith("/embed/") ||
@@ -99,9 +102,8 @@ export default function VideoToDeck() {
   };
 
   const handleSubmit = async () => {
-    // ---- validation -------------------------------------------------
     if (!description.trim()) {
-      setError("Please Paste Youtube Link.");
+      setError("Please paste a YouTube link.");
       return;
     }
 
@@ -112,7 +114,6 @@ export default function VideoToDeck() {
       return;
     }
 
-    // ---- reset UI ---------------------------------------------------
     setLoading(true);
     setError("");
     setProgress(0);
@@ -153,7 +154,6 @@ export default function VideoToDeck() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
 
-      // ---- stream parser (identical to PresentationMaker) ----------
       let buffer = "";
       while (true) {
         const { done, value } = await reader.read();
@@ -170,18 +170,14 @@ export default function VideoToDeck() {
 
           try {
             const event = JSON.parse(jsonStr);
-            // progress
             if (event.percent !== undefined) setProgress(event.percent);
-            // messages
             if (event.message !== undefined) setCurrentMessage(event.message);
             if (event.detail !== undefined) setCurrentDetail(event.detail);
-            // error
             if (event.error) {
               setError(event.error);
               setLoading(false);
               return;
             }
-            // completion
             if (event.complete) {
               setProgress(100);
               setCurrentMessage(event.message || "Presentation ready!");
@@ -196,7 +192,7 @@ export default function VideoToDeck() {
               }
               setLoading(false);
             }
-          } catch (e) {
+          } catch {
             console.error("Bad SSE chunk:", jsonStr);
           }
         }
@@ -211,7 +207,6 @@ export default function VideoToDeck() {
     }
   };
 
-  /* ---------- Cancel generation ---------- */
   const cancelGeneration = () => {
     abortControllerRef.current?.abort();
     setLoading(false);
@@ -226,341 +221,228 @@ export default function VideoToDeck() {
     "https://www.youtube.com/watch?v=TjPFZaMe2yw",
     "https://www.youtube.com/watch?v=iG9CE55wbtY",
     "https://www.youtube.com/teded",
-
   ];
 
-
   return (
-    <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        position: "relative",
+        width: "100%",
+        minHeight: "60vh",
+        overflow: "hidden",
+        background:
+          "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(142,45,226,0.1) 0%, transparent 55%)",
+      }}
+    >
+      <AnimatedOrb
+        size={300}
+        top="-5%"
+        left="-5%"
+        color="rgba(142, 45, 226, 0.15)"
+        blur={60}
+      />
+      <AnimatedOrb
+        size={260}
+        bottom="10%"
+        right="-5%"
+        color="rgba(74, 0, 224, 0.12)"
+        blur={50}
+        delay={1}
+      />
+
       <Box
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          overflow: "hidden",
-          zIndex: -1,
-        }}
-      >
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            opacity: "0.1"
-          }}
-        >
-          <source src="/services-background.mp4" type="video/mp4" />
-        </video>
-      </Box>
-      <Box
+        component={motion.div}
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
         sx={{
           width: "100%",
-          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "flex-start",
-          py: { xs: 8, md: 10 },
+          py: { xs: 3, md: 4 },
           px: { xs: 2, md: 6 },
-          textAlign: "center",
+          position: "relative",
+          zIndex: 1,
         }}
       >
-
-
-        {/* Input Section */}
         <Box
+          component={motion.div}
+          variants={fadeUp}
           sx={{
+            position: "relative",
             width: "100%",
-            maxWidth: "926px",
-            maxHeight: { xs: "50%", md: "340px" },
-            bgcolor: "rgba(251, 250, 255, 0.5)",
-            borderRadius: 1,
-            boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
-            border: "1px solid rgba(232, 228, 255, 1)",
+            maxWidth: 920,
+            bgcolor: "rgba(255,255,255,0.92)",
+            backdropFilter: "blur(12px)",
+            borderRadius: "24px",
+            border: "1px solid rgba(142, 45, 226, 0.14)",
+            boxShadow:
+              "0 28px 60px -20px rgba(142, 45, 226, 0.28), 0 8px 24px rgba(15, 10, 25, 0.04)",
             p: { xs: 3, md: 4 },
             mb: 4,
+            overflow: "hidden",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 4,
+              background: "linear-gradient(90deg, #8E2DE2, #C084FC, #4A00E0)",
+              backgroundSize: "200% 100%",
+              animation: "sx-gradient-shift 4s ease infinite",
+            },
           }}
         >
-          {/* Goal Selector */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-start",
-              mb: 1,
-            }}
-          >
-            <FormControl
-              variant="outlined"
-              sx={{
-                backgroundColor: " rgba(255, 255, 255, 1)",
-                width: "142px",
-                height: "44px",
-                borderRadius: "10px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: "none",
-                },
-                "& .MuiSelect-select": {
-                  py: "6px",
-                },
-                gap: 4,
-              }}
-            >
-              {/* <InputLabel
-                sx={{
-                  fontSize: "16px",
-                  fontFamily: "Raleway",
-                  top: "-10px",
-                }}
-              >
-                Select Goal
-              </InputLabel> */}
+          <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1.5 }}>
+            <FormControl variant="outlined" sx={{ ...controlSx, minWidth: 150 }}>
               <Select
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
                 disabled={loading}
-                sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      mt: 0.5,
-                      borderRadius: "10px",
-                    },
-                  },
-                }}
+                sx={{ height: 44, color: "#5B5568" }}
               >
-                <MenuItem sx={{ fontSize: "12px", color: "rgba(109, 109, 109, 1)" }} value="Select Goal" hidden>
+                <MenuItem value="Select Goal" hidden>
                   Select Goal
                 </MenuItem>
-
-                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)", }} value="pitch">Pitch Deck</MenuItem>
-                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)" }} value="education">Educational</MenuItem>
-                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)" }} value="marketing">Marketing</MenuItem>
+                <MenuItem value="pitch">Pitch Deck</MenuItem>
+                <MenuItem value="education">Educational</MenuItem>
+                <MenuItem value="marketing">Marketing</MenuItem>
               </Select>
-
             </FormControl>
           </Box>
 
-          {/* Description Field */}
           <TextField
             fullWidth
             multiline
             minRows={4}
-            placeholder="Paste the YouTube link here"
+            placeholder="Paste a YouTube link… e.g. https://youtu.be/dQw4w9WgXcQ"
             variant="outlined"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             sx={{
-              mb: 1.5,
-              "& .MuiOutlinedInput-notchedOutline": {
-                border: "none",
+              mb: 2,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "14px",
+                bgcolor: "rgba(248, 246, 255, 0.5)",
               },
-              borderBottom: "1px solid rgba(242, 240, 255, 1)",
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(142, 45, 226, 0.12)",
+              },
               "& .MuiInputBase-input": {
-                fontSize: "15px",
-                lineHeight: 1.6,
+                fontSize: "1rem",
+                lineHeight: 1.65,
               },
             }}
           />
 
-          {/* Control Row */}
           <Box
             sx={{
               display: "flex",
               flexDirection: { xs: "column", md: "row" },
-              justifyContent: { xs: "center", md: "space-between" },
+              justifyContent: "space-between",
               alignItems: { xs: "stretch", md: "center" },
               gap: 2,
-              width: "100%",
             }}
           >
             <Stack
               direction={{ xs: "column", sm: "row" }}
               alignItems={{ xs: "stretch", sm: "center" }}
-              sx={{
-                flex: 1,
-              }}
               spacing={1.5}
+              sx={{ flex: 1, flexWrap: "wrap" }}
             >
-
-              {/* Counter */}
               <Box
                 sx={{
                   display: "flex",
-                  width: "124px",
-                  height: "44px",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                  backgroundColor: " rgba(255, 255, 255, 1)",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "none",
-                  },
-                  "& .MuiSelect-select": {
-                    py: "8px",
-                  },
+                  alignItems: "center",
+                  height: 44,
+                  borderRadius: "12px",
+                  bgcolor: "rgba(248, 246, 255, 1)",
+                  border: "1px solid rgba(142, 45, 226, 0.1)",
+                  px: 0.5,
                 }}
               >
                 <IconButton
                   size="small"
                   onClick={() => setCount(Math.max(1, count - 1))}
                   disabled={loading}
-                  disableRipple
-                  sx={{ color: "rgba(52, 51, 48, 1)", paddingLeft: "14px", paddingRight: "8px", paddingTop: "8px", paddingBottom: "8px", }}
-
                 >
-                  <Remove sx={{ width: "20px", height: "20px", fontWeight: "normal" }} />
+                  <Remove sx={{ fontSize: 18 }} />
                 </IconButton>
-                <Typography sx={{ px: 1, marginLeft: "8px", marginRight: "8px", paddingTop: "8px", paddingBottom: "8px" }}>{count}</Typography>
+                <Typography
+                  sx={{
+                    px: 1.5,
+                    fontWeight: 600,
+                    fontFamily: "var(--font-display)",
+                    minWidth: 28,
+                    textAlign: "center",
+                  }}
+                >
+                  {count}
+                </Typography>
                 <IconButton
-                  //size= "small"
-
-                  sx={{ color: "rgba(52, 51, 48, 1)", padding: "8px" }}
+                  size="small"
                   onClick={() => {
-                    if (count > 9) {
-                      return;
-                    }
+                    if (count > 9) return;
                     setCount(count + 1);
                   }}
                   disabled={loading}
-                  disableRipple
                 >
-                  <Add sx={{ width: "20px", height: "20px", fontWeight: "normal" }} />
+                  <Add sx={{ fontSize: 18 }} />
                 </IconButton>
               </Box>
 
-              {/* Tone Selector */}
-              <FormControl
-                variant="outlined"
-                sx={{
-                  display: "flex",
-                  width: "149px",
-                  height: "44px",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                  backgroundColor: " rgba(255, 255, 255, 1)",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "none",
-                  },
-                  "& .MuiSelect-select": {
-                    py: "8px",
-                  },
-                  mb: 4,
-                }}
-              >
-                {/* <InputLabel
-                           sx={{
-                             fontSize: "14px",
-                             fontFamily: "Raleway",
-                           }}
-                         >
-                           Select Tone
-                         </InputLabel> */}
+              <FormControl variant="outlined" sx={{ ...controlSx, minWidth: 150 }}>
                 <Select
                   value={tone}
-                  label="Select Tone"
                   onChange={(e) => setTone(e.target.value)}
                   disabled={loading}
-
-                  sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        mt: 1.5,
-                        borderRadius: "10px",
-                      },
-                    },
-                  }}
+                  sx={{ height: 44, color: "#5B5568" }}
                 >
-                  <MenuItem sx={{ fontSize: "12px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Select Tone" hidden>
+                  <MenuItem value="Select Tone" hidden>
                     Select Tone
                   </MenuItem>
-                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Professional">Professional</MenuItem>
-                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61, 1)", width: "147px" }} value="Casual">Casual</MenuItem>
-                  <MenuItem sx={{ fontSize: "16px", color: "rgba(61, 61, 61 , 1)", width: "147px" }} value="Inspirational">Inspirational</MenuItem>
+                  <MenuItem value="Professional">Professional</MenuItem>
+                  <MenuItem value="Casual">Casual</MenuItem>
+                  <MenuItem value="Inspirational">Inspirational</MenuItem>
                 </Select>
               </FormControl>
-              {/* Visual Style Selector */}
-              {/* Visual Style Selector */}
+
               <FormControl
                 variant="outlined"
-                sx={{
-                  display: "flex",
-                  width: { xs: "100%", sm: "231px" },
-                  height: "44px",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                  backgroundColor: " rgba(255, 255, 255, 1)",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "none",
-                  },
-                  "& .MuiSelect-select": {
-                    py: "8px",
-                  },
-                }}
+                sx={{ ...controlSx, minWidth: { xs: "100%", sm: 200 } }}
               >
                 <Select
                   value={visualStyle}
                   onChange={(e) => setVisualStyle(e.target.value)}
                   displayEmpty
-                  sx={{
-                    fontSize: "16px",
-                    backgroundColor: "#fff",
-                    height: "44px",
-                    color: "rgba(109, 109, 109, 1)",
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        mt: 0.5,
-                        borderRadius: "10px",
-                        maxHeight: 300,
-                      },
-                    },
-                  }}
+                  disabled={loading}
+                  sx={{ height: 44, color: "#5B5568" }}
                 >
                   <MenuItem value="Choose Visual Art Style" hidden>
-                    Choose Visual Art Style
+                    Visual style
                   </MenuItem>
-
                   {TEXT_ART_STYLES.map((style) => (
-                    <MenuItem
-                      key={style.value}
-                      value={style.value}
-                      sx={{ fontSize: "16px", color: "rgba(61,61,61,1)" }}
-                    >
+                    <MenuItem key={style.value} value={style.value}>
                       {style.label}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
-
             </Stack>
 
-            {/* Generate Button */}
             <Button
               variant="contained"
+              size="large"
               disabled={loading}
               onClick={handleSubmit}
-              sx={{
-                backgroundColor: "#6C2BD9",
-                color: "#fff",
-                borderRadius: "32px",
-                width: { xs: "100%", sm: "130px" },
-                height: "44px",
-                px: 4,
-                py: 1.2,
-                fontWeight: 600,
-                boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
-                alignSelf: { xs: "stretch", md: "center" },
-                "&:hover": { backgroundColor: "#5B21B6" },
-              }}
               startIcon={<AutoAwesome />}
+              sx={{
+                minWidth: { xs: "100%", sm: 150 },
+                py: 1.35,
+                alignSelf: { xs: "stretch", md: "center" },
+              }}
             >
               Generate
             </Button>
@@ -569,13 +451,9 @@ export default function VideoToDeck() {
           {error && (
             <Alert
               severity="error"
-              sx={{ mt: 2 }}
+              sx={{ mt: 2, borderRadius: "12px" }}
               action={
-                <IconButton
-                  size="small"
-                  onClick={() => setError("")}
-                  color="inherit"
-                >
+                <IconButton size="small" onClick={() => setError("")} color="inherit">
                   <CloseIcon fontSize="small" />
                 </IconButton>
               }
@@ -585,68 +463,50 @@ export default function VideoToDeck() {
             </Alert>
           )}
         </Box>
-        {/* ---------- PROGRESS */}
 
-        {loading && (
-          <Backdrop
-            open={loading}
+        <GenerationOverlay
+          open={loading}
+          progress={progress}
+          message={currentMessage || "Watching the video"}
+          detail={currentDetail}
+          onCancel={cancelGeneration}
+        />
+
+        <Box
+          component={motion.div}
+          variants={fadeUp}
+          sx={{ textAlign: "center", maxWidth: 820 }}
+        >
+          <Typography
             sx={{
-              zIndex: (theme) => theme.zIndex.drawer + 1,
-              backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
+              color: "text.secondary",
+              fontSize: "0.9rem",
+              fontWeight: 500,
+              mb: 2,
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <img
-                src="/Loader.gif"
-                alt="Generating..."
-                style={{ width: 470, height: 160 }}
-              />
-
-              <Typography
-                sx={{
-                  fontFamily: "Raleway",
-                  fontSize: "24px",
-                  fontWeight: 700,
-                  color: "#fff",
-                  mt: 1,
-                }}
-              >
-                {currentMessage}.....
-              </Typography>
-            </Box>
-          </Backdrop>
-        )}
-
-        {/* Quick Prompt Generator */}
-        <Box sx={{ textAlign: "center", maxWidth: 800 }}>
-
-          <Stack
-            display="flex"
-            flexDirection={{ xs: "column", md: "row" }}
-            flexWrap="wrap"
-            justifyContent="center"
-            gap={2.2}
-            alignItems="center"
-          >
+            Not sure what to paste? Try one of these
+          </Typography>
+          <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={1.5}>
             {quickPrompts.map((prompt, index) => (
               <Chip
                 key={index}
                 label={prompt}
                 onClick={() => setDescription(prompt)}
                 sx={{
-                  border: "1px solid rgba(246, 246, 246, 1)",
-                  bgcolor: "rgba(248, 248, 248, 0.14)",
-                  color: "#1A1A1A",
-                  fontWeight: 400,
-                  borderRadius: "20px",
-                  "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" },
-                  px: 1.5,
+                  border: "1px solid rgba(142, 45, 226, 0.14)",
+                  bgcolor: "rgba(255,255,255,0.8)",
+                  color: "#0F0A19",
+                  fontWeight: 450,
+                  borderRadius: "999px",
+                  cursor: "pointer",
+                  transition: "transform 0.2s ease, background 0.2s ease, border-color 0.2s ease",
+                  "&:hover": {
+                    bgcolor: "rgba(242, 240, 255, 1)",
+                    borderColor: "rgba(142, 45, 226, 0.35)",
+                    transform: "translateY(-2px)",
+                  },
+                  px: 1,
                 }}
               />
             ))}

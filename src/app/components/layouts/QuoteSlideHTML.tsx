@@ -650,15 +650,22 @@ export const QuoteSlideHTML: React.FC<QuoteSlideHTMLProps> = ({
                         width: '120px',
                         height: '120px',
                         borderRadius: '50%',
-                        background: '#e2e8f0',
+                        background: slide.image_url
+                            ? `url(${slide.image_url}) center/cover`
+                            : `linear-gradient(135deg, ${accentColor}30, ${accent2Color}20)`,
+                        border: `3px solid ${accentColor}40`,
+                        boxShadow: `0 8px 24px ${accentColor}25`,
                         flexShrink: 0,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#94a3b8',
-                        fontSize: '2rem'
-                    }}>
-                        Img
+                        color: accentColor,
+                        fontSize: '2.5rem',
+                        fontWeight: 700,
+                        cursor: isEditing ? 'pointer' : 'default',
+                    }}
+                        onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}>
+                        {!slide.image_url && authorText?.[0]?.toUpperCase()}
                     </div>
                     <div style={{ flex: 1, overflow: 'hidden', boxSizing: 'border-box' }}>
                         <EditableElement

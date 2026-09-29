@@ -13,13 +13,15 @@ import {
     Stack,
     Alert,
     AlertTitle,
-    LinearProgress,
     IconButton,
-    Backdrop,
 } from "@mui/material";
+import GenerationOverlay from "@/app/components/shared/GenerationOverlay";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import AnimatedOrb from "@/app/components/shared/AnimatedOrb";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_LATEX_API_BASE_URL;
 
@@ -27,11 +29,11 @@ const ENGINES = ["pdflatex", "xelatex", "lualatex"];
 
 const QUICK_PROMPTS = [
     "Professional resume for a software engineer",
-    "One-page cover letter for data scientist role",
+    "One-page cover letter for a data scientist role",
     "Academic research paper on machine learning",
     "Business proposal for startup funding",
     "Technical report on blockchain technology",
-    "Festive Christmas card with greetings",
+    "Festive holiday card with greetings",
 ];
 
 export default function PromptToPdf() {
@@ -53,7 +55,6 @@ export default function PromptToPdf() {
     const startProgressSimulation = () => {
         setProgress(0);
         let p = 0;
-        const startTime = Date.now();
 
         intervalRef.current = setInterval(() => {
             if (p < 30) p += Math.random() * 5 + 2;
@@ -71,7 +72,6 @@ export default function PromptToPdf() {
     useEffect(() => {
         return () => stopProgressSimulation();
     }, []);
-
 
     const handleOneTimeGenerate = async () => {
         if (!prompt.trim()) {
@@ -175,36 +175,96 @@ export default function PromptToPdf() {
     };
 
     return (
-        <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
-            <Box sx={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden", zIndex: -1 }}>
-                <video autoPlay muted loop playsInline style={{ width: "100%", height: "100%", objectFit: "cover", opacity: "0.1" }}>
-                    <source src="/services-background.mp4" type="video/mp4" />
-                </video>
-            </Box>
+        <Box
+            sx={{
+                position: "relative",
+                width: "100%",
+                minHeight: "60vh",
+                overflow: "hidden",
+                background:
+                    "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(142,45,226,0.1) 0%, transparent 55%)",
+            }}
+        >
+            <AnimatedOrb size={300} top="-5%" left="-5%" color="rgba(142, 45, 226, 0.15)" blur={60} />
+            <AnimatedOrb size={260} bottom="10%" right="-5%" color="rgba(74, 0, 224, 0.12)" blur={50} delay={1} />
 
-            <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", py: { xs: 8, md: 10 }, px: { xs: 2, md: 6 } }}>
-
-
-                <Box sx={{ width: "100%", maxWidth: "926px", bgcolor: "rgba(251, 250, 255, 0.5)", borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.06)", border: "1px solid rgba(232, 228, 255, 1)", p: { xs: 3, md: 5 }, mb: 4 }}>
+            <Box
+                component={motion.div}
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+                sx={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    py: { xs: 3, md: 4 },
+                    px: { xs: 2, md: 6 },
+                    position: "relative",
+                    zIndex: 1,
+                }}
+            >
+                <Box
+                    component={motion.div}
+                    variants={fadeUp}
+                    sx={{
+                        position: "relative",
+                        width: "100%",
+                        maxWidth: 960,
+                        bgcolor: "rgba(255,255,255,0.92)",
+                        backdropFilter: "blur(12px)",
+                        borderRadius: "24px",
+                        border: "1px solid rgba(142, 45, 226, 0.14)",
+                        boxShadow:
+                            "0 28px 60px -20px rgba(142, 45, 226, 0.28), 0 8px 24px rgba(15, 10, 25, 0.04)",
+                        p: { xs: 3, md: 4 },
+                        mb: 4,
+                        overflow: "hidden",
+                        "&::before": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: 4,
+                            background: "linear-gradient(90deg, #8E2DE2, #C084FC, #4A00E0)",
+                            backgroundSize: "200% 100%",
+                            animation: "sx-gradient-shift 4s ease infinite",
+                        },
+                    }}
+                >
                     <TextField
                         fullWidth
                         multiline
-                        minRows={6}
-                        placeholder="e.g., Create a professional resume for a Python developer with 5 years experience..."
+                        minRows={5}
+                        placeholder="e.g. 'Resume for a Python developer with 5 years of experience'"
                         variant="outlined"
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         disabled={loading}
-                        sx={{ mb: 3, "& .MuiOutlinedInput-notchedOutline": { border: "none" }, borderBottom: "1px solid rgba(242, 240, 255, 1)" }}
+                        sx={{
+                            mb: 2.5,
+                            "& .MuiOutlinedInput-root": {
+                                borderRadius: "14px",
+                                bgcolor: "rgba(248, 246, 255, 0.5)",
+                            },
+                            "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "rgba(142, 45, 226, 0.12)",
+                            },
+                            "& .MuiInputBase-input": {
+                                fontSize: "1rem",
+                                lineHeight: 1.65,
+                            },
+                        }}
                     />
 
                     <Stack spacing={2} direction={{ xs: "column", md: "row" }} mb={3}>
                         <TextField
                             fullWidth
-                            label="Additional Context (Optional)"
+                            label="Additional context (optional)"
                             multiline
                             rows={3}
-                            placeholder="e.g., Use moderncv template, one page, include GitHub icons..."
+                            placeholder="e.g. 'Use a one-page layout, include GitHub icons'"
                             value={context}
                             onChange={(e) => setContext(e.target.value)}
                             disabled={loading}
@@ -213,8 +273,8 @@ export default function PromptToPdf() {
                         <Box sx={{ width: { xs: "100%", md: "50%" } }}>
                             <TextField
                                 fullWidth
-                                label="Output Filename (Optional)"
-                                placeholder="e.g., my_resume_2025"
+                                label="Output filename (optional)"
+                                placeholder="e.g. my_resume_2026"
                                 value={outputFilename}
                                 onChange={(e) => setOutputFilename(e.target.value)}
                                 disabled={loading}
@@ -222,7 +282,7 @@ export default function PromptToPdf() {
                             />
 
                             <FormControl fullWidth sx={{ mb: 2 }}>
-                                <InputLabel>LaTeX Engine</InputLabel>
+                                <InputLabel>LaTeX engine</InputLabel>
                                 <Select value={latexEngine} onChange={(e) => setLatexEngine(e.target.value)} disabled={loading}>
                                     <MenuItem value="">Default (pdflatex)</MenuItem>
                                     {ENGINES.map((eng) => (
@@ -232,53 +292,78 @@ export default function PromptToPdf() {
                             </FormControl>
 
                             <Stack direction="row" spacing={3}>
-                                <label className="hint">
+                                <Box
+                                    component="label"
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 0.75,
+                                        fontSize: "0.85rem",
+                                        color: "#5B5568",
+                                        cursor: "pointer",
+                                    }}
+                                >
                                     <input type="checkbox" checked={saveTex} onChange={(e) => setSaveTex(e.target.checked)} disabled={loading} />
                                     Save .tex file
-                                </label>
-                                <label className="hint">
+                                </Box>
+                                <Box
+                                    component="label"
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 0.75,
+                                        fontSize: "0.85rem",
+                                        color: "#5B5568",
+                                        cursor: "pointer",
+                                    }}
+                                >
                                     <input type="checkbox" checked={retryOnError} onChange={(e) => setRetryOnError(e.target.checked)} disabled={loading} />
                                     Retry on error
-                                </label>
+                                </Box>
                             </Stack>
                         </Box>
                     </Stack>
 
-
-                    <Stack direction="row" spacing={2} justifyContent="center">
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
                         <Button
                             variant="contained"
+                            size="large"
                             onClick={handleOneTimeGenerate}
                             disabled={loading}
                             startIcon={<AutoAwesome />}
-                            sx={{ flex: 1, height: 56, borderRadius: "32px", bgcolor: "#6C2BD9", "&:hover": { bgcolor: "#5B21B6" } }}
+                            sx={{ flex: 1, py: 1.35 }}
                         >
-                            Generate PDF (One-Time)
+                            Generate PDF
                         </Button>
 
                         <Button
                             variant="outlined"
+                            size="large"
                             onClick={handleStartSession}
                             disabled={loading}
-                            sx={{ flex: 1, height: 56, borderRadius: "32px", border: "2px solid #6C2BD9", color: "#6C2BD9", "&:hover": { bgcolor: "rgba(108,43,217,0.05)" } }}
+                            sx={{ flex: 1, py: 1.35 }}
                         >
-                            Start Editable Session
+                            Start editable session
                         </Button>
                     </Stack>
 
                     {error && (
-                        <Alert severity="error" sx={{ mt: 2 }} action={<IconButton size="small" onClick={() => setError("")}><CloseIcon /></IconButton>}>
+                        <Alert
+                            severity="error"
+                            sx={{ mt: 2, borderRadius: "12px" }}
+                            action={<IconButton size="small" onClick={() => setError("")}><CloseIcon fontSize="small" /></IconButton>}
+                        >
                             <AlertTitle>Error</AlertTitle>
                             {error}
                         </Alert>
                     )}
                 </Box>
 
-                <Box sx={{ textAlign: "center", maxWidth: 900, mt: 4 }}>
-                    <Typography variant="subtitle1" sx={{ mb: 2, color: "rgba(109, 109, 109, 1)" }}>
-                        Quick Prompts
+                <Box component={motion.div} variants={fadeUp} sx={{ textAlign: "center", maxWidth: 900 }}>
+                    <Typography sx={{ color: "text.secondary", fontSize: "0.9rem", fontWeight: 500, mb: 2 }}>
+                        Not sure where to start? Try one of these
                     </Typography>
-                    <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
+                    <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={1.5}>
                         {QUICK_PROMPTS.map((item) => (
                             <Chip
                                 key={item}
@@ -286,30 +371,30 @@ export default function PromptToPdf() {
                                 onClick={() => !loading && setPrompt(item)}
                                 disabled={loading}
                                 sx={{
-                                    bgcolor: "rgba(248, 248, 248, 0.2)",
-                                    border: "1px solid rgba(240, 240, 240, 1)",
-                                    borderRadius: "30px",
-                                    fontWeight: 500,
-                                    px: 2,
-                                    py: 2.5,
-                                    cursor: "pointer",
-                                    "&:hover": { bgcolor: "rgba(108, 43, 217, 0.1)" },
+                                    border: "1px solid rgba(142, 45, 226, 0.14)",
+                                    bgcolor: "rgba(255,255,255,0.8)",
+                                    color: "#0F0A19",
+                                    fontWeight: 450,
+                                    borderRadius: "999px",
+                                    cursor: loading ? "not-allowed" : "pointer",
+                                    transition: "transform 0.2s ease, background 0.2s ease, border-color 0.2s ease",
+                                    "&:hover": {
+                                        bgcolor: "rgba(242, 240, 255, 1)",
+                                        borderColor: "rgba(142, 45, 226, 0.35)",
+                                        transform: "translateY(-2px)",
+                                    },
+                                    px: 1,
                                 }}
                             />
                         ))}
                     </Stack>
                 </Box>
 
-                {loading && (
-                    <Backdrop open={loading} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
-                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                            <img src="/Loader.gif" alt="Generating..." style={{ width: 470, height: 160 }} />
-                            <Typography sx={{ fontFamily: "Raleway", fontSize: "24px", fontWeight: 700, color: "#fff", mt: 1 }}>
-                                {currentMessage}
-                            </Typography>
-                        </Box>
-                    </Backdrop>
-                )}
+                <GenerationOverlay
+                    open={loading}
+                    progress={progress}
+                    message={currentMessage || "Formatting your document"}
+                />
             </Box>
         </Box>
     );

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import snapshotsCache from "@/utils/snapshotsCache";
 import {
     Dialog,
     IconButton,
@@ -205,7 +204,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
 
                 {/* Progress Bar */}
                 <Box sx={{ position: "absolute", bottom: 40, width: "50%", left: "50%", transform: "translateX(-50%)" }}>
-                    <LinearProgress variant="determinate" value={progress} sx={{ height: 8, borderRadius: 4, bgcolor: "rgba(255,255,255,0.2)", "& .MuiLinearProgress-bar": { bgcolor: "#00ff99" } }} />
+                    <LinearProgress variant="determinate" value={progress} sx={{ height: 8, borderRadius: 4, bgcolor: "rgba(255,255,255,0.2)", "& .MuiLinearProgress-bar": { background: "linear-gradient(135deg, #8E2DE2, #4A00E0)" } }} />
                 </Box>
 
                 <Typography sx={{ position: "absolute", bottom: 16, color: "rgba(255,255,255,0.5)", fontSize: "0.9rem" }}>

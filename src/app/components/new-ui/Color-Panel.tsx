@@ -75,15 +75,27 @@ const ColorPanelMobile: React.FC<ColorPanelMobileProps> = ({ color: initialColor
         {presetColors.map((presetColor) => (
           <Box
             key={presetColor}
+            role="button"
+            tabIndex={0}
+            aria-label={`Use color ${presetColor}`}
             sx={{
               width: 24,
               height: 24,
               borderRadius: "50%",
               backgroundColor: presetColor,
-              border: "1px solid #aaa",
+              border: currentColor === presetColor ? "2px solid #8E2DE2" : "1px solid #aaa",
               cursor: "pointer",
+              transition: "transform 0.15s ease",
+              "&:hover": { transform: "scale(1.1)" },
+              "&:focus-visible": { outline: "2px solid #8E2DE2", outlineOffset: "2px" },
             }}
             onClick={() => handleColorChange(presetColor)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleColorChange(presetColor);
+              }
+            }}
           />
         ))}
       </Box>
@@ -131,18 +143,8 @@ const ColorPanelMobile: React.FC<ColorPanelMobileProps> = ({ color: initialColor
       <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
         <Button
           variant="contained"
-          sx={{
-            backgroundColor: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-            color: "#fff",
-            px: 4,
-            py: 1,
-            "&:hover": { backgroundColor: "#5A3ED9" },
-            width: 290,
-            height: 35,
-            fontSize: 10,
-            fontWeight : 500,
-
-          }}
+          size="small"
+          sx={{ width: 290 }}
           onClick={handleApply}
         >
           Apply

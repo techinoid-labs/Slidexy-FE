@@ -2,6 +2,7 @@
 
 import { Box, Typography, Chip } from "@mui/material";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import Lottie from "lottie-react";
 import exportAnimationData from "@/json/Final7.json";
 import infographicsAnimationData from "@/json/Gif5-infographics.json";
@@ -15,7 +16,7 @@ export default function PurposeSection() {
       sx={{
         width: "100%",
         background: "#fff",
-        py: { xs: 6, md: 10 },
+        py: { xs: 4, md: 6 },
         px: { xs: 2, md: 0 },
       }}
     >
@@ -69,13 +70,16 @@ export default function PurposeSection() {
 
           <Typography
             variant="h2"
+            className="sx-display"
             sx={{
-              fontWeight: 520,
-              fontSize: { xs: "1.9rem", md: "2.5rem" },
-              color: "#18181B",
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
+              fontSize: { xs: "1.75rem", md: "2.35rem" },
+              color: "#0F0A19",
               mb: { xs: 1, md: 0.5 },
               textAlign: { xs: "center", md: "left" },
-              lineHeight: 1.2,
+              lineHeight: 1.15,
+              letterSpacing: "-0.03em",
             }}
           >
             Why <br /> Teams & Creators Use Slidexy
@@ -115,6 +119,9 @@ export default function PurposeSection() {
         {/* Card 1 */}
 
         <Box
+          component={motion.div}
+          whileHover={{ y: -6 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           sx={{
             gridRow: { md: "1 / span 2" },
             gridColumn: { xs: "1", md: "1" },
@@ -122,8 +129,10 @@ export default function PurposeSection() {
             background: "linear-gradient(180deg, #EEF1F7 0%, #FFFFFF 100%)",
             borderRadius: 2,
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
+            cursor: "default",
+            "&:hover": { boxShadow: "0 16px 40px -12px rgba(142,45,226,0.22)" },
             p: { xs: 1.5, md: 2 },
-            minHeight: { xs: 180, md: 180 },
+            minHeight: { xs: 140, md: 140 },
             maxWidth: { xs: 820, md: 800 },
             ml: { xs: 0, md: 5 },
             display: "flex",
@@ -213,14 +222,19 @@ export default function PurposeSection() {
 
         {/* Card 2 */}
         <Box
+          component={motion.div}
+          whileHover={{ y: -6 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           sx={{
             bgcolor: "transparent",
             background:
               "linear-gradient(111.14deg, #F0EFFF 4.64%, #FFFFFF 100%)",
             borderRadius: 2,
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
+            cursor: "default",
+            "&:hover": { boxShadow: "0 16px 40px -12px rgba(142,45,226,0.22)" },
             p: { xs: 4, md: 5 },
-            minHeight: 180,
+            minHeight: 140,
             width: "100%",
             mx: "auto",
             display: "flex",
@@ -313,14 +327,19 @@ export default function PurposeSection() {
         {/* Card 3 */}
 
         <Box
+          component={motion.div}
+          whileHover={{ y: -6 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           sx={{
             bgcolor: "transparent",
             background:
               "linear-gradient(112.44deg, #DFE9FE -9.69%, #FCFDFF 100%)",
             borderRadius: 2,
             boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
+            cursor: "default",
+            "&:hover": { boxShadow: "0 16px 40px -12px rgba(142,45,226,0.22)" },
             p: { xs: 4, md: 2.5 },
-            minHeight: 180,
+            minHeight: 140,
             maxWidth: 900, // increased to fit image
             mr: { xs: 0, md: 2 },
             display: "flex",
@@ -413,6 +432,9 @@ export default function PurposeSection() {
 
       {/* Full-width Bottom Card */}
       <Box
+        component={motion.div}
+        whileHover={{ y: -6 }}
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         sx={{
           //maxWidth: 1350,
           mx: "auto",
@@ -422,8 +444,10 @@ export default function PurposeSection() {
             "linear-gradient(94.38deg, #ECE2FF -101.47%, #FAF8FF 100%)",
           borderRadius: 2,
           boxShadow: "0 4px 24px 0 rgba(80, 80, 120, 0.07)",
+          cursor: "default",
+          "&:hover": { boxShadow: "0 16px 40px -12px rgba(142,45,226,0.22)" },
           px: { xs: 3, md: "36px" },
-          py: { xs: 3, md: "40px" },
+          py: { xs: 2, md: "24px" },
           maxWidth: 1300,
           display: "flex",
           flexDirection: { xs: "column", md: "row" },

@@ -31,7 +31,7 @@ export default function CurrentPrompt({ prompt, title }: CurrentPromptProps) {
           justifyContent: "center",
           mr: 2
         }}>
-          <AutoAwesome sx={{ color: "#6C2BD9", fontSize: 20 }} />
+          <AutoAwesome sx={{ color: "#8E2DE2", fontSize: 20 }} />
         </Box>
         <Typography variant="h6" sx={{ fontWeight: 700, color: "#1a1a1a" }}>
           Current Prompt

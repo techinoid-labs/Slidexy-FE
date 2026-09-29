@@ -3,6 +3,9 @@ import React from 'react';
 import { getContrastTextColor } from '@/utils/colorUtils';
 import { EditableElement } from '../editor/EditableElement';
 import { UserElementsRenderer } from '../editor/UserElementsRenderer';
+import { getBulletIcon } from '@/utils/bulletIcons';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import StarsIcon from '@mui/icons-material/Stars';
 
 interface ComparisonSlideHTMLProps {
     slide: any;
@@ -62,7 +65,7 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
         onSlideUpdate({ ...slide, elements: updatedElements });
     };
 
-    const Card = ({ heading, items, offset }: { heading: string; items: any[]; offset: number }) => (
+    const Card = ({ heading, items, offset, color }: { heading: string; items: any[]; offset: number; color: string }) => (
         <div style={{
             background: 'rgba(255,255,255,0.06)',
             border: '1px solid rgba(255,255,255,0.12)',
@@ -78,11 +81,17 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                 <div style={{
-                    width: '12px',
-                    height: '12px',
-                    borderRadius: '50%',
-                    background: `linear-gradient(135deg, ${accent} 0%, ${accent2} 100%)`
-                }} />
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '10px',
+                    background: `linear-gradient(135deg, ${accent} 0%, ${accent2} 100%)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: `0 4px 12px ${accent}40`,
+                }}>
+                    <StarsIcon style={{ fontSize: '17px', color: '#fff' }} />
+                </div>
                 <h3 style={{
                     margin: 0,
                     color: '#fff',
@@ -107,12 +116,10 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
                             transition: 'all 0.2s ease',
                             animation: `fadeInUp 0.6s ease-out ${localIdx * 0.1}s both`
                         }}>
-                            <div style={{
-                                width: '8px',
-                                height: '8px',
-                                marginTop: '0.55rem',
-                                borderRadius: '50%',
-                                background: `linear-gradient(135deg, ${accent} 0%, ${accent2} 100%)`,
+                            <CheckCircleIcon style={{
+                                fontSize: '18px',
+                                marginTop: '0.15rem',
+                                color,
                                 flexShrink: 0
                             }} />
                             <EditableElement
@@ -202,8 +209,8 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
                     flex: 1,
                     alignItems: 'stretch'
                 }}>
-                    <Card heading="Option A" items={leftItems} offset={0} />
-                    <Card heading="Option B" items={rightItems} offset={midpoint} />
+                    <Card heading="Option A" items={leftItems} offset={0} color={accent} />
+                    <Card heading="Option B" items={rightItems} offset={midpoint} color={accent2} />
                 </div>
             </div>
             <UserElementsRenderer

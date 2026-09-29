@@ -4,6 +4,7 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { HTMLSlideRenderer } from "../editor/HTMLSlideRenderer";
 import { getSlideDimensions } from "../../../utils/slideUtils";
+import { PANEL } from "./panelTheme";
 
 interface LiveLayoutPreviewProps {
     variant: any;
@@ -29,26 +30,38 @@ const LiveLayoutPreview: React.FC<LiveLayoutPreviewProps> = ({
 
     return (
         <Box
+            role="button"
+            tabIndex={0}
+            onClick={onClick}
+            onKeyDown={(e) => {
+                if (onClick && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault();
+                    onClick();
+                }
+            }}
             sx={{
                 position: "relative",
                 borderRadius: "12px",
                 cursor: "pointer",
                 transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                 overflow: "hidden",
-                bgcolor: "#fff",
-                border: isSelected ? "2px solid #7B4AE2" : "1px solid #e5e7eb",
+                bgcolor: PANEL.surfaceSunken,
+                border: isSelected ? `2px solid ${PANEL.accent}` : `1px solid ${PANEL.border}`,
                 boxShadow: isSelected
-                    ? "0 4px 12px rgba(123,74,226,0.15)"
+                    ? `0 4px 12px ${PANEL.accentBg}`
                     : "0 1px 3px rgba(0,0,0,0.05)",
                 "&:hover": {
                     transform: "translateY(-2px)",
                     boxShadow: isSelected
-                        ? "0 8px 16px rgba(123,74,226,0.2)"
+                        ? `0 8px 16px ${PANEL.accentBgHover}`
                         : "0 4px 8px rgba(0,0,0,0.1)",
-                    borderColor: isSelected ? "#7946e4" : "#d1d5db",
+                    borderColor: isSelected ? PANEL.accent : PANEL.borderHover,
+                },
+                "&:focus-visible": {
+                    outline: `2px solid ${PANEL.accent}`,
+                    outlineOffset: "2px",
                 },
             }}
-            onClick={onClick}
         >
             <Box
                 sx={{
@@ -82,12 +95,12 @@ const LiveLayoutPreview: React.FC<LiveLayoutPreviewProps> = ({
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                bgcolor: isSelected ? "rgba(123,74,226,0.02)" : "transparent"
+                bgcolor: isSelected ? PANEL.accentBg : "transparent"
             }}>
                 <Typography
                     sx={{
                         fontWeight: isSelected ? 600 : 500,
-                        color: isSelected ? "#7B4AE2" : "#4b5563",
+                        color: isSelected ? PANEL.accentSoft : PANEL.textMuted,
                         fontSize: 12,
                     }}
                 >
@@ -98,7 +111,7 @@ const LiveLayoutPreview: React.FC<LiveLayoutPreviewProps> = ({
                         width: 8,
                         height: 8,
                         borderRadius: "50%",
-                        bgcolor: "#7B4AE2"
+                        bgcolor: PANEL.accent
                     }} />
                 )}
             </Box>

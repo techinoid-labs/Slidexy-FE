@@ -89,17 +89,7 @@ const PlanPage = () => {
           </Typography>
           <Button
             onClick={() => window.location.reload()}
-            sx={{
-              background: "linear-gradient(90deg, #6C2BD7, #6C2BD7)",
-              color: "#fff",
-              borderRadius: "30px",
-              px: 3,
-              py: 1.2,
-              fontWeight: 600,
-              textTransform: "none",
-              boxShadow: "0 4px 14px rgba(108,43,215,0.3)",
-              "&:hover": { background: "#4A00E0" },
-            }}
+            variant="contained"
           >
             Try Again
           </Button>
@@ -355,16 +345,8 @@ const PlanPage = () => {
             <Button
               disabled={checkingCoupon}
               onClick={handleApplyCoupon}
-              sx={{
-                color: "#6C2BD7",
-                fontWeight: 600,
-                fontSize: "14px",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "transparent",
-                  textDecoration: "underline",
-                },
-              }}
+              variant="text"
+              size="small"
             >
               {checkingCoupon ? "Checking..." : "Apply"}
             </Button>
@@ -400,13 +382,9 @@ const PlanPage = () => {
                     type: "",
                   });
                 }}
-                sx={{
-                  color: "#d32f2f",
-                  fontSize: "12px",
-                  textTransform: "none",
-                  fontWeight: 600,
-                  "&:hover": { textDecoration: "underline" },
-                }}
+                variant="text"
+                size="small"
+                color="error"
               >
                 Remove
               </Button>
@@ -439,20 +417,8 @@ const PlanPage = () => {
           <Button
             fullWidth
             variant="contained"
+            size="large"
             onClick={() => handleCheckout(safePlan.name)}
-            sx={{
-              background: "linear-gradient(90deg, #6C2BD7, #6C2BD7)",
-              borderRadius: "32px",
-              fontWeight: 600,
-              fontSize: "16px",
-              textTransform: "none",
-              py: 1.6,
-              boxShadow: "0 4px 14px rgba(108,43,215,0.3)",
-              "&:hover": {
-                background: "#4A00E0",
-                boxShadow: "0 6px 18px rgba(108,43,215,0.4)",
-              },
-            }}
           >
             Proceed to Checkout
           </Button>

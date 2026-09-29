@@ -1,39 +1,80 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Container,
   Typography,
-  TextField,
   Button,
+  InputBase,
   Chip,
-  IconButton,
-  Fab,
-  useTheme,
-  alpha,
 } from "@mui/material";
-import { ArrowForward, KeyboardArrowDown } from "@mui/icons-material";
-import ResponsivePageWrapper from "@/lib/responsive-page-wrapper";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { ArrowForward, AutoAwesome, PlayArrow } from "@mui/icons-material";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { analyticsEvent } from "@/lib/gtag";
+import AnimatedOrb from "@/app/components/shared/AnimatedOrb";
+import { fadeUp, staggerContainer, easeOutExpo } from "@/lib/motion";
+import { InfographicBulletsHTML } from "@/app/components/layouts/InfographicBulletsHTML";
+
+const HERO_PREVIEW_SLIDE = {
+  slide_title: { text: "Why teams switch to Slidexy" },
+  elements: [
+    { element_type: "bullet_point", id: "hp-1", text: "10x - Faster than building decks by hand" },
+    { element_type: "bullet_point", id: "hp-2", text: "50+ - Layout variations to choose from" },
+    { element_type: "bullet_point", id: "hp-3", text: "100% - On-brand colors, every slide" },
+    { element_type: "bullet_point", id: "hp-4", text: "0 - Design skills required" },
+  ],
+};
+const HERO_PREVIEW_THEME = {
+  backgroundColor: "#ffffff",
+  artPalette: ["#8E2DE2", "#4A00E0", "#C084FC", "#F0ABFC"],
+};
+
+const PLACEHOLDERS = [
+  "Pitch deck for a climate-tech startup…",
+  "Q3 sales review for the leadership team…",
+  "Lecture on the history of jazz…",
+  "Onboarding walkthrough for new hires…",
+];
+
+const FLOATING_TAGS = [
+  { label: "Outline generated", top: "-46px", left: "8%", delay: 0.2 },
+  { label: "12 slides, ready", bottom: "-46px", right: "8%", delay: 0.6 },
+];
 
 export default function HeroSection() {
   const [inputValue, setInputValue] = useState("");
-  const theme = useTheme();
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  const previewWrapRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(0.4);
+  const mvX = useMotionValue(0);
+  const mvY = useMotionValue(0);
+  const rotateX = useSpring(useTransform(mvY, [-0.5, 0.5], [6, -6]), { stiffness: 150, damping: 20 });
+  const rotateY = useSpring(useTransform(mvX, [-0.5, 0.5], [-6, 6]), { stiffness: 150, damping: 20 });
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    mvX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mvY.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+  const handlePointerLeave = () => {
+    mvX.set(0);
+    mvY.set(0);
+  };
+
   const handleRedirect = () => {
     analyticsEvent("get_started_click", {
       category: "engagement",
-      label: "home_page_to_tools", // updated label for clarity
+      label: "home_page_to_tools",
     });
-
-    // Navigate to /tools
-    router.push("/tools");
+    const prompt = inputValue.trim();
+    router.push(prompt ? `/tools?prompt=${encodeURIComponent(prompt)}` : "/tools");
   };
 
   useEffect(() => {
@@ -43,292 +84,418 @@ export default function HeroSection() {
     } else {
       current.delete("prompt");
     }
-
     const search = current.toString();
     router.replace(`?${search}`, { scroll: false });
   }, [inputValue]);
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPlaceholderIdx((i) => (i + 1) % PLACEHOLDERS.length);
+    }, 3200);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const el = previewWrapRef.current;
+    if (!el) return;
+    const update = () => setPreviewScale(el.clientWidth / 960);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <>
+    <Box
+      component="section"
+      sx={{
+        position: "relative",
+        width: "100%",
+        overflow: "hidden",
+        background: "#FFFFFF",
+        pt: { xs: 6, md: 8 },
+        pb: { xs: 8, md: 10 },
+      }}
+    >
+      {/* Soft light-purple wash + floating pastel orbs */}
       <Box
         sx={{
-          width: "100%",
-          height: { sx: 672, md: 672 },
-          // height: 672,
-          background: `radial-gradient(700px 220px at 50% 54%, #8E2DE210 0%, #FBF9FF 70%, #fff 100%)`,
-          position: "relative",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(ellipse 60% 45% at 82% 12%, rgba(142,45,226,0.08) 0%, transparent 60%), radial-gradient(ellipse 55% 40% at 5% 85%, rgba(74,0,224,0.06) 0%, transparent 55%)",
+          pointerEvents: "none",
         }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            overflow: "hidden",
-            zIndex: 1,
-          }}
-        >
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              opacity: "0.1"
-            }}
-          >
-            <source src="/services-background.mp4" type="video/mp4" />
-          </video>
-        </Box>
-        {/* Decorative Elements */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: { xs: 10, md: 30 },
-            left: { xs: 10, md: 200 },
-            animation: "sparkle 2s ease-in-out infinite",
-            width: { xs: 24, md: 72 },
-            height: { xs: 24, md: 72 },
-            display: { xs: "none", md: "block" },
-            "@keyframes sparkle": {
-              "0%, 100%": {
-                opacity: 0.7,
-                transform: "scale(1)",
-              },
-              "50%": {
-                opacity: 1,
-                transform: "scale(1.1)",
-              },
-            },
-          }}
-        >
-          <Image
-            src="/images/side-star-yellow.svg"
-            alt="Icon"
-            width={72}
-            height={72}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </Box>
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: "50%",
-            transform: "translateX(-50%)",
-            mt: { xs: -6, md: -16 },
-            opacity: 0.6,
-            pointerEvents: "none",
-            width: { xs: 250, md: 450 },
-            height: { xs: 200, md: 450 },
-          }}
-        >
-          <Image
-            src="/images/checkered-lines.svg"
-            alt="Checkered Background"
-            width={450}
-            height={450}
-            style={{
-              objectFit: "contain",
-              width: "100%",
-              height: "100%",
-            }}
-          />
-        </Box>
+      />
+      <AnimatedOrb
+        size={{ xs: 200, md: 380 }}
+        top="-6%"
+        right="-6%"
+        color="rgba(142, 45, 226, 0.14)"
+        blur={70}
+        duration={9}
+      />
+      <AnimatedOrb
+        size={{ xs: 160, md: 300 }}
+        bottom="-8%"
+        left="-6%"
+        color="rgba(240, 171, 252, 0.16)"
+        blur={70}
+        duration={11}
+        delay={1.2}
+      />
 
-        <Container
-          maxWidth="lg"
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 2 }}>
+        <Box
           sx={{
-            pt: 0,
-            pb: 0,
-            height: "100%",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
+            flexDirection: { xs: "column", md: "row" },
+            alignItems: "center",
+            gap: { xs: 6, md: 4 },
           }}
         >
-          {/* Badge */}
+          {/* Left column — copy + composer */}
           <Box
+            component={motion.div}
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
             sx={{
+              flex: 1,
               display: "flex",
-              justifyContent: "center",
-              mt: { xs: 2, md: 0 },
-              mb: 2,
+              flexDirection: "column",
+              alignItems: { xs: "center", md: "flex-start" },
+              textAlign: { xs: "center", md: "left" },
+              maxWidth: 560,
             }}
           >
-            <Chip
-              icon={
-                <Image
-                  src="/images/Stars.svg"
-                  alt="Icon"
-                  width={18}
-                  height={18}
-                  style={{ marginRight: "4px", width: 18, height: 18 }}
-                />
-              }
-              label="No sign-up needed for the first deck"
-              sx={{
-                px: 1.5,
-                py: 0.7,
-                fontSize: { xs: "0.8rem", md: "0.95rem" },
-                height: "auto",
-                borderRadius: "600px",
-                border: "0.5px solid rgba(232, 228, 255, 1)",
-                backgroundColor: "rgba(255, 255, 255, 0.12);",
-                color: "#4A00E0",
-                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.06)",
-                "& .MuiChip-icon": {
-                  color: "#4A00E0",
-                  marginRight: "6px",
-                },
-              }}
-            />
-          </Box>
-          {/* Main Heading */}
-          <Box sx={{ textAlign: "center", mt: 1, mb: 2, zIndex: 100 }}>
-            <Typography
-              variant="h1"
-              noWrap
-              sx={{
-                fontSize: { xs: 28, md: 28, lg: 38 },
-                fontWeight: 550,
-                mb: 4,
-                lineHeight: 1.3,
-                color: "#000000",
-                whiteSpace: { xs: "normal", md: "nowrap" },
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              SlideXy AI Turns Your Ideas into Stunning Presentations Instantly
-            </Typography>
-
-            <Typography
-              variant="h6"
-              sx={{
-                color: "text.secondary",
-                maxWidth: 600,
-                mx: "auto",
-                lineHeight: 1.3,
-                fontSize: { xs: "0.8rem", md: "1.1rem" },
-                fontWeight: 350,
-                textAlign: "center", // Ensure text is centered
-              }}
-            >
-              <span>
-                Create slides instantly using AI. Turn ideas, voice, text, or links into
-                polished presentations in seconds.
-              </span>
-              <Box
-                component="span"
+            <motion.div variants={fadeUp} custom={0}>
+              <Chip
+                icon={<AutoAwesome sx={{ fontSize: 16, color: "#8E2DE2 !important" }} />}
+                label="AI presentation generator"
                 sx={{
-                  display: { xs: "block", md: "inline" },
+                  bgcolor: "rgba(142, 45, 226, 0.08)",
+                  color: "#4A00E0",
+                  fontWeight: 600,
+                  border: "1px solid rgba(142, 45, 226, 0.16)",
+                  mb: 3,
+                }}
+              />
+            </motion.div>
+
+            <motion.div variants={fadeUp} custom={1}>
+              <Typography
+                component="h1"
+                className="sx-display"
+                sx={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
+                  fontSize: { xs: "2.1rem", sm: "2.6rem", md: "3.1rem" },
+                  lineHeight: 1.12,
+                  letterSpacing: "-0.035em",
+                  color: "#0F0A19",
+                  mb: 2,
                 }}
               >
-                powered by AI, styled by designers.
-              </Box>
-            </Typography>
-          </Box>
+                Skip the blank slide.
+                <Box
+                  component="span"
+                  sx={{
+                    display: "block",
+                    background: "linear-gradient(90deg, #8E2DE2, #C084FC, #8E2DE2)",
+                    backgroundSize: "200% auto",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    animation: "sx-gradient-shift 5s ease infinite",
+                  }}
+                >
+                  Just describe it.
+                </Box>
+              </Typography>
+            </motion.div>
 
-          {/* Input Section */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              mb: 8,
-              mt: { xs: 1, md: 0 },
-            }}
-          >
-            <Box sx={{ position: "relative", maxWidth: 700, width: "100%" }}>
+            <motion.div variants={fadeUp} custom={2}>
+              <Typography
+                sx={{
+                  color: "#5B5568",
+                  fontSize: { xs: "1rem", md: "1.1rem" },
+                  lineHeight: 1.65,
+                  maxWidth: 480,
+                  mb: 3.5,
+                }}
+              >
+                Hand Slidexy a topic, document, or link. Get a full deck —
+                outlined, designed, ready to present — in seconds.
+              </Typography>
+            </motion.div>
+
+            {/* Prompt composer */}
+            <motion.div variants={fadeUp} custom={3} style={{ width: "100%" }}>
               <Box
                 sx={{
                   display: "flex",
-                  justifyContent: "center",
                   alignItems: "center",
+                  bgcolor: "#fff",
+                  borderRadius: "999px",
+                  border: "1.5px solid rgba(142,45,226,0.18)",
+                  boxShadow: "0 12px 32px -12px rgba(142,45,226,0.25)",
+                  pl: { xs: 2.5, md: 3 },
+                  pr: 0.75,
+                  py: 0.75,
                   mb: 2,
-                  mt: 5,
-                  ml: { xs: 0, md: 0 },
-                  flexDirection: { xs: "column", md: "row" },
+                  transition: "border-color 0.25s ease, box-shadow 0.25s ease",
+                  "&:focus-within": {
+                    borderColor: "#8E2DE2",
+                    boxShadow: "0 12px 32px -8px rgba(142,45,226,0.35), 0 0 0 4px rgba(142,45,226,0.1)",
+                  },
                 }}
               >
-                {/* Get Started Button */}
+                <Box sx={{ position: "relative", flex: 1, minHeight: 28 }}>
+                  {!inputValue && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        pointerEvents: "none",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <AnimatePresence mode="wait">
+                        <motion.span
+                          key={placeholderIdx}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.35, ease: easeOutExpo }}
+                          style={{
+                            fontSize: "0.95rem",
+                            color: "#8A8496",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {PLACEHOLDERS[placeholderIdx]}
+                        </motion.span>
+                      </AnimatePresence>
+                    </Box>
+                  )}
+                  <InputBase
+                    fullWidth
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleRedirect();
+                      }
+                    }}
+                    sx={{
+                      color: "#0F0A19",
+                      fontSize: { xs: "0.95rem", md: "1rem" },
+                      "& input::placeholder": { color: "transparent" },
+                    }}
+                    inputProps={{ "aria-label": "Describe your presentation" }}
+                  />
+                </Box>
+                <Button
+                  component={motion.button}
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleRedirect}
+                  variant="contained"
+                  sx={{
+                    borderRadius: "999px",
+                    minWidth: 0,
+                    px: 2.75,
+                    py: 1.25,
+                    flexShrink: 0,
+                  }}
+                  aria-label="Create presentation"
+                >
+                  <ArrowForward fontSize="small" />
+                </Button>
+              </Box>
+            </motion.div>
+
+            <motion.div variants={fadeUp} custom={4}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: { xs: "center", md: "flex-start" },
+                  alignItems: "center",
+                  gap: 2.5,
+                }}
+              >
                 <Box
                   sx={{
-                    mb: { xs: -6, md: 2 },
-                    alignItems: "center",
                     display: "flex",
-                    zIndex: 2
+                    alignItems: "center",
+                    gap: 0.75,
+                    color: "#8A8496",
+                    fontSize: "0.875rem",
                   }}
                 >
-                  <Button
-                    onClick={() => handleRedirect()}
-                    variant="contained"
-                    endIcon={<ArrowForward />}
-                    sx={{
-                      ml: 2,
-                      mt: { xs: 1, md: 1 },
-                      px: 3,
-                      py: 1.5,
-                      width: "200px",
-                      height: "48px",
-                      fontSize: { xs: "0.875rem", md: "1rem" },
-                      background: "#4A00E0",
-                      color: "#fff",
-                      textTransform: "none",
-                      borderRadius: 2,
-                      "&:hover": {
-                        background: "#4A00E0",
-                      },
-                    }}
-                  >
-                    Get Started →
-                  </Button>
+                  <AutoAwesome sx={{ fontSize: 15, color: "#8E2DE2" }} />
+                  No sign-up needed for your first deck
+                </Box>
+                <Box
+                  component={motion.button}
+                  whileHover={{ x: 3 }}
+                  onClick={() =>
+                    document
+                      .getElementById("how-it-works")
+                      ?.scrollIntoView({ behavior: "smooth" })
+                  }
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#4A00E0",
+                    fontWeight: 600,
+                    fontSize: "0.875rem",
+                    p: 0,
+                  }}
+                >
+                  <PlayArrow sx={{ fontSize: 16 }} />
+                  See how it works
                 </Box>
               </Box>
-            </Box>
+            </motion.div>
           </Box>
 
+          {/* Right column — interactive floating product preview */}
           <Box
             sx={{
+              flex: 1,
+              width: "100%",
               display: "flex",
               justifyContent: "center",
-              mt: { sx: 0, md: 0 },
-              pb: { sx: 10, md: 0 },
+              position: "relative",
+              perspective: 1000,
             }}
           >
-            <Button
-              onClick={() => window.scroll(0, 800)}
-              color="primary"
-              endIcon={<KeyboardArrowDown />}
-              sx={{
-                fontSize: { xs: "1.1rem", sm: "1.2rem", md: "1.2rem" },
-                color: "#4A00E0",
-                whiteSpace: "nowrap",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "transparent",
-                  color: "primary.dark",
-                },
-                fontWeight: 450,
-                px: 2,
-                py: 1,
-                zIndex: 2
-              }}
+            <Box
+              component={motion.div}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3, ease: easeOutExpo }}
+              sx={{ position: "relative", width: "100%", maxWidth: 460 }}
             >
-              Learn More
-            </Button>
+              <Box
+                ref={cardRef}
+                component={motion.div}
+                onPointerMove={handlePointerMove}
+                onPointerLeave={handlePointerLeave}
+                style={{ rotateX, rotateY }}
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                sx={{
+                  position: "relative",
+                  borderRadius: "20px",
+                  overflow: "hidden",
+                  border: "1px solid rgba(142,45,226,0.12)",
+                  boxShadow:
+                    "0 30px 60px -24px rgba(142,45,226,0.35), 0 8px 24px rgba(15,10,25,0.08)",
+                  bgcolor: "#fff",
+                  transformStyle: "preserve-3d",
+                }}
+              >
+                {/* Real rendered slide layout, scaled to fit — not a static mockup */}
+                <Box
+                  ref={previewWrapRef}
+                  sx={{
+                    position: "relative",
+                    width: "100%",
+                    aspectRatio: "960 / 540",
+                    overflow: "hidden",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "960px",
+                      height: "540px",
+                      transformOrigin: "top left",
+                      transform: `scale(${previewScale})`,
+                    }}
+                  >
+                    <InfographicBulletsHTML
+                      slide={HERO_PREVIEW_SLIDE}
+                      theme={HERO_PREVIEW_THEME}
+                      variant={1}
+                      isEditing={false}
+                      slideIndex={0}
+                    />
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%)",
+                    backgroundSize: "200% 100%",
+                    animation: "sx-shimmer 4.5s linear infinite",
+                    pointerEvents: "none",
+                  }}
+                />
+              </Box>
+
+              {FLOATING_TAGS.map((tag) => (
+                <Box
+                  key={tag.label}
+                  component={motion.div}
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1, y: [0, -6, 0] }}
+                  transition={{
+                    opacity: { duration: 0.5, delay: tag.delay + 0.6 },
+                    scale: { duration: 0.5, delay: tag.delay + 0.6 },
+                    y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: tag.delay },
+                  }}
+                  sx={{
+                    position: "absolute",
+                    top: tag.top,
+                    bottom: tag.bottom,
+                    left: tag.left,
+                    right: tag.right,
+                    display: { xs: "none", sm: "flex" },
+                    alignItems: "center",
+                    gap: 0.75,
+                    bgcolor: "#fff",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(142,45,226,0.14)",
+                    boxShadow: "0 12px 28px -10px rgba(142,45,226,0.3)",
+                    px: 1.75,
+                    py: 0.9,
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
+                    color: "#0F0A19",
+                    zIndex: 3,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "linear-gradient(135deg, #8E2DE2, #4A00E0)",
+                    }}
+                  />
+                  {tag.label}
+                </Box>
+              ))}
+            </Box>
           </Box>
-        </Container>
-      </Box>
-    </>
+        </Box>
+      </Container>
+    </Box>
   );
 }

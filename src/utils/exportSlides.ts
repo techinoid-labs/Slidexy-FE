@@ -1,108 +1,88 @@
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { OffscreenSlideStage } from "./offscreenSlideStage";
 
 /**
- * Export slides as PDF by capturing the HTML elements directly.
- * Works for both visible and hidden slides by cloning them to a temporary container.
+ * Export slides as PDF.
+ *
+ * Each slide is rendered into a dedicated off-screen stage rather than scraped
+ * out of the editor's DOM — the editor only mounts the slide you are currently
+ * viewing, and export should not depend on what happens to be on screen.
  */
-export const exportSlidesAsPDF = async (
-  slides: any[]
-) => {
+/**
+ * 2x gives 1920x1080 per slide — beyond what a projector or a PDF viewer
+ * resolves, and a quarter of the pixels of the previous 3x.
+ */
+const EXPORT_SCALE = 2;
+const EXPORT_JPEG_QUALITY = 0.92;
+
+export const exportSlidesAsPDF = async (slides: any[], theme?: any) => {
   const slidesCount = slides.length;
+  const WIDTH = 960;
+  const HEIGHT = 540;
+
+  if (slidesCount === 0) {
+    console.warn("[PDF Export] No slides to export");
+    return false;
+  }
+
+  let stage: OffscreenSlideStage | null = null;
+
   try {
-    const WIDTH = 960;
-    const HEIGHT = 540;
     const pdfFileName = localStorage.getItem("fileName") || "presentation";
+
+    const resolvedTheme = theme ?? readPersistedTheme();
 
     const pdf = new jsPDF({
       orientation: "landscape",
       unit: "px",
       format: [WIDTH, HEIGHT],
+      compress: true,
     });
 
-    // Create a temporary container for rendering slides "off-screen" but visible
-    // html2canvas requires elements to be in the DOM and visible (not display:none)
-    const container = document.createElement("div");
-    container.style.position = "fixed";
-    container.style.top = "0";
-    container.style.left = "-10000px";
-    container.style.width = `${WIDTH}px`;
-    container.style.height = `${HEIGHT}px`;
-    container.style.overflow = "hidden";
-    document.body.appendChild(container);
+    stage = new OffscreenSlideStage(WIDTH, HEIGHT);
 
     let addedPages = 0;
 
     for (let i = 0; i < slidesCount; i++) {
-      // Find the actual slide node in the DOM
-      const sourceNode = document.getElementById(`slide-node-${i}`);
-      if (!sourceNode) {
-        console.warn(`[PDF Export] Could not find DOM node for slide ${i}`);
-        continue;
-      }
-
-      // Clone the node deeply
-      const clone = sourceNode.cloneNode(true) as HTMLElement;
-
-      // Reset any transform/positioning styles that might interfere
-      clone.style.transform = "none";
-      clone.style.position = "absolute";
-      clone.style.top = "0";
-      clone.style.left = "0";
-      clone.style.visibility = "visible";
-      clone.style.opacity = "1";
-      clone.style.border = "none"; // Remove selection borders if any
-      clone.style.boxShadow = "none";
-
-      // Append to our temp container
-      container.innerHTML = ""; // Clear previous
-      container.appendChild(clone);
-
-      // CRITICAL: Wait for fonts to be ready before each capture
-      if (document.fonts) {
-        await document.fonts.ready;
-      }
-
-      // Small delay to ensure layout stabilizer
-      await new Promise(r => setTimeout(r, 100));
-
       try {
-        const canvas = await html2canvas(container, {
-          scale: 3, // Even higher quality
+        const node = await stage.render(slides[i], resolvedTheme);
+
+        const canvas = await html2canvas(node, {
+          scale: EXPORT_SCALE,
           useCORS: true,
           width: WIDTH,
           height: HEIGHT,
           backgroundColor: "#ffffff",
           logging: false,
           onclone: (clonedDoc) => {
-            // Ensure all text elements in the clone have explicitly handled line-height
-            const textNodes = clonedDoc.querySelectorAll('p, div, h1, h2, h3, h4, span');
+            const textNodes = clonedDoc.querySelectorAll(
+              "p, div, h1, h2, h3, h4, span"
+            );
             textNodes.forEach((node: any) => {
               if (node.style) {
-                // Force better rendering for html2canvas
-                node.style.letterSpacing = 'normal';
+                node.style.letterSpacing = "normal";
               }
             });
-          }
+          },
         });
 
-        const imgData = canvas.toDataURL("image/png");
+        // JPEG, not PNG. A full-bleed slide is photographic content: lossless
+        // PNG pages were producing ~14 MB *per slide* (an 84 MB deck for six
+        // slides), which is not something anyone can email.
+        const imgData = canvas.toDataURL("image/jpeg", EXPORT_JPEG_QUALITY);
 
         if (addedPages > 0) {
           pdf.addPage([WIDTH, HEIGHT]);
         }
 
-        pdf.addImage(imgData, "PNG", 0, 0, WIDTH, HEIGHT);
+        pdf.addImage(imgData, "JPEG", 0, 0, WIDTH, HEIGHT, undefined, "FAST");
         addedPages++;
         console.log(`[PDF Export] Processed slide ${i + 1}/${slidesCount}`);
-
       } catch (err) {
         console.error(`[PDF Export] Failed to capture slide ${i}`, err);
       }
     }
-
-    // Cleanup
-    document.body.removeChild(container);
 
     if (addedPages === 0) {
       throw new Error("No slides were successfully exported");
@@ -110,10 +90,24 @@ export const exportSlidesAsPDF = async (
 
     pdf.save(`${pdfFileName}.pdf`);
     return true;
-
   } catch (error) {
     console.error("[PDF Export] Fatal error:", error);
     alert("Failed to export PDF. Please try again.");
     return false;
+  } finally {
+    stage?.destroy();
   }
 };
+
+/**
+ * The editor persists the active theme here; export falls back to it so callers
+ * that predate the `theme` argument keep producing correctly themed output.
+ */
+function readPersistedTheme(): any {
+  try {
+    const raw = localStorage.getItem("slidesTheme");
+    return raw ? JSON.parse(raw) : undefined;
+  } catch {
+    return undefined;
+  }
+}

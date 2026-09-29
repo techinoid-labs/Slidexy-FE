@@ -101,7 +101,15 @@ const FontPanel: React.FC<FontPanelProps> = ({
             {category.fonts.map((font) => (
               <Box
                 key={font}
+                role="button"
+                tabIndex={0}
                 onClick={() => onFontChange(font)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onFontChange(font);
+                  }
+                }}
                 sx={{
                   minWidth: 100,
                   height: 100,
@@ -120,6 +128,9 @@ const FontPanel: React.FC<FontPanelProps> = ({
                     selectedFont === font ? "#F5F3FF" : "#F8F8FA",
                   color: "#000",
                   flexShrink: 0,
+                  transition: "border-color 0.15s ease, background-color 0.15s ease",
+                  "&:hover": { borderColor: "#8E2DE2" },
+                  "&:focus-visible": { outline: "2px solid #8E2DE2", outlineOffset: "2px" },
                 }}
               >
                 {font}
@@ -133,12 +144,7 @@ const FontPanel: React.FC<FontPanelProps> = ({
       <Button
         fullWidth
         variant="contained"
-        sx={{
-          mt: 3,
-          borderRadius: 10,
-          background: "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-          textTransform: "none",
-        }}
+        sx={{ mt: 3 }}
         onClick={onApply}
       >
         Apply

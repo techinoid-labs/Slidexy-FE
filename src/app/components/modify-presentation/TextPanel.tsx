@@ -19,6 +19,7 @@ import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
 import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
 import { useSlides } from "@/app/context/SlidesContext";
 import { getContrastTextColor } from "@/utils/colorUtils";
+import { PANEL } from "./panelTheme";
 
 const fontOptions = ["Raleway", "Roboto", "Arial", "Inter", "Playfair Display", "Montserrat", "Outfit"];
 
@@ -699,10 +700,10 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
   };
 
   return (
-    <Box className="w-[300px] min-w-[250px] md:min-w-[250px] bg-white flex flex-col overflow-y-auto border-r border-gray-200">
+    <Box className="w-[300px] min-w-[250px] md:min-w-[250px] flex flex-col overflow-y-auto" sx={{ bgcolor: PANEL.surface, borderLeft: `1px solid ${PANEL.border}` }}>
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 3, mt: 3 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1, color: PANEL.text }}>
             Text Panel
           </Typography>
         </Box>
@@ -716,13 +717,20 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           sx={{
             mb: 1,
             borderRadius: 2,
-            bgcolor: !hasValidText ? "#F0F0F0" : "#F8F8FA",
+            bgcolor: !hasValidText ? PANEL.surfaceHover : PANEL.surfaceSunken,
+            color: PANEL.text,
+            border: "1.5px solid transparent",
             fontWeight: 500,
             fontSize: 15,
             minHeight: 44,
             px: 2,
             py: 1.5,
             opacity: hasValidText ? 1 : 0.6,
+            transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+            "&.Mui-focused": {
+              borderColor: PANEL.accent,
+              boxShadow: `0 0 0 4px ${PANEL.accentBg}`,
+            },
           }}
         />
 
@@ -735,11 +743,14 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
           sx={{
             mb: 1,
             borderRadius: 2,
-            bgcolor: !hasValidText ? "#F0F0F0" : "#F8F8FA",
+            bgcolor: !hasValidText ? PANEL.surfaceHover : PANEL.surfaceSunken,
+            color: PANEL.text,
             fontWeight: 500,
             fontSize: 15,
             height: 44,
             opacity: hasValidText ? 1 : 0.6,
+            "& .MuiOutlinedInput-notchedOutline": { borderColor: PANEL.border },
+            "& .MuiSvgIcon-root": { color: PANEL.textMuted },
           }}
         >
           {fontOptions.map((opt) => (
@@ -762,12 +773,15 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             disabled={!hasValidText}
             sx={{
               borderRadius: 2,
-              bgcolor: !hasValidText ? "#F0F0F0" : "#F8F8FA",
+              bgcolor: !hasValidText ? PANEL.surfaceHover : PANEL.surfaceSunken,
+              color: PANEL.text,
               fontWeight: 500,
               fontSize: 15,
               width: 80,
               height: 44,
               opacity: hasValidText ? 1 : 0.6,
+              "& .MuiOutlinedInput-notchedOutline": { borderColor: PANEL.border },
+              "& .MuiSvgIcon-root": { color: PANEL.textMuted },
             }}
           >
             {[12, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48].map((size) => (
@@ -798,12 +812,15 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             disabled={!hasValidText}
             sx={{
               borderRadius: 2,
-              bgcolor: !hasValidText ? "#F0F0F0" : "#F8F8FA",
+              bgcolor: !hasValidText ? PANEL.surfaceHover : PANEL.surfaceSunken,
+              color: PANEL.text,
               fontWeight: 500,
               fontSize: 15,
               width: 120,
               height: 44,
               opacity: hasValidText ? 1 : 0.6,
+              "& .MuiOutlinedInput-notchedOutline": { borderColor: PANEL.border },
+              "& .MuiSvgIcon-root": { color: PANEL.textMuted },
             }}
           >
             {weightOptions.map((opt) => (
@@ -827,7 +844,18 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
                 key={value}
                 onClick={() => hasValidText && updateTextProperty("align", value)}
                 disabled={!hasValidText}
-                className={`rounded-md w-11 h-11 ${align === value ? "bg-gray-300" : "bg-[#F8F8FA]"} ${!hasValidText ? 'opacity-50 cursor-not-allowed' : ''}`}
+                sx={{
+                  borderRadius: "10px",
+                  width: 44,
+                  height: 44,
+                  bgcolor: align === value ? PANEL.accentBg : PANEL.surfaceSunken,
+                  color: align === value ? PANEL.accentSoft : PANEL.textMuted,
+                  transition: "background-color 0.2s ease, transform 0.15s ease",
+                  "&:hover": {
+                    bgcolor: PANEL.accentBg,
+                    transform: "scale(1.06)",
+                  },
+                }}
               >
                 <Icon />
               </IconButton>
@@ -836,29 +864,41 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         </Box>
       </Box>
 
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
 
       <Box sx={{ px: 3, mb: 2 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1 }}>
+        <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1, color: PANEL.text }}>
           Color
         </Typography>
         <Box className="flex items-center gap-2">
-          <input
+          <Box
+            component="input"
             type="color"
             value={fill}
-            className="w-12 h-12 rounded-full cursor-pointer"
-            onChange={(e) => hasValidText && setTextFillAndDisableTheme(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => hasValidText && setTextFillAndDisableTheme(e.target.value)}
             disabled={!hasValidText}
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              cursor: "pointer",
+              border: `3px solid ${PANEL.surface}`,
+              boxShadow: "0 0 0 1.5px rgba(142, 45, 226, 0.25), 0 4px 12px rgba(142, 45, 226, 0.15)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              "&:hover": {
+                transform: "scale(1.08)",
+                boxShadow: `0 0 0 1.5px ${PANEL.accent}, 0 6px 16px rgba(142, 45, 226, 0.25)`,
+              },
+            }}
           />
-          {/* <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{fill.toUpperCase()}</Typography> */}
         </Box>
       </Box>
 
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
 
       <Box sx={{ px: 2, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-          <Typography sx={{ fontWeight: 500, fontSize: 16, flex: 1 }}>
+          <Typography sx={{ fontWeight: 500, fontSize: 16, flex: 1, color: PANEL.text }}>
             Opacity
           </Typography>
         </Box>
@@ -867,7 +907,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             value={Math.round(opacity * 100)}
             onChange={(_, v) => hasValidText && updateTextProperty("opacity", Number(v) / 100)}
             disabled={!hasValidText}
-            sx={{ color: "#7B4AE2", flex: 1, fontSize: 12, opacity: hasValidText ? 1 : 0.6 }}
+            sx={{ color: PANEL.accent, flex: 1, fontSize: 12, opacity: hasValidText ? 1 : 0.6 }}
           />
           <InputBase
             value={`${Math.round(opacity * 100)}%`}
@@ -876,7 +916,8 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
               width: 57,
               fontWeight: 500,
               fontSize: 12,
-              bgcolor: "#F8F8FA",
+              color: PANEL.text,
+              bgcolor: PANEL.surfaceSunken,
               borderRadius: 2,
               px: 1.5,
               py: 0.5,
@@ -886,11 +927,11 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         </Box>
       </Box>
 
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 2, borderColor: PANEL.border }} />
 
       <Box sx={{ px: 3, mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, flex: 1, color: PANEL.text }}>
             Actions
           </Typography>
         </Box>
@@ -898,49 +939,20 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
+            size="small"
             onClick={handleDuplicateText}
             disabled={!hasValidText}
-            sx={{
-              borderRadius: 2,
-              fontWeight: 600,
-              fontSize: 12,
-              bgcolor: "#F8F8FA",
-              borderColor: "#E0E0E0",
-              color: "#222",
-              textTransform: "none",
-              whiteSpace: "nowrap",
-              flex: 1,
-              opacity: hasValidText ? 1 : 0.6,
-              "&:hover": {
-                bgcolor: hasValidText ? "#F3EDFF" : "#F8F8FA",
-                borderColor: hasValidText ? "#7B4AE2" : "#E0E0E0",
-                color: hasValidText ? "#7B4AE2" : "#222",
-              },
-            }}
+            sx={{ flex: 1 }}
           >
             Duplicate
           </Button>
           <Button
             variant="outlined"
+            size="small"
+            color="error"
             onClick={handleDeleteText}
             disabled={!hasValidText}
-            sx={{
-              borderRadius: 2,
-              fontWeight: 600,
-              fontSize: 12,
-              bgcolor: "#F8F8FA",
-              borderColor: "#E0E0E0",
-              color: "#222",
-              textTransform: "none",
-              whiteSpace: "nowrap",
-              flex: 1,
-              opacity: hasValidText ? 1 : 0.6,
-              "&:hover": {
-                bgcolor: hasValidText ? "#FFF3F3" : "#F8F8FA",
-                borderColor: hasValidText ? "#C00" : "#E0E0E0",
-                color: hasValidText ? "#C00" : "#222",
-              },
-            }}
+            sx={{ flex: 1 }}
           >
             Delete
           </Button>

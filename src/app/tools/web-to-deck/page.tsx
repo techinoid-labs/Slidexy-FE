@@ -12,11 +12,12 @@ import BenefitsList from '@/app/components/seo/BenefitsList'
 import ContextualFAQ from '@/app/components/seo/ContextualFAQ'
 import InternalLinks from '@/app/components/seo/InternalLinks'
 import CTASection from '@/app/components/seo/CTASection'
+import Reveal from '@/app/components/shared/Reveal'
 
 export const metadata: Metadata = {
-  title: 'Website to Presentation — Turn Any Webpage into Slides',
+  title: 'Web to Deck — Turn Any Webpage into Slides',
   description:
-    'Paste a website URL and SlideXY AI converts the page content into a structured, professional slide presentation. Summarize any site into a deck in seconds.',
+    'Paste a website URL and Slidexy turns the page content into a structured, professional slide presentation in seconds.',
   alternates: {
     canonical: 'https://slidexy.ai/tools/web-to-deck',
   },
@@ -24,27 +25,27 @@ export const metadata: Metadata = {
 
 export default function Page() {
   const personas = [
-    { title: "Market Researchers", description: "Convert competitor landing pages and industry reports into executive summaries in seconds.", icon: "business" as const },
-    { title: "Content Marketers", description: "Repurpose your blog posts and whitepapers into engaging slide decks for webinars and social sharing.", icon: "group" as const },
-    { title: "Sales Executives", description: "Turn a prospect's website into a customized presentation that shows you've done your homework.", icon: "person" as const },
+    { title: "Market researchers", description: "Turn a competitor's landing page or a long report into a summary you can skim in a meeting.", icon: "business" as const },
+    { title: "Content marketers", description: "Repurpose a blog post or whitepaper into a deck for a webinar or social share.", icon: "group" as const },
+    { title: "Sales teams", description: "Build a quick deck from a prospect's own site to show you did your homework.", icon: "person" as const },
   ];
 
   const steps = [
-    { number: 1, title: "Paste a URL", description: "Provde the link to any landing page, blog post, or article you want to summarize." },
-    { number: 2, title: "AI Crawls and Maps", description: "SlideXY extracts key messaging, visuals, and hierarchy from the webpage." },
-    { number: 3, title: "Customize Your Deck", description: "Review and refine your new presentation before exporting it to PDF or PowerPoint." },
+    { number: 1, title: "Paste a URL", description: "Any landing page, blog post, or article you want summarized." },
+    { number: 2, title: "Slidexy reads it", description: "It pulls out the key messaging, structure, and visuals from the page." },
+    { number: 3, title: "Review and export", description: "Adjust anything that's off, then export to PDF or PowerPoint." },
   ];
 
   const benefits = [
-    { title: "Instant Summarization", description: "Our AI identifies the core value propositions and messages from any URL automatically.", icon: "speed" as const },
-    { title: "Consistent Brand Kits", description: "Apply your own branding to the extracted content for a uniform look and feel.", icon: "design" as const },
-    { title: "High-Fidelity Visuals", description: "SlideXY selects professional icons and imagery that complement the website's original context.", icon: "ai" as const },
+    { title: "Skips the copy-paste grind", description: "No more pulling text into a doc and reformatting it slide by slide.", icon: "speed" as const },
+    { title: "Keeps your branding", description: "Apply your own colors, fonts, and logo to the extracted content.", icon: "design" as const },
+    { title: "Visuals that fit the page", description: "Icons and imagery are chosen based on what the source page is actually about.", icon: "ai" as const },
   ];
 
   const faqs = [
-    { question: "Does it work with any website?", answer: "Yes, SlideXY can crawl and summarize most public websites, including blog posts, product pages, and technical documentation." },
-    { question: "Can I choose which pages are summarized?", answer: "Currently, our AI summarizes the primary content from the provided URL, mapping it to a presentation between 5-15 slides." },
-    { question: "Can I export to Google Slides?", answer: "Yes, every presentation can be exported as a PPTX file, which is fully compatible with Google Slides and Microsoft PowerPoint." },
+    { question: "Does it work with any website?", answer: "Most public websites — blog posts, product pages, technical docs. Pages behind a login won't work." },
+    { question: "Can I choose which parts get summarized?", answer: "Right now Slidexy reads the primary content on the page and maps it to a 5–15 slide deck." },
+    { question: "Can I export to Google Slides?", answer: "Yes — export as PPTX, which opens cleanly in Google Slides or PowerPoint." },
   ];
 
   const relatedLinks = [
@@ -56,70 +57,76 @@ export default function Page() {
   return (
     <Box component="main">
       <Header />
-      
+
       <Box
         component="section"
         sx={{
           textAlign: 'center',
-          pt: { xs: 6, md: 10 },
-          pb: { xs: 4, md: 6 },
+          pt: { xs: 5, md: 7 },
+          pb: { xs: 2, md: 2 },
           px: { xs: 3, md: 6 },
-          maxWidth: 800,
+          maxWidth: 720,
           mx: 'auto',
         }}
       >
         <Typography
           component="h1"
+          className="sx-display"
           sx={{
+            fontFamily: "var(--font-display)",
             fontWeight: 700,
-            fontSize: { xs: '2.25rem', md: '3.5rem' },
-            color: '#111827',
+            fontSize: { xs: '1.85rem', md: '2.75rem' },
+            letterSpacing: "-0.03em",
+            color: '#0F0A19',
             mb: 2,
           }}
         >
-          Website to Presentation Tool
+          Turn any webpage into a deck
         </Typography>
         <Typography
           sx={{
             color: 'text.secondary',
-            fontSize: { xs: '1.05rem', md: '1.2rem' },
+            fontSize: { xs: '1.05rem', md: '1.15rem' },
             lineHeight: 1.7,
-            mb: 4,
+            mb: 2,
           }}
         >
-          Paste any website URL and SlideXY AI analyzes the page to
-          generate a structured slide deck. Perfect for summarizing blog posts, 
-          converting landing pages into pitches, and competitive research.
+          Paste a URL. Slidexy reads the page and lays out a slide deck
+          that actually reflects what's on it.
         </Typography>
       </Box>
 
-      {/* Main Tool Component */}
       <WebToDeck />
 
-      <ProblemSolution 
-        problem="Copying and pasting text from a website into a slide deck is an inefficient way to summarize content. It leads to messy layouts, inconsistent branding, and hours wasted on manual editing."
-        solution="SlideXY's Web-to-Deck tool automates the entire analytical process. Our AI parses the webpage for you, summarizes the key highlights, and presents them in a logical and visually stunning slide deck."
-      />
+      <Reveal>
+        <ProblemSolution
+          problem="Copying text from a website into a slide deck by hand is slow — messy layouts, inconsistent formatting, and hours lost to manual editing."
+          solution="Web-to-Deck reads the page for you, pulls out the key points, and lays them into a deck that's ready to present, not just a wall of pasted text."
+        />
+      </Reveal>
 
-      <WhoItsFor personas={personas} />
+      <Reveal><WhoItsFor personas={personas} /></Reveal>
 
-      <WorkflowSteps steps={steps} />
+      <Reveal><WorkflowSteps steps={steps} /></Reveal>
 
-      <BenefitsList benefits={benefits} />
+      <Reveal><BenefitsList benefits={benefits} /></Reveal>
 
-      <ContextualFAQ 
-        title="Web-to-Presentation FAQ" 
-        subtitle="Learn how to turn any webpage into an impactful slide deck."
-        faqs={faqs} 
-      />
+      <Reveal>
+        <ContextualFAQ
+          title="Web-to-Deck FAQ"
+          subtitle="Common questions about turning a webpage into a presentation."
+          faqs={faqs}
+        />
+      </Reveal>
 
-      <InternalLinks title="Explore More Tools" links={relatedLinks} />
+      <Reveal><InternalLinks title="Explore More Tools" links={relatedLinks} /></Reveal>
 
-      <CTASection 
-        title="Convert any URL into a presentation"
-        subtitle="Experience the power of AI-driven content transformation."
-      />
-
+      <Reveal>
+        <CTASection
+          title="Turn a URL into a deck"
+          subtitle="Paste a link and see what Slidexy builds. No credit card required."
+        />
+      </Reveal>
 
       <Footer />
     </Box>

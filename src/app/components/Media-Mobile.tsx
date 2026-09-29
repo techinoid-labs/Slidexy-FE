@@ -196,7 +196,7 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
           sx={{
             width: "100%",
             height: 120,
-            border: dragActive ? "2px solid #7B4AE2" : "2px dashed #E0E0E0",
+            border: dragActive ? "2px solid #8E2DE2" : "2px dashed #E0E0E0",
             borderRadius: 2,
             bgcolor: "#FAFAFC",
             display: "flex",
@@ -224,7 +224,7 @@ const MobileMedia: React.FC<MediaPanelProps> = ({
           </Box>
           <Typography
             sx={{
-              color: "#7B4AE2",
+              color: "#8E2DE2",
               fontWeight: 500,
               fontSize: 12,
               mb: 0.5,

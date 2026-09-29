@@ -91,10 +91,11 @@ const SideNavBar = ({
                   width: 64,
                   height: 64,
                   borderRadius: 2,
-                  color: selectedIdx === idx ? "#4A00E0" : "#18181B",
-                  transition: "color 0.2s",
+                  color: selectedIdx === idx && openPanel ? "#4A00E0" : "#18181B",
+                  backgroundColor: selectedIdx === idx && openPanel ? "rgba(142, 45, 226, 0.1)" : "transparent",
+                  transition: "color 0.2s, background-color 0.2s",
                   "&:hover": {
-                    backgroundColor: "transparent",
+                    backgroundColor: "rgba(142, 45, 226, 0.08)",
                     color: "#4A00E0",
                   },
                 }}

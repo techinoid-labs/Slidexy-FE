@@ -4,6 +4,8 @@ import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { useSlides } from "@/app/context/SlidesContext";
 import LiveLayoutPreview from "./LiveLayoutPreview";
 import { generateSlideVariants } from "../../../utils/variantGenerator";
+import { palettes, paletteToTheme } from "@/utils/themePalettes";
+import { PANEL } from "./panelTheme";
 
 // Compact palette swatch component - small inline rectangles
 const PaletteSwatch: React.FC<{ colors: string[]; isSelected?: boolean; onClick?: () => void }> = ({
@@ -13,21 +15,33 @@ const PaletteSwatch: React.FC<{ colors: string[]; isSelected?: boolean; onClick?
 }) => {
   return (
     <Box
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       sx={{
         display: "flex",
         alignItems: "center",
         height: 24, // Even smaller for compactness
         borderRadius: 1,
-        border: isSelected ? "2px solid #7B4AE2" : "1px solid #e5e5e5",
-        bgcolor: isSelected ? "rgba(123,74,226,0.04)" : "transparent",
+        border: isSelected ? `2px solid ${PANEL.accent}` : `1px solid ${PANEL.border}`,
+        bgcolor: isSelected ? PANEL.accentBg : "transparent",
         cursor: "pointer",
         transition: "all 0.15s ease",
         overflow: "hidden",
         "&:hover": {
-          borderColor: "#7B4AE2",
-          bgcolor: "rgba(123,74,226,0.06)",
+          borderColor: PANEL.accent,
+          bgcolor: PANEL.accentBg,
           transform: "scale(1.01)",
+        },
+        "&:focus-visible": {
+          outline: `2px solid ${PANEL.accent}`,
+          outlineOffset: "2px",
         },
         p: 0,
       }}
@@ -39,7 +53,7 @@ const PaletteSwatch: React.FC<{ colors: string[]; isSelected?: boolean; onClick?
             flex: 1,
             height: "100%",
             bgcolor: color,
-            borderRight: i < colors.length - 1 ? "1px solid rgba(255,255,255,0.6)" : "none",
+            borderRight: i < colors.length - 1 ? "1px solid rgba(0,0,0,0.25)" : "none",
           }}
         />
       ))}
@@ -50,7 +64,7 @@ const PaletteSwatch: React.FC<{ colors: string[]; isSelected?: boolean; onClick?
             minWidth: 16,
             height: 16,
             borderRadius: 0.5,
-            bgcolor: "#7B4AE2",
+            bgcolor: PANEL.accent,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -65,32 +79,6 @@ const PaletteSwatch: React.FC<{ colors: string[]; isSelected?: boolean; onClick?
     </Box>
   );
 };
-
-// Enhanced palettes - Added more palettes for variety, starting with a lighter purple theme
-const palettes = [
-  // Lighter Purple (default/first applying)
-  ["#F8F4FF", "#9575CD", "#E6D6FF", "#5E35B1"],
-  // Original Purple
-  ["#F3E5F5", "#7B1FA2", "#E1BEE7", "#4A148C"],
-  // Red
-  ["#FFF7F7", "#D32F2F", "#FFCDD2", "#B71C1C"],
-  // Green
-  ["#E8F5E8", "#2E7D32", "#C8E6C9", "#1B5E20"],
-  // Black/White
-  ["#ffffff", "#000000", "#333333", "#666666"],
-  // Blue
-  ["#E3F2FD", "#0D47A1", "#BBDEFB", "#01579B"],
-  // Orange
-  ["#FFF8E1", "#BF360C", "#FFE0B2", "#E65100"],
-  // Pink
-  ["#FCE4EC", "#C2185B", "#F8BBD9", "#880E4F"],
-  // Teal
-  ["#E0F2F1", "#00695C", "#B2DFDB", "#004D40"],
-  // Pastel Yellow
-  ["#FFFDE7", "#FBC02D", "#FFF59D", "#F57F17"],
-  // Cool Grey
-  ["#FAFAFA", "#757575", "#E0E0E0", "#424242"],
-];
 
 const getContrastingTextColor = (bgColor: string, preferredText: string): string => {
   const hexToRgb = (hex: string) => {
@@ -126,16 +114,6 @@ const getContrastingTextColor = (bgColor: string, preferredText: string): string
     return contrast >= 7 ? preferredText : '#ffffff';
   }
 };
-
-const paletteToTheme = (palette: string[]) => ({
-  font: "Raleway",
-  primaryColor: palette[1],
-  secondaryColor: palette[2],
-  backgroundColor: palette[0],
-  titleColor: palette[1],
-  image_url: "",
-  artPalette: [palette[1], palette[3] || palette[1], palette[1], palette[0], palette[0]],
-});
 
 interface ThemePanelProps {
   parsedSlides: any;  // or a proper type like SlidesType
@@ -304,6 +282,11 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
   const updateContent = (item: any, primaryColor: string) => {
     if (!item) return;
 
+    // A template style renders its own hardcoded colors, completely
+    // bypassing theme/layout colors — clear it so picking a palette
+    // actually changes how the slide looks.
+    item.templateStyle = undefined;
+
     // Update title
     if (item.slide_title) {
       if (!item.slide_title.properties) item.slide_title.properties = {};
@@ -359,10 +342,21 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
     const updatedSlides = slides.map((slide: any) => {
       const newSlide = structuredClone(slide);
       updateContent(newSlide, contrastText);
-      if (newSlide.layouts) {
-        newSlide.layouts.forEach((layout: any) => updateContent(layout, contrastText));
-      }
-      return newSlide;
+
+      // Regenerate layout variants immediately (background, art palette,
+      // positions) so the change is visible right away.
+      const newLayouts = generateSlideVariants(newSlide, updatedTheme);
+      const variantIndex = Math.min(
+        slide.currentVariantIndex ?? 0,
+        Math.max(newLayouts.length - 1, 0)
+      );
+
+      return {
+        ...newSlide,
+        layouts: newLayouts,
+        currentVariantIndex: variantIndex,
+        background: newLayouts[variantIndex]?.background || newSlide.background,
+      };
     });
     setSlides(updatedSlides);
   };
@@ -388,10 +382,19 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
     const updatedSlides = slides.map((slide: any) => {
       const newSlide = structuredClone(slide);
       updateContent(newSlide, contrastText);
-      if (newSlide.layouts) {
-        newSlide.layouts.forEach((layout: any) => updateContent(layout, contrastText));
-      }
-      return newSlide;
+
+      const newLayouts = generateSlideVariants(newSlide, updatedDefaultTheme);
+      const variantIndex = Math.min(
+        slide.currentVariantIndex ?? 0,
+        Math.max(newLayouts.length - 1, 0)
+      );
+
+      return {
+        ...newSlide,
+        layouts: newLayouts,
+        currentVariantIndex: variantIndex,
+        background: newLayouts[variantIndex]?.background || newSlide.background,
+      };
     });
     setSlides(updatedSlides);
   };
@@ -428,13 +431,16 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
   const previewSize = isMobile ? { width: 220, height: 123.75 } : { width: 260, height: 146.25 }; // Slightly larger for better detail
 
   return (
-    <Box className="w-[300px] min-w-[250px] md:min-w-[250px] bg-white flex-col border-r border-gray-200 shadow-sm"
+    <Box className="w-[300px] min-w-[250px] md:min-w-[250px] flex-col"
       sx={{
+        bgcolor: PANEL.surface,
+        borderLeft: `1px solid ${PANEL.border}`,
+        boxShadow: "-4px 0 24px rgba(74, 0, 224, 0.04)",
         '&::-webkit-scrollbar': {
           display: 'none',
         },
-        msOverflowStyle: 'none',  // IE and Edge
-        scrollbarWidth: 'none',   // Firefox
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none',
       }}>
       <Snackbar
         open={quotaError}
@@ -447,17 +453,29 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
         </Alert>
       </Snackbar>
 
-      {/* Header - Clean and minimal */}
-      <Box sx={{ px: 2, pt: 2, pb: 1.5 }}>
-        <Typography sx={{ fontWeight: 700, fontSize: 16, color: "#333", letterSpacing: 0.3 }}>
-          Theme Settings
+      {/* Header */}
+      <Box sx={{ px: 2.5, pt: 2.5, pb: 1.5 }}>
+        <Typography
+          className="sx-display"
+          sx={{
+            fontFamily: "var(--font-display)",
+            fontWeight: 700,
+            fontSize: 16,
+            color: PANEL.text,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          Theme & layout
+        </Typography>
+        <Typography sx={{ fontSize: 12, color: PANEL.textMuted, mt: 0.5 }}>
+          Pick a palette and layout variant
         </Typography>
       </Box>
-      <Divider sx={{ borderColor: "#f0f0f0" }} />
+      <Divider sx={{ borderColor: PANEL.border }} />
 
       {/* Theme Palette - Vertical stack, compact swatches */}
       <Box sx={{ px: 4, py: 2 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 1.5, color: "#555" }}>
+        <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 1.5, color: PANEL.textMuted }}>
           Palettes
         </Typography>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -470,20 +488,20 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
             />
           ))}
         </Box>
-        <Typography variant="caption" sx={{ color: "#999", textAlign: "center", display: "block", mt: 1.5, fontSize: 11 }}>
+        <Typography variant="caption" sx={{ color: PANEL.textFaint, textAlign: "center", display: "block", mt: 1.5, fontSize: 11 }}>
           Titles auto-contrast for visibility.
         </Typography>
       </Box>
-      <Divider sx={{ borderColor: "#f0f0f0" }} />
+      <Divider sx={{ borderColor: PANEL.border }} />
 
       {/* Layout Variants Section - Adjusted for narrower panel */}
       <Box sx={{ px: 2, py: 2 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 1.5, color: "#555" }}>
+        <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 1.5, color: PANEL.textMuted }}>
           Layouts
         </Typography>
         {selectedSlideIndex >= 0 && currentVariants.length > 0 ? (
           <>
-            <Typography variant="caption" sx={{ mb: 1.5, color: "#888", fontSize: 12 }}>
+            <Typography variant="caption" sx={{ mb: 1.5, color: PANEL.textFaint, fontSize: 12 }}>
               Slide {selectedSlideIndex + 1}
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
@@ -500,39 +518,25 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ parsedSlides, resetAll }) => {
             </Box>
           </>
         ) : (
-          <Box sx={{ textAlign: "center", py: 4, color: "#999" }}>
+          <Box sx={{ textAlign: "center", py: 4, color: PANEL.textFaint }}>
             <Typography variant="caption" sx={{ mb: 0.5, display: "block" }}>
               Select slide
             </Typography>
-            <Typography variant="caption" color="textSecondary" sx={{ fontSize: 10 }}>
+            <Typography variant="caption" sx={{ fontSize: 10, color: PANEL.textFaint }}>
               to see layouts
             </Typography>
           </Box>
         )}
       </Box>
-      <Divider sx={{ borderColor: "#f0f0f0" }} />
+      <Divider sx={{ borderColor: PANEL.border }} />
 
       {/* Reset Button - Compact footer */}
-      <Box sx={{ px: 2, py: 2, bgcolor: "#fafafa" }}>
+      <Box sx={{ px: 2, py: 2, bgcolor: PANEL.surfaceSunken }}>
         <Button
           fullWidth
           onClick={handleReset}
           variant="contained"
           size="small"
-          sx={{
-            bgcolor: "#7B4AE2",
-            color: "#fff",
-            fontWeight: 600,
-            fontSize: 13,
-            borderRadius: 1.5,
-            py: 1,
-            textTransform: "none",
-            boxShadow: "0 1px 4px rgba(123,74,226,0.2)",
-            "&:hover": {
-              bgcolor: "#5F2EEA",
-              boxShadow: "0 2px 8px rgba(123,74,226,0.3)",
-            },
-          }}
         >
           Reset
         </Button>

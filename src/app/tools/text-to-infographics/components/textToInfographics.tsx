@@ -8,19 +8,21 @@ import {
     Select,
     MenuItem,
     FormControl,
-    InputLabel,
     IconButton,
     Chip,
     Stack,
     Alert,
     AlertTitle,
-    Backdrop,
 } from "@mui/material";
+import GenerationOverlay from "@/app/components/shared/GenerationOverlay";
 import { AutoAwesome, Close as CloseIcon } from "@mui/icons-material";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 import FileUploadZone from "@/app/components/shared/FileUploadZone";
+import AnimatedOrb from "@/app/components/shared/AnimatedOrb";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -28,6 +30,21 @@ const viewMode = [
     { value: "landscape", label: "Landscape" },
     { value: "portrait", label: "Portrait" },
 ];
+
+const controlSx = {
+    height: 44,
+    borderRadius: "12px",
+    bgcolor: "rgba(248, 246, 255, 1)",
+    border: "1px solid rgba(142, 45, 226, 0.1)",
+    "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+    "& .MuiSelect-select": { py: "10px", fontSize: "0.9rem" },
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+    "&:hover": { borderColor: "rgba(142, 45, 226, 0.3)" },
+    "&.Mui-focused, &:focus-within": {
+        borderColor: "#8E2DE2",
+        boxShadow: "0 0 0 3px rgba(142, 45, 226, 0.1)",
+    },
+};
 
 export default function TextToInfographics() {
     const { setInfographicId } = useTemplateSlides();
@@ -54,85 +71,77 @@ export default function TextToInfographics() {
         setSelectedFile(null);
     };
 
-const handleSubmit = async () => {
-    if (!description.trim() && !selectedFile) {
-        setError("Please enter a description or upload a file for the infographic.");
-        return;
-    }
-    if (orientation === "Choose Orientation") {
-        setError("Please select the orientation");
-        return;
-    }
-
-    setLoading(true);
-    setError("");
-    setProgress(0);
-    setCurrentMessage("Generating your infographic...");
-    setCurrentDetail("Processing content and designing layout...");
-
-    abortControllerRef.current = new AbortController();
-
-    try {
-        const formData = new FormData();
-
-        // Optional user prompt (acts as title/focus hint)
-        if (description.trim()) {
-            formData.append("prompt", description.trim());
+    const handleSubmit = async () => {
+        if (!description.trim() && !selectedFile) {
+            setError("Please enter a description or upload a file for the infographic.");
+            return;
+        }
+        if (orientation === "Choose Orientation") {
+            setError("Please select the orientation");
+            return;
         }
 
-        // View mode
-        formData.append("viewMode", orientation.toLowerCase()); // "landscape" or "portrait"
+        setLoading(true);
+        setError("");
+        setProgress(0);
+        setCurrentMessage("Generating your infographic...");
+        setCurrentDetail("Processing content and designing layout...");
 
-        // File upload if present
-        if (selectedFile) {
-            formData.append("file", selectedFile);
-            setCurrentDetail("Extracting and summarizing uploaded file...");
+        abortControllerRef.current = new AbortController();
+
+        try {
+            const formData = new FormData();
+
+            if (description.trim()) {
+                formData.append("prompt", description.trim());
+            }
+
+            formData.append("viewMode", orientation.toLowerCase());
+
+            if (selectedFile) {
+                formData.append("file", selectedFile);
+                setCurrentDetail("Extracting and summarizing uploaded file...");
+            }
+
+            const res = await fetch(`${API_BASE_URL}/api/infographic`, {
+                method: "POST",
+                body: formData,
+                signal: abortControllerRef.current.signal,
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Failed to generate infographic");
+            }
+
+            const data = await res.json();
+
+            if (!data.success || !data.infographic?._id) {
+                throw new Error("Invalid response: Infographic not created properly");
+            }
+
+            const infographicId = data.infographic._id;
+
+            setCurrentMessage("Infographic created!");
+            setCurrentDetail("Redirecting to your design...");
+            setProgress(100);
+            setInfographicId(infographicId);
+
+            setTimeout(() => {
+                router.push(`/infographic/${infographicId}`);
+            }, 800);
+
+        } catch (err: any) {
+            if (err.name === "AbortError") {
+                setError("Generation was cancelled.");
+            } else {
+                setError(err.message || "Failed to generate infographic. Please try again.");
+            }
+        } finally {
+            setLoading(false);
+            abortControllerRef.current = null;
         }
-
-        // Direct call to the unified V2 endpoint
-        const res = await fetch(`${API_BASE_URL}/api/infographic`, {
-            method: "POST",
-            body: formData,
-            signal: abortControllerRef.current.signal,
-        });
-
-        if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(errorText || "Failed to generate infographic");
-        }
-
-        const data = await res.json();
-
-        if (!data.success || !data.infographic?._id) {
-            throw new Error("Invalid response: Infographic not created properly");
-        }
-
-        const infographicId = data.infographic._id;
-
-        // Update UI with success
-        setCurrentMessage("✅ Infographic created successfully!");
-        setCurrentDetail("Redirecting to your design...");
-        setProgress(100);
-        setInfographicId(infographicId);
-
-        // Small delay for nice UX before redirect
-        setTimeout(() => {
-            router.push(`/infographic/${infographicId}`);
-        }, 800);
-
-    } catch (err: any) {
-        console.error("Infographic generation error:", err);
-
-        if (err.name === "AbortError") {
-            setError("Generation was cancelled.");
-        } else {
-            setError(err.message || "Failed to generate infographic. Please try again.");
-        }
-    } finally {
-        setLoading(false);
-        abortControllerRef.current = null;
-    }
-};
+    };
 
     const cancelGeneration = () => {
         if (abortControllerRef.current) {
@@ -146,152 +155,122 @@ const handleSubmit = async () => {
     };
 
     const quickPrompts = [
-        "Creativity at Work",
-        "Responsive design principles",
-        "Healthy diet",
-        "UX UI guidelines",
-        "Accessibility best practices",
-        "Design system components",
+        "Q3 growth metrics for the team",
+        "5 stats on remote work productivity",
+        "Coffee vs. tea health comparison",
+        "Steps in our onboarding process",
+        "Climate impact of everyday choices",
+        "Social media usage by age group",
     ];
 
     return (
-        <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
+        <Box
+            sx={{
+                position: "relative",
+                width: "100%",
+                minHeight: "60vh",
+                overflow: "hidden",
+                background:
+                    "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(142,45,226,0.1) 0%, transparent 55%)",
+            }}
+        >
+            <AnimatedOrb size={300} top="-5%" left="-5%" color="rgba(142, 45, 226, 0.15)" blur={60} />
+            <AnimatedOrb size={260} bottom="10%" right="-5%" color="rgba(74, 0, 224, 0.12)" blur={50} delay={1} />
+
             <Box
-                sx={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    overflow: "hidden",
-                    zIndex: -1,
-                }}
-            >
-                <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        opacity: "0.1"
-                    }}
-                >
-                    <source src="/services-background.mp4" type="video/mp4" />
-                </video>
-            </Box>
-            <Box
+                component={motion.div}
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
                 sx={{
                     width: "100%",
-                    minHeight: "100vh",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    py: { xs: 8, md: 10 },
+                    py: { xs: 3, md: 4 },
                     px: { xs: 2, md: 6 },
+                    position: "relative",
+                    zIndex: 1,
                 }}
             >
-
-
                 <Box
+                    component={motion.div}
+                    variants={fadeUp}
                     sx={{
+                        position: "relative",
                         width: "100%",
-                        maxWidth: "926px",
-                        bgcolor: "rgba(251, 250, 255, 0.5)",
-                        borderRadius: 1,
-                        boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
-                        border: "1px solid rgba(232, 228, 255, 1)",
+                        maxWidth: 920,
+                        bgcolor: "rgba(255,255,255,0.92)",
+                        backdropFilter: "blur(12px)",
+                        borderRadius: "24px",
+                        border: "1px solid rgba(142, 45, 226, 0.14)",
+                        boxShadow:
+                            "0 28px 60px -20px rgba(142, 45, 226, 0.28), 0 8px 24px rgba(15, 10, 25, 0.04)",
                         p: { xs: 3, md: 4 },
                         mb: 4,
+                        overflow: "hidden",
+                        "&::before": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: 4,
+                            background: "linear-gradient(90deg, #8E2DE2, #C084FC, #4A00E0)",
+                            backgroundSize: "200% 100%",
+                            animation: "sx-gradient-shift 4s ease infinite",
+                        },
                     }}
                 >
-
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "flex-start",
-                            mb: 1,
-                        }}
-                    >
-                        <FormControl
-                            variant="outlined"
-                            sx={{
-                                backgroundColor: " rgba(255, 255, 255, 1)",
-                                width: "142px",
-                                height: "44px",
-                                borderRadius: "10px",
-                                boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                    border: "none",
-                                },
-                                "& .MuiSelect-select": {
-                                    py: "6px",
-                                },
-                                gap: 4,
-                            }}
-                        >
-                            {/* <InputLabel
-                sx={{
-                  fontSize: "16px",
-                  fontFamily: "Raleway",
-                  top: "-10px",
-                }}
-              >
-                Select Goal
-              </InputLabel> */}
+                    <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1.5 }}>
+                        <FormControl variant="outlined" sx={{ ...controlSx, minWidth: 150 }}>
                             <Select
                                 value={goal}
                                 onChange={(e) => setGoal(e.target.value)}
                                 disabled={loading}
-                                sx={{ fontSize: "16px", backgroundColor: "#fff", height: "44px", color: "rgba(109, 109, 109, 1)", }}
-                                MenuProps={{
-                                    PaperProps: {
-                                        sx: {
-                                            mt: 0.5,
-                                            borderRadius: "10px",
-                                        },
-                                    },
-                                }}
+                                sx={{ height: 44, color: "#5B5568" }}
                             >
-                                <MenuItem sx={{ fontSize: "12px", color: "rgba(109, 109, 109, 1)" }} value="Select Goal" hidden>
+                                <MenuItem value="Select Goal" hidden>
                                     Select Goal
                                 </MenuItem>
-
-                                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)", }} value="pitch">Pitch Deck</MenuItem>
-                                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)" }} value="education">Educational</MenuItem>
-                                <MenuItem sx={{ fontSize: "16px", color: "rgba(109, 109, 109, 1)" }} value="marketing">Marketing</MenuItem>
+                                <MenuItem value="pitch">Pitch Deck</MenuItem>
+                                <MenuItem value="education">Educational</MenuItem>
+                                <MenuItem value="marketing">Marketing</MenuItem>
                             </Select>
-
                         </FormControl>
                     </Box>
-
-
 
                     <TextField
                         fullWidth
                         multiline
                         minRows={4}
-                        placeholder="Describe your idea..."
+                        placeholder="Paste your data or describe what to visualize…"
                         variant="outlined"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         sx={{
                             mb: 2,
-                            "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                            borderBottom: "1px solid rgba(242, 240, 255, 1)",
+                            "& .MuiOutlinedInput-root": {
+                                borderRadius: "14px",
+                                bgcolor: "rgba(248, 246, 255, 0.5)",
+                            },
+                            "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "rgba(142, 45, 226, 0.12)",
+                            },
+                            "& .MuiInputBase-input": {
+                                fontSize: "1rem",
+                                lineHeight: 1.65,
+                            },
                         }}
                     />
 
-
-                    <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center" justifyContent="space-between">
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                gap: 2,
-                            }}
-                        >
+                    <Stack
+                        direction={{ xs: "column", md: "row" }}
+                        spacing={2}
+                        alignItems="center"
+                        justifyContent="space-between"
+                    >
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ width: { xs: "100%", md: "auto" } }}>
                             <FileUploadZone
                                 selectedFile={selectedFile}
                                 onFileSelect={handleFileChange}
@@ -299,90 +278,46 @@ const handleSubmit = async () => {
                                 onError={setError}
                                 disabled={loading}
                             />
-                            <Stack direction="row" spacing={2} alignItems="center" sx={{ width: { xs: "100%", md: "auto" } }}>
-                                <FormControl
-                                    variant="outlined"
-                                    sx={{
-                                        display: "flex",
-                                        width: { xs: "100%", sm: "193px" },
-                                        height: "44px",
-
-                                        borderRadius: "8px",
-                                        boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                                        backgroundColor: " rgba(255, 255, 255, 1)",
-                                        "& .MuiOutlinedInput-notchedOutline": {
-                                            border: "none",
-                                        },
-                                        "& .MuiSelect-select": {
-                                            py: "8px",
-                                        },
-                                    }}>
-
-                                    {/* <InputLabel>Select Orientation</InputLabel> */}
-                                    <Select value={orientation} onChange={(e) => setOrientation(e.target.value)} disabled={loading}
-                                        displayEmpty
-                                        sx={{
-                                            fontSize: "16px",
-                                            backgroundColor: "#fff",
-                                            height: "44px",
-                                            color: "rgba(109, 109, 109, 1)",
-
-                                        }}
-                                        MenuProps={{
-                                            PaperProps: {
-                                                sx: {
-                                                    mt: 0.5,
-                                                    borderRadius: "10px",
-                                                    maxHeight: 300,
-                                                },
-                                            },
-                                        }}
-                                    >
-                                        <MenuItem value="Choose Orientation" hidden>
-                                            Choose Orientation
+                            <FormControl variant="outlined" sx={{ ...controlSx, minWidth: { xs: "100%", sm: 193 } }}>
+                                <Select
+                                    value={orientation}
+                                    onChange={(e) => setOrientation(e.target.value)}
+                                    disabled={loading}
+                                    displayEmpty
+                                    sx={{ height: 44, color: "#5B5568" }}
+                                >
+                                    <MenuItem value="Choose Orientation" hidden>
+                                        Choose Orientation
+                                    </MenuItem>
+                                    {viewMode.map((v) => (
+                                        <MenuItem key={v.value} value={v.value}>
+                                            {v.label}
                                         </MenuItem>
-                                        {viewMode.map((v) => (
-                                            <MenuItem key={v.value} value={v.value}>
-                                                {v.label}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                            </Stack>
-                        </Box>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Stack>
+
                         <Button
                             variant="contained"
+                            size="large"
                             onClick={handleSubmit}
                             disabled={loading}
                             startIcon={<AutoAwesome />}
                             sx={{
-                                backgroundColor: "#6C2BD9",
-                                color: "#fff",
-                                borderRadius: "32px",
-                                width: { xs: "100%", sm: "130px" },
-                                height: "44px",
-                                px: 4,
-                                py: 1.2,
-                                fontWeight: 600,
-                                boxShadow: "0 3px 10px rgba(108,43,217,0.3)",
+                                minWidth: { xs: "100%", sm: 150 },
+                                py: 1.35,
                                 alignSelf: { xs: "stretch", md: "center" },
-                                "&:hover": { backgroundColor: "#5B21B6" },
                             }}
                         >
-                            {loading ? "Generating..." : "Generate"}
+                            {loading ? "Generating…" : "Generate"}
                         </Button>
-
-                        {/* {loading && (
-                            <Button color="error" onClick={cancelGeneration}>
-                                Cancel
-                            </Button>
-                        )} */}
                     </Stack>
 
                     {error && (
                         <Alert
                             severity="error"
-                            sx={{ mt: 2 }}
+                            sx={{ mt: 2, borderRadius: "12px" }}
                             action={
                                 <IconButton onClick={() => setError("")} color="inherit">
                                     <CloseIcon fontSize="small" />
@@ -395,76 +330,38 @@ const handleSubmit = async () => {
                     )}
                 </Box>
 
-                {/* {loading && (
-                    <Box
-                        sx={{
-                            p: 3,
-                            borderRadius: 2,
-                            bgcolor: "white",
-                            boxShadow: "0 4px 20px rgba(142, 45, 226, 0.1)",
-                            border: "1px solid #f0f0f0",
-                            width: "100%",
-                            maxWidth: 800,
-                        }}
-                    >
-                        <Typography variant="h6" color="#8E2DE2" sx={{ mb: 1 }}>
-                            {currentMessage}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            {currentDetail}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Progress: {Math.round(progress)}%
-                        </Typography>
-                    </Box>
-                )} */}
-                {loading && (
-                    <Backdrop
-                        open={loading}
-                        sx={{
-                            zIndex: (theme) => theme.zIndex.drawer + 1,
-                            backgroundColor: "rgba(0, 0, 0, 0.5)", // dim screen
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                            }}
-                        >
-                            <img
-                                src="/Loader.gif"
-                                alt="Generating..."
-                                style={{ width: 470, height: 160 }}
-                            />
+                <GenerationOverlay
+                    open={loading}
+                    progress={progress}
+                    message={currentMessage || "Designing your infographic"}
+                    detail={currentDetail}
+                    onCancel={cancelGeneration}
+                />
 
-                            <Typography
-                                sx={{
-                                    fontFamily: "Raleway",
-                                    fontSize: "24px",
-                                    fontWeight: 700,
-                                    color: "#fff",
-                                    mt: 1,
-                                }}
-                            >
-                                {currentMessage}...
-                            </Typography>
-                        </Box>
-                    </Backdrop>
-                )}
-
-                <Box sx={{ textAlign: "center", maxWidth: 800, mt: 4 }}>
-                    <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={2}>
+                <Box component={motion.div} variants={fadeUp} sx={{ textAlign: "center", maxWidth: 820, mt: 1 }}>
+                    <Typography sx={{ color: "text.secondary", fontSize: "0.9rem", fontWeight: 500, mb: 2 }}>
+                        Not sure what to paste? Try one of these
+                    </Typography>
+                    <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={1.5}>
                         {quickPrompts.map((prompt, i) => (
                             <Chip
                                 key={i}
                                 label={prompt}
                                 onClick={() => setDescription(prompt)}
                                 sx={{
-                                    border: "1px solid rgba(246, 246, 246, 1)",
-                                    bgcolor: "rgba(248, 248, 248, 0.14)",
-                                    "&:hover": { bgcolor: "rgba(230, 226, 255, 1)" }
+                                    border: "1px solid rgba(142, 45, 226, 0.14)",
+                                    bgcolor: "rgba(255,255,255,0.8)",
+                                    color: "#0F0A19",
+                                    fontWeight: 450,
+                                    borderRadius: "999px",
+                                    cursor: "pointer",
+                                    transition: "transform 0.2s ease, background 0.2s ease, border-color 0.2s ease",
+                                    "&:hover": {
+                                        bgcolor: "rgba(242, 240, 255, 1)",
+                                        borderColor: "rgba(142, 45, 226, 0.35)",
+                                        transform: "translateY(-2px)",
+                                    },
+                                    px: 1,
                                 }}
                             />
                         ))}

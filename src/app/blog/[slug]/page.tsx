@@ -143,14 +143,20 @@ export default function BlogDetailPage() {
                 sx={{ mb: 0 }}
               >
                 <Box
+                  component="a"
+                  href="/"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    router.push("/");
+                  }}
                   sx={{
                     display: "flex",
                     alignItems: "center",
                     gap: 1,
                     color: "text.secondary",
-                    cursor: "pointer",
+                    textDecoration: "none",
+                    "&:hover": { color: "primary.main" },
                   }}
-                  onClick={() => router.push("/")}
                 >
                   <HomeIcon sx={{ fontSize: 16 }} />
                   <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
@@ -158,13 +164,19 @@ export default function BlogDetailPage() {
                   </Typography>
                 </Box>
                 <Typography
+                  component="a"
+                  href="/blog"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    router.push("/blog");
+                  }}
                   variant="body2"
                   sx={{
                     fontSize: "0.875rem",
                     color: "text.secondary",
-                    cursor: "pointer",
+                    textDecoration: "none",
+                    "&:hover": { color: "primary.main" },
                   }}
-                  onClick={() => router.push("/blog")}
                 >
                   Blog
                 </Typography>

@@ -16,7 +16,7 @@ const PresentationViewer: React.FC<{ presentation: Presentation }> = ({ presenta
         <Box key={slide.slide_id}>
           <Box
             sx={{
-              border: "3px solid #1976d2",
+              border: "3px solid #8E2DE2",
               width: STAGE_W,
               height: STAGE_H,
               backgroundColor: "#f5f5f5",

@@ -3,6 +3,7 @@ import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
 import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
+import { getBulletIcon } from '@/utils/bulletIcons';
 
 interface SplitContentHTMLProps {
     slide: any;
@@ -114,16 +115,22 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.2rem' }}>
                         {bullets.map((bullet: any) => {
                             const actualIndex = slide.elements.indexOf(bullet);
+                            const bulletIndex = bullets.indexOf(bullet);
+                            const BulletIcon = getBulletIcon(bullet.text, bulletIndex);
                             return (
-                                <div key={bullet.id || actualIndex} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                                <div key={bullet.id || actualIndex} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                     <div style={{
-                                        width: '8px',
-                                        height: '8px',
-                                        borderRadius: '50%',
-                                        background: accentColor,
-                                        marginTop: '10px',
-                                        flexShrink: 0
-                                    }} />
+                                        width: '30px',
+                                        height: '30px',
+                                        borderRadius: '9px',
+                                        background: `${accentColor}18`,
+                                        flexShrink: 0,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}>
+                                        <BulletIcon style={{ fontSize: '16px', color: accentColor }} />
+                                    </div>
                                     <EditableElement
                                         id={`el-${slideIndex}-${actualIndex}`}
                                         text={bullet.text}
@@ -275,9 +282,11 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                 }}>
                     {bullets.map((bullet: any) => {
                         const actualIndex = slide.elements.indexOf(bullet);
+                        const bulletIndex = bullets.indexOf(bullet);
+                        const BulletIcon = getBulletIcon(bullet.text, bulletIndex);
                         return (
                             <div key={bullet.id || actualIndex} style={{
-                                background: bullets.indexOf(bullet) % 2 === 0 ? '#f8fafc' : '#ffffff',
+                                background: bulletIndex % 2 === 0 ? '#f8fafc' : '#ffffff',
                                 padding: '2rem',
                                 borderRadius: '16px',
                                 border: '1px solid #e2e8f0',
@@ -286,18 +295,17 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                                 gap: '1.5rem'
                             }}>
                                 <div style={{
-                                    width: '32px',
-                                    height: '32px',
-                                    borderRadius: '8px',
-                                    background: `${accentColor}20`,
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '11px',
+                                    background: `linear-gradient(135deg, ${accentColor}25, ${accentColor}10)`,
                                     color: accentColor,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontWeight: 'bold',
                                     flexShrink: 0
                                 }}>
-                                    {bullets.indexOf(bullet) + 1}
+                                    <BulletIcon style={{ fontSize: '20px' }} />
                                 </div>
                                 <EditableElement
                                     id={`bullet-${actualIndex}`}
@@ -470,23 +478,23 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     {leftBullets.map((bullet: any) => {
                         const actualIndex = slide.elements.indexOf(bullet);
+                        const bulletIndex = leftBullets.indexOf(bullet);
+                        const BulletIcon = getBulletIcon(bullet.text, bulletIndex);
                         return (
                             <div key={bullet.id || actualIndex} style={{ display: 'flex', gap: '1rem' }}>
                                 <div style={{
-                                    width: '24px',
-                                    height: '24px',
+                                    width: '28px',
+                                    height: '28px',
                                     background: primaryColor,
                                     color: '#fff',
-                                    borderRadius: '4px',
+                                    borderRadius: '8px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontSize: '0.8rem',
-                                    fontWeight: 'bold',
                                     flexShrink: 0,
-                                    marginTop: '4px'
+                                    marginTop: '2px'
                                 }}>
-                                    {leftBullets.indexOf(bullet) + 1}
+                                    <BulletIcon style={{ fontSize: '15px' }} />
                                 </div>
                                 <EditableElement
                                     id={`bullet-${actualIndex}`}
@@ -505,23 +513,23 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     {rightBullets.map((bullet: any) => {
                         const actualIndex = slide.elements.indexOf(bullet);
+                        const bulletIndex = bullets.indexOf(bullet);
+                        const BulletIcon = getBulletIcon(bullet.text, bulletIndex);
                         return (
                             <div key={bullet.id || actualIndex} style={{ display: 'flex', gap: '1rem' }}>
                                 <div style={{
-                                    width: '24px',
-                                    height: '24px',
+                                    width: '28px',
+                                    height: '28px',
                                     background: accentColor,
                                     color: '#fff',
-                                    borderRadius: '4px',
+                                    borderRadius: '8px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontSize: '0.8rem',
-                                    fontWeight: 'bold',
                                     flexShrink: 0,
-                                    marginTop: '4px'
+                                    marginTop: '2px'
                                 }}>
-                                    {bullets.indexOf(bullet) + 1}
+                                    <BulletIcon style={{ fontSize: '15px' }} />
                                 </div>
                                 <EditableElement
                                     id={`bullet-${actualIndex}`}

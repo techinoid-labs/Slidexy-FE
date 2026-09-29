@@ -12,9 +12,21 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
+import { motion } from "framer-motion";
 import { useSlideThemeContext } from "../context/ThemeContext";
 import { useSlides } from "../context/SlidesContext";
 import { set, get } from "idb-keyval";
+import { palettes, paletteToTheme } from "@/utils/themePalettes";
+import { generateSlideVariants } from "@/utils/variantGenerator";
+import {
+  PANEL,
+  panelContainerSx,
+  panelHeaderSx,
+  panelTitleSx,
+  panelCloseButtonSx,
+  panelSearchBarSx,
+  panelTileSx,
+} from "./modify-presentation/panelTheme";
 
 interface Theme {
   font: string;
@@ -159,7 +171,7 @@ const TemplatePanel = forwardRef<HTMLDivElement, TemplateProps>(
     const handleThemeSelect = async (theme: Theme) => {
       setSelectedTheme(theme);
 
-      const isBase64 = theme.image_url.includes("base64");
+      const isBase64 = theme.image_url?.includes("base64");
 
       try {
         if (isBase64) {
@@ -178,6 +190,10 @@ const TemplatePanel = forwardRef<HTMLDivElement, TemplateProps>(
 
         const updateContent = (s: any) => ({
           ...s,
+          // A template style renders its own hardcoded colors, completely
+          // bypassing theme/layout colors — clear it so picking a theme
+          // actually changes how the slide looks.
+          templateStyle: undefined,
           slide_title: {
             ...s.slide_title,
             useThemeColor: true,
@@ -215,13 +231,30 @@ const TemplatePanel = forwardRef<HTMLDivElement, TemplateProps>(
         });
 
         const updatedMain = updateContent(slide);
+
+        // Regenerate layout variants immediately (background, art palette,
+        // positions) so the change is visible right away instead of
+        // depending on a separate effect elsewhere to pick it up.
+        const newLayouts = generateSlideVariants(updatedMain, theme);
+        const variantIndex = Math.min(
+          slide.currentVariantIndex ?? 0,
+          Math.max(newLayouts.length - 1, 0)
+        );
+
         return {
           ...updatedMain,
-          layouts: (slide.layouts || []).map((layout: any) => updateContent(layout))
+          layouts: newLayouts,
+          currentVariantIndex: variantIndex,
+          background: newLayouts[variantIndex]?.background || updatedMain.background,
         };
       });
 
       setSlides(updatedSlides);
+      onClose();
+    };
+
+    const handlePaletteSelect = (palette: string[]) => {
+      handleThemeSelect(paletteToTheme(palette) as unknown as Theme);
     };
 
     const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -233,178 +266,206 @@ const TemplatePanel = forwardRef<HTMLDivElement, TemplateProps>(
     return (
       <Box
         ref={ref}
-        sx={{
-          position: "absolute",
-          left: 80,
-          top: 0,
-          height: sidebarHeight,
-          width: 300,
-          bgcolor: "#fff",
-          borderRight: "1px solid #E0E0E0",
-          zIndex: 10,
-          boxShadow: 3,
-          display: "flex",
-          flexDirection: "column",
-        }}
+        component={motion.div}
+        initial={{ x: -24, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: -24, opacity: 0 }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        sx={panelContainerSx(300, sidebarHeight)}
       >
         {/* HEADER */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            px: 3,
-            py: 2,
-            borderBottom: "1px solid #EEE",
-          }}
-        >
-          <Typography fontSize={20} fontWeight={600}>
-            Templates
-          </Typography>
-          <IconButton size="small" onClick={onClose}>
-            <CloseIcon />
+        <Box sx={panelHeaderSx}>
+          <Typography sx={panelTitleSx}>Themes</Typography>
+          <IconButton size="small" onClick={onClose} sx={panelCloseButtonSx}>
+            <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
 
         {/* SEARCH BAR */}
-        <Box sx={{ px: 3, py: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              bgcolor: "#F5F5F5",
-              borderRadius: 2,
-              px: 2,
-              height: 42,
-              border: "1px solid #DDD",
-            }}
-          >
+        <Box sx={{ px: 3, pt: 2.25 }}>
+          <Box sx={panelSearchBarSx}>
             <InputBase
-              placeholder="Type a theme prompt to generate..."
-              sx={{ flex: 1, fontSize: 15 }}
+              placeholder="Describe a theme to generate..."
+              sx={{ flex: 1, fontSize: 14, color: PANEL.text, "& input::placeholder": { color: PANEL.textFaint, opacity: 1 } }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleInputKeyDown}
               disabled={loading}
             />
             <Tooltip title="Search">
-              <IconButton size="small" onClick={handleSearch} disabled={loading}>
+              <IconButton
+                size="small"
+                onClick={handleSearch}
+                disabled={loading}
+                sx={{ transition: "background-color 0.18s ease, transform 0.18s ease", "&:hover": { bgcolor: PANEL.accentBg, transform: "scale(1.08)" } }}
+              >
                 {loading ? (
-                  <CircularProgress size={18} />
+                  <CircularProgress size={16} sx={{ color: PANEL.accentSoft }} />
                 ) : (
-                  <SearchIcon sx={{ color: "#666" }} />
+                  <SearchIcon sx={{ color: PANEL.accentSoft, fontSize: 18 }} />
                 )}
               </IconButton>
             </Tooltip>
           </Box>
           {error && (
-            <Typography sx={{ color: "red", fontSize: 13, mt: 1 }}>
+            <Typography sx={{ color: PANEL.danger, fontSize: 12.5, mt: 1 }}>
               {error}
             </Typography>
           )}
         </Box>
 
-        {/* TAB SWITCH */}
-        <Box sx={{ display: "flex", px: 3, gap: 1 }}>
-          {/* Uncomment when AI tab is ready */}
-          {/* <Box
-    onClick={() => setActiveTab("ai")}
-    sx={{ ... }}
-  >
-    From Slide AI
-  </Box> */}
+        {/* QUICK PALETTES */}
+        <Box sx={{ px: 3, pt: 2.25 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 12.5, color: PANEL.textMuted, mb: 1, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            Quick Palettes
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+            {palettes.map((palette, i) => {
+              const isActive = selectedTheme?.primaryColor === palette[1] && selectedTheme?.backgroundColor === palette[0];
+              return (
+                <Tooltip key={i} title="Apply palette" placement="top">
+                  <Box
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handlePaletteSelect(palette)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handlePaletteSelect(palette); } }}
+                    sx={{
+                      display: "flex",
+                      width: 40,
+                      height: 26,
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                      cursor: "pointer",
+                      border: isActive ? `2px solid ${PANEL.accent}` : `1px solid ${PANEL.border}`,
+                      boxShadow: isActive ? `0 0 0 2px ${PANEL.accentBg}` : "none",
+                      transition: "transform 0.15s ease, border-color 0.15s ease",
+                      "&:hover": { transform: "translateY(-2px) scale(1.05)", borderColor: PANEL.accentBorder },
+                    }}
+                  >
+                    {palette.map((c, ci) => (
+                      <Box key={ci} sx={{ flex: 1, height: "100%", bgcolor: c }} />
+                    ))}
+                  </Box>
+                </Tooltip>
+              );
+            })}
+          </Box>
+        </Box>
 
+        {/* TAB SWITCH */}
+        <Box sx={{ display: "flex", px: 3, pt: 2.25, gap: 1 }}>
           <Box
+            component="button"
+            type="button"
             onClick={() => setActiveTab("default")}
             sx={{
               flex: 1,
               cursor: "pointer",
-              bgcolor: activeTab === "default" ? "#EFE8FF" : "#F9F9F9",
-              color: activeTab === "default" ? "#7B4AE2" : "#888",
+              border: "none",
+              bgcolor: activeTab === "default" ? PANEL.accentBg : "transparent",
+              color: activeTab === "default" ? PANEL.accentSoft : PANEL.textMuted,
               fontWeight: activeTab === "default" ? 600 : 500,
               borderRadius: 2,
               textAlign: "center",
               py: 1,
-              fontSize: 15,
+              fontSize: 13.5,
+              fontFamily: "inherit",
+              transition: "background-color 0.15s ease, color 0.15s ease",
+              "&:focus-visible": {
+                outline: `2px solid ${PANEL.accent}`,
+                outlineOffset: "2px",
+              },
             }}
           >
-            Default Templates
+            Default Themes
           </Box>
         </Box>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 2, borderColor: PANEL.border }} />
 
         {/* THEME LIST */}
         <Box sx={{ flex: 1, overflowY: "auto", px: 3, pb: 3 }}>
           {activeThemes.length > 0 ? (
-            activeThemes.map((theme: Theme, i: number) => (
-              <Box
-                key={i}
-                onClick={() => handleThemeSelect(theme)}
-                sx={{
-                  display: "flex",
-                  gap: 2,
-                  p: 2,
-                  mb: 2,
-                  bgcolor: "#FAFAFA",
-                  border: "1px solid #EEE",
-                  borderRadius: 3,
-                  cursor: "pointer",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-                  "&:hover": {
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  },
-                }}
-              >
+            activeThemes.map((theme: Theme, i: number) => {
+              const isActive = selectedTheme?.primaryColor === theme.primaryColor && selectedTheme?.font === theme.font;
+              return (
                 <Box
-                  component="img"
-                  src={theme.image_url}
-                  alt="theme"
-                  sx={{
-                    width: 100,
-                    height: 70,
-                    objectFit: "cover",
-                    borderRadius: 2,
-                    border: "1px solid #DDD",
-                    background: "#fff",
+                  key={i}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Select ${theme.font} theme`}
+                  onClick={() => handleThemeSelect(theme)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleThemeSelect(theme);
+                    }
                   }}
-                />
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    fontSize={15}
-                    fontWeight={500}
-                  // sx={{ color: theme.primaryColor }}
+                  sx={{
+                    ...panelTileSx,
+                    display: "flex",
+                    gap: 2,
+                    p: 1.5,
+                    mb: 1.5,
+                    borderColor: isActive ? PANEL.accent : PANEL.border,
+                    boxShadow: isActive ? `0 0 0 2px ${PANEL.accentBg}` : "none",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      flexShrink: 0,
+                      borderRadius: 2,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontFamily: theme.font,
+                      fontWeight: 700,
+                      fontSize: 18,
+                      color: theme.primaryColor,
+                      background: theme.backgroundColor,
+                      border: `1px solid ${PANEL.border}`,
+                    }}
                   >
-                    {theme.font}
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                    {[
-                      theme.primaryColor,
-                      theme.secondaryColor,
-                      theme.backgroundColor,
-                    ].map((color, index) => (
-                      <Box
-                        key={index}
-                        sx={{
-                          width: 18,
-                          height: 18,
-                          borderRadius: "50%",
-                          bgcolor: color,
-                          border: "1px solid #CCC",
-                        }}
-                      />
-                    ))}
+                    Aa
                   </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: 14, fontWeight: 500, color: PANEL.text }}>
+                      {theme.font}
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 0.75, mt: 1 }}>
+                      {[
+                        theme.primaryColor,
+                        theme.secondaryColor,
+                        theme.backgroundColor,
+                      ].map((color, index) => (
+                        <Box
+                          key={index}
+                          sx={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: "50%",
+                            bgcolor: color,
+                            border: `1px solid ${PANEL.border}`,
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                  {isActive && (
+                    <Box sx={{ width: 8, height: 8, borderRadius: "50%", background: PANEL.accent, alignSelf: "center", flexShrink: 0 }} />
+                  )}
                 </Box>
-              </Box>
-            ))
+              );
+            })
           ) : (
             <Typography
               sx={{
-                color: "#999",
+                color: PANEL.textFaint,
                 textAlign: "center",
                 mt: 6,
-                fontSize: 15,
+                fontSize: 14,
               }}
             >
               {activeTab === "ai"
@@ -419,9 +480,3 @@ const TemplatePanel = forwardRef<HTMLDivElement, TemplateProps>(
 );
 
 export default TemplatePanel;
-
-
-
-
-
-

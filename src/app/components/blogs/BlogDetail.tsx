@@ -315,6 +315,14 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
                       },
                     }}
                     onClick={() => router.push(`/blog/${slugify(relatedBlog.title)}`)}
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        router.push(`/blog/${slugify(relatedBlog.title)}`);
+                      }
+                    }}
                   >
                     <Box sx={{ position: "relative", height: 200 }}>
                       {relatedBlog.coverImage ? (

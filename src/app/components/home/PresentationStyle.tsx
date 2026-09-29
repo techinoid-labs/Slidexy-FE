@@ -2,6 +2,7 @@
 
 import { Box, Typography, Chip, Button } from "@mui/material";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import Lottie from "lottie-react";
 import templateAnimation from "@/json/Gif8-template-section.json";
 
@@ -11,8 +12,8 @@ export default function PresentationStyleSection() {
       sx={{
         width: "100%",
         background: "#FBFAFF",
-        px: { xs: 2, md: "162px" },
-        py: { xs: 6, md: "80px" },
+        px: { xs: 2, md: "100px" },
+        py: { xs: 4, md: "48px" },
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -60,7 +61,7 @@ export default function PresentationStyleSection() {
           variant="h2"
           sx={{
             fontWeight: 500,
-            fontSize: { xs: "1.6rem", md: "2.9rem" },
+            fontSize: { xs: "1.5rem", md: "2.1rem" },
             color: "#18181B",
             mb: 2,
           }}
@@ -84,15 +85,26 @@ export default function PresentationStyleSection() {
 
       {/* Main Card */}
       <Box
+        component={motion.div}
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        whileHover={{ y: -6 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         sx={{
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
           alignItems: "center",
           background: "#fff",
+          borderRadius: "20px",
+          border: "1px solid rgba(142, 45, 226, 0.1)",
           boxShadow: "0 2px 24px 0 rgba(80, 80, 120, 0.07)",
           width: "100%",
           height: { xs: "auto", md: "auto" },
           gap: 6,
+          overflow: "hidden",
+          transition: "box-shadow 0.3s ease",
+          "&:hover": { boxShadow: "0 24px 50px -20px rgba(142,45,226,0.28)" },
         }}
       >
         {/* Left Content */}
@@ -106,13 +118,13 @@ export default function PresentationStyleSection() {
             height: "100%",
             textAlign: { xs: "center", md: "left" },
             px: { xs: 3, md: 6 },
-            py: { xs: 4, md: 4 },
+            py: { xs: 3, md: 3 },
           }}
         >
           <Typography
             sx={{
               fontWeight: 500,
-              fontSize: { xs: "1.7rem", md: "2.3rem" },
+              fontSize: { xs: "1.4rem", md: "1.75rem" },
               color: "#18181B",
               mb: 2,
             }}
@@ -134,20 +146,8 @@ export default function PresentationStyleSection() {
           <Link href="/templates">
             <Button
               variant="contained"
-              sx={{
-                background:
-                  "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-                color: "#fff",
-                borderRadius: "999px",
-                px: { xs: 3, md: 4 },
-                py: { xs: 1, md: 1.5 },
-                fontWeight: 500,
-                fontSize: { xs: "16px", md: "16px" },
-                textTransform: "none",
-                width: "100%",
-                height: "46px",
-                boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.07)",
-              }}
+              size="large"
+              sx={{ width: "100%" }}
               endIcon={<span style={{ fontSize: 22, marginLeft: 4 }}>→</span>}
             >
               Learn More

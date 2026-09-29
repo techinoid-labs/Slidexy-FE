@@ -78,19 +78,9 @@ export default function Hero() {
           <Button
             onClick={()=>router.push(`/tools/prompt-to-template`)}
             variant="contained"
+            size="large"
             endIcon={<ArrowForward />}
-            sx={{
-              px: { xs: 3, md: 4 },
-              py: { xs: 1.2, md: 1.5 },
-              fontSize: { xs: "14px", md: "16px" },
-              background: "#4A00E0",
-              color: "#fff",
-              textTransform: "none",
-              borderRadius: 2,
-              "&:hover": {
-                background: "#4A00E0",
-              },
-            }}
+            sx={{ fontSize: { xs: "14px", md: "16px" } }}
           >
             Get Started for Free
           </Button>

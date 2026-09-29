@@ -1,23 +1,15 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
-import useImage from "use-image";
 import { Box } from "@mui/material";
-import SlideImage from "./KonvaComponents/KonvaSlideImage";
-import KonvaTextEditor from "./KonvaComponents/KonvaTextEditor";
-import AnimatedKonvaText from "./KonvaComponents/AnimatedKonvaText";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import SlidePreviews from "./slidesPreview";
-import KonvaShapeRenderer from "./KonvaComponents/KonvaShapesRenderer";
 import { useSlides } from "../context/SlidesContext";
 import { getRandomSlide, getSlideDimensions } from "../../utils/slideUtils";
 import { applyElementPositioning } from "@/utils/slideTextPositioningUtils";
 import { useDispatch } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import { HTMLSlideRenderer } from "../components/editor/HTMLSlideRenderer";
-import snapshotsCache from "@/utils/snapshotsCache";
-import { getContrastTextColor } from "../../utils/colorUtils";
 
 const getDynamicConstants = () => {
   const {
@@ -44,7 +36,7 @@ const getDynamicConstants = () => {
   };
 };
 
-const SlideEditor = ({ slides = [], stageRefs }: any) => {
+const SlideEditor = ({ slides = [] }: any) => {
   const {
     selectedImageIndex,
     setSelectedImageIndex,
@@ -63,7 +55,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     setTooltip,
     isMobileImageSelected,
     setIsMobileImageSelected,
-    // Add missing handlers if needed, assuming useSlides provides them
+    duplicateSlide,
+    reorderSlides,
   } = useSlides();
 
   // Mock onHandleSelect if not in context (Web passed it as prop to SlideRenderer, but here we are the parent)
@@ -73,7 +66,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
   };
 
   const { selectedTheme, setSelectedTheme } = useSlideThemeContext();
-  const [bgImage] = useImage(selectedTheme?.image_url || "");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scale, setScale] = useState(1);
   const dispatch = useDispatch();
@@ -106,41 +98,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
     setSlides(positionedSlides);
   }, [slides?.length]);
 
-  // Periodic snapshot regeneration for ALL slides while editing
-  useEffect(() => {
-    const lastSnapshotAt = { value: 0 };
-    const MIN_SNAPSHOT_INTERVAL = 1500; // Regenerate every 1.5s while editing
-
-    const updateAllSnapshots = async () => {
-      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
-
-      const now = Date.now();
-      if (now - lastSnapshotAt.value < MIN_SNAPSHOT_INTERVAL) return;
-      lastSnapshotAt.value = now;
-
-      for (let i = 0; i < slides.length; i++) {
-        const slide = slides[i];
-        const canvas = stageRefs.current[i]; // This ref is the canvas element from ref callback
-
-        if (!canvas || !slide?.slide_id) continue;
-
-        try {
-          // SlideEditor-NewMobile stores canvas directly in stageRefs.current[index]
-          await snapshotsCache.generateFromCanvas(slide.slide_id, canvas).catch((err) => {
-            console.warn(`[MobileEditor] Snapshot regeneration failed for slide ${slide.slide_id}:`, err);
-          });
-        } catch (err) {
-          console.error(`[MobileEditor] Error regenerating snapshot for slide ${i}:`, err);
-        }
-
-        // Small delay between slides to avoid blocking
-        await new Promise(resolve => setTimeout(resolve, 30));
-      }
-    };
-
-    const timer = setTimeout(updateAllSnapshots, 500);
-    return () => clearTimeout(timer);
-  }, [slides, selectedIndex]);
 
   useEffect(() => {
     const updateScale = () => {
@@ -263,7 +220,9 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
         overflow: "hidden",
       }}
     >
-      {slides.map((originalSlide: any, index: number) => {
+      {/* Only the active slide is mounted — see SlideEditor.tsx for the rationale. */}
+      {[slides[selectedIndex]].filter(Boolean).map((originalSlide: any) => {
+        const index = selectedIndex;
         // Prepare Variant Slide (Logic from Web)
         const getCurrentVariantSlide = (slide: any) => {
           if (!slide.layouts || slide.layouts.length === 0) return slide;
@@ -345,6 +304,14 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
                     const currentVariant = orig.layouts[variantIndex] || { elements: [] };
                     const variantCount = (currentVariant.elements || []).length;
 
+                    // HTMLSlideRenderer reads these from the variant, so they
+                    // must be written there or the edit is lost on re-render.
+                    if (updatedSlide.slide_title) currentVariant.slide_title = updatedSlide.slide_title;
+                    if (updatedSlide.subtitle) currentVariant.subtitle = updatedSlide.subtitle;
+                    if (updatedSlide.background) currentVariant.background = updatedSlide.background;
+                    if (typeof updatedSlide.image_url !== "undefined") currentVariant.image_url = updatedSlide.image_url;
+                    orig.layouts[variantIndex] = currentVariant;
+
                     if (Array.isArray(updatedSlide.elements)) {
                       const newVariantElements = updatedSlide.elements.slice(0, variantCount);
                       const newUserShapes = updatedSlide.elements.slice(variantCount);
@@ -366,118 +333,6 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
               />
             </Box>
 
-            {/* Hidden Konva Stage for Export */}
-            <Box sx={{ visibility: "hidden", position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
-              <Stage
-                width={getDynamicConstants().SLIDE_WIDTH}
-                height={getDynamicConstants().SLIDE_HEIGHT}
-                ref={(ref: any) => {
-                  stageRefs.current[index] = ref?.getStage()?.content?.querySelector("canvas") || null;
-                }}
-              >
-                <Layer>
-                  {/* Background */}
-                  {bgImage && (slide.background?.type === "image" || selectedTheme?.image_url) ? (
-                    <KonvaImage
-                      image={bgImage}
-                      x={0} y={0}
-                      width={getDynamicConstants().SLIDE_WIDTH}
-                      height={getDynamicConstants().SLIDE_HEIGHT}
-                    />
-                  ) : (
-                    <Rect
-                      width={getDynamicConstants().SLIDE_WIDTH}
-                      height={getDynamicConstants().SLIDE_HEIGHT}
-                      fill={slide.background?.color || selectedTheme?.backgroundColor || "#ffffff"}
-                    />
-                  )}
-
-                  {/* Title */}
-                  {title?.text && (
-                    <AnimatedKonvaText
-                      id={`title-${index}`}
-                      isSelected={selectedTextId === `title-${index}`}
-                      onSelect={() => setSelectedTextId(`title-${index}`)}
-                      text={title.text}
-                      x={titleProps.x || 25}
-                      y={titleProps.y || 40}
-                      width={titleProps.width || 800}
-                      fontSize={titleProps.fontSize || 36}
-                      fontWeight={titleProps.fontWeight || "700"}
-                      fontFamily={titleProps.fontFamily || "Raleway"}
-                      fontStyle={titleProps.fontStyle || "normal"}
-                      opacity={titleProps.opacity || 1}
-                      fill={title.useThemeColor !== false
-                        ? getContrastTextColor(selectedTheme?.backgroundColor || "#ffffff")
-                        : titleProps.fill || "#000000"}
-                      align={titleProps.align || "center"}
-                      lineHeight={titleProps.lineHeight || 1.2}
-                      enableTypewriter={false}
-                      enableLayoutAnimation={false}
-                    />
-                  )}
-
-                  {/* Elements Loop */}
-                  {slide.elements?.map((el: any, i: number) => {
-                    if (["text", "bullet_point", "quote", "author", "context"].includes(el.element_type)) {
-                      return (
-                        <AnimatedKonvaText
-                          key={`mobile-k-el-${index}-${i}`}
-                          id={`el-${index}-${i}`}
-                          isSelected={selectedTextId === `el-${index}-${i}`}
-                          onSelect={() => setSelectedTextId(`el-${index}-${i}`)}
-                          text={el.text || ""}
-                          x={el.properties?.x || 0}
-                          y={el.properties?.y || 0}
-                          width={el.properties?.width || 300}
-                          fontSize={el.properties?.fontSize || 16}
-                          fontFamily={el.properties?.fontFamily || "Raleway"}
-                          fontWeight={el.properties?.fontWeight || "400"}
-                          fontStyle={el.properties?.fontStyle || "normal"}
-                          opacity={el.properties?.opacity ?? 1}
-                          fill={el.useThemeColor !== false
-                            ? getContrastTextColor(selectedTheme?.backgroundColor || "#ffffff")
-                            : el.properties?.fill || "#000000"}
-                          align={el.properties?.align || "left"}
-                          lineHeight={el.properties?.lineHeight || 1.4}
-                          enableLayoutAnimation={false}
-                        />
-                      );
-                    } else if (el.element_type === "image") {
-                      return (
-                        <SlideImage
-                          key={`mobile-k-img-${index}-${i}`}
-                          imageSrc={el.properties?.imageSrc}
-                          x={el.properties?.x || 0}
-                          y={el.properties?.y || 0}
-                          width={el.properties?.width || 200}
-                          height={el.properties?.height || 200}
-                          image_id={el.image_id}
-                          isSelected={selectedImageId === el.image_id || selectedImageIndex === i}
-                          onSelect={() => {
-                            setSelectedImageId(el.image_id);
-                            setSelectedImageIndex(i);
-                            setSelectedImage(el);
-                            setIsMobileImageSelected(true);
-                          }}
-                        />
-                      );
-                    }
-                    return null;
-                  })}
-
-                  <KonvaShapeRenderer
-                    elements={slide.elements}
-                    selectedShapeId={selectedShapeId}
-                    selectedShapeIndex={selectedShapeIndex}
-                    onSelectShape={(index, shapeId, e) => {
-                      setSelectedShapeIndex(index);
-                      setSelectedShapeId(shapeId);
-                    }}
-                  />
-                </Layer>
-              </Stage>
-            </Box>
           </Box>
         );
       })}
@@ -491,6 +346,8 @@ const SlideEditor = ({ slides = [], stageRefs }: any) => {
           onSelect={setSelectedIndex}
           onAddSlide={handleAddSlide}
           onDeleteSlide={handleDeleteSlide}
+          onDuplicateSlide={duplicateSlide}
+          onReorderSlide={reorderSlides}
         />
       </Box>
     </Box>

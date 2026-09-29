@@ -3,6 +3,7 @@ import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
 import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
+import { getBulletIcon } from '@/utils/bulletIcons';
 
 interface ConclusionSlideHTMLProps {
     slide: any;
@@ -127,8 +128,9 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                     width: '100%',
                     maxWidth: '1000px',
                 }}>
-                    {bullets.map((bullet: any) => {
+                    {bullets.map((bullet: any, idx: number) => {
                         const actualIndex = slide.elements.indexOf(bullet);
+                        const BulletIcon = getBulletIcon(bullet.text, idx);
                         return (
                             <div key={bullet.id || actualIndex} style={{
                                 background: '#ffffff',
@@ -141,7 +143,18 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                                 alignItems: 'center',
                                 borderTop: `4px solid ${accent}`
                             }}>
-                                <div style={{ fontSize: '2rem', marginBottom: '1rem', color: accent }}>★</div>
+                                <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '14px',
+                                    background: `${accent}15`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginBottom: '1rem',
+                                }}>
+                                    <BulletIcon style={{ fontSize: '24px', color: accent }} />
+                                </div>
                                 <EditableElement
                                     id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}
@@ -321,10 +334,12 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                         gap: '2rem',
                         marginTop: '3rem'
                     }}>
-                        {bullets.map((bullet: any) => {
+                        {bullets.map((bullet: any, idx: number) => {
                             const actualIndex = slide.elements.indexOf(bullet);
+                            const BulletIcon = getBulletIcon(bullet.text, idx);
                             return (
                                 <div key={bullet.id || actualIndex} style={{ padding: '1rem', borderTop: `1px solid #e2e8f0` }}>
+                                    <BulletIcon style={{ fontSize: '20px', color: accent, marginBottom: '0.5rem', display: 'block' }} />
                                     <EditableElement
                                         id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                         text={bullet.text}
@@ -368,17 +383,22 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                 background: '#ffffff',
                 fontFamily: "'Raleway', sans-serif"
             }}>
-                <div style={{
-                    flex: '0 0 40%',
-                    background: '#f1f5f9',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '2rem',
-                    color: '#94a3b8',
-                    fontWeight: 600
-                }}>
-                    Summary
+                <div
+                    onClick={() => onElementClick?.(`layout-image-${slideIndex}`, 'image', -99)}
+                    style={{
+                        flex: '0 0 40%',
+                        background: slide.image_url
+                            ? `url(${slide.image_url}) center/cover`
+                            : `linear-gradient(135deg, ${accent}25, ${accent2}18)`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
+                        color: '#94a3b8',
+                        fontWeight: 600,
+                        cursor: isEditing ? 'pointer' : 'default',
+                    }}>
+                    {!slide.image_url && 'Summary'}
                 </div>
                 <div style={{
                     flex: 1,
@@ -404,11 +424,23 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                     />
                     <div style={{ width: '100%', height: '1px', background: '#e2e8f0', margin: '2rem 0' }} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        {bullets.map((bullet: any) => {
+                        {bullets.map((bullet: any, idx: number) => {
                             const actualIndex = slide.elements.indexOf(bullet);
+                            const BulletIcon = getBulletIcon(bullet.text, idx);
                             return (
-                                <div key={bullet.id || actualIndex} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                    <div style={{ width: '8px', height: '8px', backgroundColor: accent, borderRadius: '50%' }} />
+                                <div key={bullet.id || actualIndex} style={{ display: 'flex', gap: '0.85rem', alignItems: 'center' }}>
+                                    <div style={{
+                                        width: '26px',
+                                        height: '26px',
+                                        borderRadius: '8px',
+                                        backgroundColor: `${accent}18`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0,
+                                    }}>
+                                        <BulletIcon style={{ fontSize: '14px', color: accent }} />
+                                    </div>
                                     <EditableElement
                                         id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                         text={bullet.text}
@@ -502,15 +534,20 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                     justifyContent: 'center',
                     width: '100%'
                 }}>
-                    {bullets.map((bullet: any) => {
+                    {bullets.map((bullet: any, idx: number) => {
                         const actualIndex = slide.elements.indexOf(bullet);
+                        const BulletIcon = getBulletIcon(bullet.text, idx);
                         return (
                             <div key={bullet.id || actualIndex} style={{
                                 border: '2px solid #000000',
                                 padding: '1rem 2rem',
                                 borderRadius: '50px',
-                                minWidth: '200px'
+                                minWidth: '200px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.6rem',
                             }}>
+                                <BulletIcon style={{ fontSize: '18px', color: accent, flexShrink: 0 }} />
                                 <EditableElement
                                     id={bullet.id || bullet.properties?.id || `el-${slideIndex}-${actualIndex}`}
                                     text={bullet.text}

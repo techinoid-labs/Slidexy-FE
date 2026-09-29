@@ -3,6 +3,7 @@ import React from 'react';
 import { EditableElement } from '../editor/EditableElement';
 import { UserElementsRenderer } from '../editor/UserElementsRenderer';
 import { getContrastTextColor } from '@/utils/colorUtils';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 interface FullImageTextOverlayHTMLProps {
     slide: any;
@@ -174,7 +175,7 @@ export const FullImageTextOverlayHTML: React.FC<FullImageTextOverlayHTMLProps> =
                         boxShadow: '0 12px 32px rgba(0,0,0,0.16), inset 0 1px 2px rgba(255,255,255,0.4)',
                         transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                     }}>
-                        →
+                        <ArrowForwardIcon style={{ fontSize: '20px' }} />
                     </div>
                     <div style={{ color: 'rgba(255,255,255,0.78)', fontWeight: 700 }}>
                         Explore the details

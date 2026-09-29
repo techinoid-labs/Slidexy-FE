@@ -44,23 +44,7 @@ export default function NotFound() {
         to the homepage and keep creating amazing presentations.
       </Typography>
       <Link href="/" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            borderRadius: "999px",
-            px: 4,
-            py: 1.5,
-            textTransform: "none",
-            fontWeight: 600,
-            background:
-              "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)",
-            "&:hover": {
-              boxShadow: "0 6px 20px rgba(142, 45, 226, 0.6)",
-              transform: "translateY(-2px)",
-            },
-            transition: "all 0.3s ease",
-          }}
-        >
+        <Button variant="contained" size="large">
           Back to Homepage
         </Button>
       </Link>

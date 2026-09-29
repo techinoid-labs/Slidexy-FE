@@ -111,34 +111,16 @@ export default function SuccessPage() {
             <Button
               fullWidth
               variant="contained"
-              sx={{
-                borderRadius: "999px",
-                py: 1.5,
-                fontWeight: 600,
-                textTransform: "none",
-                background: "linear-gradient(90deg, #6a11cb, #4A00E0)",
-                "&:hover": {
-                  background: "linear-gradient(90deg, #5a0fb9, #4A00E0)",
-                },
-              }}
+              size="large"
+              sx={{ mb: 2 }}
               onClick={() => router.push("/")}
             >
               Go to Homepage
             </Button>
-            or
             <Button
               fullWidth
-              variant="contained"
-              sx={{
-                borderRadius: "999px",
-                py: 1.5,
-                fontWeight: 600,
-                textTransform: "none",
-                background: "linear-gradient(90deg, #6a11cb, #4A00E0)",
-                "&:hover": {
-                  background: "linear-gradient(90deg, #5a0fb9, #4A00E0)",
-                },
-              }}
+              variant="outlined"
+              size="large"
               onClick={() => router.push("/account")}
             >
               Check your Subscription

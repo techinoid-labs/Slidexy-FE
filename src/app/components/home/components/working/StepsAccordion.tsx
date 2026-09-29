@@ -24,8 +24,8 @@ export default function StepsAccordion() {
         sx={{
           fontSize: 28,
           color: isActive ? "#6C2BD7" : "#18181B",
-          transition: "transform 0.3s ease",
-          transform: isActive ? "rotate(0deg)" : "rotate(0deg)",
+          transition: "transform 0.3s ease, color 0.3s ease",
+          transform: isActive ? "rotate(180deg)" : "rotate(0deg)",
         }}
       />
     );
@@ -50,8 +50,14 @@ export default function StepsAccordion() {
         sx={{
           background: expanded === "step1" ? "#F9F9FB" : "#F8F8FF",
           borderRadius: "28px !important",
+          border: "1px solid transparent",
           boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.03)",
+          transition: "background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
           "&:before": { display: "none" },
+          "&:hover": {
+            borderColor: "rgba(142, 45, 226, 0.14)",
+            boxShadow: "0 8px 20px -8px rgba(142,45,226,0.18)",
+          },
           p: 1,
         }}
       >
@@ -82,8 +88,14 @@ export default function StepsAccordion() {
         sx={{
           background: expanded === "step2" ? "#F9F9FB" : "#F8F8FF",
           borderRadius: "28px !important",
+          border: "1px solid transparent",
           boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.03)",
+          transition: "background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
           "&:before": { display: "none" },
+          "&:hover": {
+            borderColor: "rgba(142, 45, 226, 0.14)",
+            boxShadow: "0 8px 20px -8px rgba(142,45,226,0.18)",
+          },
           p: 1,
         }}
       >
@@ -113,8 +125,14 @@ export default function StepsAccordion() {
         sx={{
           background: expanded === "step3" ? "#F9F9FB" : "#F8F8FF",
           borderRadius: "28px !important",
+          border: "1px solid transparent",
           boxShadow: "0 2px 8px 0 rgba(80, 80, 120, 0.03)",
+          transition: "background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
           "&:before": { display: "none" },
+          "&:hover": {
+            borderColor: "rgba(142, 45, 226, 0.14)",
+            boxShadow: "0 8px 20px -8px rgba(142,45,226,0.18)",
+          },
           p: 1,
         }}
       >

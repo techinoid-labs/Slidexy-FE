@@ -27,12 +27,12 @@ export default function BenefitsList({
 }: BenefitsListProps) {
   const getIcon = (type?: string) => {
     switch (type) {
-      case "speed": return <SpeedIcon sx={{ fontSize: 32, color: "#7C3AED" }} />;
-      case "design": return <PaletteIcon sx={{ fontSize: 32, color: "#7C3AED" }} />;
-      case "ai": return <AutoFixHighIcon sx={{ fontSize: 32, color: "#7C3AED" }} />;
-      case "ease": return <ThumbUpAltIcon sx={{ fontSize: 32, color: "#7C3AED" }} />;
-      case "secure": return <SecurityIcon sx={{ fontSize: 32, color: "#7C3AED" }} />;
-      default: return <CloudDoneIcon sx={{ fontSize: 32, color: "#7C3AED" }} />;
+      case "speed": return <SpeedIcon sx={{ fontSize: 32, color: "#8E2DE2" }} />;
+      case "design": return <PaletteIcon sx={{ fontSize: 32, color: "#8E2DE2" }} />;
+      case "ai": return <AutoFixHighIcon sx={{ fontSize: 32, color: "#8E2DE2" }} />;
+      case "ease": return <ThumbUpAltIcon sx={{ fontSize: 32, color: "#8E2DE2" }} />;
+      case "secure": return <SecurityIcon sx={{ fontSize: 32, color: "#8E2DE2" }} />;
+      default: return <CloudDoneIcon sx={{ fontSize: 32, color: "#8E2DE2" }} />;
     }
   };
 
@@ -69,7 +69,7 @@ export default function BenefitsList({
                     width: 56,
                     height: 56,
                     borderRadius: "12px",
-                    bgcolor: "rgba(124, 58, 237, 0.05)",
+                    bgcolor: "rgba(142, 45, 226, 0.05)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

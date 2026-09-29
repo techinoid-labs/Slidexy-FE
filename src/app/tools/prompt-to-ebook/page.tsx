@@ -12,11 +12,12 @@ import BenefitsList from '@/app/components/seo/BenefitsList'
 import ContextualFAQ from '@/app/components/seo/ContextualFAQ'
 import InternalLinks from '@/app/components/seo/InternalLinks'
 import CTASection from '@/app/components/seo/CTASection'
+import Reveal from '@/app/components/shared/Reveal'
 
 export const metadata: Metadata = {
-  title: 'Prompt to eBook — AI eBook Creator',
+  title: 'Prompt to eBook — Generate a Formatted eBook',
   description:
-    'Turn a text prompt into a professionally formatted eBook with SlideXY AI. Generate chapters, layouts, and cover designs automatically from your ideas.',
+    'Turn a topic or outline into a professionally formatted eBook — chapters, layout, and cover, generated for you.',
   alternates: {
     canonical: 'https://slidexy.ai/tools/prompt-to-ebook',
   },
@@ -24,27 +25,27 @@ export const metadata: Metadata = {
 
 export default function Page() {
   const personas = [
-    { title: "Content Marketers", description: "Create high-converting lead magnets and whitepapers in a fraction of the time.", icon: "business" as const },
-    { title: "Authors & Creators", description: "Turn your outlines into formatted eBook drafts ready for fine-tuning and publishing.", icon: "person" as const },
-    { title: "Educators", description: "Convert course notes into structured student workbooks and educational eBooks.", icon: "school" as const },
+    { title: "Content marketers", description: "Build a lead magnet or whitepaper in a fraction of the usual time.", icon: "business" as const },
+    { title: "Authors & creators", description: "Turn an outline into a formatted draft ready for fine-tuning.", icon: "person" as const },
+    { title: "Educators", description: "Turn course notes into a structured student workbook.", icon: "school" as const },
   ];
 
   const steps = [
-    { number: 1, title: "Provide a Topic", description: "Enter your eBook idea, title, or a detailed chapter outline." },
-    { number: 2, title: "AI Sequences Chapters", description: "SlideXY structures the narrative, generates content, and designs the layout." },
-    { number: 3, title: "Export to PDF", description: "Review your formatted eBook and export it as a professional PDF document." },
+    { number: 1, title: "Give it a topic", description: "A title, an idea, or a detailed chapter outline." },
+    { number: 2, title: "Slidexy writes it", description: "It sequences the chapters, writes the content, and lays out each page." },
+    { number: 3, title: "Export to PDF", description: "Review the formatted eBook and export it as a PDF." },
   ];
 
   const benefits = [
-    { title: "Automated Formatting", description: "No more wrestling with margins and fonts; AI handles the entire layout.", icon: "design" as const },
-    { title: "Logical Structuring", description: "Our AI ensures your eBook follows a coherent chapter flow from start to finish.", icon: "ai" as const },
-    { title: "Ready for Leads", description: "Generate professional lead magnets that look like they were designed by an agency.", icon: "done" as const },
+    { title: "No fighting with margins", description: "Layout and formatting are handled for you.", icon: "design" as const },
+    { title: "Reads like it was planned", description: "Chapters follow a coherent flow start to finish.", icon: "ai" as const },
+    { title: "Ready to send out", description: "Looks like it came from a design team, not a template.", icon: "done" as const },
   ];
 
   const faqs = [
-    { question: "How long can the generated eBooks be?", answer: "SlideXY can generate eBooks ranging from short 5-page guides to comprehensive 30+ page whitepapers depending on your plan tier." },
-    { question: "Can I add my own images to the eBook?", answer: "Yes, you can upload custom images or use our AI-powered visual search to find the perfect graphics for each chapter." },
-    { question: "What formats does the export support?", answer: "Currently, 'Prompt-to-eBook' supports high-resolution PDF exports, perfect for lead magnets and digital downloads." },
+    { question: "How long can the generated eBooks be?", answer: "Anywhere from a short 5-page guide to a 30+ page whitepaper, depending on your plan." },
+    { question: "Can I add my own images to the eBook?", answer: "Yes — upload your own images or let the AI-powered visual search find graphics for each chapter." },
+    { question: "What formats does the export support?", answer: "High-resolution PDF exports, ready for lead magnets and digital downloads." },
   ];
 
   const relatedLinks = [
@@ -61,64 +62,71 @@ export default function Page() {
         component="section"
         sx={{
           textAlign: 'center',
-          pt: { xs: 6, md: 10 },
-          pb: { xs: 4, md: 6 },
+          pt: { xs: 5, md: 7 },
+          pb: { xs: 2, md: 2 },
           px: { xs: 3, md: 6 },
-          maxWidth: 800,
+          maxWidth: 720,
           mx: 'auto',
         }}
       >
         <Typography
           component="h1"
+          className="sx-display"
           sx={{
+            fontFamily: "var(--font-display)",
             fontWeight: 700,
-            fontSize: { xs: '2.25rem', md: '3.5rem' },
-            color: '#111827',
+            fontSize: { xs: '1.85rem', md: '2.75rem' },
+            letterSpacing: "-0.03em",
+            color: '#0F0A19',
             mb: 2,
           }}
         >
-          Prompt to eBook
+          A topic in, a formatted eBook out
         </Typography>
         <Typography
           sx={{
             color: 'text.secondary',
-            fontSize: { xs: '1.05rem', md: '1.2rem' },
+            fontSize: { xs: '1.05rem', md: '1.15rem' },
             lineHeight: 1.7,
-            mb: 4,
+            mb: 2,
           }}
         >
-          Enter a topic or outline and SlideXY AI creates a fully formatted
-          eBook with logical chapters, professional layouts, and cover design. 
-          Perfect for lead magnets, internal guides, and educational content.
+          Give it a topic or outline. Slidexy writes the chapters, lays out
+          every page, and designs a cover.
         </Typography>
       </Box>
 
-      {/* Main Tool Component */}
       <PromptToEbook />
 
-      <ProblemSolution 
-        problem="Creating a professional eBook involves hours of research, writing, and complex formatting in tools like InDesign or Word. Most creators get stuck at the 'outline' phase or struggle to make the final product look polished."
-        solution="SlideXY's Prompt-to-eBook tool takes care of the heavy lifting. Our AI generates a structured narrative, formats every page for readability, and produces a designer-grade document in minutes."
-      />
+      <Reveal>
+        <ProblemSolution
+          problem="A professional eBook usually means hours of writing plus formatting in a tool like InDesign — most people get stuck at the outline stage or the final product looks unpolished."
+          solution="Prompt-to-eBook handles the writing and the layout together, producing a designer-grade document in minutes instead of weeks."
+        />
+      </Reveal>
 
-      <WhoItsFor personas={personas} />
+      <Reveal><WhoItsFor personas={personas} /></Reveal>
 
-      <WorkflowSteps steps={steps} />
+      <Reveal><WorkflowSteps steps={steps} /></Reveal>
 
-      <BenefitsList benefits={benefits} />
+      <Reveal><BenefitsList benefits={benefits} /></Reveal>
 
-      <ContextualFAQ 
-        title="eBook Generation FAQ" 
-        subtitle="Common questions about creating and exporting professional eBooks with AI."
-        faqs={faqs} 
-      />
+      <Reveal>
+        <ContextualFAQ
+          title="eBook Generation FAQ"
+          subtitle="Common questions about creating and exporting an eBook."
+          faqs={faqs}
+        />
+      </Reveal>
 
-      <InternalLinks title="Explore Related Tools" links={relatedLinks} />
+      <Reveal><InternalLinks title="Explore Related Tools" links={relatedLinks} /></Reveal>
 
-      <CTASection 
-        title="Publish your first eBook today"
-        subtitle="Go from idea to digital download in minutes, not weeks."
-      />
+      <Reveal>
+        <CTASection
+          title="Publish your first eBook"
+          subtitle="Go from idea to digital download in minutes, not weeks."
+        />
+      </Reveal>
 
 
       <Footer />

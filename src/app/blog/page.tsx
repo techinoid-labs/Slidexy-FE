@@ -206,21 +206,6 @@ export default function BlogPage() {
                 size="large"
                 startIcon={<AddIcon />}
                 onClick={() => router.push("/blog/create")}
-                sx={{
-                  borderRadius: 3,
-                  px: 4,
-                  py: 1.5,
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  background: purpleGradient,
-                  boxShadow: `0 4px 15px ${purpleLight}`,
-                  "&:hover": {
-                    boxShadow: `0 6px 20px rgba(142, 45, 226, 0.6)`,
-                    transform: "translateY(-2px)",
-                  },
-                  transition: "all 0.3s ease",
-                }}
               >
                 Post Blog
               </Button>
@@ -244,6 +229,14 @@ export default function BlogPage() {
                 },
               }}
               onClick={() => router.push(`/blog/${slugify(filteredBlogs[0].title)}`)}
+              role="link"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  router.push(`/blog/${slugify(filteredBlogs[0].title)}`);
+                }
+              }}
             >
               {filteredBlogs[0].coverImage && (
                 <Box
@@ -418,6 +411,14 @@ export default function BlogPage() {
                             },
                           }}
                           onClick={() => router.push(`/blog/${slugify(blog.title)}`)}
+                          role="link"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              router.push(`/blog/${slugify(blog.title)}`);
+                            }
+                          }}
                         >
                           {blog.coverImage ? (
                             <Box sx={{ position: "relative", height: 200 }}>
@@ -507,21 +508,7 @@ export default function BlogPage() {
                   <Box
                     sx={{ display: "flex", justifyContent: "center", mt: 4 }}
                   >
-                    <Button
-                      variant="outlined"
-                      sx={{
-                        px: 4,
-                        py: 1.5,
-                        borderRadius: 2,
-                        borderColor: purpleColor,
-                        color: purpleColor,
-                        fontWeight: 600,
-                        "&:hover": {
-                          borderColor: purpleGradient,
-                          background: purpleLight,
-                        },
-                      }}
-                    >
+                    <Button variant="outlined" size="large">
                       Load More
                     </Button>
                   </Box>
