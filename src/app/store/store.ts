@@ -37,12 +37,26 @@ const sanitizeSlideData = (slidesData: any) => {
   };
 };
 
-// Load persisted state from IndexedDB
+// Load persisted state from IndexedDB.
+//
+// The whole app is gated on this resolving (see provider/Provider.tsx), so it
+// must never hang. An IndexedDB read can stall indefinitely rather than
+// reject — a blocked version change from another tab, or site data in a bad
+// state — and that showed up as a permanent "Loading Sildexy.." screen with
+// no way out. Time it out and boot without the cache instead.
+const LOAD_TIMEOUT_MS = 5000;
+
 const loadState = async () => {
   try {
-    const persisted = await get(PERSIST_KEY);
+    const persisted = await Promise.race([
+      get(PERSIST_KEY),
+      new Promise<undefined>((resolve) =>
+        setTimeout(() => resolve(undefined), LOAD_TIMEOUT_MS)
+      ),
+    ]);
+
     if (!persisted) return undefined;
-    
+
     console.log('[Store] Loaded persisted state from IndexedDB');
     return { slidesData: persisted };
   } catch (err) {
@@ -161,8 +175,20 @@ export type AppDispatch = typeof tempStore.dispatch;
 // This will hold the actual store instance
 let storeInstance: AppStore;
 
-// Getter for store (only call after initStore resolves)
-export const getStore = () => storeInstance;
+// Getter for store. Falls back to a fresh, unpersisted store if init failed —
+// the Provider boots regardless now, and handing Redux `undefined` would
+// crash the whole app on the very error path we are trying to survive.
+export const getStore = (): AppStore => {
+  if (!storeInstance) {
+    console.warn("[Store] No initialised store; falling back to an in-memory one.");
+    storeInstance = configureStore({
+      reducer: { slidesData: slidesReducer },
+      middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({ serializableCheck: false }),
+    });
+  }
+  return storeInstance;
+};
 
 // Set the store instance after initialization
 export const setStoreInstance = (store: AppStore) => {

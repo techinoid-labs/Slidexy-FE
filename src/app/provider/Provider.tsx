@@ -20,7 +20,14 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [storeReady, setStoreReady] = useState(false);
 
   useEffect(() => {
-    initStore().then(() => setStoreReady(true));
+    // Always boot. If store initialisation fails the app should come up
+    // without persistence rather than sit on this spinner forever — a
+    // rejected promise here used to mean a dead screen with no recovery.
+    initStore()
+      .catch((err) => {
+        console.error("[Providers] Store init failed; continuing without persistence:", err);
+      })
+      .finally(() => setStoreReady(true));
   }, []);
 
   if (!storeReady) {
