@@ -17,17 +17,24 @@ import type { TemplateTheme, ThemePalette } from "./types";
 // next/font self-hosts. The literal family name is kept as the first fallback
 // so a theme still resolves if the variable is missing (e.g. a slide rendered
 // outside the app shell), and a real system face closes every stack.
-const SANS = "var(--font-inter), Inter, 'Segoe UI', system-ui, sans-serif";
-const GEOMETRIC = "var(--font-poppins), Poppins, 'Century Gothic', system-ui, sans-serif";
-const GROTESK = "var(--font-grotesk), 'Space Grotesk', 'Segoe UI', system-ui, sans-serif";
-const DISPLAY_SERIF = "var(--font-playfair), 'Playfair Display', Georgia, serif";
-const TEXT_SERIF = "var(--font-serif), 'Source Serif 4', Georgia, 'Times New Roman', serif";
-const FRIENDLY = "var(--font-dm), 'DM Sans', 'Segoe UI', system-ui, sans-serif";
-const WIDE = "var(--font-archivo), Archivo, 'Segoe UI', system-ui, sans-serif";
-const OUTFIT = "var(--font-outfit), Outfit, 'Segoe UI', system-ui, sans-serif";
-const LORA = "var(--font-lora), Lora, Georgia, serif";
-const EXPRESSIVE = "var(--font-bricolage), 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif";
-const MONO = "var(--font-mono), 'JetBrains Mono', Consolas, monospace";
+const SANS = "var(--font-inter, 'Inter'), 'Segoe UI', system-ui, sans-serif";
+const GEOMETRIC = "var(--font-poppins, 'Poppins'), 'Century Gothic', system-ui, sans-serif";
+const GROTESK = "var(--font-grotesk, 'Space Grotesk'), 'Segoe UI', system-ui, sans-serif";
+const DISPLAY_SERIF = "var(--font-playfair, 'Playfair Display'), Georgia, serif";
+const TEXT_SERIF = "var(--font-sourceserif, 'Source Serif 4'), Georgia, 'Times New Roman', serif";
+const FRIENDLY = "var(--font-dm, 'DM Sans'), 'Segoe UI', system-ui, sans-serif";
+const WIDE = "var(--font-archivo, 'Archivo'), 'Segoe UI', system-ui, sans-serif";
+const OUTFIT = "var(--font-outfit, 'Outfit'), 'Segoe UI', system-ui, sans-serif";
+const LORA = "var(--font-lora, 'Lora'), Georgia, serif";
+const EXPRESSIVE = "var(--font-bricolage, 'Bricolage Grotesque'), 'Segoe UI', system-ui, sans-serif";
+const PLEX = "var(--font-plex, 'IBM Plex Sans'), 'Segoe UI', system-ui, sans-serif";
+const MANROPE = "var(--font-manrope, 'Manrope'), 'Segoe UI', system-ui, sans-serif";
+const WORK = "var(--font-work, 'Work Sans'), 'Segoe UI', system-ui, sans-serif";
+const FIGTREE = "var(--font-figtree, 'Figtree'), 'Segoe UI', system-ui, sans-serif";
+const PUBLIC = "var(--font-public, 'Public Sans'), 'Segoe UI', system-ui, sans-serif";
+const NUNITO = "var(--font-nunito, 'Nunito Sans'), 'Segoe UI', system-ui, sans-serif";
+const KARLA = "var(--font-karla, 'Karla'), 'Segoe UI', system-ui, sans-serif";
+const MONO = "var(--font-mono, 'JetBrains Mono'), Consolas, monospace";
 
 interface PaletteInput {
   bg: string;
@@ -96,7 +103,7 @@ export const corporateNavy = theme({
     surfaceAlt: "#f3f7fd",
     accents: ["#1e40af", "#0ea5e9", "#6366f1", "#0891b2"],
   }),
-  fonts: { display: WIDE, body: SANS },
+  fonts: { display: WIDE, body: PLEX },
   radius: "md",
   cardStyle: "elevated",
   iconStyle: "softSquare",
@@ -146,7 +153,7 @@ export const investorMidnight = theme({
     onAccent: "#ffffff",
     accents: ["#8b5cf6", "#22d3ee", "#f472b6", "#facc15"],
   }),
-  fonts: { display: GROTESK, body: SANS, numeric: MONO },
+  fonts: { display: GROTESK, body: MANROPE, numeric: MONO },
   radius: "md",
   cardStyle: "outlined",
   iconStyle: "softSquare",
@@ -171,7 +178,7 @@ export const salesAmber = theme({
     border: "#f0e3d4",
     accents: ["#ea580c", "#0f766e", "#2563eb", "#be123c"],
   }),
-  fonts: { display: DISPLAY_SERIF, body: SANS },
+  fonts: { display: DISPLAY_SERIF, body: WORK },
   radius: "md",
   cardStyle: "outlined",
   iconStyle: "filledCircle",
@@ -193,7 +200,7 @@ export const marketingMagenta = theme({
     border: "#f0e2f7",
     accents: ["#c026d3", "#7c3aed", "#f59e0b", "#14b8a6"],
   }),
-  fonts: { display: EXPRESSIVE, body: FRIENDLY },
+  fonts: { display: EXPRESSIVE, body: FIGTREE },
   radius: "lg",
   cardStyle: "elevated",
   iconStyle: "filledCircle",
@@ -239,7 +246,7 @@ export const consultingSlate = theme({
     textMuted: "#6b7280",
     accents: ["#0f766e", "#1e3a8a", "#b45309", "#9333ea"],
   }),
-  fonts: { display: SANS, body: TEXT_SERIF },
+  fonts: { display: KARLA, body: TEXT_SERIF },
   radius: "sm",
   cardStyle: "outlined",
   iconStyle: "outline",
@@ -350,7 +357,7 @@ export const educationSky = theme({
     border: "#dbeafe",
     accents: ["#2563eb", "#f59e0b", "#16a34a", "#db2777"],
   }),
-  fonts: { display: FRIENDLY, body: SANS },
+  fonts: { display: FRIENDLY, body: NUNITO },
   radius: "lg",
   cardStyle: "flat",
   iconStyle: "softSquare",
@@ -372,7 +379,7 @@ export const reportGraphite = theme({
     textMuted: "#71717a",
     accents: ["#3f3f46", "#2563eb", "#0d9488", "#c2410c"],
   }),
-  fonts: { display: LORA, body: SANS, numeric: MONO },
+  fonts: { display: LORA, body: PUBLIC, numeric: MONO },
   radius: "sm",
   cardStyle: "outlined",
   iconStyle: "outline",
@@ -414,7 +421,7 @@ export const impactGreen = theme({
     border: "#d3f0dc",
     accents: ["#15803d", "#0d9488", "#65a30d", "#0369a1"],
   }),
-  fonts: { display: TEXT_SERIF, body: SANS },
+  fonts: { display: TEXT_SERIF, body: KARLA },
   radius: "md",
   cardStyle: "outlined",
   iconStyle: "softSquare",

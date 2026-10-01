@@ -12,6 +12,13 @@ import {
   Outfit,
   Lora,
   Bricolage_Grotesque,
+  IBM_Plex_Sans,
+  Manrope,
+  Work_Sans,
+  Figtree,
+  Public_Sans,
+  Nunito_Sans,
+  Karla,
   JetBrains_Mono,
 } from "next/font/google";
 import Providers from "./provider/Provider";
@@ -50,12 +57,22 @@ const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-int
 const poppins = Poppins({ subsets: ["latin"], display: "swap", preload: false, weight: ["400", "500", "600", "700", "800"], variable: "--font-poppins" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-grotesk" });
 const playfair = Playfair_Display({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-playfair" });
-const sourceSerif = Source_Serif_4({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-serif" });
+const sourceSerif = Source_Serif_4({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-sourceserif" });
 const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-dm" });
 const archivo = Archivo({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-archivo" });
 const outfit = Outfit({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-outfit" });
 const lora = Lora({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-lora" });
 const bricolage = Bricolage_Grotesque({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-bricolage" });
+// Text faces. Each template pairs a different one with its display face, so
+// no two decks read the same — Inter had been doing the body work in seven of
+// ten, which is what made them feel like one design.
+const plex = IBM_Plex_Sans({ subsets: ["latin"], display: "swap", preload: false, weight: ["400", "500", "600", "700"], variable: "--font-plex" });
+const manrope = Manrope({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-manrope" });
+const workSans = Work_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-work" });
+const figtree = Figtree({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-figtree" });
+const publicSans = Public_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-public" });
+const nunitoSans = Nunito_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-nunito" });
+const karla = Karla({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-karla" });
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-mono" });
 
 const fontVars = [
@@ -70,6 +87,13 @@ const fontVars = [
   outfit.variable,
   lora.variable,
   bricolage.variable,
+  plex.variable,
+  manrope.variable,
+  workSans.variable,
+  figtree.variable,
+  publicSans.variable,
+  nunitoSans.variable,
+  karla.variable,
   jetbrains.variable,
 ].join(" ");
 
