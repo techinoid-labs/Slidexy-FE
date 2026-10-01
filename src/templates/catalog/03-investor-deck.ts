@@ -9,6 +9,8 @@
 import { investorMidnight } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
+  bigStat,
+  callout,
   chart,
   contactFooter,
   cta,
@@ -17,10 +19,13 @@ import {
   heading,
   iconBullets,
   iconGrid,
+  metricRow,
   nestedCircles,
+  numbered,
   processFlow,
   scatter,
   slide,
+  spotlight,
   statCards,
   teamCards,
   timeline,
@@ -62,7 +67,12 @@ export const investorDeck: SlideTemplate = {
       layout: "splitRight",
       split: 0.55,
       blocks: [
-        heading({ slot: "full", title: "The Problem", subtitle: "A massive problem that needs a better solution." }),
+        heading({
+          slot: "full",
+          kicker: "The problem",
+          title: "A $12 trillion inefficiency nobody owns",
+          subtitle: "Every participant in the chain knows the cost exists. None of them can see it end to end, so none of them can fix it.",
+        }),
         statCards({
           slot: "main",
           style: { columns: 1 },
@@ -88,7 +98,12 @@ export const investorDeck: SlideTemplate = {
       layout: "splitRight",
       split: 0.54,
       blocks: [
-        heading({ slot: "full", title: "Our Solution", subtitle: "A simpler, smarter and more effective approach." }),
+        heading({
+          slot: "full",
+          kicker: "Our solution",
+          title: "Make the whole chain legible, then automate it",
+          subtitle: "One model across every participant, so the waste becomes visible — and once it is visible, removing it is engineering rather than negotiation.",
+        }),
         iconBullets({
           slot: "main",
           items: [
@@ -107,7 +122,12 @@ export const investorDeck: SlideTemplate = {
       layout: "splitRight",
       split: 0.48,
       blocks: [
-        heading({ slot: "full", title: "Market Opportunity", subtitle: "A large and growing market with real headroom." }),
+        heading({
+          slot: "full",
+          kicker: "Market",
+          title: "A $3.2T market growing 25% a year",
+          subtitle: "Large enough that a single-digit share is a category-defining business, and fragmented enough that no incumbent holds more than 11%.",
+        }),
         nestedCircles({
           slot: "main",
           items: [
@@ -132,7 +152,11 @@ export const investorDeck: SlideTemplate = {
       name: "Why Now",
       layout: "stack",
       blocks: [
-        heading({ title: "Why Now?", subtitle: "The right combination of timing, technology and readiness." }),
+        heading({
+          kicker: "Timing",
+          title: "Why this is solvable now and was not three years ago",
+          subtitle: "Four things changed at once. Any one of them alone would not have been enough.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 2 },
@@ -143,6 +167,12 @@ export const investorDeck: SlideTemplate = {
             { icon: "users", title: "Growing awareness", body: "Buyers now understand the problem we solve." },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "bolt",
+          statement: "Model costs fell 92% in eighteen months",
+          detail: "That single change moved this from a research project to a product with a gross margin.",
+        }),
       ],
     }),
 
@@ -152,7 +182,12 @@ export const investorDeck: SlideTemplate = {
       layout: "splitLeft",
       split: 0.44,
       blocks: [
-        heading({ slot: "full", title: "Product Overview", subtitle: "A powerful product designed for real-world problems." }),
+        heading({
+          slot: "full",
+          kicker: "Product",
+          title: "Built for the operator, not the buyer",
+          subtitle: "The people who use it daily chose how it works. That is why adoption does not need a change-management programme.",
+        }),
         iconBullets({
           slot: "main",
           style: { compact: true },
@@ -172,7 +207,12 @@ export const investorDeck: SlideTemplate = {
       layout: "splitRight",
       split: 0.58,
       blocks: [
-        heading({ slot: "full", title: "Traction", subtitle: "Real progress. Real customers. Real impact." }),
+        heading({
+          slot: "full",
+          kicker: "Traction",
+          title: "320% user growth in six months, with churn falling",
+          subtitle: "Growth and retention moved together, which is the signal that the product is solving the problem rather than being bought on hope.",
+        }),
         chart({
           slot: "main",
           kind: "barChart",
@@ -190,6 +230,13 @@ export const investorDeck: SlideTemplate = {
             { icon: "userCheck", value: "95%", label: "Customer retention" },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "trendingUp",
+          solid: true,
+          statement: "Churn has fallen for four consecutive quarters",
+          detail: "Growth driven by retention compounds. Growth driven by acquisition has to be bought again every year.",
+        }),
       ],
     }),
 
@@ -198,7 +245,11 @@ export const investorDeck: SlideTemplate = {
       name: "Business Model",
       layout: "stack",
       blocks: [
-        heading({ title: "Business Model", subtitle: "A clear and scalable path to revenue." }),
+        heading({
+          kicker: "Business model",
+          title: "Three revenue lines, one acquisition motion",
+          subtitle: "Every customer enters through the same door, then expands into whichever line fits how they operate.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 3 },
@@ -208,6 +259,12 @@ export const investorDeck: SlideTemplate = {
             { icon: "cart", title: "Marketplace", body: "Commission-based revenue from partners." },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "refresh",
+          statement: "118% net revenue retention",
+          detail: "Our existing customers alone would grow the business 18% next year if we never signed another logo.",
+        }),
       ],
     }),
 
@@ -216,7 +273,11 @@ export const investorDeck: SlideTemplate = {
       name: "Go-to-Market Strategy",
       layout: "stack",
       blocks: [
-        heading({ title: "Go-to-Market Strategy", subtitle: "A focused plan to acquire, activate and scale." }),
+        heading({
+          kicker: "Go to market",
+          title: "Land with one team, expand across the account",
+          subtitle: "Our cheapest customers to acquire are the ones already inside an account that bought a single seat eighteen months ago.",
+        }),
         processFlow({
           grow: 1,
           numbered: true,
@@ -234,7 +295,11 @@ export const investorDeck: SlideTemplate = {
       name: "Competitive Landscape",
       layout: "fullBleed",
       blocks: [
-        heading({ title: "Competitive Landscape", subtitle: "A clear advantage in a growing market." }),
+        heading({
+          kicker: "Competition",
+          title: "We win where cost and capability both matter",
+          subtitle: "The incumbents are capable and expensive. The challengers are cheap and thin. Nobody else is sitting where we are.",
+        }),
         scatter({
           grow: 1,
           xAxis: { low: "Low cost", high: "High cost" },
@@ -255,7 +320,12 @@ export const investorDeck: SlideTemplate = {
       layout: "splitRight",
       split: 0.62,
       blocks: [
-        heading({ slot: "full", title: "Financial Projections", subtitle: "A strong path to significant returns." }),
+        heading({
+          slot: "full",
+          kicker: "Financials",
+          title: "To $38M revenue by 2028, profitable from 2026",
+          subtitle: "Built on the retention we already have rather than on acquisition we have not proven.",
+        }),
         chart({
           slot: "main",
           kind: "comboChart",
@@ -283,7 +353,11 @@ export const investorDeck: SlideTemplate = {
       name: "The Team",
       layout: "stack",
       blocks: [
-        heading({ title: "The Team", subtitle: "A world-class team with the vision and expertise to execute." }),
+        heading({
+          kicker: "The team",
+          title: "Operators who have run the function we sell into",
+          subtitle: "Between them, three previous exits and two decades inside the industry this product serves.",
+        }),
         teamCards({
           grow: 1,
           style: { columns: 3 },
@@ -345,7 +419,11 @@ export const investorDeck: SlideTemplate = {
       name: "Use of Funds",
       layout: "stack",
       blocks: [
-        heading({ title: "Use of Funds", subtitle: "Investing in the areas that drive scale." }),
+        heading({
+          kicker: "Use of funds",
+          title: "Where the $10M goes, and what it buys",
+          subtitle: "Seventy per cent into product and market expansion. The rest keeps the engine running while those two compound.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 2 },

@@ -8,6 +8,8 @@
 import { educationSky } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
+  bigStat,
+  callout,
   checklist,
   contactFooter,
   cta,
@@ -16,10 +18,13 @@ import {
   iconGrid,
   image,
   imageGrid,
+  metricRow,
+  numbered,
   paragraph,
   processFlow,
   quote,
   slide,
+  spotlight,
   statCards,
   timeline,
 } from "./helpers";
@@ -72,7 +77,11 @@ export const trainingWorkshop: SlideTemplate = {
       name: "Learning Objectives",
       layout: "stack",
       blocks: [
-        heading({ title: "Learning Objectives", subtitle: "By the end of this session you will be able to..." }),
+        heading({
+          kicker: "Objectives",
+          title: "Four things you will be able to do by five o'clock",
+          subtitle: "Not things you will have heard about. Each one is something you will have done at least once before you leave.",
+        }),
         checklist({
           grow: 1,
           style: { columns: 2 },
@@ -83,6 +92,12 @@ export const trainingWorkshop: SlideTemplate = {
             "Run the process independently next week",
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "checkCircle",
+          statement: "You will have done each of these at least once before you leave",
+          detail: "Hearing about a method and having used it are different things, and only one of them survives the week.",
+        }),
       ],
     }),
 
@@ -91,7 +106,11 @@ export const trainingWorkshop: SlideTemplate = {
       name: "Agenda",
       layout: "stack",
       blocks: [
-        heading({ title: "Agenda", subtitle: "How the three hours are structured." }),
+        heading({
+          kicker: "Agenda",
+          title: "Three hours, half of it hands-on",
+          subtitle: "The second half is you working on your own example, with us in the room. That is the part that makes it stick.",
+        }),
         timeline({
           grow: 1,
           items: [
@@ -187,7 +206,11 @@ export const trainingWorkshop: SlideTemplate = {
       name: "Common Mistakes",
       layout: "stack",
       blocks: [
-        heading({ title: "Common Mistakes", subtitle: "And how to avoid each one." }),
+        heading({
+          kicker: "Pitfalls",
+          title: "Four mistakes we see in almost every team",
+          subtitle: "None of them are about intelligence or effort. They are all about skipping a step that feels optional and is not.",
+        }),
         iconBullets({
           grow: 1,
           style: { columns: 2 },
@@ -197,6 +220,13 @@ export const trainingWorkshop: SlideTemplate = {
             { icon: "close", label: "Deciding verbally", body: "If it is not written down, it was not decided." },
             { icon: "close", label: "Never reviewing", body: "Without review the method becomes ritual." },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "lightbulb",
+          solid: true,
+          statement: "None of these are about intelligence or effort",
+          detail: "Every one is about skipping a step that feels optional and is not.",
         }),
       ],
     }),
@@ -226,7 +256,11 @@ export const trainingWorkshop: SlideTemplate = {
       name: "Share Back",
       layout: "stack",
       blocks: [
-        heading({ title: "Share Back", subtitle: "What did you find?" }),
+        heading({
+          kicker: "Discussion",
+          title: "Explain yours to someone who was not in your head",
+          subtitle: "The gaps show up the moment you try to say it out loud. That is the useful part of this exercise, not the answer itself.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 3 },
@@ -244,7 +278,11 @@ export const trainingWorkshop: SlideTemplate = {
       name: "Resources",
       layout: "stack",
       blocks: [
-        heading({ title: "Resources", subtitle: "Everything you need to run this yourself." }),
+        heading({
+          kicker: "Resources",
+          title: "Everything you need to run this without us",
+          subtitle: "Take the worksheet and the recording. If you teach this to your own team, we have done our job.",
+        }),
         imageGrid({
           grow: 1,
           style: { columns: 3 },
@@ -262,7 +300,11 @@ export const trainingWorkshop: SlideTemplate = {
       name: "Recap",
       layout: "stack",
       blocks: [
-        heading({ title: "Recap", subtitle: "The whole session in four lines." }),
+        heading({
+          kicker: "Recap",
+          title: "If you forget everything else, keep these four",
+          subtitle: "Written deliberately short so they fit on a sticky note above your desk.",
+        }),
         checklist({
           grow: 1,
           style: { columns: 2 },
@@ -272,6 +314,12 @@ export const trainingWorkshop: SlideTemplate = {
             "Write the decision down",
             "Review against the outcome you stated",
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "book",
+          statement: "If you teach this to one other person, it is yours",
+          detail: "Teaching it is the fastest way to find the parts you have not actually understood yet.",
         }),
       ],
     }),

@@ -9,6 +9,8 @@
 import { salesAmber } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
+  bigStat,
+  callout,
   chart,
   comparisonTable,
   contactFooter,
@@ -20,10 +22,13 @@ import {
   image,
   imageGrid,
   logoWall,
+  metricRow,
+  numbered,
   pricingTable,
   processFlow,
   quote,
   slide,
+  spotlight,
   statCards,
 } from "./helpers";
 
@@ -61,7 +66,12 @@ export const salesPresentation: SlideTemplate = {
       layout: "splitLeft",
       split: 0.55,
       blocks: [
-        heading({ slot: "full", title: "The Challenge", subtitle: "Businesses face real obstacles that slow growth." }),
+        heading({
+          slot: "full",
+          kicker: "The challenge",
+          title: "Growth is being taxed by work nobody chose",
+          subtitle: "Costs rise faster than revenue, and the cause is rarely one big thing — it is a hundred small manual steps nobody has time to remove.",
+        }),
         iconBullets({
           slot: "main",
           items: [
@@ -83,7 +93,12 @@ export const salesPresentation: SlideTemplate = {
       layout: "splitRight",
       split: 0.5,
       blocks: [
-        heading({ slot: "full", title: "Our Solution", subtitle: "A simple, powerful way to grow." }),
+        heading({
+          slot: "full",
+          kicker: "Our solution",
+          title: "Remove the manual steps, keep the control",
+          subtitle: "Automation that your team configures and owns, rather than a black box that needs a consultant every time the process changes.",
+        }),
         iconBullets({
           slot: "main",
           items: [
@@ -101,7 +116,11 @@ export const salesPresentation: SlideTemplate = {
       name: "Key Benefits",
       layout: "stack",
       blocks: [
-        heading({ title: "Key Benefits", subtitle: "Real results for your business." }),
+        heading({
+          kicker: "Benefits",
+          title: "Four outcomes our customers measure within a quarter",
+          subtitle: "Not projections. These are the median results across the last fifty implementations.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 4 },
@@ -112,6 +131,12 @@ export const salesPresentation: SlideTemplate = {
             { icon: "heart", title: "Happier customers", body: "Faster response and fewer errors." },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "award",
+          statement: "Median payback across the last fifty customers: 11 months",
+          detail: "Measured against a baseline we establish with you before anything changes.",
+        }),
       ],
     }),
 
@@ -120,7 +145,11 @@ export const salesPresentation: SlideTemplate = {
       name: "How It Works",
       layout: "stack",
       blocks: [
-        heading({ title: "How It Works", subtitle: "Get started in just a few steps." }),
+        heading({
+          kicker: "How it works",
+          title: "Four steps, and you own it from step three",
+          subtitle: "We design it with your team, build it alongside them, then hand it over. No permanent dependency on us.",
+        }),
         processFlow({
           grow: 1,
           numbered: true,
@@ -131,6 +160,12 @@ export const salesPresentation: SlideTemplate = {
             { title: "Grow", body: "Ongoing support for long-term success." },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "users",
+          statement: "Your team owns it from step three",
+          detail: "We are not trying to become a permanent line in your budget.",
+        }),
       ],
     }),
 
@@ -139,7 +174,11 @@ export const salesPresentation: SlideTemplate = {
       name: "Use Cases",
       layout: "stack",
       blocks: [
-        heading({ title: "Use Cases", subtitle: "Versatile solutions across industries." }),
+        heading({
+          kicker: "Use cases",
+          title: "The same engine, shaped to four very different operations",
+          subtitle: "What changes between industries is the vocabulary and the compliance rules — not the underlying work.",
+        }),
         imageGrid({
           grow: 1,
           style: { columns: 4 },
@@ -185,7 +224,12 @@ export const salesPresentation: SlideTemplate = {
       layout: "splitLeft",
       split: 0.58,
       blocks: [
-        heading({ slot: "full", title: "Why Choose Us", subtitle: "More than a product — a partner." }),
+        heading({
+          slot: "full",
+          kicker: "Why us",
+          title: "The difference is what happens after you sign",
+          subtitle: "Most vendors optimise for the sale. Our renewal rate is 94%, which only happens if the quarter after go-live goes well.",
+        }),
         iconBullets({
           slot: "main",
           style: { columns: 2 },
@@ -200,6 +244,13 @@ export const salesPresentation: SlideTemplate = {
           slot: "aside",
           prompt: "corporate team in discussion around a table in a bright modern office, candid, no text",
         }),
+        callout({
+          slot: "footer",
+          icon: "userCheck",
+          solid: true,
+          statement: "94% of customers renew",
+          detail: "The number that matters is not how many buy, but how many are still here two years later.",
+        }),
       ],
     }),
 
@@ -208,7 +259,11 @@ export const salesPresentation: SlideTemplate = {
       name: "Pricing Plans",
       layout: "stack",
       blocks: [
-        heading({ title: "Pricing Plans", subtitle: "Flexible plans to fit your business." }),
+        heading({
+          kicker: "Pricing",
+          title: "Priced per month, with no implementation fee",
+          subtitle: "Move between plans at any time. We would rather you start small and grow than buy more than you need on day one.",
+        }),
         pricingTable({
           grow: 1,
           plans: [
@@ -266,7 +321,12 @@ export const salesPresentation: SlideTemplate = {
       layout: "splitRight",
       split: 0.44,
       blocks: [
-        heading({ slot: "full", title: "ROI & Value", subtitle: "A smart investment for long-term growth." }),
+        heading({
+          slot: "full",
+          kicker: "Return",
+          title: "Payback in under eleven months, on average",
+          subtitle: "Measured against the baseline we establish together before anything changes, so the number is yours rather than ours.",
+        }),
         statCards({
           slot: "main",
           style: { columns: 1 },
@@ -308,7 +368,11 @@ export const salesPresentation: SlideTemplate = {
       name: "Implementation",
       layout: "stack",
       blocks: [
-        heading({ title: "Implementation Plan", subtitle: "Live in under thirty days." }),
+        heading({
+          kicker: "Implementation",
+          title: "Live in thirty days, without pausing the business",
+          subtitle: "Run in parallel with your current process until you are satisfied, then switch. No cutover weekend.",
+        }),
         processFlow({
           grow: 1,
           items: [

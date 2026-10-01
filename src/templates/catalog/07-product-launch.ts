@@ -8,6 +8,8 @@
 import { productIndigo } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
+  bigStat,
+  callout,
   chart,
   checklist,
   contactFooter,
@@ -18,11 +20,14 @@ import {
   iconGrid,
   image,
   imageGrid,
+  metricRow,
+  numbered,
   paragraph,
   pricingTable,
   processFlow,
   quote,
   slide,
+  spotlight,
   statCards,
   timeline,
 } from "./helpers";
@@ -95,7 +100,11 @@ export const productLaunch: SlideTemplate = {
       name: "Key Features",
       layout: "stack",
       blocks: [
-        heading({ title: "Key Features", subtitle: "What you get out of the box." }),
+        heading({
+          kicker: "Features",
+          title: "Six capabilities, none of them an add-on",
+          subtitle: "Everything here is in every plan. We would rather compete on how well it works than on what we withhold.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 3 },
@@ -107,6 +116,13 @@ export const productLaunch: SlideTemplate = {
             { icon: "smartphone", title: "Mobile", body: "Full functionality on the move." },
             { icon: "lock", title: "Permissions", body: "Granular access for every role." },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "checkCircle",
+          solid: true,
+          statement: "Every feature is in every plan",
+          detail: "We compete on how well the product works, not on what we withhold from the cheaper tier.",
         }),
       ],
     }),
@@ -136,7 +152,11 @@ export const productLaunch: SlideTemplate = {
       name: "How It Works",
       layout: "stack",
       blocks: [
-        heading({ title: "How It Works", subtitle: "Up and running the same day." }),
+        heading({
+          kicker: "Getting started",
+          title: "Four steps, most teams finish in an afternoon",
+          subtitle: "No implementation call required. If you want one we will do it, but nothing is gated behind it.",
+        }),
         processFlow({
           grow: 1,
           numbered: true,
@@ -181,7 +201,11 @@ export const productLaunch: SlideTemplate = {
       name: "Early Results",
       layout: "stack",
       blocks: [
-        heading({ title: "Early Results", subtitle: "From the first ninety days of beta." }),
+        heading({
+          kicker: "Results",
+          title: "What 2,400 beta users did with it",
+          subtitle: "Ninety days of real usage, including the teams who churned — the retention number below is net of them.",
+        }),
         statCards({
           grow: 1,
           style: { columns: 4 },
@@ -191,6 +215,12 @@ export const productLaunch: SlideTemplate = {
             { icon: "star", value: "4.8", label: "Average rating" },
             { icon: "trendingUp", value: "92%", label: "Weekly retention" },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "users",
+          statement: "2,400 beta users, 92% still active weekly",
+          detail: "Retention measured net of churn, including the teams who left in the first month.",
         }),
       ],
     }),
@@ -216,7 +246,11 @@ export const productLaunch: SlideTemplate = {
       name: "Who It's For",
       layout: "stack",
       blocks: [
-        heading({ title: "Who It's For", subtitle: "Teams that live in their workflow." }),
+        heading({
+          kicker: "Who it's for",
+          title: "Three teams who felt this problem most",
+          subtitle: "If your week is shaped by a process rather than a project, this was built for you.",
+        }),
         imageGrid({
           grow: 1,
           style: { columns: 3 },
@@ -234,7 +268,11 @@ export const productLaunch: SlideTemplate = {
       name: "Integrations",
       layout: "stack",
       blocks: [
-        heading({ title: "Works With Your Stack", subtitle: "No rip and replace." }),
+        heading({
+          kicker: "Integrations",
+          title: "Connects to what you already run",
+          subtitle: "Nothing has to be migrated or retired. The product earns its place alongside your stack before it replaces any of it.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 4 },
@@ -249,6 +287,12 @@ export const productLaunch: SlideTemplate = {
             { icon: "barChart", title: "BI tools" },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "link",
+          statement: "Nothing has to be migrated or retired",
+          detail: "The product earns its place alongside your stack before it replaces any part of it.",
+        }),
       ],
     }),
 
@@ -257,7 +301,11 @@ export const productLaunch: SlideTemplate = {
       name: "Pricing",
       layout: "stack",
       blocks: [
-        heading({ title: "Pricing", subtitle: "Straightforward, per seat." }),
+        heading({
+          kicker: "Pricing",
+          title: "Per seat, and the free tier is genuinely usable",
+          subtitle: "No feature gating on the paid tiers — you pay for scale and support, not for unlocking the product.",
+        }),
         pricingTable({
           grow: 1,
           plans: [
@@ -274,7 +322,11 @@ export const productLaunch: SlideTemplate = {
       name: "What's Next",
       layout: "stack",
       blocks: [
-        heading({ title: "What's Next", subtitle: "Shipping over the next four quarters." }),
+        heading({
+          kicker: "Roadmap",
+          title: "Four quarters, committed publicly",
+          subtitle: "Dates we are prepared to be held to. Anything we are unsure about is not on this slide.",
+        }),
         timeline({
           grow: 1,
           items: [

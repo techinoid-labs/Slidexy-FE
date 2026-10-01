@@ -8,21 +8,26 @@
 import { consultingSlate } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
+  bigStat,
+  callout,
   chart,
   checklist,
+  comparisonTable,
   contactFooter,
   cta,
-  comparisonTable,
   heading,
   iconBullets,
   iconGrid,
   image,
+  metricRow,
+  numbered,
   paragraph,
   pricingTable,
   processFlow,
   roadmapPhases,
   scatter,
   slide,
+  spotlight,
   statCards,
   teamCards,
   timeline,
@@ -95,7 +100,12 @@ export const projectProposal: SlideTemplate = {
       layout: "splitLeft",
       split: 0.55,
       blocks: [
-        heading({ slot: "full", title: "The Problem", subtitle: "What is holding the business back today." }),
+        heading({
+          slot: "full",
+          kicker: "Current state",
+          title: "Three constraints, one shared root cause",
+          subtitle: "Each of these is usually treated as a separate problem. They are symptoms of the same missing operational layer.",
+        }),
         iconBullets({
           slot: "main",
           items: [
@@ -113,7 +123,11 @@ export const projectProposal: SlideTemplate = {
       name: "Objectives",
       layout: "stack",
       blocks: [
-        heading({ title: "Objectives", subtitle: "What this engagement will achieve." }),
+        heading({
+          kicker: "Objectives",
+          title: "Three outcomes, each measurable at handover",
+          subtitle: "Agreed with you before we start, and reported against every week so there is no debate at the end about what success meant.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 3 },
@@ -131,7 +145,11 @@ export const projectProposal: SlideTemplate = {
       name: "Our Approach",
       layout: "stack",
       blocks: [
-        heading({ title: "Our Approach", subtitle: "Four phases, each with a clear exit criterion." }),
+        heading({
+          kicker: "Approach",
+          title: "Four phases, and you can stop after any of them",
+          subtitle: "Each phase produces something useful on its own, so the engagement never becomes all-or-nothing.",
+        }),
         processFlow({
           grow: 1,
           numbered: true,
@@ -141,6 +159,12 @@ export const projectProposal: SlideTemplate = {
             { title: "Build", body: "Implement in two-week increments." },
             { title: "Embed", body: "Train the team and hand over." },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "checkCircle",
+          statement: "You can stop after any phase",
+          detail: "Each one produces something your team can use on its own, so this never becomes all-or-nothing.",
         }),
       ],
     }),
@@ -170,7 +194,11 @@ export const projectProposal: SlideTemplate = {
       name: "Deliverables",
       layout: "stack",
       blocks: [
-        heading({ title: "Deliverables", subtitle: "What you receive at each phase." }),
+        heading({
+          kicker: "Deliverables",
+          title: "Four artefacts you keep, whatever happens next",
+          subtitle: "Written to be used by your team without us, including the parts that document what we got wrong.",
+        }),
         iconBullets({
           grow: 1,
           style: { columns: 2 },
@@ -189,7 +217,11 @@ export const projectProposal: SlideTemplate = {
       name: "Timeline",
       layout: "stack",
       blocks: [
-        heading({ title: "Timeline", subtitle: "Twelve weeks from kickoff to handover." }),
+        heading({
+          kicker: "Schedule",
+          title: "Twelve weeks, with a go/no-go at week five",
+          subtitle: "The design phase ends in a decision. If the target model is not worth building, that is a legitimate outcome.",
+        }),
         timeline({
           grow: 1,
           items: [
@@ -207,7 +239,11 @@ export const projectProposal: SlideTemplate = {
       name: "Project Team",
       layout: "stack",
       blocks: [
-        heading({ title: "Project Team", subtitle: "Who will be doing the work." }),
+        heading({
+          kicker: "The team",
+          title: "The people named here are the people who show up",
+          subtitle: "No bait and switch between the pitch and the engagement. These three are allocated for the full twelve weeks.",
+        }),
         teamCards({
           grow: 1,
           style: { columns: 3 },
@@ -269,6 +305,12 @@ export const projectProposal: SlideTemplate = {
             { label: "Tooling", x: 0.22, y: 0.25 },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "shield",
+          statement: "Every risk here has a named owner on both sides",
+          detail: "A risk register without owners is a list of things nobody is doing anything about.",
+        }),
       ],
     }),
 
@@ -277,7 +319,11 @@ export const projectProposal: SlideTemplate = {
       name: "Investment",
       layout: "stack",
       blocks: [
-        heading({ title: "Investment", subtitle: "Fixed fee by phase." }),
+        heading({
+          kicker: "Investment",
+          title: "Fixed fee per phase, no change orders",
+          subtitle: "If the work takes longer than we scoped, that is our risk. Scope changes are priced separately and approved by you first.",
+        }),
         pricingTable({
           grow: 1,
           plans: [
@@ -285,6 +331,13 @@ export const projectProposal: SlideTemplate = {
             { name: "Design & Build", price: "$120K", period: "weeks 3–10", highlight: true, badge: "Core", features: ["Target architecture", "Implementation", "Testing"] },
             { name: "Embed", price: "$30K", period: "weeks 11–12", features: ["Training", "Runbooks", "Handover"] },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "dollar",
+          solid: true,
+          statement: "Fixed fee. If it takes longer than we scoped, that is our risk",
+          detail: "Scope changes are priced separately and approved by you before any work starts.",
         }),
       ],
     }),

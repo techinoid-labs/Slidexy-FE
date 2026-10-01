@@ -8,6 +8,8 @@
 import { reportGraphite } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
+  bigStat,
+  callout,
   chart,
   checklist,
   comparisonTable,
@@ -16,10 +18,13 @@ import {
   heading,
   iconBullets,
   iconGrid,
+  metricRow,
+  numbered,
   paragraph,
   quote,
   roadmapPhases,
   slide,
+  spotlight,
   statCards,
   timeline,
 } from "./helpers";
@@ -55,7 +60,11 @@ export const annualReport: SlideTemplate = {
       name: "Year Highlights",
       layout: "stack",
       blocks: [
-        heading({ title: "Year Highlights", subtitle: "The headline numbers." }),
+        heading({
+          kicker: "FY2026",
+          title: "The year growth and discipline finally moved together",
+          subtitle: "Revenue up 46% with margin up five points. Every prior year of growth cost us margin to buy.",
+        }),
         statCards({
           grow: 1,
           style: { columns: 4 },
@@ -65,6 +74,13 @@ export const annualReport: SlideTemplate = {
             { icon: "users", value: "1.2M", label: "Customers", delta: "+31%" },
             { icon: "globe", value: "28", label: "Markets", delta: "+6" },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "trendingUp",
+          solid: true,
+          statement: "First year we grew revenue and margin together",
+          detail: "Every prior year of growth cost us margin to buy. This one did not.",
         }),
       ],
     }),
@@ -157,7 +173,11 @@ export const annualReport: SlideTemplate = {
       name: "Performance by Region",
       layout: "stack",
       blocks: [
-        heading({ title: "Performance by Region", subtitle: "Growth was broad rather than concentrated." }),
+        heading({
+          kicker: "Geography",
+          title: "Every region grew, which is the point",
+          subtitle: "Concentration risk was the board's main concern last year. No single region now accounts for more than 44% of revenue.",
+        }),
         chart({
           grow: 1,
           kind: "barChart",
@@ -176,7 +196,11 @@ export const annualReport: SlideTemplate = {
       name: "Operational Metrics",
       layout: "stack",
       blocks: [
-        heading({ title: "Operational Metrics", subtitle: "Efficiency improved alongside growth." }),
+        heading({
+          kicker: "Operations",
+          title: "Cost to serve fell 28% while volume rose 31%",
+          subtitle: "The platform rebuild is the reason. It is also why capital expenditure was unusually high this year.",
+        }),
         statCards({
           grow: 1,
           style: { columns: 3 },
@@ -185,6 +209,12 @@ export const annualReport: SlideTemplate = {
             { icon: "checkCircle", value: "99.97%", label: "Platform uptime" },
             { icon: "users", value: "4.6", label: "Customer satisfaction (of 5)" },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "settings",
+          statement: "Cost to serve fell 28% while volume rose 31%",
+          detail: "The platform rebuild is the cause, and also why capital expenditure was unusually high this year.",
         }),
       ],
     }),
@@ -218,7 +248,11 @@ export const annualReport: SlideTemplate = {
       name: "Our People",
       layout: "stack",
       blocks: [
-        heading({ title: "Our People", subtitle: "The team behind the numbers." }),
+        heading({
+          kicker: "People",
+          title: "640 people, and attrition at a four-year low",
+          subtitle: "We added 180 roles while voluntary attrition fell to 9%, which is the first time those two have moved in opposite directions.",
+        }),
         statCards({
           grow: 1,
           style: { columns: 4 },
@@ -237,7 +271,11 @@ export const annualReport: SlideTemplate = {
       name: "Sustainability",
       layout: "stack",
       blocks: [
-        heading({ title: "Sustainability", subtitle: "Progress against our 2030 commitments." }),
+        heading({
+          kicker: "Sustainability",
+          title: "On track for 2030, behind on one commitment",
+          subtitle: "Emissions and renewables are ahead of plan. Supply-chain reporting is not, and we have moved its deadline rather than quietly dropped it.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 3 },
@@ -246,6 +284,12 @@ export const annualReport: SlideTemplate = {
             { icon: "cloud", title: "Renewable energy", body: "81% of operations on renewable supply." },
             { icon: "users", title: "Community", body: "12,000 volunteer hours contributed." },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "leaf",
+          statement: "On track for 2030, behind on supply-chain reporting",
+          detail: "We have moved that deadline publicly rather than quietly dropping the commitment.",
         }),
       ],
     }),
@@ -275,7 +319,11 @@ export const annualReport: SlideTemplate = {
       name: "Financial Summary",
       layout: "stack",
       blocks: [
-        heading({ title: "Financial Summary", subtitle: "Year on year." }),
+        heading({
+          kicker: "Financials",
+          title: "The full picture, year on year",
+          subtitle: "Free cash flow tripled, which matters more than the revenue line for what we can fund next year without raising.",
+        }),
         comparisonTable({
           grow: 1,
           columns: [{ label: "FY2025" }, { label: "FY2026", highlight: true }, { label: "Change" }],
@@ -295,7 +343,11 @@ export const annualReport: SlideTemplate = {
       name: "Outlook",
       layout: "stack",
       blocks: [
-        heading({ title: "Outlook", subtitle: "Priorities for FY2027." }),
+        heading({
+          kicker: "Outlook",
+          title: "Two halves, four commitments",
+          subtitle: "Deliberately short. We would rather commit to four things publicly than list twenty and report on none.",
+        }),
         roadmapPhases({
           grow: 1,
           items: [

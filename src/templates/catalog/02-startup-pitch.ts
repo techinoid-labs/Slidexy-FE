@@ -8,6 +8,8 @@
 import { startupViolet } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
+  bigStat,
+  callout,
   chart,
   checklist,
   contactFooter,
@@ -18,10 +20,13 @@ import {
   iconGrid,
   image,
   imageGrid,
+  metricRow,
   nestedCircles,
+  numbered,
   processFlow,
   scatter,
   slide,
+  spotlight,
   statCards,
   teamCards,
   timeline,
@@ -63,19 +68,41 @@ export const startupPitch: SlideTemplate = {
       layout: "splitRight",
       split: 0.56,
       blocks: [
-        heading({ slot: "full", title: "The Problem", subtitle: "A big problem that needs a better solution." }),
+        heading({
+          slot: "full",
+          kicker: "The problem",
+          title: "Everyone has accepted a workflow nobody designed",
+          subtitle:
+            "Four tools, three handoffs, and a spreadsheet holding it together — in teams that would never ship a product this way.",
+        }),
         iconBullets({
           slot: "main",
           items: [
-            { icon: "clock", label: "Time consuming", body: "Current solutions are slow and inefficient at every step." },
-            { icon: "dollar", label: "Expensive", body: "High costs put good tooling out of reach for most teams." },
-            { icon: "user", label: "One size fits all", body: "Generic products never match how a team actually works." },
+            {
+              icon: "clock",
+              label: "Nine hours a week, per person",
+              body: "Teams lose more than a working day each week to steps nobody would design on purpose.",
+            },
+            {
+              icon: "dollar",
+              label: "Priced for enterprises only",
+              body: "The tools that solve this start at forty thousand a year, ruling out the teams who need it most.",
+            },
+            {
+              icon: "user",
+              label: "Generic by design",
+              body: "Every product assumes one way of working, then charges services to bend it to yours.",
+            },
           ],
         }),
-        image({
+        spotlight({
           slot: "aside",
+          duotone: true,
           prompt:
-            "frustrated professional at a cluttered desk late at night, desaturated cool tones, documentary photography, no text",
+            "frustrated professional at a cluttered desk late at night, documentary photography, no text",
+          stat: { value: "9 hrs", label: "Lost per person, per week" },
+          cardTitle: "The cost is invisible",
+          cardBody: "It never appears on a budget line, which is exactly why it goes unfixed for years.",
         }),
       ],
     }),
@@ -193,6 +220,12 @@ export const startupPitch: SlideTemplate = {
             { icon: "building", title: "Enterprise", body: "Tailored contracts for large organisations." },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "refresh",
+          statement: "Three revenue lines, one acquisition motion",
+          detail: "Every customer enters the same way, then expands into whichever line matches how they work.",
+        }),
       ],
     }),
 
@@ -221,6 +254,13 @@ export const startupPitch: SlideTemplate = {
           yFormat: "compact",
           caption: "+25% month on month.",
         }),
+        callout({
+          slot: "footer",
+          icon: "trendingUp",
+          solid: true,
+          statement: "25% month-on-month growth, nine months running",
+          detail: "Compounding at this rate, the cohort signing up this quarter is worth more than our entire first year.",
+        }),
       ],
     }),
 
@@ -239,6 +279,12 @@ export const startupPitch: SlideTemplate = {
             { title: "Retain", body: "Habit-forming workflows and responsive support." },
             { title: "Scale", body: "Expand into new markets and customer segments." },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "rocket",
+          statement: "Our cheapest customer is one we already have",
+          detail: "Expansion inside existing accounts costs us a fifth of what a new logo does.",
         }),
       ],
     }),

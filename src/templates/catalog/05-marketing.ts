@@ -8,7 +8,12 @@
 import { marketingMagenta } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
+  bigStat,
+  callout,
   chart,
+  metricRow,
+  numbered,
+  spotlight,
   checklist,
   contactFooter,
   cta,
@@ -60,7 +65,12 @@ export const marketingStrategy: SlideTemplate = {
       layout: "splitRight",
       split: 0.5,
       blocks: [
-        heading({ slot: "full", title: "Market Overview", subtitle: "The landscape and the opportunity." }),
+        heading({
+          slot: "full",
+          kicker: "The market",
+          title: "A $500B category still growing 8.5% a year",
+          subtitle: "Digital adoption is only a quarter of the way through, which means the cheapest attention we will ever buy is the attention available now.",
+        }),
         statCards({
           slot: "main",
           style: { columns: 2 },
@@ -83,7 +93,11 @@ export const marketingStrategy: SlideTemplate = {
       name: "Target Audience",
       layout: "stack",
       blocks: [
-        heading({ title: "Target Audience", subtitle: "Reaching the right people with the right message." }),
+        heading({
+          kicker: "Audience",
+          title: "Three segments that buy for completely different reasons",
+          subtitle: "Same product, three stories. Treating them as one audience is why most campaigns in this category underperform.",
+        }),
         imageGrid({
           grow: 1,
           style: { columns: 3 },
@@ -102,7 +116,12 @@ export const marketingStrategy: SlideTemplate = {
       layout: "splitRight",
       split: 0.46,
       blocks: [
-        heading({ slot: "full", title: "Brand Positioning", subtitle: "What makes us different." }),
+        heading({
+          slot: "full",
+          kicker: "Positioning",
+          title: "Where quality, innovation and people overlap",
+          subtitle: "Plenty of brands claim two of these. The position worth owning is the narrow space where all three are credible at once.",
+        }),
         venn({
           slot: "main",
           centerLabel: "Our brand",
@@ -130,7 +149,11 @@ export const marketingStrategy: SlideTemplate = {
       name: "Marketing Goals",
       layout: "stack",
       blocks: [
-        heading({ title: "Marketing Goals", subtitle: "Clear goals for measurable success." }),
+        heading({
+          kicker: "Goals",
+          title: "Four targets, each with a number attached",
+          subtitle: "If a goal cannot be checked at the end of the quarter, it is a sentiment rather than a goal.",
+        }),
         iconBullets({
           grow: 1,
           style: { columns: 2 },
@@ -141,6 +164,12 @@ export const marketingStrategy: SlideTemplate = {
             { icon: "trendingUp", label: "Boost sales", body: "30% revenue growth year on year." },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "target",
+          statement: "Every goal here has a number and an owner",
+          detail: "Anything without both is a sentiment, and sentiments do not get reviewed in October.",
+        }),
       ],
     }),
 
@@ -149,7 +178,11 @@ export const marketingStrategy: SlideTemplate = {
       name: "Key Strategies",
       layout: "stack",
       blocks: [
-        heading({ title: "Key Strategies", subtitle: "Our approach to achieving growth." }),
+        heading({
+          kicker: "Strategy",
+          title: "Earn attention first, then buy more of it",
+          subtitle: "Paid amplifies what already works organically. Running it the other way around is how budgets get spent without compounding.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 2 },
@@ -160,6 +193,13 @@ export const marketingStrategy: SlideTemplate = {
             { icon: "star", title: "Influencer partnerships", body: "Partner with trusted voices in the category." },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "megaphone",
+          solid: true,
+          statement: "Paid amplifies what already works organically",
+          detail: "We do not put budget behind a message until it has earned attention without one.",
+        }),
       ],
     }),
 
@@ -168,7 +208,11 @@ export const marketingStrategy: SlideTemplate = {
       name: "Marketing Channels",
       layout: "stack",
       blocks: [
-        heading({ title: "Marketing Channels", subtitle: "A multi-channel approach for greater impact." }),
+        heading({
+          kicker: "Channels",
+          title: "Six channels, two of which will carry the quarter",
+          subtitle: "We fund all six to find out which two. By month three the budget concentrates behind whatever is working.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 3 },
@@ -181,6 +225,12 @@ export const marketingStrategy: SlideTemplate = {
             { icon: "calendar", title: "Events", body: "Webinars and industry conferences" },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "barChart",
+          statement: "Six channels funded, two will carry the quarter",
+          detail: "By month three the budget concentrates behind whichever two are actually converting.",
+        }),
       ],
     }),
 
@@ -189,7 +239,11 @@ export const marketingStrategy: SlideTemplate = {
       name: "Campaign Plan",
       layout: "stack",
       blocks: [
-        heading({ title: "Campaign Plan", subtitle: "Key campaigns to drive results." }),
+        heading({
+          kicker: "Campaigns",
+          title: "Three campaigns, sequenced so each feeds the next",
+          subtitle: "Awareness builds the audience that the launch converts, and the launch creates the customers the engagement campaign retains.",
+        }),
         imageGrid({
           grow: 1,
           style: { columns: 3 },
@@ -315,7 +369,11 @@ export const marketingStrategy: SlideTemplate = {
       name: "Competitor Analysis",
       layout: "fullBleed",
       blocks: [
-        heading({ title: "Competitor Analysis", subtitle: "Understanding the competitive landscape." }),
+        heading({
+          kicker: "Competition",
+          title: "Where we are genuinely stronger, and where we are not",
+          subtitle: "Being honest about the two columns we lose is what makes the five we win believable.",
+        }),
         comparisonTable({
           grow: 1,
           columns: [{ label: "Our brand", highlight: true }, { label: "Competitor A" }, { label: "Competitor B" }],
@@ -335,7 +393,11 @@ export const marketingStrategy: SlideTemplate = {
       name: "Timeline & Roadmap",
       layout: "stack",
       blocks: [
-        heading({ title: "Timeline & Roadmap", subtitle: "Our marketing journey ahead." }),
+        heading({
+          kicker: "Timeline",
+          title: "Four quarters, with a decision point at each one",
+          subtitle: "Nothing is committed past the next quarter until the current one reports.",
+        }),
         timeline({
           grow: 1,
           items: [

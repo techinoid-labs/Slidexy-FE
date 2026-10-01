@@ -7,6 +7,11 @@
 
 import type {
   BarChartBlock,
+  BigStatBlock,
+  CalloutBandBlock,
+  MetricRowBlock,
+  NumberedListBlock,
+  SpotlightBlock,
   Block,
   ChecklistBlock,
   ComparisonTableBlock,
@@ -448,3 +453,89 @@ export const device = (
 });
 
 export const slide = (o: SlideSpec): SlideSpec => o;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Visual blocks
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const bigStat = (
+  o: { value: string; unit?: string; label: string; body?: string; ghost?: boolean } & Common
+): BigStatBlock => ({
+  id: nextId("bs"),
+  type: "bigStat",
+  slot: o.slot,
+  grow: o.grow,
+  style: o.style,
+  value: rt("value", o.value),
+  unit: o.unit ? rt("unit", o.unit) : undefined,
+  label: rt("label", o.label),
+  body: o.body ? rt("body", o.body) : undefined,
+  ghost: o.ghost,
+});
+
+export const callout = (
+  o: { icon?: string; statement: string; detail?: string; solid?: boolean } & Common
+): CalloutBandBlock => ({
+  id: nextId("cb"),
+  type: "calloutBand",
+  slot: o.slot,
+  grow: o.grow,
+  style: o.style,
+  icon: o.icon,
+  statement: rt("statement", o.statement),
+  detail: o.detail ? rt("detail", o.detail) : undefined,
+  solid: o.solid,
+});
+
+export const spotlight = (
+  o: {
+    prompt?: string;
+    url?: string;
+    cardTitle?: string;
+    cardBody?: string;
+    stat?: { value: string; label: string };
+    duotone?: boolean;
+  } & Common
+): SpotlightBlock => ({
+  id: nextId("sp"),
+  type: "spotlight",
+  slot: o.slot,
+  grow: o.grow ?? 1,
+  style: o.style,
+  prompt: o.prompt,
+  url: o.url,
+  duotone: o.duotone,
+  cardTitle: o.cardTitle ? rt("cardTitle", o.cardTitle) : undefined,
+  cardBody: o.cardBody ? rt("cardBody", o.cardBody) : undefined,
+  stat: o.stat ? { value: rt("value", o.stat.value), label: rt("label", o.stat.label) } : undefined,
+});
+
+export const numbered = (
+  o: { items: Array<{ title: string; body?: string }> } & Common
+): NumberedListBlock => ({
+  id: nextId("nl"),
+  type: "numberedList",
+  slot: o.slot,
+  grow: o.grow,
+  style: o.style,
+  items: o.items.map((it, i) => ({
+    id: `i${i}`,
+    title: rt("title", it.title),
+    body: it.body ? rt("body", it.body) : undefined,
+  })),
+});
+
+export const metricRow = (
+  o: { items: Array<{ value: string; label: string }> } & Common
+): MetricRowBlock => ({
+  id: nextId("mr"),
+  type: "metricRow",
+  slot: o.slot,
+  grow: o.grow,
+  style: o.style,
+  items: o.items.map((it, i) => ({
+    id: `i${i}`,
+    value: rt("value", it.value),
+    label: rt("label", it.label),
+  })),
+});

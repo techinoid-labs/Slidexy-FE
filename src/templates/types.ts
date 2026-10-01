@@ -158,6 +158,11 @@ export type BlockType =
   | "image"
   | "imageGrid"
   | "deviceMockup"
+  | "bigStat"
+  | "calloutBand"
+  | "spotlight"
+  | "numberedList"
+  | "metricRow"
   | "spacer";
 
 /** Where a block sits. Slots are resolved by the layout. */
@@ -427,6 +432,47 @@ export interface SpacerBlock extends BlockBase {
   size?: number;
 }
 
+export interface BigStatBlock extends BlockBase {
+  type: "bigStat";
+  value: RichText;
+  unit?: RichText;
+  label: RichText;
+  body?: RichText;
+  /** Draws the value again, oversized and faint, behind the block. */
+  ghost?: boolean;
+}
+
+export interface CalloutBandBlock extends BlockBase {
+  type: "calloutBand";
+  icon?: string;
+  statement: RichText;
+  detail?: RichText;
+  /** Solid accent fill rather than a tint. */
+  solid?: boolean;
+}
+
+export interface SpotlightBlock extends BlockBase {
+  type: "spotlight";
+  url?: string;
+  prompt?: string;
+  /** Card that overlaps the image, giving the slide depth. */
+  cardTitle?: RichText;
+  cardBody?: RichText;
+  stat?: { value: RichText; label: RichText };
+  /** Tints the photograph into the theme palette. */
+  duotone?: boolean;
+}
+
+export interface NumberedListBlock extends BlockBase {
+  type: "numberedList";
+  items: Array<{ id: string; title: RichText; body?: RichText }>;
+}
+
+export interface MetricRowBlock extends BlockBase {
+  type: "metricRow";
+  items: Array<{ id: string; value: RichText; label: RichText }>;
+}
+
 export type Block =
   | HeadingBlock
   | ParagraphBlock
@@ -453,6 +499,11 @@ export type Block =
   | ImageBlock
   | ImageGridBlock
   | DeviceMockupBlock
+  | BigStatBlock
+  | CalloutBandBlock
+  | SpotlightBlock
+  | NumberedListBlock
+  | MetricRowBlock
   | SpacerBlock;
 
 // ─────────────────────────────────────────────────────────────────────────────

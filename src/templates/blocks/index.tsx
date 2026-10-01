@@ -27,6 +27,13 @@ import {
 } from "./structureBlocks";
 import { ComparisonTableBlockView, PricingTableBlockView } from "./tableBlocks";
 import {
+  BigStatBlockView,
+  CalloutBandBlockView,
+  MetricRowBlockView,
+  NumberedListBlockView,
+  SpotlightBlockView,
+} from "./visualBlocks";
+import {
   ContactFooterBlockView,
   CtaButtonBlockView,
   DeviceMockupBlockView,
@@ -105,6 +112,17 @@ export const BlockView: React.FC<{ block: Block; slideNumber?: number }> = ({
       return <ImageGridBlockView block={block} />;
     case "deviceMockup":
       return <DeviceMockupBlockView block={block} />;
+
+    case "bigStat":
+      return <BigStatBlockView block={block} />;
+    case "calloutBand":
+      return <CalloutBandBlockView block={block} />;
+    case "spotlight":
+      return <SpotlightBlockView block={block} />;
+    case "numberedList":
+      return <NumberedListBlockView block={block} />;
+    case "metricRow":
+      return <MetricRowBlockView block={block} />;
 
     case "spacer":
       return <SpacerView size={block.size} />;

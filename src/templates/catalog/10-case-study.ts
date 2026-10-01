@@ -8,6 +8,8 @@
 import { impactGreen } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
+  bigStat,
+  callout,
   chart,
   checklist,
   comparisonTable,
@@ -18,10 +20,13 @@ import {
   iconGrid,
   image,
   imageGrid,
+  metricRow,
+  numbered,
   paragraph,
   processFlow,
   quote,
   slide,
+  spotlight,
   statCards,
   timeline,
 } from "./helpers";
@@ -56,7 +61,12 @@ export const caseStudy: SlideTemplate = {
       layout: "splitRight",
       split: 0.54,
       blocks: [
-        heading({ slot: "full", title: "The Client", subtitle: "Who they are and what they do." }),
+        heading({
+          slot: "full",
+          kicker: "The client",
+          title: "A 240-vehicle operator with an invisible problem",
+          subtitle: "Profitable, growing, well run — and quietly losing a fifth of its margin to something no single report showed.",
+        }),
         paragraph({ slot: "main", body: "Northwind is a mid-market logistics operator running 240 vehicles across four regions, serving retail and industrial customers." }),
         statCards({
           slot: "main",
@@ -78,7 +88,12 @@ export const caseStudy: SlideTemplate = {
       layout: "splitLeft",
       split: 0.55,
       blocks: [
-        heading({ slot: "full", title: "The Challenge", subtitle: "What was going wrong." }),
+        heading({
+          slot: "full",
+          kicker: "The challenge",
+          title: "One in five deliveries missed its window",
+          subtitle: "Each depot had a plausible explanation. None of them was wrong, and none of them explained the whole number.",
+        }),
         iconBullets({
           slot: "main",
           items: [
@@ -96,7 +111,11 @@ export const caseStudy: SlideTemplate = {
       name: "What Was at Stake",
       layout: "stack",
       blocks: [
-        heading({ title: "What Was at Stake", subtitle: "Why this had to be solved in twelve months." }),
+        heading({
+          kicker: "The stakes",
+          title: "Two contracts worth a third of revenue were up",
+          subtitle: "Both renewals had on-time performance written into them. Twelve months was not a preference, it was the deadline.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 3 },
@@ -105,6 +124,13 @@ export const caseStudy: SlideTemplate = {
             { icon: "trendingUp", title: "Margin compression", body: "Cost per drop rising faster than price." },
             { icon: "users", title: "Driver retention", body: "Churn at 28% and climbing." },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "flag",
+          solid: true,
+          statement: "Two renewals worth 31% of revenue, both with on-time clauses",
+          detail: "Twelve months was not a preference. It was written into the contracts.",
         }),
       ],
     }),
@@ -152,7 +178,11 @@ export const caseStudy: SlideTemplate = {
       name: "Timeline",
       layout: "stack",
       blocks: [
-        heading({ title: "Timeline", subtitle: "From baseline to handover." }),
+        heading({
+          kicker: "Timeline",
+          title: "Twelve months, four phases, two false starts",
+          subtitle: "The dates below are what happened, including the month we spent rebuilding a baseline we got wrong the first time.",
+        }),
         timeline({
           grow: 1,
           items: [
@@ -249,7 +279,11 @@ export const caseStudy: SlideTemplate = {
       name: "Why It Worked",
       layout: "stack",
       blocks: [
-        heading({ title: "Why It Worked", subtitle: "Three things we would repeat." }),
+        heading({
+          kicker: "What worked",
+          title: "Three decisions that made the difference",
+          subtitle: "None of them were technical. The technology was the easy part of this engagement.",
+        }),
         iconGrid({
           grow: 1,
           style: { columns: 3 },
@@ -258,6 +292,12 @@ export const caseStudy: SlideTemplate = {
             { icon: "users", title: "Dispatch led the design", body: "The people doing the work set the rules." },
             { icon: "refresh", title: "Shipped in increments", body: "Two regions proved it before all four." },
           ],
+        }),
+        callout({
+          slot: "footer",
+          icon: "search",
+          statement: "The honest baseline was the whole engagement",
+          detail: "Two previous attempts failed because they started by buying software instead of measuring the problem.",
         }),
       ],
     }),
@@ -276,6 +316,12 @@ export const caseStudy: SlideTemplate = {
             { icon: "users", label: "Training started late", body: "Dispatch should have been involved from month one." },
           ],
         }),
+        callout({
+          slot: "footer",
+          icon: "clock",
+          statement: "We got the baseline wrong the first time",
+          detail: "Six weeks instead of three, and we rebuilt it. Reporting that is more useful to you than a clean story.",
+        }),
       ],
     }),
 
@@ -284,7 +330,11 @@ export const caseStudy: SlideTemplate = {
       name: "Could This Work for You?",
       layout: "stack",
       blocks: [
-        heading({ title: "Could This Work for You?", subtitle: "The conditions that made it succeed." }),
+        heading({
+          kicker: "Applicability",
+          title: "Three conditions that made this work",
+          subtitle: "If you have all three, this is repeatable. If you are missing one, we would tell you before taking the engagement.",
+        }),
         imageGrid({
           grow: 1,
           style: { columns: 3 },
