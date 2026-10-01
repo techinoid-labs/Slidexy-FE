@@ -31,6 +31,7 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
     slideIndex = 0,
 }) => {
     const title = slide.slide_title?.text || "Comparison";
+    const subtitle = slide.subtitle?.text || '';
     const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
     const midpoint = Math.ceil(bullets.length / 2);
     const leftItems = bullets.slice(0, midpoint);
@@ -42,12 +43,14 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
     const accent2 = theme?.artPalette?.[1] || '#a855f7';
     const textColor = '#1a202c';
 
-    const handleUpdate = (type: 'title' | 'bullet', value: string, index?: number) => {
+    const handleUpdate = (type: 'title' | 'subtitle' | 'bullet', value: string, index?: number) => {
         if (!onSlideUpdate) return;
         const updatedSlide = { ...slide };
 
         if (type === 'title') {
             updatedSlide.slide_title = { ...updatedSlide.slide_title, text: value };
+        } else if (type === 'subtitle') {
+            updatedSlide.subtitle = { ...updatedSlide.subtitle, text: value };
         } else if (type === 'bullet' && typeof index === 'number') {
             if (slide.elements[index]) {
                 updatedSlide.elements = [...slide.elements];
@@ -183,7 +186,7 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
                 overflow: 'hidden',
             }}>
                 <EditableElement
-                    id="comparison-title"
+                    id={`title-${slideIndex}`}
                     text={title}
                     tagName="h2"
                     isEditing={isEditing}
@@ -192,7 +195,7 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
                     style={{
                         fontSize: '2.6rem',
                         fontWeight: 800,
-                        margin: '0 0 2.5rem',
+                        margin: '0 0 0.5rem',
                         textAlign: 'center',
                         letterSpacing: '-0.02em',
                         color: '#1a202c',
@@ -201,6 +204,26 @@ export const ComparisonSlideHTML: React.FC<ComparisonSlideHTMLProps> = ({
                     }}
                     elementProperties={slide.slide_title?.properties}
                 />
+                {subtitle && (
+                    <EditableElement
+                        id={`subtitle-${slideIndex}`}
+                        text={subtitle}
+                        tagName="p"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('subtitle', val)}
+                        onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                        style={{
+                            fontSize: '1.05rem',
+                            fontWeight: 400,
+                            lineHeight: 1.45,
+                            color: '#1a202c',
+                            opacity: 0.72,
+                            marginTop: 0,
+                            marginBottom: '2.5rem',
+                        }}
+                        elementProperties={slide.subtitle?.properties}
+                    />
+                )}
 
                 <div style={{
                     display: 'grid',

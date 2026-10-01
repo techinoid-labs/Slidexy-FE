@@ -669,7 +669,7 @@ export const QuoteSlideHTML: React.FC<QuoteSlideHTMLProps> = ({
                     </div>
                     <div style={{ flex: 1, overflow: 'hidden', boxSizing: 'border-box' }}>
                         <EditableElement
-                            id="quote-text"
+                            id={`quote-${slideIndex}`}
                             text={quoteText}
                             tagName="blockquote"
                             isEditing={isEditing}
@@ -701,7 +701,7 @@ export const QuoteSlideHTML: React.FC<QuoteSlideHTMLProps> = ({
                         />
                         <div style={{ textAlign: 'left' }}>
                             <EditableElement
-                                id="author-text"
+                                id={`author-${slideIndex}`}
                                 text={authorText}
                                 tagName="cite"
                                 isEditing={isEditing}
@@ -726,7 +726,7 @@ export const QuoteSlideHTML: React.FC<QuoteSlideHTMLProps> = ({
                                 elementProperties={authorProps || slide.subtitle?.properties || {}}
                             />
                             <EditableElement
-                                id="context-text"
+                                id={`context-${slideIndex}`}
                                 text={contextText}
                                 tagName="p"
                                 isEditing={isEditing}

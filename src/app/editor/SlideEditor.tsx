@@ -242,8 +242,12 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
         border: "1px solid rgba(255,255,255,0.08)",
         backgroundColor: "#fff",
         position: "absolute",
-        boxShadow: "0 8px 48px rgba(0,0,0,0.7), 0 2px 12px rgba(0,0,0,0.4)",
+        boxShadow: "0 8px 48px rgba(0,0,0,0.25), 0 2px 12px rgba(0,0,0,0.12)",
         transform: `scale(${scale})`,
+        // Origin must be the corner: with the default (centre) the slide
+        // overflows its sizer on every side at anything below 100%.
+        transformOrigin: "top left",
+        top: 0,
         left: 0,
         width: getDynamicConstants().SLIDE_WIDTH,
         height: getDynamicConstants().SLIDE_HEIGHT,
@@ -540,14 +544,18 @@ const SlideEditor = ({ slides = [], onDeselect, openPanel, deselectAllRef, scale
       onDuplicateSlide={duplicateSlide}
       onReorderSlide={reorderSlides}
     >
+      {/* The slide is drawn at its native 960x540 and scaled with a CSS
+          transform, but a transform does not change layout size. This sizer
+          reserves exactly the ZOOMED size instead, so the canvas never holds
+          a 960px-wide box while showing a 520px slide — which is what made
+          the workspace scroll and the slide appear to jump or zoom whenever
+          an element took focus. */}
       <Box
         sx={{
           position: "relative",
-          width: getDynamicConstants().SLIDE_WIDTH,
-          height: getDynamicConstants().SLIDE_HEIGHT,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+          width: getDynamicConstants().SLIDE_WIDTH * scale,
+          height: getDynamicConstants().SLIDE_HEIGHT * scale,
+          flexShrink: 0,
           overflow: "hidden",
         }}
       >

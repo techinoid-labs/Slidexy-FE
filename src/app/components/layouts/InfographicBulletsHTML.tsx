@@ -29,6 +29,7 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
     variant = 1
 }) => {
     const title = slide.slide_title?.text || "Key Metrics";
+    const subtitle = slide.subtitle?.text || '';
     const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
     const bgColor = theme?.backgroundColor || '#ffffff';
     const accent = theme?.artPalette?.[0] || '#6c5ce7';
@@ -36,11 +37,13 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
     const accent3 = theme?.artPalette?.[2] || '#fdcb6e';
     const accent4 = theme?.artPalette?.[3] || '#e17055';
 
-    const handleUpdate = (type: 'title' | 'bullet', value: string, index?: number) => {
+    const handleUpdate = (type: 'title' | 'subtitle' | 'bullet', value: string, index?: number) => {
         if (!onSlideUpdate) return;
         const updated = { ...slide };
         if (type === 'title') {
             updated.slide_title = { ...updated.slide_title, text: value };
+        } else if (type === 'subtitle') {
+            updated.subtitle = { ...updated.subtitle, text: value };
         } else if (type === 'bullet' && typeof index === 'number') {
             if (slide.elements[index]) {
                 updated.elements = [...slide.elements];
@@ -95,13 +98,33 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                     style={{
                         fontSize: '2.25rem',
                         fontWeight: 800,
-                        margin: '0 0 32px',
+                        margin: '0 0 0.5rem',
                         letterSpacing: '-0.02em',
                         color: '#1a202c',
                         lineHeight: 1.2
                     }}
                     elementProperties={slide.slide_title?.properties}
                 />
+                {subtitle && (
+                    <EditableElement
+                        id={`subtitle-${slideIndex}`}
+                        text={subtitle}
+                        tagName="p"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('subtitle', val)}
+                        onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                        style={{
+                            fontSize: '1.05rem',
+                            fontWeight: 400,
+                            lineHeight: 1.45,
+                            color: '#1a202c',
+                            opacity: 0.72,
+                            marginTop: 0,
+                            marginBottom: '32px',
+                        }}
+                        elementProperties={slide.subtitle?.properties}
+                    />
+                )}
 
                 <div style={{
                     display: 'grid',
@@ -229,11 +252,31 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                         fontWeight: 800,
                         textAlign: 'center',
                         color: '#1a202c',
-                        marginBottom: '36px',
+                        marginBottom: '0.5rem',
                         letterSpacing: '-0.02em'
                     }}
                     elementProperties={slide.slide_title?.properties}
                 />
+                {subtitle && (
+                    <EditableElement
+                        id={`subtitle-${slideIndex}`}
+                        text={subtitle}
+                        tagName="p"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('subtitle', val)}
+                        onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                        style={{
+                            fontSize: '1.05rem',
+                            fontWeight: 400,
+                            lineHeight: 1.45,
+                            color: '#1a202c',
+                            opacity: 0.72,
+                            marginTop: 0,
+                            marginBottom: '36px',
+                        }}
+                        elementProperties={slide.subtitle?.properties}
+                    />
+                )}
 
                 <div style={{
                     display: 'grid',
@@ -358,11 +401,31 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                         fontSize: '2.25rem',
                         fontWeight: 800,
                         color: '#1a202c',
-                        marginBottom: '36px',
+                        marginBottom: '0.5rem',
                         letterSpacing: '-0.02em'
                     }}
                     elementProperties={slide.slide_title?.properties}
                 />
+                {subtitle && (
+                    <EditableElement
+                        id={`subtitle-${slideIndex}`}
+                        text={subtitle}
+                        tagName="p"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('subtitle', val)}
+                        onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                        style={{
+                            fontSize: '1.05rem',
+                            fontWeight: 400,
+                            lineHeight: 1.45,
+                            color: '#1a202c',
+                            opacity: 0.72,
+                            marginTop: 0,
+                            marginBottom: '36px',
+                        }}
+                        elementProperties={slide.subtitle?.properties}
+                    />
+                )}
 
                 <div style={{
                     display: 'grid',
@@ -490,11 +553,31 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                         borderBottom: `4px solid ${accent}`,
                         display: 'inline-block',
                         paddingBottom: '12px',
-                        marginBottom: '32px',
+                        marginBottom: '0.5rem',
                         letterSpacing: '-0.02em'
                     }}
                     elementProperties={slide.slide_title?.properties}
                 />
+                {subtitle && (
+                    <EditableElement
+                        id={`subtitle-${slideIndex}`}
+                        text={subtitle}
+                        tagName="p"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('subtitle', val)}
+                        onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                        style={{
+                            fontSize: '1.05rem',
+                            fontWeight: 400,
+                            lineHeight: 1.45,
+                            color: '#1a202c',
+                            opacity: 0.72,
+                            marginTop: 0,
+                            marginBottom: '32px',
+                        }}
+                        elementProperties={slide.subtitle?.properties}
+                    />
+                )}
 
                 <div style={{
                     display: 'flex',
@@ -597,11 +680,31 @@ export const InfographicBulletsHTML: React.FC<InfographicBulletsHTMLProps> = ({
                     fontSize: '2.25rem',
                     fontWeight: 800,
                     color: '#1a202c',
-                    marginBottom: '36px',
+                    marginBottom: '0.5rem',
                     letterSpacing: '-0.02em'
                 }}
                 elementProperties={slide.slide_title?.properties}
             />
+            {subtitle && (
+                <EditableElement
+                    id={`subtitle-${slideIndex}`}
+                    text={subtitle}
+                    tagName="p"
+                    isEditing={isEditing}
+                    onChange={(val) => handleUpdate('subtitle', val)}
+                    onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                    style={{
+                        fontSize: '1.05rem',
+                        fontWeight: 400,
+                        lineHeight: 1.45,
+                        color: '#1a202c',
+                        opacity: 0.72,
+                        marginTop: 0,
+                        marginBottom: '36px',
+                    }}
+                    elementProperties={slide.subtitle?.properties}
+                />
+            )}
 
             <div style={{
                 display: 'grid',

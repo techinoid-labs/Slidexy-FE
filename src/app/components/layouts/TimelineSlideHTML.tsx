@@ -36,6 +36,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
     variant = 1
 }) => {
     const title = slide.slide_title?.text || "Timeline";
+    const subtitle = slide.subtitle?.text || '';
     const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
 
     const bgColor = theme?.backgroundColor || '#0f172a';
@@ -44,12 +45,14 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
     const textColor = '#1a202c';
     const subText = theme?.textLightColor || 'rgba(255,255,255,0.9)';
 
-    const handleUpdate = (type: 'title' | 'bullet', value: string, index?: number) => {
+    const handleUpdate = (type: 'title' | 'subtitle' | 'bullet', value: string, index?: number) => {
         if (!onSlideUpdate) return;
         const updatedSlide = { ...slide };
 
         if (type === 'title') {
             updatedSlide.slide_title = { ...updatedSlide.slide_title, text: value };
+        } else if (type === 'subtitle') {
+            updatedSlide.subtitle = { ...updatedSlide.subtitle, text: value };
         } else if (type === 'bullet' && typeof index === 'number') {
             if (slide.elements[index]) {
                 updatedSlide.elements = [...slide.elements];
@@ -83,7 +86,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                 alignItems: 'center'
             }}>
                 <EditableElement
-                    id="timeline-title"
+                    id={`title-${slideIndex}`}
                     text={title}
                     tagName="h2"
                     isEditing={isEditing}
@@ -92,13 +95,33 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                     style={{
                         fontSize: '2.4rem',
                         fontWeight: 800,
-                        margin: '0 0 2.4rem',
+                        margin: '0 0 0.5rem',
                         letterSpacing: '-0.02em',
                         color: '#000000',
                         textAlign: 'center'
                     }}
                     elementProperties={slide.slide_title?.properties}
                 />
+                {subtitle && (
+                    <EditableElement
+                        id={`subtitle-${slideIndex}`}
+                        text={subtitle}
+                        tagName="p"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('subtitle', val)}
+                        onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                        style={{
+                            fontSize: '1.05rem',
+                            fontWeight: 400,
+                            lineHeight: 1.45,
+                            color: '#000000',
+                            opacity: 0.72,
+                            marginTop: 0,
+                            marginBottom: '2.4rem',
+                        }}
+                        elementProperties={slide.subtitle?.properties}
+                    />
+                )}
 
                 <div style={{
                     position: 'relative',
@@ -211,7 +234,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                 justifyContent: 'center'
             }}>
                 <EditableElement
-                    id="timeline-title"
+                    id={`title-${slideIndex}`}
                     text={title}
                     tagName="h2"
                     isEditing={isEditing}
@@ -222,10 +245,30 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         fontWeight: 800,
                         textAlign: 'center',
                         color: '#000000',
-                        marginBottom: '4rem'
+                        marginBottom: '0.5rem'
                     }}
                     elementProperties={slide.slide_title?.properties}
                 />
+                {subtitle && (
+                    <EditableElement
+                        id={`subtitle-${slideIndex}`}
+                        text={subtitle}
+                        tagName="p"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('subtitle', val)}
+                        onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                        style={{
+                            fontSize: '1.05rem',
+                            fontWeight: 400,
+                            lineHeight: 1.45,
+                            color: '#000000',
+                            opacity: 0.72,
+                            marginTop: 0,
+                            marginBottom: '4rem',
+                        }}
+                        elementProperties={slide.subtitle?.properties}
+                    />
+                )}
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
                     <div style={{
@@ -317,7 +360,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                     <EditableElement
-                        id="timeline-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -326,6 +369,26 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         style={{ fontSize: '3rem', fontWeight: 800, color: '#000000' }}
                         elementProperties={slide.slide_title?.properties}
                     />
+                    {subtitle && (
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                            style={{
+                                fontSize: '1.05rem',
+                                fontWeight: 400,
+                                lineHeight: 1.45,
+                                color: '#000000',
+                                opacity: 0.72,
+                                marginTop: 0,
+                                marginBottom: '1.5rem',
+                            }}
+                            elementProperties={slide.subtitle?.properties}
+                        />
+                    )}
                 </div>
 
                 <div style={{ position: 'relative', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
@@ -424,7 +487,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
                     <EditableElement
-                        id="timeline-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -433,6 +496,26 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                         style={{ fontSize: '2.5rem', fontWeight: 800, color: '#000000' }}
                         elementProperties={slide.slide_title?.properties}
                     />
+                    {subtitle && (
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                            style={{
+                                fontSize: '1.05rem',
+                                fontWeight: 400,
+                                lineHeight: 1.45,
+                                color: '#000000',
+                                opacity: 0.72,
+                                marginTop: 0,
+                                marginBottom: '1.5rem',
+                            }}
+                            elementProperties={slide.subtitle?.properties}
+                        />
+                    )}
                     <div style={{ fontSize: '5rem', fontWeight: 900, color: `${accent}20`, lineHeight: 1 }}>
                         {new Date().getFullYear()}
                     </div>
@@ -524,7 +607,7 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
             overflow: 'hidden',
         }}>
             <EditableElement
-                id="timeline-title"
+                id={`title-${slideIndex}`}
                 text={title}
                 tagName="h2"
                 isEditing={isEditing}
@@ -533,13 +616,33 @@ export const TimelineSlideHTML: React.FC<TimelineSlideHTMLProps> = ({
                 style={{
                     fontSize: '2.4rem',
                     fontWeight: 800,
-                    margin: '0 0 3rem',
+                    margin: '0 0 0.5rem',
                     letterSpacing: '-0.02em',
                     borderLeft: `5px solid ${accent}`,
                     paddingLeft: '1rem'
                 }}
                 elementProperties={slide.slide_title?.properties}
             />
+            {subtitle && (
+                <EditableElement
+                    id={`subtitle-${slideIndex}`}
+                    text={subtitle}
+                    tagName="p"
+                    isEditing={isEditing}
+                    onChange={(val) => handleUpdate('subtitle', val)}
+                    onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                    style={{
+                        fontSize: '1.05rem',
+                        fontWeight: 400,
+                        lineHeight: 1.45,
+                        color: 'inherit',
+                        opacity: 0.72,
+                        marginTop: 0,
+                        marginBottom: '3rem',
+                    }}
+                    elementProperties={slide.subtitle?.properties}
+                />
+            )}
 
             <div style={{
                 display: 'grid',

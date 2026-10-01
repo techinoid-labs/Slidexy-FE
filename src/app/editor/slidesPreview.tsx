@@ -45,18 +45,30 @@ const SlidePreviews: React.FC<SlidePreviewsProps> = ({
   const thumbnailHeight = (thumbnailWidth / slide_width) * slide_height;
   const scale = thumbnailWidth / slide_width;
 
-  // Scroll selected thumbnail into view
+  // Keep the selected thumbnail visible in the strip.
+  //
+  // Deliberately NOT scrollIntoView: that walks every scrollable ancestor,
+  // so selecting a thumbnail also scrolled the main canvas workspace and the
+  // slide appeared to jump. This scrolls the strip's own scroller and nothing
+  // else.
   useEffect(() => {
-    if (containerRef.current) {
-      const selectedThumbnail = containerRef.current.children[0]?.children[selectedIndex] as HTMLElement;
-      if (selectedThumbnail) {
-        selectedThumbnail.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center",
-        });
-      }
-    }
+    const scroller = containerRef.current;
+    if (!scroller) return;
+
+    const selectedThumbnail = scroller.children[0]?.children[selectedIndex] as
+      | HTMLElement
+      | undefined;
+    if (!selectedThumbnail) return;
+
+    const target =
+      selectedThumbnail.offsetLeft -
+      scroller.clientWidth / 2 +
+      selectedThumbnail.offsetWidth / 2;
+
+    scroller.scrollTo({
+      left: Math.max(0, target),
+      behavior: "smooth",
+    });
   }, [selectedIndex]);
 
   const handleDragEnd = (result: DropResult) => {

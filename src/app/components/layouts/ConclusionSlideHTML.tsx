@@ -80,7 +80,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                 overflow: 'hidden'
             }}>
                 <EditableElement
-                    id="conclusion-title"
+                    id={`title-${slideIndex}`}
                     text={title}
                     tagName="h2"
                     isEditing={isEditing}
@@ -103,7 +103,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                 />
 
                 <EditableElement
-                    id="conclusion-subtitle"
+                    id={`subtitle-${slideIndex}`}
                     text={subtitle}
                     tagName="h3"
                     isEditing={isEditing}
@@ -203,7 +203,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                 <div style={{ flex: 1, paddingRight: '4rem' }}>
                     <div style={{ width: '80px', height: '8px', background: accent, marginBottom: '2rem' }} />
                     <EditableElement
-                        id="conclusion-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -219,7 +219,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                         elementProperties={slide.slide_title?.properties}
                     />
                     <EditableElement
-                        id="conclusion-subtitle"
+                        id={`subtitle-${slideIndex}`}
                         text={subtitle}
                         tagName="p"
                         isEditing={isEditing}
@@ -313,7 +313,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                     textAlign: 'center'
                 }}>
                     <EditableElement
-                        id="conclusion-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -408,7 +408,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                     justifyContent: 'center'
                 }}>
                     <EditableElement
-                        id="conclusion-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -495,7 +495,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
 
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
                 <EditableElement
-                    id="conclusion-title"
+                    id={`title-${slideIndex}`}
                     text={title}
                     tagName="h2"
                     isEditing={isEditing}
@@ -511,7 +511,7 @@ export const ConclusionSlideHTML: React.FC<ConclusionSlideHTMLProps> = ({
                     elementProperties={slide.slide_title?.properties}
                 />
                 <EditableElement
-                    id="conclusion-subtitle"
+                    id={`subtitle-${slideIndex}`}
                     text={subtitle}
                     tagName="h3"
                     isEditing={isEditing}

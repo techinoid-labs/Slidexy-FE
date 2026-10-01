@@ -128,7 +128,7 @@ export const FullImageTextOverlayHTML: React.FC<FullImageTextOverlayHTMLProps> =
                 gap: '1.1rem',
             }}>
                 <EditableElement
-                    id="overlay-title"
+                    id={`title-${slideIndex}`}
                     text={title}
                     tagName="h2"
                     isEditing={isEditing}
@@ -146,7 +146,7 @@ export const FullImageTextOverlayHTML: React.FC<FullImageTextOverlayHTMLProps> =
                 />
 
                 <EditableElement
-                    id="overlay-subtitle"
+                    id={`subtitle-${slideIndex}`}
                     text={subtitle}
                     tagName="p"
                     isEditing={isEditing}

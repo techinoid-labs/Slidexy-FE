@@ -30,6 +30,8 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
 
         if (field === 'title') {
             updatedSlide.slide_title = { ...updatedSlide.slide_title, text: newText };
+        } else if (field === 'subtitle') {
+            updatedSlide.subtitle = { ...updatedSlide.subtitle, text: newText };
         } else if (field === 'bullet' && typeof index === 'number') {
             if (slide.elements[index]) {
                 updatedSlide.elements = [...slide.elements];
@@ -47,6 +49,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
     };
 
     const title = slide.slide_title?.text || "Slide Title";
+    const subtitle = slide.subtitle?.text || '';
     const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
     const midPoint = Math.ceil(bullets.length / 2);
     const leftBullets = bullets.slice(0, midPoint);
@@ -101,6 +104,26 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                         }}
                         elementProperties={slide.slide_title?.properties}
                     />
+                    {subtitle && (
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                            style={{
+                                fontSize: '1.05rem',
+                                fontWeight: 400,
+                                lineHeight: 1.45,
+                                color: '#000000',
+                                opacity: 0.72,
+                                marginTop: 0,
+                                marginBottom: '1.5rem',
+                            }}
+                            elementProperties={slide.subtitle?.properties}
+                        />
+                    )}
                 </div>
 
                 {/* Right Side - Content */}
@@ -182,7 +205,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                 <div style={{ zIndex: 1, display: 'flex', width: '100%', height: '100%' }}>
                     <div style={{ flex: '0 0 40%', padding: '4rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <EditableElement
-                            id="slide-title"
+                            id={`title-${slideIndex}`}
                             text={title}
                             tagName="h2"
                             isEditing={isEditing}
@@ -192,10 +215,30 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                                 fontSize: '3rem',
                                 fontWeight: 800,
                                 color: '#000000',
-                                marginBottom: '2rem'
+                                marginBottom: '0.5rem'
                             }}
                             elementProperties={slide.slide_title?.properties}
                         />
+                        {subtitle && (
+                            <EditableElement
+                                id={`subtitle-${slideIndex}`}
+                                text={subtitle}
+                                tagName="p"
+                                isEditing={isEditing}
+                                onChange={(val) => handleUpdate('subtitle', val)}
+                                onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                                style={{
+                                    fontSize: '1.05rem',
+                                    fontWeight: 400,
+                                    lineHeight: 1.45,
+                                    color: '#000000',
+                                    opacity: 0.72,
+                                    marginTop: 0,
+                                    marginBottom: '2rem',
+                                }}
+                                elementProperties={slide.subtitle?.properties}
+                            />
+                        )}
                         <div style={{
                             width: '100px',
                             height: '6px',
@@ -257,7 +300,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                     <EditableElement
-                        id="slide-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -270,6 +313,26 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                         }}
                         elementProperties={slide.slide_title?.properties}
                     />
+                    {subtitle && (
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                            style={{
+                                fontSize: '1.05rem',
+                                fontWeight: 400,
+                                lineHeight: 1.45,
+                                color: '#000000',
+                                opacity: 0.72,
+                                marginTop: 0,
+                                marginBottom: '1.5rem',
+                            }}
+                            elementProperties={slide.subtitle?.properties}
+                        />
+                    )}
                     <div style={{ width: '60px', height: '3px', background: accentColor, margin: '1rem auto 0' }} />
                 </div>
 
@@ -352,7 +415,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                     color: '#ffffff'
                 }}>
                     <EditableElement
-                        id="slide-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -366,6 +429,26 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                         }}
                         elementProperties={slide.slide_title?.properties}
                     />
+                    {subtitle && (
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                            style={{
+                                fontSize: '1.05rem',
+                                fontWeight: 400,
+                                lineHeight: 1.45,
+                                color: '#ffffff',
+                                opacity: 0.72,
+                                marginTop: 0,
+                                marginBottom: '1.5rem',
+                            }}
+                            elementProperties={slide.subtitle?.properties}
+                        />
+                    )}
                     <div style={{
                         marginTop: '2rem',
                         paddingTop: '2rem',
@@ -447,7 +530,7 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                     Overview
                 </span>
                 <EditableElement
-                    id="slide-title"
+                    id={`title-${slideIndex}`}
                     text={title}
                     tagName="h2"
                     isEditing={isEditing}
@@ -461,6 +544,26 @@ export const SplitContentHTML: React.FC<SplitContentHTMLProps> = ({
                     }}
                     elementProperties={slide.slide_title?.properties}
                 />
+                {subtitle && (
+                    <EditableElement
+                        id={`subtitle-${slideIndex}`}
+                        text={subtitle}
+                        tagName="p"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('subtitle', val)}
+                        onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                        style={{
+                            fontSize: '1.05rem',
+                            fontWeight: 400,
+                            lineHeight: 1.45,
+                            color: '#000000',
+                            opacity: 0.72,
+                            marginTop: 0,
+                            marginBottom: '1.5rem',
+                        }}
+                        elementProperties={slide.subtitle?.properties}
+                    />
+                )}
             </div>
 
             <div style={{

@@ -30,6 +30,8 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
 
         if (field === 'title') {
             updatedSlide.slide_title = { ...updatedSlide.slide_title, text: newText };
+        } else if (field === 'subtitle') {
+            updatedSlide.subtitle = { ...updatedSlide.subtitle, text: newText };
         } else if (field === 'bullet' && typeof index === 'number') {
             if (slide.elements[index]) {
                 updatedSlide.elements = [...slide.elements];
@@ -47,6 +49,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
     };
 
     const title = slide.slide_title?.text || "Slide Title";
+    const subtitle = slide.subtitle?.text || '';
     const bullets = slide.elements?.filter((el: any) => el.element_type === 'bullet_point') || [];
     const imageUrl = slide.image_url;
 
@@ -116,7 +119,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     justifyContent: 'center',
                 }}>
                     <EditableElement
-                        id="slide-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -126,11 +129,31 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                             fontSize: '2.2rem',
                             fontWeight: 700,
                             color: primaryColor,
-                            marginBottom: '2rem',
+                            marginBottom: '0.5rem',
                             lineHeight: 1.2
                         }}
                         elementProperties={slide.slide_title?.properties}
                     />
+                    {subtitle && (
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                            style={{
+                                fontSize: '1.05rem',
+                                fontWeight: 400,
+                                lineHeight: 1.45,
+                                color: primaryColor,
+                                opacity: 0.72,
+                                marginTop: 0,
+                                marginBottom: '2rem',
+                            }}
+                            elementProperties={slide.subtitle?.properties}
+                        />
+                    )}
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.3rem' }}>
                         {bullets.slice(0, 4).map((bullet: any) => {
@@ -258,7 +281,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     justifyContent: 'center',
                 }}>
                     <EditableElement
-                        id="slide-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -268,11 +291,31 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                             fontSize: '2.2rem',
                             fontWeight: 700,
                             color: primaryColor,
-                            marginBottom: '2rem',
+                            marginBottom: '0.5rem',
                             lineHeight: 1.2
                         }}
                         elementProperties={slide.slide_title?.properties}
                     />
+                    {subtitle && (
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                            style={{
+                                fontSize: '1.05rem',
+                                fontWeight: 400,
+                                lineHeight: 1.45,
+                                color: primaryColor,
+                                opacity: 0.72,
+                                marginTop: 0,
+                                marginBottom: '2rem',
+                            }}
+                            elementProperties={slide.subtitle?.properties}
+                        />
+                    )}
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                         {bullets.slice(0, 4).map((bullet: any) => {
@@ -373,7 +416,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     justifyContent: 'center',
                 }}>
                     <EditableElement
-                        id="slide-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -383,11 +426,31 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                             fontSize: '2.2rem',
                             fontWeight: 600,
                             color: primaryColor,
-                            marginBottom: '2rem',
+                            marginBottom: '0.5rem',
                             lineHeight: 1.2
                         }}
                         elementProperties={slide.slide_title?.properties}
                     />
+                    {subtitle && (
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                            style={{
+                                fontSize: '1.05rem',
+                                fontWeight: 400,
+                                lineHeight: 1.45,
+                                color: primaryColor,
+                                opacity: 0.72,
+                                marginTop: 0,
+                                marginBottom: '2rem',
+                            }}
+                            elementProperties={slide.subtitle?.properties}
+                        />
+                    )}
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {bullets.slice(0, 4).map((bullet: any) => {
@@ -512,7 +575,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                     padding: '1rem 0',
                 }}>
                     <EditableElement
-                        id="slide-title"
+                        id={`title-${slideIndex}`}
                         text={title}
                         tagName="h2"
                         isEditing={isEditing}
@@ -522,11 +585,31 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                             fontSize: '2.2rem',
                             fontWeight: 700,
                             color: primaryColor,
-                            marginBottom: '2rem',
+                            marginBottom: '0.5rem',
                             lineHeight: 1.2
                         }}
                         elementProperties={slide.slide_title?.properties}
                     />
+                    {subtitle && (
+                        <EditableElement
+                            id={`subtitle-${slideIndex}`}
+                            text={subtitle}
+                            tagName="p"
+                            isEditing={isEditing}
+                            onChange={(val) => handleUpdate('subtitle', val)}
+                            onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                            style={{
+                                fontSize: '1.05rem',
+                                fontWeight: 400,
+                                lineHeight: 1.45,
+                                color: primaryColor,
+                                opacity: 0.72,
+                                marginTop: 0,
+                                marginBottom: '2rem',
+                            }}
+                            elementProperties={slide.subtitle?.properties}
+                        />
+                    )}
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
                         {bullets.slice(0, 4).map((bullet: any) => {
@@ -648,7 +731,7 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                 justifyContent: 'center',
             }}>
                 <EditableElement
-                    id="slide-title"
+                    id={`title-${slideIndex}`}
                     text={title}
                     tagName="h2"
                     isEditing={isEditing}
@@ -658,11 +741,31 @@ export const ContentLeftImageHTML: React.FC<ContentLeftImageHTMLProps> = ({
                         fontSize: '2.2rem',
                         fontWeight: 700,
                         color: primaryColor,
-                        marginBottom: '2rem',
+                        marginBottom: '0.5rem',
                         lineHeight: 1.2
                     }}
                     elementProperties={slide.slide_title?.properties}
                 />
+                {subtitle && (
+                    <EditableElement
+                        id={`subtitle-${slideIndex}`}
+                        text={subtitle}
+                        tagName="p"
+                        isEditing={isEditing}
+                        onChange={(val) => handleUpdate('subtitle', val)}
+                        onSelectElement={() => onElementClick?.(`subtitle-${slideIndex}`, 'text')}
+                        style={{
+                            fontSize: '1.05rem',
+                            fontWeight: 400,
+                            lineHeight: 1.45,
+                            color: primaryColor,
+                            opacity: 0.72,
+                            marginTop: 0,
+                            marginBottom: '2rem',
+                        }}
+                        elementProperties={slide.subtitle?.properties}
+                    />
+                )}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                     {bullets.slice(0, 4).map((bullet: any) => {
