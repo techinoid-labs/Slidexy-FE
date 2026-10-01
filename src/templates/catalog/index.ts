@@ -1,16 +1,34 @@
 /**
  * Template catalogue.
  *
- * The 50 catalogue entries are registered here. Each is a data manifest built
- * from the shared block library, so adding one does not add components.
+ * Each entry is a data manifest built from the shared block library, so
+ * adding a template adds no components.
  */
 
 import type { SlideTemplate } from "../types";
 import { businessCorporate } from "./01-business-corporate";
 import { startupPitch } from "./02-startup-pitch";
 import { investorDeck } from "./03-investor-deck";
+import { salesPresentation } from "./04-sales";
+import { marketingStrategy } from "./05-marketing";
+import { projectProposal } from "./06-project-proposal";
+import { productLaunch } from "./07-product-launch";
+import { annualReport } from "./08-annual-report";
+import { trainingWorkshop } from "./09-training-workshop";
+import { caseStudy } from "./10-case-study";
 
-export const TEMPLATES: SlideTemplate[] = [businessCorporate, startupPitch, investorDeck];
+export const TEMPLATES: SlideTemplate[] = [
+  businessCorporate,
+  startupPitch,
+  investorDeck,
+  salesPresentation,
+  marketingStrategy,
+  projectProposal,
+  productLaunch,
+  annualReport,
+  trainingWorkshop,
+  caseStudy,
+];
 
 export const TEMPLATES_BY_ID: Record<string, SlideTemplate> = Object.fromEntries(
   TEMPLATES.map((t) => [t.id, t])

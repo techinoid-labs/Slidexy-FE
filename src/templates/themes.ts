@@ -24,6 +24,9 @@ const DISPLAY_SERIF = "var(--font-playfair), 'Playfair Display', Georgia, serif"
 const TEXT_SERIF = "var(--font-serif), 'Source Serif 4', Georgia, 'Times New Roman', serif";
 const FRIENDLY = "var(--font-dm), 'DM Sans', 'Segoe UI', system-ui, sans-serif";
 const WIDE = "var(--font-archivo), Archivo, 'Segoe UI', system-ui, sans-serif";
+const OUTFIT = "var(--font-outfit), Outfit, 'Segoe UI', system-ui, sans-serif";
+const LORA = "var(--font-lora), Lora, Georgia, serif";
+const EXPRESSIVE = "var(--font-bricolage), 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif";
 const MONO = "var(--font-mono), 'JetBrains Mono', Consolas, monospace";
 
 interface PaletteInput {
@@ -168,7 +171,7 @@ export const salesAmber = theme({
     border: "#f0e3d4",
     accents: ["#ea580c", "#0f766e", "#2563eb", "#be123c"],
   }),
-  fonts: { display: SANS, body: SANS },
+  fonts: { display: DISPLAY_SERIF, body: SANS },
   radius: "md",
   cardStyle: "outlined",
   iconStyle: "filledCircle",
@@ -190,7 +193,7 @@ export const marketingMagenta = theme({
     border: "#f0e2f7",
     accents: ["#c026d3", "#7c3aed", "#f59e0b", "#14b8a6"],
   }),
-  fonts: { display: GEOMETRIC, body: SANS },
+  fonts: { display: EXPRESSIVE, body: FRIENDLY },
   radius: "lg",
   cardStyle: "elevated",
   iconStyle: "filledCircle",
@@ -214,7 +217,7 @@ export const productIndigo = theme({
     border: "#e0e7ff",
     accents: ["#4f46e5", "#0ea5e9", "#14b8a6", "#f97316"],
   }),
-  fonts: { display: SANS, body: SANS },
+  fonts: { display: OUTFIT, body: SANS },
   radius: "lg",
   cardStyle: "outlined",
   iconStyle: "softSquare",
@@ -236,7 +239,7 @@ export const consultingSlate = theme({
     textMuted: "#6b7280",
     accents: ["#0f766e", "#1e3a8a", "#b45309", "#9333ea"],
   }),
-  fonts: { display: SANS, body: SANS },
+  fonts: { display: SANS, body: TEXT_SERIF },
   radius: "sm",
   cardStyle: "outlined",
   iconStyle: "outline",
@@ -369,7 +372,7 @@ export const reportGraphite = theme({
     textMuted: "#71717a",
     accents: ["#3f3f46", "#2563eb", "#0d9488", "#c2410c"],
   }),
-  fonts: { display: SANS, body: SANS, numeric: MONO },
+  fonts: { display: LORA, body: SANS, numeric: MONO },
   radius: "sm",
   cardStyle: "outlined",
   iconStyle: "outline",
@@ -411,7 +414,7 @@ export const impactGreen = theme({
     border: "#d3f0dc",
     accents: ["#15803d", "#0d9488", "#65a30d", "#0369a1"],
   }),
-  fonts: { display: SANS, body: SANS },
+  fonts: { display: TEXT_SERIF, body: SANS },
   radius: "md",
   cardStyle: "outlined",
   iconStyle: "softSquare",

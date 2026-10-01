@@ -9,6 +9,9 @@ import {
   Source_Serif_4,
   DM_Sans,
   Archivo,
+  Outfit,
+  Lora,
+  Bricolage_Grotesque,
   JetBrains_Mono,
 } from "next/font/google";
 import Providers from "./provider/Provider";
@@ -50,6 +53,9 @@ const playfair = Playfair_Display({ subsets: ["latin"], display: "swap", preload
 const sourceSerif = Source_Serif_4({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-serif" });
 const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-dm" });
 const archivo = Archivo({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-archivo" });
+const outfit = Outfit({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-outfit" });
+const lora = Lora({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-lora" });
+const bricolage = Bricolage_Grotesque({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-bricolage" });
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-mono" });
 
 const fontVars = [
@@ -61,6 +67,9 @@ const fontVars = [
   sourceSerif.variable,
   dmSans.variable,
   archivo.variable,
+  outfit.variable,
+  lora.variable,
+  bricolage.variable,
   jetbrains.variable,
 ].join(" ");
 

@@ -189,7 +189,7 @@ export const businessCorporate: SlideTemplate = {
     slide({
       id: "what-we-do",
       name: "What We Do",
-      layout: "splitRight",
+      layout: "splitLeft",
       split: 0.56,
       blocks: [
         heading({
@@ -238,7 +238,7 @@ export const businessCorporate: SlideTemplate = {
     slide({
       id: "business-model",
       name: "Our Business Model",
-      layout: "stack",
+      layout: "fullBleed",
       blocks: [
         heading({ title: "Our Business Model", subtitle: "How we create, deliver and capture value." }),
         processFlow({
@@ -348,7 +348,7 @@ export const businessCorporate: SlideTemplate = {
     slide({
       id: "global-presence",
       name: "Global Presence",
-      layout: "splitRight",
+      layout: "splitLeft",
       split: 0.54,
       blocks: [
         heading({
