@@ -1,6 +1,16 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { Raleway } from "next/font/google";
+import {
+  Raleway,
+  Inter,
+  Poppins,
+  Space_Grotesk,
+  Playfair_Display,
+  Source_Serif_4,
+  DM_Sans,
+  Archivo,
+  JetBrains_Mono,
+} from "next/font/google";
 import Providers from "./provider/Provider";
 import { ThemeProvider } from "@/lib/theme-provider";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -22,6 +32,37 @@ const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
 });
+
+// Template typefaces.
+//
+// Slide templates used to name these in their font stacks without anything
+// loading them, so every template silently fell back to the same system sans
+// and they all looked typographically identical. next/font self-hosts them,
+// which also matters for export: html2canvas rasterises the DOM, and a face
+// still in flight over the network renders in a fallback at the wrong metrics.
+//
+// Only the UI face preloads; the rest are fetched when a template asks for
+// them, so loading nine families does not cost every page.
+const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
+const poppins = Poppins({ subsets: ["latin"], display: "swap", preload: false, weight: ["400", "500", "600", "700", "800"], variable: "--font-poppins" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-grotesk" });
+const playfair = Playfair_Display({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-playfair" });
+const sourceSerif = Source_Serif_4({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-serif" });
+const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-dm" });
+const archivo = Archivo({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-archivo" });
+const jetbrains = JetBrains_Mono({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-mono" });
+
+const fontVars = [
+  raleway.variable,
+  inter.variable,
+  poppins.variable,
+  spaceGrotesk.variable,
+  playfair.variable,
+  sourceSerif.variable,
+  dmSans.variable,
+  archivo.variable,
+  jetbrains.variable,
+].join(" ");
 
 export const metadata: Metadata = {
   title: {
@@ -56,7 +97,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={raleway.variable} suppressHydrationWarning>
+    <html lang="en" className={fontVars} suppressHydrationWarning>
       <head>
         {/* Meta Pixels */}
         <Script id="meta-pixel" strategy="afterInteractive">

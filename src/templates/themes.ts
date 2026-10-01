@@ -13,13 +13,18 @@
 
 import type { TemplateTheme, ThemePalette } from "./types";
 
-const SANS = "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif";
-const GEOMETRIC = "'Poppins', 'Century Gothic', 'Inter', system-ui, sans-serif";
-const GROTESK = "'Space Grotesk', 'Inter', system-ui, sans-serif";
-const SERIF = "'Playfair Display', Georgia, 'Times New Roman', serif";
-const EDITORIAL = "Georgia, 'Iowan Old Style', 'Times New Roman', serif";
-const MONO = "'IBM Plex Mono', 'SF Mono', Consolas, monospace";
-const ROUNDED = "'Nunito', 'Segoe UI', system-ui, sans-serif";
+// Font stacks point at the CSS variables declared in app/layout.tsx, which
+// next/font self-hosts. The literal family name is kept as the first fallback
+// so a theme still resolves if the variable is missing (e.g. a slide rendered
+// outside the app shell), and a real system face closes every stack.
+const SANS = "var(--font-inter), Inter, 'Segoe UI', system-ui, sans-serif";
+const GEOMETRIC = "var(--font-poppins), Poppins, 'Century Gothic', system-ui, sans-serif";
+const GROTESK = "var(--font-grotesk), 'Space Grotesk', 'Segoe UI', system-ui, sans-serif";
+const DISPLAY_SERIF = "var(--font-playfair), 'Playfair Display', Georgia, serif";
+const TEXT_SERIF = "var(--font-serif), 'Source Serif 4', Georgia, 'Times New Roman', serif";
+const FRIENDLY = "var(--font-dm), 'DM Sans', 'Segoe UI', system-ui, sans-serif";
+const WIDE = "var(--font-archivo), Archivo, 'Segoe UI', system-ui, sans-serif";
+const MONO = "var(--font-mono), 'JetBrains Mono', Consolas, monospace";
 
 interface PaletteInput {
   bg: string;
@@ -88,7 +93,7 @@ export const corporateNavy = theme({
     surfaceAlt: "#f3f7fd",
     accents: ["#1e40af", "#0ea5e9", "#6366f1", "#0891b2"],
   }),
-  fonts: { display: SANS, body: SANS },
+  fonts: { display: WIDE, body: SANS },
   radius: "md",
   cardStyle: "elevated",
   iconStyle: "softSquare",
@@ -111,14 +116,14 @@ export const startupViolet = theme({
     border: "#e9e4fb",
     accents: ["#7c3aed", "#ec4899", "#06b6d4", "#f59e0b"],
   }),
-  fonts: { display: GEOMETRIC, body: SANS },
+  fonts: { display: GEOMETRIC, body: FRIENDLY },
   radius: "lg",
   cardStyle: "outlined",
   iconStyle: "filledCircle",
   headingStyle: "plain",
   coverStyle: "splitImage",
   motif: "blob",
-  typeScale: 1.02,
+  typeScale: 1.04,
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -138,13 +143,14 @@ export const investorMidnight = theme({
     onAccent: "#ffffff",
     accents: ["#8b5cf6", "#22d3ee", "#f472b6", "#facc15"],
   }),
-  fonts: { display: GROTESK, body: SANS },
+  fonts: { display: GROTESK, body: SANS, numeric: MONO },
   radius: "md",
   cardStyle: "outlined",
   iconStyle: "softSquare",
   headingStyle: "kickerRule",
   coverStyle: "fullImage",
   motif: "topography",
+  typeScale: 0.99,
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -277,7 +283,7 @@ export const academicInk = theme({
     textMuted: "#6b6255",
     accents: ["#7f1d1d", "#1e3a5f", "#78350f", "#3f6212"],
   }),
-  fonts: { display: SERIF, body: EDITORIAL },
+  fonts: { display: DISPLAY_SERIF, body: TEXT_SERIF },
   radius: "none",
   cardStyle: "outlined",
   iconStyle: "plainGlyph",
@@ -298,7 +304,7 @@ export const healthTeal = theme({
     border: "#d4eeeb",
     accents: ["#0d9488", "#0284c7", "#7c3aed", "#f59e0b"],
   }),
-  fonts: { display: ROUNDED, body: SANS },
+  fonts: { display: FRIENDLY, body: SANS },
   radius: "lg",
   cardStyle: "flat",
   iconStyle: "filledCircle",
@@ -341,7 +347,7 @@ export const educationSky = theme({
     border: "#dbeafe",
     accents: ["#2563eb", "#f59e0b", "#16a34a", "#db2777"],
   }),
-  fonts: { display: ROUNDED, body: SANS },
+  fonts: { display: FRIENDLY, body: SANS },
   radius: "lg",
   cardStyle: "flat",
   iconStyle: "softSquare",
@@ -385,7 +391,7 @@ export const peopleCoral = theme({
     border: "#fbdcd5",
     accents: ["#f43f5e", "#8b5cf6", "#0ea5e9", "#f59e0b"],
   }),
-  fonts: { display: ROUNDED, body: SANS },
+  fonts: { display: FRIENDLY, body: SANS },
   radius: "lg",
   cardStyle: "flat",
   iconStyle: "filledCircle",
@@ -427,7 +433,7 @@ export const govStone = theme({
     textMuted: "#6f6a63",
     accents: ["#1e3a8a", "#7f1d1d", "#166534", "#78350f"],
   }),
-  fonts: { display: SERIF, body: SANS },
+  fonts: { display: DISPLAY_SERIF, body: SANS },
   radius: "none",
   cardStyle: "outlined",
   iconStyle: "outline",
@@ -494,7 +500,7 @@ export const realEstateBrass = theme({
     textMuted: "#78706690",
     accents: ["#a16207", "#1e3a5f", "#4d7c0f", "#9a3412"],
   }),
-  fonts: { display: SERIF, body: SANS },
+  fonts: { display: DISPLAY_SERIF, body: SANS },
   radius: "sm",
   cardStyle: "outlined",
   iconStyle: "outline",
@@ -563,7 +569,7 @@ export const legalOxblood = theme({
     textMuted: "#6b5a5a",
     accents: ["#7f1d1d", "#1f2937", "#78350f", "#334155"],
   }),
-  fonts: { display: SERIF, body: EDITORIAL },
+  fonts: { display: DISPLAY_SERIF, body: TEXT_SERIF },
   radius: "none",
   cardStyle: "outlined",
   iconStyle: "plainGlyph",
@@ -584,7 +590,7 @@ export const travelAzure = theme({
     border: "#c9e9f7",
     accents: ["#0284c7", "#f59e0b", "#0d9488", "#e11d48"],
   }),
-  fonts: { display: ROUNDED, body: SANS },
+  fonts: { display: FRIENDLY, body: SANS },
   radius: "lg",
   cardStyle: "elevated",
   iconStyle: "filledCircle",
@@ -606,7 +612,7 @@ export const portfolioCanvas = theme({
     textMuted: "#6d6a65",
     accents: ["#171717", "#c2410c", "#0f766e", "#4338ca"],
   }),
-  fonts: { display: SERIF, body: SANS },
+  fonts: { display: DISPLAY_SERIF, body: SANS },
   radius: "sm",
   cardStyle: "flat",
   iconStyle: "plainGlyph",
