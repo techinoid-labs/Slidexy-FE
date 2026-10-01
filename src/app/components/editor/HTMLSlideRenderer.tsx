@@ -23,6 +23,8 @@ interface HTMLSlideRendererProps {
     onSlideUpdate?: (updatedSlide: any) => void;
     onElementClick?: (elementId: string, elementType: string, elementIndex?: number) => void;
     slideIndex?: number;
+    /** Current selection, so block slides can outline the active block. */
+    selectedElementId?: string | null;
 }
 
 /**
@@ -36,6 +38,7 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
     onSlideUpdate,
     onElementClick,
     slideIndex = 0,
+    selectedElementId,
 }) => {
     // Block-based template slides own their whole rendering path: the layout,
     // the theme and the editing plumbing all come from the spec. Checked first
@@ -48,6 +51,7 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
                 isEditing={isEditing}
                 slideIndex={slideIndex}
                 slideNumber={slideIndex + 1}
+                selectedElementId={selectedElementId}
                 onTextChange={(blockId, path, value) => {
                     if (!onSlideUpdate) return;
                     const nextSpec = applyBlockTextEdit(slide.blockSpec, blockId, path, value);

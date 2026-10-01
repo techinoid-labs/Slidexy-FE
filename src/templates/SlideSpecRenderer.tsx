@@ -21,6 +21,8 @@ export interface SlideSpecRendererProps {
   slideNumber?: number;
   onTextChange?: (blockId: string, path: string, value: string) => void;
   onSelect?: (elementId: string, kind: "text" | "image" | "shape") => void;
+  /** Element id of the current selection, used to outline the active block. */
+  selectedElementId?: string | null;
 }
 
 /**
@@ -38,6 +40,7 @@ export const SlideSpecRenderer: React.FC<SlideSpecRendererProps> = ({
   slideNumber,
   onTextChange,
   onSelect,
+  selectedElementId,
 }) => {
   // Over a photographic background the theme's ink colours are not safe —
   // dark body text on a dark photo. Swap the text roles for the palette's
@@ -63,6 +66,15 @@ export const SlideSpecRenderer: React.FC<SlideSpecRendererProps> = ({
   }, [theme, overImage]);
 
   const tokens = useMemo(() => resolveTokens(effectiveTheme), [effectiveTheme]);
+
+  // Every editable field's id embeds its block id, so the current selection
+  // tells us which block to outline — whether the user clicked text inside it
+  // or the block itself.
+  const selectedBlockId = useMemo(() => {
+    if (!selectedElementId?.startsWith("blk-")) return null;
+    const m = selectedElementId.slice(4).match(/^\d+-([a-z]+-\d+)-/i);
+    return m ? m[1] : null;
+  }, [selectedElementId]);
 
   const editValue = useMemo(
     () => ({
@@ -93,7 +105,14 @@ export const SlideSpecRenderer: React.FC<SlideSpecRendererProps> = ({
         >
           <SlideBackground spec={spec} />
           <MotifLayer />
-          <SlideBody spec={spec} slideNumber={slideNumber} />
+          <SlideBody
+            spec={spec}
+            slideNumber={slideNumber}
+            isEditing={isEditing}
+            slideIndex={slideIndex}
+            selectedBlockId={selectedBlockId}
+            onSelectBlock={(id) => onSelect?.(`blk-${slideIndex}-${id}-__block`, "text")}
+          />
         </div>
       </BlockEditContext.Provider>
     </TokensContext.Provider>
@@ -139,7 +158,14 @@ const SlideBackground: React.FC<{ spec: SlideSpec }> = ({ spec }) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SlideBody: React.FC<{ spec: SlideSpec; slideNumber?: number }> = ({ spec, slideNumber }) => {
+const SlideBody: React.FC<{
+  spec: SlideSpec;
+  slideNumber?: number;
+  isEditing: boolean;
+  slideIndex: number;
+  selectedBlockId?: string | null;
+  onSelectBlock: (blockId: string) => void;
+}> = ({ spec, slideNumber, isEditing, selectedBlockId, onSelectBlock }) => {
   const t = useTokens();
 
   const bySlot = (slot: string) =>
@@ -179,18 +205,34 @@ const SlideBody: React.FC<{ spec: SlideSpec; slideNumber?: number }> = ({ spec, 
         ...(fill ? { flex: 1 } : {}),
       }}
     >
-      {blocks.map((b) => (
-        <div
-          key={b.id}
-          style={
-            b.grow
-              ? { flex: b.grow, display: "grid", minHeight: 0, minWidth: 0 }
-              : { minWidth: 0 }
-          }
-        >
-          <BlockView block={b} slideNumber={slideNumber} />
-        </div>
-      ))}
+      {blocks.map((b) => {
+        const selected = isEditing && selectedBlockId === b.id;
+        return (
+          <div
+            key={b.id}
+            data-block-id={b.id}
+            // Click-to-select so blocks that contain no editable text — a
+            // chart without a caption, an image, a device mockup — can still
+            // be reached by the inspector.
+            onMouseDown={isEditing ? () => onSelectBlock(b.id) : undefined}
+            style={{
+              ...(b.grow
+                ? { flex: b.grow, display: "grid", minHeight: 0, minWidth: 0 }
+                : { minWidth: 0 }),
+              ...(isEditing
+                ? {
+                    outline: selected ? `2px solid ${t.palette.accent}` : "none",
+                    outlineOffset: 4,
+                    borderRadius: t.radiusSm,
+                    cursor: "default",
+                  }
+                : {}),
+            }}
+          >
+            <BlockView block={b} slideNumber={slideNumber} />
+          </div>
+        );
+      })}
     </div>
     );
   };

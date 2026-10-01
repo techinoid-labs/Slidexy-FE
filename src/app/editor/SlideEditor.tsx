@@ -267,6 +267,7 @@ const SlideRenderer: React.FC<SlideRendererProps & { index: number; originalSlid
           theme={selectedTheme}
           isEditing={true}
           slideIndex={index}
+          selectedElementId={selectedTextId}
           onElementClick={handleElementClickFromHTML}
           onSlideUpdate={(updatedSlide) => {
             // Merge updates from HTML renderer into the original slide/variant
