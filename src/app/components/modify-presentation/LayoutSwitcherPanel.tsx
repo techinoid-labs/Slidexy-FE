@@ -10,6 +10,8 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { generateSlideVariants } from "@/utils/variantGenerator";
 import { TEMPLATE_META } from "../layouts/TemplateHTMLSlide";
+import { TEMPLATES } from "@/templates/catalog";
+import { applyTemplateToDeck } from "@/templates/applyTemplate";
 import { PANEL, panelContainerSx, panelCloseButtonSx } from "./panelTheme";
 
 // Variant count map — must stay in sync with backend LAYOUT_VARIANT_COUNTS and variantGenerator.ts
@@ -173,6 +175,21 @@ const LayoutSwitcherPanel = forwardRef<HTMLDivElement, LayoutSwitcherPanelProps>
       setSlides(updatedSlides);
     };
 
+    /**
+     * Block templates re-skin the whole deck rather than setting a per-slide
+     * style flag: content is lifted out of each slide and poured into the
+     * template's slide specs, so an AI-generated deck keeps its words and
+     * only changes how it looks.
+     */
+    const handleSelectBlockTemplate = (templateId: string) => {
+      const template = TEMPLATES.find((t) => t.id === templateId);
+      if (!template || !slides.length) return;
+      setSlides(applyTemplateToDeck(structuredClone(slides), template));
+    };
+
+    const activeBlockTemplateId: string | null =
+      (currentSlide as any)?.templateId ?? null;
+
     const handleSelectVariant = (variantIndex: number) => {
       if (!currentSlide) return;
       const updatedSlides = structuredClone(slides);
@@ -330,7 +347,72 @@ const LayoutSwitcherPanel = forwardRef<HTMLDivElement, LayoutSwitcherPanelProps>
                   </Box>
                 )}
 
-                {/* Template cards grid */}
+                {/* ── Block templates ──────────────────────────────────
+                    Fully editable, theme-driven decks. Applying one re-skins
+                    the whole deck and keeps the existing copy. */}
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", mb: 1 }}>
+                    <Typography sx={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: PANEL.textMuted }}>
+                      Editable templates
+                    </Typography>
+                    <Typography sx={{ fontSize: "0.62rem", color: PANEL.textFaint }}>
+                      keeps your content
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
+                    {TEMPLATES.map((tpl) => {
+                      const isActive = activeBlockTemplateId === tpl.id;
+                      const p = tpl.theme.palette;
+                      return (
+                        <Box
+                          key={tpl.id}
+                          onClick={() => handleSelectBlockTemplate(tpl.id)}
+                          sx={{
+                            cursor: "pointer",
+                            borderRadius: "12px",
+                            overflow: "hidden",
+                            border: isActive ? `2px solid ${accentColor}` : "2px solid transparent",
+                            boxShadow: isActive
+                              ? `0 0 0 3px ${accentColor}20, 0 4px 16px rgba(0,0,0,0.1)`
+                              : "0 1px 4px rgba(0,0,0,0.08)",
+                            transition: "all 0.18s ease",
+                            "&:hover": {
+                              transform: "translateY(-2px)",
+                              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                            },
+                          }}
+                        >
+                          {/* Miniature of the template's actual palette and type */}
+                          <Box sx={{ height: 64, background: p.bg, p: "10px 12px", position: "relative", overflow: "hidden" }}>
+                            <Box sx={{ width: "70%", height: 7, borderRadius: 1, background: p.text, opacity: 0.9, mb: "5px", fontFamily: tpl.theme.fonts.display }} />
+                            <Box sx={{ width: "45%", height: 4, borderRadius: 1, background: p.textMuted, opacity: 0.6, mb: "8px" }} />
+                            <Box sx={{ display: "flex", gap: "4px" }}>
+                              {[p.accent, p.accent2, p.accent3, p.accent4].map((c, i) => (
+                                <Box key={i} sx={{ width: 14, height: 14, borderRadius: tpl.theme.radius === "pill" ? "50%" : "4px", background: c }} />
+                              ))}
+                            </Box>
+                          </Box>
+                          <Box sx={{ px: 1.25, py: 0.9, background: PANEL.surface, borderTop: `1px solid ${PANEL.border}` }}>
+                            <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: PANEL.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                              {tpl.name}
+                            </Typography>
+                            <Typography sx={{ fontSize: "0.6rem", color: PANEL.textFaint }}>
+                              {tpl.slides.length} slides
+                            </Typography>
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                </Box>
+
+                {/* ── Legacy templates ─────────────────────────────────────
+                    Hand-authored HTML. Not editable and they override the
+                    theme, so they are kept below the editable set. */}
+                <Typography sx={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: PANEL.textMuted, mb: 1 }}>
+                  Classic styles
+                </Typography>
                 <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
                   {TEMPLATE_META.map((tmpl) => {
                     const isActive = activeTemplateStyle === tmpl.id;
