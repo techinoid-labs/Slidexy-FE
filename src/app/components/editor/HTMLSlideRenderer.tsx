@@ -13,6 +13,12 @@ import { FullImageTextOverlayHTML } from '../layouts/FullImageTextOverlayHTML';
 import { TemplateHTMLSlide, TEMPLATE_REGISTRY } from '../layouts/TemplateHTMLSlide';
 import { SlideSpecRenderer } from '@/templates/SlideSpecRenderer';
 import { applyBlockTextEdit } from '@/templates/applyEdit';
+import {
+    addBlockItem,
+    moveBlock,
+    removeBlock,
+    setBlockValue,
+} from '@/templates/mutate';
 import { isBlockSlide, themeForSlide } from '@/templates/toDeck';
 import { DEFAULT_THEME } from '@/templates/themes';
 
@@ -68,6 +74,55 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
                             text: headingBlock?.title?.text ?? slide.slide_title?.text ?? '',
                         },
                     });
+                }}
+                onValueChange={(blockId, path, value) => {
+                    if (!onSlideUpdate) return;
+                    const nextSpec = setBlockValue(slide.blockSpec, blockId, path, value);
+                    if (nextSpec === slide.blockSpec) return;
+                    onSlideUpdate({ ...slide, blockSpec: nextSpec });
+                }}
+                onBlockAction={(blockId, action) => {
+                    if (!onSlideUpdate) return;
+                    const spec = slide.blockSpec;
+                    const block: any = spec.blocks.find((b: any) => b.id === blockId);
+                    if (!block) return;
+
+                    // Style toggles cycle through a short list rather than
+                    // opening a menu — one click is the whole interaction.
+                    const cycle = (list: any[], current: any) =>
+                        list[(Math.max(0, list.indexOf(current)) + 1) % list.length];
+
+                    let next = spec;
+                    switch (action) {
+                        case 'moveUp':   next = moveBlock(spec, blockId, -1); break;
+                        case 'moveDown': next = moveBlock(spec, blockId, 1); break;
+                        case 'delete':   next = removeBlock(spec, blockId); break;
+                        case 'addItem':  next = addBlockItem(spec, blockId); break;
+                        case 'duplicate': {
+                            const i = spec.blocks.findIndex((b: any) => b.id === blockId);
+                            const copy = JSON.parse(JSON.stringify(block));
+                            copy.id = `${block.id}-copy-${Math.random().toString(36).slice(2, 6)}`;
+                            const blocks = spec.blocks.slice();
+                            blocks.splice(i + 1, 0, copy);
+                            next = { ...spec, blocks };
+                            break;
+                        }
+                        case 'cycleAlign':
+                            next = setBlockValue(spec, blockId, 'style.align',
+                                cycle(['left', 'center', 'right'], block.style?.align ?? 'left'));
+                            break;
+                        case 'cycleColumns':
+                            next = setBlockValue(spec, blockId, 'style.columns',
+                                cycle([1, 2, 3, 4], block.style?.columns ?? 1));
+                            break;
+                        case 'cycleCard':
+                            next = setBlockValue(spec, blockId, 'style.cardStyle',
+                                cycle(['flat', 'outlined', 'elevated', 'tinted', 'brutalist'],
+                                      block.style?.cardStyle ?? 'outlined'));
+                            break;
+                    }
+                    if (next === spec) return;
+                    onSlideUpdate({ ...slide, blockSpec: next });
                 }}
                 onSelect={(elementId) => onElementClick?.(elementId, 'text', -1)}
             />

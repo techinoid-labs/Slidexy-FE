@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Card, Icon, Text, useTokens } from "./primitives";
+import { Card, Icon, Text, useBlockEdit, useTokens } from "./primitives";
+import { ImageEditAffordance } from "./inlineEdit";
 import { readableOn, withAlpha } from "../tokens";
 import type {
   ContactFooterBlock,
@@ -76,6 +77,8 @@ export const ImagePlaceholder: React.FC<{
 export const ImageBlockView: React.FC<{ block: ImageBlock }> = ({ block }) => {
   const t = useTokens();
   const radius = t.radius;
+  const { onValueChange } = useBlockEdit();
+  const setFit = (v: "cover" | "contain") => onValueChange?.(block.id, "fit", v);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: t.space(2), height: "100%" }}>
@@ -103,6 +106,18 @@ export const ImageBlockView: React.FC<{ block: ImageBlock }> = ({ block }) => {
         ) : (
           <ImagePlaceholder prompt={block.prompt} radius={radius} />
         )}
+
+        <ImageEditAffordance
+          blockId={block.id}
+          urlPath="url"
+          promptPath="prompt"
+          url={block.url}
+          prompt={block.prompt}
+          extra={[
+            { label: "Fit: cover", onClick: () => setFit("cover") },
+            { label: "Fit: contain", onClick: () => setFit("contain") },
+          ]}
+        />
 
         {!!block.scrim && (
           <div
@@ -163,7 +178,15 @@ export const ImageGridBlockView: React.FC<{ block: ImageGridBlock }> = ({ block 
               )}
             </div>
             <div style={{ padding: t.space(3), display: "flex", gap: t.space(3), alignItems: "flex-start" }}>
-              {item.icon && <Icon name={item.icon} accent={accent} size={28} />}
+              {item.icon && (
+                <Icon
+                  name={item.icon}
+                  accent={accent}
+                  size={28}
+                  editBlockId={block.id}
+                  editPath={`items.${i}.icon`}
+                />
+              )}
               <div style={{ minWidth: 0 }}>
                 {item.title && (
                   <Text

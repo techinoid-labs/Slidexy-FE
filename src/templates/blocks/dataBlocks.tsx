@@ -65,7 +65,15 @@ export const StatCardsBlockView: React.FC<{ block: StatCardsBlock }> = ({ block 
         return (
           <Card key={item.id} accent={accent} style={{ padding: t.space(4) }}>
             <div style={{ display: "flex", gap: t.space(3), alignItems: "center" }}>
-              {item.icon && <Icon name={item.icon} accent={accent} size={30} />}
+              {item.icon && (
+                <Icon
+                  name={item.icon}
+                  accent={accent}
+                  size={30}
+                  editBlockId={block.id}
+                  editPath={`items.${i}.icon`}
+                />
+              )}
               <div style={{ minWidth: 0 }}>
                 <Text
                   blockId={block.id}

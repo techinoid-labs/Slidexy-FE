@@ -6,6 +6,7 @@ import type { ResolvedTokens } from "../tokens";
 import { withAlpha } from "../tokens";
 import type { CardStyle, RichText } from "../types";
 import { ICONS, FallbackIcon } from "./icons";
+import { IconEditAffordance } from "./inlineEdit";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Edit plumbing
@@ -15,6 +16,13 @@ export interface BlockEditContextValue {
   isEditing: boolean;
   /** Commit a text edit. `path` addresses the field inside the block. */
   onTextChange: (blockId: string, path: string, value: string) => void;
+  /**
+   * Commit a NON-text value from the canvas — an icon name, an image url, a
+   * card style. Text goes through onTextChange; everything else arrives
+   * here, so a block can be edited in place rather than only from the side
+   * panel.
+   */
+  onValueChange?: (blockId: string, path: string, value: unknown) => void;
   /** Tell the editor chrome which element is selected. */
   onSelect?: (elementId: string, kind: "text" | "image" | "shape") => void;
   slideIndex: number;
@@ -149,7 +157,14 @@ export const Icon: React.FC<{
   size?: number;
   /** Overrides the theme's icon treatment. */
   variant?: "filledCircle" | "softSquare" | "outline" | "plainGlyph" | "none";
-}> = ({ name, accent, size = 34, variant }) => {
+  /**
+   * Where this icon's name lives on its block. Supplying it makes the icon
+   * clickable on the slide, opening a picker — so icons are changed where
+   * they are rather than only from the side panel.
+   */
+  editBlockId?: string;
+  editPath?: string;
+}> = ({ name, accent, size = 34, variant, editBlockId, editPath }) => {
   const t = useTokens();
   const style = variant ?? t.theme.iconStyle;
   if (style === "none") return null;
@@ -167,6 +182,7 @@ export const Icon: React.FC<{
     boxSizing: "border-box",
   };
 
+  const rendered = (() => {
   switch (style) {
     case "filledCircle":
       return (
@@ -206,6 +222,16 @@ export const Icon: React.FC<{
         </div>
       );
   }
+  })();
+
+  // Given a path, the icon becomes a click target on the slide that opens a
+  // picker — so icons are changed where they are, not only from the panel.
+  if (!editBlockId || !editPath) return rendered;
+  return (
+    <IconEditAffordance blockId={editBlockId} path={editPath} current={name}>
+      {rendered}
+    </IconEditAffordance>
+  );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

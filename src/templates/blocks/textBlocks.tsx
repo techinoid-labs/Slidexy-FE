@@ -69,7 +69,13 @@ export const IconBulletsBlockView: React.FC<{ block: IconBulletsBlock }> = ({ bl
         const accent = t.accent(i + 1 + accentOffset);
         const body = (
           <div style={{ display: "flex", gap: t.space(4), alignItems: "flex-start" }}>
-            <Icon name={item.icon} accent={accent} size={compact ? 28 : 34} />
+            <Icon
+              name={item.icon}
+              accent={accent}
+              size={compact ? 28 : 34}
+              editBlockId={block.id}
+              editPath={`items.${i}.icon`}
+            />
             <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
               <Text
                 blockId={block.id}

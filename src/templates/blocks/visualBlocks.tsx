@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Card, Icon, Text, useTokens } from "./primitives";
+import { Card, Icon, Text, useBlockEdit, useTokens } from "./primitives";
+import { ImageEditAffordance } from "./inlineEdit";
 import { readableOn, withAlpha } from "../tokens";
 import { ImagePlaceholder } from "./mediaBlocks";
 import type {
@@ -124,6 +125,8 @@ export const CalloutBandBlockView: React.FC<{ block: CalloutBandBlock }> = ({ bl
           accent={solid ? withAlpha(fg, 0.22) : accent}
           size={38}
           variant={solid ? "softSquare" : undefined}
+          editBlockId={block.id}
+          editPath="icon"
         />
       )}
       <div style={{ minWidth: 0 }}>
@@ -149,6 +152,8 @@ export const CalloutBandBlockView: React.FC<{ block: CalloutBandBlock }> = ({ bl
 export const SpotlightBlockView: React.FC<{ block: SpotlightBlock }> = ({ block }) => {
   const t = useTokens();
   const accent = t.accent(1);
+  const { onValueChange } = useBlockEdit();
+  const toggleDuotone = () => onValueChange?.(block.id, "duotone", !block.duotone);
 
   return (
     <div style={{ position: "relative", height: "100%", minHeight: 220 }}>
@@ -190,6 +195,20 @@ export const SpotlightBlockView: React.FC<{ block: SpotlightBlock }> = ({ block 
             }}
           />
         )}
+
+        <ImageEditAffordance
+          blockId={block.id}
+          urlPath="url"
+          promptPath="prompt"
+          url={block.url}
+          prompt={block.prompt}
+          extra={[
+            {
+              label: block.duotone ? "Duotone: on" : "Duotone: off",
+              onClick: () => toggleDuotone(),
+            },
+          ]}
+        />
       </div>
 
       {/* Overlapping card, anchored bottom-right */}

@@ -46,7 +46,14 @@ export const PillarsBlockView: React.FC<{ block: PillarsBlock }> = ({ block }) =
             }}
           >
             {item.icon && (
-              <Icon name={item.icon} accent={withAlpha(fg, 0.2)} size={30} variant="softSquare" />
+              <Icon
+                name={item.icon}
+                accent={withAlpha(fg, 0.2)}
+                size={30}
+                variant="softSquare"
+                editBlockId={block.id}
+                editPath={`items.${i}.icon`}
+              />
             )}
             <Text
               blockId={block.id}
@@ -113,7 +120,13 @@ export const ProcessFlowBlockView: React.FC<{ block: ProcessFlowBlock }> = ({ bl
                     {i + 1}
                   </div>
                 ) : (
-                  <Icon name={item.icon} accent={accent} size={36} />
+                  <Icon
+                    name={item.icon}
+                    accent={accent}
+                    size={36}
+                    editBlockId={block.id}
+                    editPath={`items.${i}.icon`}
+                  />
                 )}
 
                 <Text
@@ -186,7 +199,13 @@ export const TimelineBlockView: React.FC<{ block: TimelineBlock }> = ({ block })
           return (
             <div key={item.id} style={{ display: "flex", gap: t.space(4) }}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Icon name={item.icon} accent={accent} size={30} />
+                <Icon
+                  name={item.icon}
+                  accent={accent}
+                  size={30}
+                  editBlockId={block.id}
+                  editPath={`items.${i}.icon`}
+                />
                 {!last && <div style={{ width: 2, flex: 1, background: t.palette.border, marginTop: 4 }} />}
               </div>
               <div style={{ paddingBottom: last ? 0 : t.space(2), minWidth: 0 }}>
@@ -314,7 +333,13 @@ export const RoadmapPhasesBlockView: React.FC<{ block: RoadmapPhasesBlock }> = (
           <Card key={item.id} accent={accent} style={{ padding: t.space(4) }}>
             <div style={{ display: "flex", gap: t.space(5), alignItems: "flex-start" }}>
               <div style={{ display: "flex", gap: t.space(3), alignItems: "center", width: 150, flexShrink: 0 }}>
-                <Icon name={item.icon} accent={accent} size={32} />
+                <Icon
+                  name={item.icon}
+                  accent={accent}
+                  size={32}
+                  editBlockId={block.id}
+                  editPath={`items.${i}.icon`}
+                />
                 <div>
                   <Text blockId={block.id} path={`items.${i}.phase`} value={item.phase} token="h3" />
                   <Text
@@ -377,7 +402,13 @@ export const IconGridBlockView: React.FC<{ block: IconGridBlock }> = ({ block })
                 justifyContent: "center",
               }}
             >
-              <Icon name={item.icon} accent={accent} size={34} />
+              <Icon
+                name={item.icon}
+                accent={accent}
+                size={34}
+                editBlockId={block.id}
+                editPath={`items.${i}.icon`}
+              />
               <Text blockId={block.id} path={`items.${i}.title`} value={item.title} token="h3" />
               {item.body?.text && (
                 <Text

@@ -11,6 +11,7 @@ import {
   useTokens,
 } from "./blocks";
 import { ImagePlaceholder } from "./blocks/mediaBlocks";
+import { BlockToolbar } from "./blocks/inlineEdit";
 
 export interface SlideSpecRendererProps {
   spec: SlideSpec;
@@ -20,6 +21,13 @@ export interface SlideSpecRendererProps {
   /** 1-based number shown by `headingStyle: "numbered"`. */
   slideNumber?: number;
   onTextChange?: (blockId: string, path: string, value: string) => void;
+  /** Commit a non-text value edited directly on the slide. */
+  onValueChange?: (blockId: string, path: string, value: unknown) => void;
+  /** Structural actions offered by the toolbar over the selected block. */
+  onBlockAction?: (
+    blockId: string,
+    action: "moveUp" | "moveDown" | "duplicate" | "delete" | "cycleCard" | "cycleAlign" | "cycleColumns" | "addItem"
+  ) => void;
   onSelect?: (elementId: string, kind: "text" | "image" | "shape") => void;
   /** Element id of the current selection, used to outline the active block. */
   selectedElementId?: string | null;
@@ -39,6 +47,8 @@ export const SlideSpecRenderer: React.FC<SlideSpecRendererProps> = ({
   slideIndex = 0,
   slideNumber,
   onTextChange,
+  onValueChange,
+  onBlockAction,
   onSelect,
   selectedElementId,
 }) => {
@@ -82,9 +92,10 @@ export const SlideSpecRenderer: React.FC<SlideSpecRendererProps> = ({
       slideIndex,
       slideLayout: spec.layout,
       onTextChange: onTextChange ?? (() => {}),
+      onValueChange,
       onSelect,
     }),
-    [isEditing, slideIndex, spec.layout, onTextChange, onSelect]
+    [isEditing, slideIndex, spec.layout, onTextChange, onValueChange, onSelect]
   );
 
   return (
@@ -111,6 +122,7 @@ export const SlideSpecRenderer: React.FC<SlideSpecRendererProps> = ({
             isEditing={isEditing}
             slideIndex={slideIndex}
             selectedBlockId={selectedBlockId}
+            onBlockAction={onBlockAction}
             onSelectBlock={(id) => onSelect?.(`blk-${slideIndex}-${id}-__block`, "text")}
           />
         </div>
@@ -120,6 +132,35 @@ export const SlideSpecRenderer: React.FC<SlideSpecRendererProps> = ({
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** Structural actions the toolbar can request. */
+export type BlockAction =
+  | "moveUp" | "moveDown" | "duplicate" | "delete"
+  | "cycleCard" | "cycleAlign" | "cycleColumns" | "addItem";
+
+/** Short name shown on the toolbar chip. */
+const BLOCK_LABEL: Record<string, string> = {
+  heading: "Heading", paragraph: "Text", iconBullets: "Bullets", checklist: "Checklist",
+  quote: "Quote", statCards: "Stats", barChart: "Chart", lineChart: "Chart",
+  comboChart: "Chart", donutChart: "Donut", scatterQuadrant: "Quadrant",
+  nestedCircles: "Circles", venn: "Venn", pillars: "Pillars", processFlow: "Process",
+  timeline: "Timeline", roadmapPhases: "Roadmap", iconGrid: "Grid",
+  comparisonTable: "Table", pricingTable: "Pricing", teamCards: "Team",
+  logoWall: "Logos", contactFooter: "Contact", ctaButton: "Button", image: "Image",
+  imageGrid: "Images", deviceMockup: "Mockup", bigStat: "Big stat",
+  calloutBand: "Callout", spotlight: "Spotlight", numberedList: "Numbered",
+  metricRow: "Metrics",
+};
+
+const HAS_ITEMS = new Set([
+  "iconBullets","checklist","statCards","pillars","processFlow","timeline",
+  "roadmapPhases","iconGrid","teamCards","logoWall","contactFooter","imageGrid",
+  "donutChart","nestedCircles","venn","numberedList","metricRow",
+]);
+
+const HAS_CARD = new Set([
+  "iconBullets","statCards","iconGrid","teamCards","imageGrid","quote","roadmapPhases",
+]);
 
 const SlideBackground: React.FC<{ spec: SlideSpec }> = ({ spec }) => {
   const bg = spec.background;
@@ -165,7 +206,8 @@ const SlideBody: React.FC<{
   slideIndex: number;
   selectedBlockId?: string | null;
   onSelectBlock: (blockId: string) => void;
-}> = ({ spec, slideNumber, isEditing, selectedBlockId, onSelectBlock }) => {
+  onBlockAction?: (blockId: string, action: BlockAction) => void;
+}> = ({ spec, slideNumber, isEditing, selectedBlockId, onSelectBlock, onBlockAction }) => {
   const t = useTokens();
 
   const bySlot = (slot: string) =>
@@ -229,6 +271,23 @@ const SlideBody: React.FC<{
                 : {}),
             }}
           >
+            {selected && onBlockAction && (
+              <BlockToolbar
+                label={BLOCK_LABEL[b.type] ?? b.type}
+                actions={{
+                  onAddItem: HAS_ITEMS.has(b.type) ? () => onBlockAction(b.id, "addItem") : undefined,
+                  onCycleColumns: HAS_ITEMS.has(b.type)
+                    ? () => onBlockAction(b.id, "cycleColumns")
+                    : undefined,
+                  onCycleAlign: () => onBlockAction(b.id, "cycleAlign"),
+                  onCycleCard: HAS_CARD.has(b.type) ? () => onBlockAction(b.id, "cycleCard") : undefined,
+                  onMoveUp: () => onBlockAction(b.id, "moveUp"),
+                  onMoveDown: () => onBlockAction(b.id, "moveDown"),
+                  onDuplicate: () => onBlockAction(b.id, "duplicate"),
+                  onDelete: () => onBlockAction(b.id, "delete"),
+                }}
+              />
+            )}
             <BlockView block={b} slideNumber={slideNumber} />
           </div>
         );
