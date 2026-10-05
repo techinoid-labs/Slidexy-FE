@@ -168,10 +168,30 @@ export type BlockType =
 /** Where a block sits. Slots are resolved by the layout. */
 export type SlotName = "main" | "aside" | "full" | "footer";
 
+/**
+ * Absolute placement on the 960x540 stage.
+ *
+ * A block with a frame leaves the layout engine entirely and is positioned,
+ * sized, rotated and stacked by hand — the free-canvas mode. Without one it
+ * flows in its slot as before, so a deck can mix both.
+ */
+export interface BlockFrame {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  /** Degrees, clockwise. */
+  rotation?: number;
+  /** Stacking order among framed blocks. */
+  z?: number;
+}
+
 export interface BlockBase {
   id: string;
   type: BlockType;
   slot?: SlotName;
+  /** Present once the block has been unlocked from the layout. */
+  frame?: BlockFrame;
   /** Flex grow within its slot. Defaults to 0 (natural height). */
   grow?: number;
   /** Per-block style overrides, merged over the theme. */

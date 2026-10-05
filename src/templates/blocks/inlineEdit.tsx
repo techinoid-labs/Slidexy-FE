@@ -342,6 +342,10 @@ export interface BlockToolbarActions {
   onCycleAlign?: () => void;
   onCycleColumns?: () => void;
   onAddItem?: () => void;
+  onUnlockPosition?: () => void;
+  onLockToLayout?: () => void;
+  onBringForward?: () => void;
+  onSendBackward?: () => void;
 }
 
 export const BlockToolbar: React.FC<{ actions: BlockToolbarActions; label: string }> = ({
@@ -382,6 +386,18 @@ export const BlockToolbar: React.FC<{ actions: BlockToolbarActions; label: strin
       )}
       {actions.onCycleCard && (
         <MiniButton title="Card style" onClick={actions.onCycleCard}>◧</MiniButton>
+      )}
+      {actions.onUnlockPosition && (
+        <MiniButton title="Unlock position — place freely" onClick={actions.onUnlockPosition}>⤢</MiniButton>
+      )}
+      {actions.onLockToLayout && (
+        <MiniButton title="Return to layout" onClick={actions.onLockToLayout}>⇲</MiniButton>
+      )}
+      {actions.onBringForward && (
+        <MiniButton title="Bring forward" onClick={actions.onBringForward}>⬆</MiniButton>
+      )}
+      {actions.onSendBackward && (
+        <MiniButton title="Send backward" onClick={actions.onSendBackward}>⬇</MiniButton>
       )}
       {actions.onMoveUp && <MiniButton title="Move up" onClick={actions.onMoveUp}>↑</MiniButton>}
       {actions.onMoveDown && (

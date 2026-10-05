@@ -19,6 +19,7 @@ import {
     removeBlock,
     setBlockValue,
 } from '@/templates/mutate';
+import { frameFromElement } from '@/templates/freeCanvasUtil';
 import { isBlockSlide, themeForSlide } from '@/templates/toDeck';
 import { DEFAULT_THEME } from '@/templates/themes';
 
@@ -115,6 +116,27 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
                             next = setBlockValue(spec, blockId, 'style.columns',
                                 cycle([1, 2, 3, 4], block.style?.columns ?? 1));
                             break;
+                        case 'unlockPosition': {
+                            // Start the free frame exactly where the block
+                            // already sits, so unlocking never makes it jump.
+                            const el = document.querySelector<HTMLElement>(
+                                `[data-slide-spec] [data-block-id="${blockId}"]`
+                            );
+                            const frame = el
+                                ? frameFromElement(el)
+                                : { x: 80, y: 80, w: 320, h: 180 };
+                            next = setBlockValue(spec, blockId, 'frame', frame);
+                            break;
+                        }
+                        case 'lockToLayout':
+                            next = setBlockValue(spec, blockId, 'frame', undefined);
+                            break;
+                        case 'bringForward':
+                            next = setBlockValue(spec, blockId, 'frame.z', (block.frame?.z ?? 0) + 1);
+                            break;
+                        case 'sendBackward':
+                            next = setBlockValue(spec, blockId, 'frame.z', (block.frame?.z ?? 0) - 1);
+                            break;
                         case 'cycleCard':
                             next = setBlockValue(spec, blockId, 'style.cardStyle',
                                 cycle(['flat', 'outlined', 'elevated', 'tinted', 'brutalist'],
@@ -123,6 +145,12 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
                     }
                     if (next === spec) return;
                     onSlideUpdate({ ...slide, blockSpec: next });
+                }}
+                onFrameChange={(blockId, frame) => {
+                    if (!onSlideUpdate) return;
+                    const nextSpec = setBlockValue(slide.blockSpec, blockId, 'frame', frame);
+                    if (nextSpec === slide.blockSpec) return;
+                    onSlideUpdate({ ...slide, blockSpec: nextSpec });
                 }}
                 onSelect={(elementId) => onElementClick?.(elementId, 'text', -1)}
             />
