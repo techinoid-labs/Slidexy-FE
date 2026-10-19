@@ -99,12 +99,13 @@ const fontVars = [
 
 export const metadata: Metadata = {
   title: {
-    default: "SlideXY: Smart AI Tool for Presentations & Pitch Decks",
-    template: "%s | SlideXY",
+    default: "AI Presentation Maker | PPT Generator Online – Slidexy",
+    template: "%s | Slidexy",
   },
   description:
-    "Build impressive presentations with AI assistance. SlideXY delivers ready-to-use slides and pitch decks for startups, sales teams, and educators in seconds.",
+    "Create stunning slides instantly with our AI presentation maker. Convert text to PPT online for free. No signup required. Fast, simple & professional results.",
   keywords: [
+    "AI presentation maker",
     "smart presentation tool",
     "AI-powered slides",
     "pitch deck automation",

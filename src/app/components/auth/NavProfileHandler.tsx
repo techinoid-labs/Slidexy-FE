@@ -122,6 +122,7 @@ const NavProfileHandler = ({ size, showMail }: any) => {
           </Menu>
         </>
       ) : (
+        <Box sx={{ display: "flex", alignItems: "center" }}>
         <Button
           suppressHydrationWarning
           onClick={() => router.push("/auth")}
@@ -145,6 +146,31 @@ const NavProfileHandler = ({ size, showMail }: any) => {
         >
           {size ? `Sign in` : `Log in`}
         </Button>
+        {/* Kept from main: the first deck does not need an account, and
+            saying so here is worth more than another sign-in prompt.
+            Squared off to match the rest of the header. */}
+        <Button
+          suppressHydrationWarning
+          variant="contained"
+          disableElevation
+          onClick={() => router.push("/tools/prompt-to-deck")}
+          size={size ? "small" : "medium"}
+          sx={{
+            ml: 1.25,
+            whiteSpace: "nowrap",
+            borderRadius: 0,
+            bgcolor: "#0F0A19",
+            color: "#fff",
+            fontWeight: 600,
+            fontSize: size ? "0.82rem" : "0.93rem",
+            textTransform: "none",
+            px: 2.25,
+            "&:hover": { bgcolor: "#8E2DE2" },
+          }}
+        >
+          Try without signing up
+        </Button>
+        </Box>
       )}
     </>
   );

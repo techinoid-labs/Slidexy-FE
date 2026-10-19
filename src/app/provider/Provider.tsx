@@ -11,6 +11,7 @@ import { TemplateSlidesProvider } from "../context/TemplateSlidesContext";
 import { LinkedInProvider } from "../context/LinkedInContext";
 import { EbookProvider } from "../context/EbookContext";
 import { VideoJobProvider } from "../context/ExplainerVideoContext";
+import { PitchProvider } from "../context/PitchContext";
 import StripeProvider from "@/lib/StripeProvider";
 
 import { Box, Typography } from "@mui/material";
@@ -61,7 +62,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               <StripeProvider>
                 <EbookProvider>
                   <VideoJobProvider>
-                    {children}
+                    <PitchProvider>
+                      {children}
+                    </PitchProvider>
                   </VideoJobProvider>
                 </EbookProvider>
               </StripeProvider>
