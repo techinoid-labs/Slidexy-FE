@@ -1,296 +1,263 @@
 "use client";
 
+import React, { useEffect, useRef, useState } from "react";
+import { Box, Container, Typography } from "@mui/material";
+import Link from "next/link";
+import DriveFileRenameOutlineRounded from "@mui/icons-material/DriveFileRenameOutlineRounded";
+import PaletteRounded from "@mui/icons-material/PaletteRounded";
+import DashboardCustomizeRounded from "@mui/icons-material/DashboardCustomizeRounded";
+import FileDownloadRounded from "@mui/icons-material/FileDownloadRounded";
+import { HTMLSlideRenderer } from "@/app/components/editor/HTMLSlideRenderer";
+import { TEMPLATES } from "@/templates/catalog";
+import { templateToDeck } from "@/templates/toDeck";
 import {
-  Box,
-  Button,
-  Chip,
-  Container,
-  Typography,
-} from "@mui/material";
-import Image from "next/image";
-import { ArrowForward } from "@mui/icons-material";
-import { useState } from "react";
-import Lottie from "lottie-react";
-import templateAnimation from "@/json/Gif8-template-section.json";
-import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { easeOutExpo } from "@/lib/motion";
-import AnimatedOrb from "@/app/components/shared/AnimatedOrb";
+  ACCENT,
+  Display,
+  FigureRow,
+  Hairline,
+  INK,
+  Lede,
+  ListEntry,
+  MONO,
+  MUTED,
+  RULE,
+  SectionHead,
+} from "./editorial";
 
-export default function WhatWeOffer() {
-  const router = useRouter();
-  const scrollToContact = () => {
-    const contactSection = document.getElementById("contact-section");
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: "smooth" });
-    }
+/**
+ * What you actually get.
+ *
+ * This section used to be a grid of five tool cards, four of which no longer
+ * exist. More importantly it described the product instead of showing it.
+ * Now it renders real slides from the catalogue through the real renderer:
+ * if the templates are the strongest thing here, the page should be made of
+ * them rather than of claims about them.
+ */
+
+// Three visually distinct templates, rendered live rather than screenshotted,
+// so the page can never drift out of sync with what ships.
+// Picked for contrast rather than convenience: a dark theme, a light one and
+// a colour-led one, across three different categories. Three near-identical
+// light business slides would undersell the range.
+const SHOWCASE_IDS = ["investor-deck", "marketing-strategy", "product-launch"];
+
+const SHOWCASE = SHOWCASE_IDS.map((id) => {
+  const t = TEMPLATES.find((x) => x.id === id) ?? TEMPLATES[0];
+  const deck = templateToDeck(t);
+  return {
+    id: t.id,
+    name: t.name,
+    category: t.category,
+    theme: t.theme as any,
+    // Slide 2 rather than the cover: covers lean on a background image, the
+    // second slide shows the typography and layout work honestly.
+    slide: (deck[1] ?? deck[0]) as any,
   };
+});
 
-  const tools = [
-    {
-      title: "Prompt-to-Deck",
-      icon: "/images/tools/prompt-to-deck.svg",
-      description:
-        "Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers.",
-      route: "/tools/prompt-to-deck",
-    },
-    {
-      title: "Video-to-Deck",
-      icon: "/images/tools/video-to-deck.svg",
-      description:
-        "Upload a video or lecture and automatically convert it into a structured slide deck.",
-      route: "/tools/video-to-deck",
-    },
-    {
-      title: "Web-to-Deck",
-      icon: "/images/tools/web-to-deck.svg",
-      description:
-        "Transform any web page or article into a clean, visually consistent presentation.",
-      route: "/tools/web-to-deck",
-    },
-    {
-      title: "Text-to-Infographics",
-      icon: "/images/tools/text-to-infographics.svg",
-      description:
-        "Convert long reports or data-heavy text into dynamic, easy-to-read infographics.",
-      route: "/tools/text-to-infographics",
-    },
-    {
-      title: "Prompt-to-Template",
-      icon: "/images/tools/prompt-to-template.svg",
-      description:
-        "Describe your theme and purpose — get a matching slide template, fully editable.",
-      route: "/tools/prompt-to-template",
-    },
-  ];
+/** Renders a 960x540 slide scaled to whatever width its container has. */
+const SlideThumb: React.FC<{ slide: any; theme: any }> = ({ slide, theme }) => {
+  const wrap = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.3);
 
-  const [activeIndex, setActiveIndex] = useState(0);
+  useEffect(() => {
+    const el = wrap.current;
+    if (!el) return;
+    const fit = () => setScale(el.clientWidth / 960);
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   return (
     <Box
+      ref={wrap}
       sx={{
         position: "relative",
-        background: "linear-gradient(180deg, #fff 0%, #FBFAFF 50%, #fff 100%)",
-        py: { xs: 8, md: 12 },
+        width: "100%",
+        aspectRatio: "16 / 9",
         overflow: "hidden",
+        border: `1px solid ${RULE}`,
+        bgcolor: "#fff",
       }}
     >
-      <AnimatedOrb
-        size={280}
-        top="10%"
-        right="-5%"
-        color="rgba(142, 45, 226, 0.12)"
-        blur={50}
-        duration={10}
-      />
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: 960,
+          height: 540,
+          transformOrigin: "top left",
+          transform: `scale(${scale})`,
+          pointerEvents: "none",
+        }}
+      >
+        <HTMLSlideRenderer slide={slide} theme={theme} isEditing={false} slideIndex={0} />
+      </Box>
+    </Box>
+  );
+};
 
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
-        <Box sx={{ textAlign: "center", mb: { xs: 5, md: 7 } }}>
-          <Chip
-            icon={
-              <Image
-                src="/images/Stars.svg"
-                alt=""
-                width={18}
-                height={18}
-                style={{ marginRight: 4 }}
-              />
-            }
-            label="What we offer"
-            sx={{
-              px: 2,
-              py: 0.8,
-              mb: 2.5,
-              fontSize: "0.9rem",
-              height: "auto",
-              color: "#4A00E0",
-              backgroundColor: "rgba(242, 240, 255, 1)",
-              border: "1px solid rgba(142, 45, 226, 0.12)",
-            }}
-          />
-          <Typography
-            variant="h2"
-            className="sx-display"
-            sx={{
-              fontFamily: "var(--font-display)",
-              fontWeight: 700,
-              fontSize: { xs: "1.75rem", md: "2.5rem" },
-              color: "#0F0A19",
-              mb: 1.5,
-            }}
-          >
-            Tools that turn ideas into decks
-          </Typography>
-          <Typography
-            sx={{
-              color: "#5B5568",
-              fontSize: { xs: "1rem", md: "1.15rem" },
-              maxWidth: 560,
-              mx: "auto",
-              lineHeight: 1.6,
-            }}
-          >
-            Pick a starting point — prompt, video, or URL — and Slidexy does the rest.
-          </Typography>
-        </Box>
 
+export default function WhatWeOffer() {
+  return (
+    <Box component="section" sx={{ pt: { xs: 7, md: 9 }, pb: { xs: 8, md: 14 } }}>
+
+      <Container maxWidth="lg">
+        <SectionHead index="01" label="What you get" />
+
+        {/* Asymmetric: heading left, supporting copy offset right. A centred
+            heading with centred copy beneath is the default every template
+            ships with. */}
         <Box
           sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            gap: { xs: 3, md: 5 },
-            alignItems: "stretch",
-            mb: 6,
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1.25fr 1fr" },
+            gap: { xs: 3, md: 8 },
+            alignItems: "end",
+            mb: { xs: 5, md: 7 },
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 1.5,
-              width: { xs: "100%", md: 340 },
-              flexShrink: 0,
-            }}
-          >
-            {tools.map((tool, index) => {
-              const active = activeIndex === index;
-              return (
-                <Box
-                  key={tool.title}
-                  component={motion.div}
-                  layout
-                  onMouseEnter={() => setActiveIndex(index)}
-                  onClick={() => setActiveIndex(index)}
-                  whileHover={{ x: 4 }}
-                  transition={{ duration: 0.25, ease: easeOutExpo }}
-                  sx={{
-                    p: 2.5,
-                    borderRadius: "16px",
-                    cursor: "pointer",
-                    background: active
-                      ? "linear-gradient(135deg, rgba(142,45,226,0.08), rgba(74,0,224,0.04))"
-                      : "#fff",
-                    border: active
-                      ? "1.5px solid rgba(142, 45, 226, 0.35)"
-                      : "1px solid rgba(142, 45, 226, 0.08)",
-                    boxShadow: active
-                      ? "0 12px 32px rgba(142, 45, 226, 0.12)"
-                      : "none",
-                    transition: "background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: 1.5, alignItems: "center" }}>
-                    <Box
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: "12px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: active
-                          ? "linear-gradient(135deg, #8E2DE2, #4A00E0)"
-                          : "rgba(242, 240, 255, 1)",
-                        transition: "background 0.25s ease",
-                      }}
-                    >
-                      <Image
-                        src={tool.icon}
-                        alt=""
-                        width={22}
-                        height={22}
-                        style={{
-                          filter: active ? "brightness(0) invert(1)" : "none",
-                        }}
-                      />
-                    </Box>
-                    <Typography
-                      sx={{
-                        fontWeight: 600,
-                        fontSize: "1.05rem",
-                        color: "#0F0A19",
-                        fontFamily: "var(--font-display)",
-                      }}
-                    >
-                      {tool.title}
-                    </Typography>
-                  </Box>
+          <Display>
+            A template is a design<br />system, not a skin.
+          </Display>
+          <Lede sx={{ pb: 1 }}>
+            Not a theme picker bolted onto a text editor. Each template is a
+            complete design system, covering typography, colour, spacing and
+            card treatment. You can change any of it, on any slide.
+          </Lede>
+        </Box>
 
-                  <AnimatePresence initial={false}>
-                    {active && (
-                      <motion.div
-                        key="detail"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3, ease: easeOutExpo }}
-                      >
-                        <Typography
-                          sx={{
-                            fontSize: "0.9rem",
-                            color: "#5B5568",
-                            mt: 1.5,
-                            mb: 2,
-                            lineHeight: 1.6,
-                          }}
-                        >
-                          {tool.description}
-                        </Typography>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          fullWidth
-                          onClick={() => router.push(tool.route)}
-                          endIcon={<ArrowForward />}
-                        >
-                          Get started
-                        </Button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Box>
-              );
-            })}
+        {/* Live renders, not screenshots */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(3, 1fr)" },
+            gap: { xs: 3, md: 4 },
+            mb: { xs: 6, md: 9 },
+          }}
+        >
+          {SHOWCASE.map((s) => (
+            <Box key={s.id}>
+              <SlideThumb slide={s.slide} theme={s.theme} />
+              <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.5, mt: 1.75 }}>
+                <Typography
+                  sx={{ fontFamily: MONO, fontSize: "0.68rem", color: ACCENT, letterSpacing: "0.1em", textTransform: "uppercase" }}
+                >
+                  {s.category}
+                </Typography>
+                <Typography sx={{ fontSize: "0.9rem", fontWeight: 600, color: INK }}>
+                  {s.name}
+                </Typography>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+
+        <FigureRow
+          items={[
+            { value: "10+", label: "Templates, each a full design system" },
+            { value: "25", label: "Themes, swappable across a whole deck" },
+            { value: "150", label: "Slide layouts built and ready" },
+            { value: "33", label: "Block types, from stats to timelines" },
+          ]}
+          sx={{ mb: { xs: 6, md: 9 } }}
+        />
+
+        {/* Capabilities as a ruled list, not a card grid */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "1fr",
+            gap: 2,
+            alignItems: "start",
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{
+                fontFamily: MONO,
+                fontSize: "0.72rem",
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: MUTED,
+                mb: { xs: 1, md: 0 },
+              }}
+            >
+              In the editor
+            </Typography>
           </Box>
 
           <Box
-            component={motion.div}
-            key={activeIndex}
-            initial={{ opacity: 0.6, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, ease: easeOutExpo }}
             sx={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "24px",
-              background:
-                "radial-gradient(ellipse at center, rgba(142,45,226,0.08) 0%, transparent 70%)",
-              minHeight: { xs: 280, md: 420 },
-              overflow: "hidden",
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+              columnGap: { md: 6 },
+              borderTop: `1px solid ${RULE}`,
             }}
           >
-            <Lottie
-              animationData={templateAnimation}
-              loop
-              autoplay
-              style={{ width: "100%", height: "100%", borderRadius: "24px" }}
+            <ListEntry
+              index="01"
+              icon={<DriveFileRenameOutlineRounded />}
+              title="Edit anything, in place"
+              body="Headings, bullets, captions, stat labels, icons, images. Click it and change it. No inspector round trip, no fields that quietly do nothing."
+            />
+            <ListEntry
+              index="02"
+              icon={<DashboardCustomizeRounded />}
+              title="Move it, or let the layout hold it"
+              body="Blocks sit in a layout that keeps the deck consistent. Unlock any one of them and drag, resize or rotate it freely, with snapping to every other element."
+            />
+            <ListEntry
+              index="03"
+              icon={<PaletteRounded />}
+              title="Restyle the whole deck at once"
+              body="Switch theme and every slide follows: colour, typeface pairing, card treatment, icon style. Your content never moves."
+            />
+            <ListEntry
+              index="04"
+              icon={<FileDownloadRounded />}
+              title="Hand over a file people can edit"
+              body="PowerPoint export writes real text boxes, native tables and charts carrying their own data. Not a picture of a slide."
+              last
             />
           </Box>
         </Box>
 
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
-          <Button variant="contained" onClick={scrollToContact}>
-            Contact us
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => router.push("/tools")}
-            endIcon={<ArrowForward />}
-          >
-            View all tools
-          </Button>
+        <Hairline sx={{ mt: { xs: 6, md: 9 }, mb: 3 }} />
+
+        <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 3 }}>
+          <Link href="/templates" style={{ textDecoration: "none" }}>
+            <Typography
+              component="span"
+              sx={{
+                fontSize: "0.95rem",
+                fontWeight: 600,
+                color: INK,
+                borderBottom: `2px solid ${ACCENT}`,
+                pb: 0.25,
+                "&:hover": { color: ACCENT },
+                transition: "color 0.15s",
+              }}
+            >
+              Browse all templates
+            </Typography>
+          </Link>
+          <Link href="/tools/prompt-to-deck" style={{ textDecoration: "none" }}>
+            <Typography
+              component="span"
+              sx={{
+                fontSize: "0.95rem",
+                color: MUTED,
+                "&:hover": { color: INK },
+                transition: "color 0.15s",
+              }}
+            >
+              Start a deck &rarr;
+            </Typography>
+          </Link>
         </Box>
       </Container>
     </Box>

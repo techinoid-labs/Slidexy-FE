@@ -11,7 +11,7 @@ import CTASection from "../components/seo/CTASection";
 import { Box, Container, Typography } from "@mui/material";
 
 export const metadata: Metadata = {
-  title: "Professional Slide Templates — SlideXY Library",
+  title: "Professional Slide Templates | SlideXY Library",
   description:
     "Browse hundreds of designer-grade AI presentation templates. From startup pitch decks and educational workshops to corporate reports, find the perfect starting point for your slides.",
   alternates: {
@@ -90,9 +90,9 @@ export default function TemplatesHub() {
 
       <CTASection 
         title="Build your deck on a professional foundation"
-        subtitle="Choose a template and let AI handle the rest."
-        buttonText="Browse All Templates"
-        href="/auth/sign-up"
+        subtitle="Pick a template above, or describe what you need and start from there."
+        buttonText="Start a deck"
+        href="/tools/prompt-to-deck"
       />
 
       <Footer />

@@ -1,165 +1,155 @@
 "use client";
 
-import { Box, Typography, Link, Stack } from "@mui/material";
+import React from "react";
+import { Box, Container, Typography } from "@mui/material";
+import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTiktok } from "react-icons/fa6";
+import { ACCENT, INK, MONO, MUTED, RULE } from "./editorial";
+
+/**
+ * Footer.
+ *
+ * Was a lavender gradient panel with the links centred in a row and four
+ * circular social buttons, which is the last thing on every page and so the
+ * last impression the site leaves. It also still pointed at /tools, a route
+ * that no longer exists.
+ *
+ * Now it is set like the colophon of a printed thing: a rule across the
+ * top, columns of links, and the small print at the bottom. Flat, quiet,
+ * and it does not try to be the loudest block on the page.
+ */
+
+const COLUMNS: { heading: string; links: { title: string; link: string }[] }[] = [
+  {
+    heading: "Product",
+    links: [
+      { title: "Create a deck", link: "/tools/prompt-to-deck" },
+      { title: "Templates", link: "/templates" },
+      { title: "Pricing", link: "/pricing" },
+    ],
+  },
+  {
+    heading: "Company",
+    links: [
+      { title: "Blog", link: "/blog" },
+      { title: "FAQs", link: "/faqs" },
+      { title: "Contact", link: "/#contact" },
+    ],
+  },
+  {
+    heading: "Legal",
+    links: [{ title: "Privacy and terms", link: "/privacy-policy" }],
+  },
+];
+
+const SOCIAL = [
+  { icon: <FaLinkedinIn />, link: "https://www.linkedin.com/company/slidexy/", label: "LinkedIn" },
+  { icon: <FaInstagram />, link: "https://www.instagram.com/slidexy_ai/", label: "Instagram" },
+  { icon: <FaFacebookF />, link: "https://web.facebook.com/Slidexy", label: "Facebook" },
+  { icon: <FaTiktok />, link: "https://www.tiktok.com/@slidexy_ai", label: "TikTok" },
+];
 
 export default function Footer() {
-  const pathname = usePathname();
-
-  const navLinks = [
-    { title: "Home", link: "/" },
-    { title: "Tools", link: "/tools" },
-    { title: "Templates", link: "/templates" },
-    { title: "Privacy", link: "/privacy-policy" },
-    { title: "FAQ's", link: "/faqs" },
-    { title: "Pricing", link: "/pricing" },
-    { title: "Blogs", link: "/blog" },
-  ];
-
   return (
-    <Box
-      component="footer"
-      sx={{
-        background:
-          "linear-gradient(180deg, #fff 0%, #F8F5FF 60%, #F3F0FF 100%)",
-        textAlign: "center",
-        py: { xs: 5, md: 6 },
-        px: 2,
-        borderTop: "1px solid rgba(142, 45, 226, 0.1)",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <Box
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "60%",
-          height: 1,
-          background:
-            "linear-gradient(90deg, transparent, rgba(142,45,226,0.4), transparent)",
-        }}
-      />
-
-      <Box
-        component={motion.div}
-        whileHover={{ scale: 1.03 }}
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          my: 3,
-        }}
-      >
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <Image
-            src="/images/Logo.svg"
-            alt="Slidexy"
-            width={200}
-            height={48}
-            style={{ objectFit: "contain" }}
-          />
-        </Link>
-      </Box>
-
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={{ xs: 1.5, sm: 3 }}
-        justifyContent="center"
-        alignItems="center"
-        sx={{ mb: 3, flexWrap: "wrap" }}
-      >
-        {navLinks.map((item) => {
-          const isActive = pathname === item.link;
-          return (
-            <Link
-              key={item.title}
-              href={item.link}
-              underline="none"
-              sx={{
-                color: isActive ? "#4A00E0" : "#5B5568",
-                fontSize: { xs: "0.95rem", md: "0.95rem" },
-                fontWeight: isActive ? 600 : 450,
-                transition: "color 0.2s ease",
-                "&:hover": { color: "#8E2DE2" },
-              }}
-            >
-              {item.title}
+    <Box component="footer" sx={{ borderTop: `1px solid ${INK}` }}>
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1.4fr repeat(3, 1fr)" },
+            gap: { xs: 5, md: 6 },
+            pt: { xs: 6, md: 8 },
+            pb: { xs: 5, md: 7 },
+          }}
+        >
+          <Box>
+            <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
+              <Image src="/images/Logo.svg" alt="Slidexy" width={128} height={44} />
             </Link>
-          );
-        })}
-      </Stack>
+            <Typography
+              sx={{ mt: 2, fontSize: "0.92rem", lineHeight: 1.6, color: MUTED, maxWidth: 300 }}
+            >
+              A presentation maker that hands you a file you can actually
+              edit, not a picture of one.
+            </Typography>
 
-      <Stack
-        direction="row"
-        spacing={1.5}
-        justifyContent="center"
-        alignItems="center"
-        sx={{ mb: 3 }}
-      >
-        {[
-          {
-            src: "/images/social-ico/facebook-ico.svg",
-            alt: "Facebook",
-            link: "https://web.facebook.com/Slidexy",
-          },
-          {
-            src: "/images/social-ico/instagram-ico.svg",
-            alt: "Instagram",
-            link: "https://www.instagram.com/slidexy_ai/",
-          },
-          {
-            src: "/images/social-ico/linkedin-ico.svg",
-            alt: "LinkedIn",
-            link: "https://www.linkedin.com/company/slidexy/",
-          },
-          {
-            src: "/images/social-ico/tiktok-ico.svg",
-            alt: "TikTok",
-            link: "https://www.tiktok.com/@slidexy_ai",
-          },
-        ].map((icon) => (
-          <Link
-            key={icon.alt}
-            href={icon.link}
-            target="_blank"
-            underline="none"
-            component={motion.a}
-            whileHover={{ y: -3, scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              bgcolor: "rgba(255,255,255,0.8)",
-              border: "1px solid rgba(142, 45, 226, 0.12)",
-              transition: "background 0.2s ease, border-color 0.2s ease",
-              "&:hover": {
-                bgcolor: "#E8E4FF",
-                borderColor: "rgba(142, 45, 226, 0.3)",
-              },
-            }}
-          >
-            <img src={icon.src} alt={icon.alt} width={20} height={20} />
-          </Link>
-        ))}
-      </Stack>
+            <Box sx={{ display: "flex", gap: 2.5, mt: 3 }}>
+              {SOCIAL.map((s) => (
+                <Box
+                  key={s.label}
+                  component="a"
+                  href={s.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  sx={{
+                    color: "#A9A3B4",
+                    fontSize: 16,
+                    display: "flex",
+                    transition: "color 0.15s ease",
+                    "&:hover": { color: INK },
+                  }}
+                >
+                  {s.icon}
+                </Box>
+              ))}
+            </Box>
+          </Box>
 
-      <Typography
-        sx={{
-          fontSize: "0.85rem",
-          color: "#888",
-        }}
-      >
-        Copyright © {new Date().getFullYear()} Slidexy. All rights reserved.
-      </Typography>
+          {COLUMNS.map((col) => (
+            <Box key={col.heading}>
+              <Typography
+                sx={{
+                  fontFamily: MONO,
+                  fontSize: "0.66rem",
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "#A9A3B4",
+                  mb: 2,
+                }}
+              >
+                {col.heading}
+              </Typography>
+              {col.links.map((l) => (
+                <Box key={l.title} sx={{ mb: 1.25 }}>
+                  <Link href={l.link} style={{ textDecoration: "none", color: "inherit" }}>
+                    <Typography
+                      component="span"
+                      sx={{
+                        fontSize: "0.93rem",
+                        color: MUTED,
+                        transition: "color 0.15s ease",
+                        "&:hover": { color: ACCENT },
+                      }}
+                    >
+                      {l.title}
+                    </Typography>
+                  </Link>
+                </Box>
+              ))}
+            </Box>
+          ))}
+        </Box>
+
+        <Box
+          sx={{
+            borderTop: `1px solid ${RULE}`,
+            py: 3,
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            gap: 1.5,
+          }}
+        >
+          <Typography sx={{ fontFamily: MONO, fontSize: "0.72rem", color: "#A9A3B4" }}>
+            © {new Date().getFullYear()} Slidexy
+          </Typography>
+          <Typography sx={{ fontFamily: MONO, fontSize: "0.72rem", color: "#A9A3B4" }}>
+            Built for people who have to hand the file over
+          </Typography>
+        </Box>
+      </Container>
     </Box>
   );
 }

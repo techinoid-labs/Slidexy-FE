@@ -1,218 +1,409 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import {
-    Dialog,
-    IconButton,
-    Box,
-    Typography,
-    LinearProgress,
-} from "@mui/material";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Box, Tooltip, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import GridViewIcon from "@mui/icons-material/GridView";
 import { HTMLSlideRenderer } from "../editor/HTMLSlideRenderer";
 
+/**
+ * Presenter mode.
+ *
+ * Replaces a dialog that showed the slide in a rounded, shadowed card at a
+ * fixed 75vh -- which read as a preview thumbnail rather than a presentation.
+ * Here the slide is the only thing on screen: letterboxed to the viewport,
+ * square-cornered, on black, with chrome that fades out while you talk.
+ *
+ * Keyboard is the real interface, because that is what a presenter uses:
+ *
+ *   Right / Space / PageDown   next          Left / PageUp   previous
+ *   Home / End                 first / last  G               slide grid
+ *   F                          fullscreen    Esc             close
+ */
 
-// ✅ Define a proper prop type
+const SLIDE_W = 960;
+const SLIDE_H = 540;
+const IDLE_MS = 2600;
+
 interface SlideShowPlayerProps {
-    slides: any[];
-    open: boolean;
-    onClose: () => void;
-    theme?: any | null;
-    forceCleanPreview?: boolean;
-
+  slides: any[];
+  open: boolean;
+  onClose: () => void;
+  theme?: any | null;
+  forceCleanPreview?: boolean;
 }
 
 const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
-    slides,
-    open,
-    onClose,
-    theme,
-    forceCleanPreview,
+  slides,
+  open,
+  onClose,
+  theme,
 }) => {
-    const [currentSlide, setCurrentSlide] = useState(0);
+  const [index, setIndex] = useState(0);
+  const [scale, setScale] = useState(1);
+  const [chromeVisible, setChromeVisible] = useState(true);
+  const [gridOpen, setGridOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-    useEffect(() => {
-        if (open) setCurrentSlide(0);
-    }, [open]);
-    // No longer using snapshotsCache for current preview, 
-    // but keeping for other potential uses if needed.
-    useEffect(() => {
-        if (!open || !forceCleanPreview) return;
-        // ... logic removed as we use HTML renderer directly
-    }, [open, currentSlide, forceCleanPreview]);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const goNext = React.useCallback(() => {
-        if (slides.length) setCurrentSlide((i) => (i + 1) % slides.length);
-    }, [slides.length]);
+  const count = slides?.length ?? 0;
 
-    const goPrev = React.useCallback(() => {
-        if (slides.length) setCurrentSlide((i) => (i - 1 + slides.length) % slides.length);
-    }, [slides.length]);
+  useEffect(() => {
+    if (open) {
+      setIndex(0);
+      setGridOpen(false);
+      setChromeVisible(true);
+    }
+  }, [open]);
 
-    useEffect(() => {
-        if (!open) return;
-        const handleKey = (e: KeyboardEvent) => {
-            if (e.key === "ArrowRight" || e.key === " ") {
-                e.preventDefault();
-                goNext();
-            }
-            if (e.key === "ArrowLeft") {
-                e.preventDefault();
-                goPrev();
-            }
-            if (e.key === "Escape") onClose();
-        };
-        window.addEventListener("keydown", handleKey);
-        return () => window.removeEventListener("keydown", handleKey);
-    }, [open, goNext, goPrev, onClose]);
+  const goNext = useCallback(() => {
+    setIndex((i) => (count ? Math.min(i + 1, count - 1) : 0));
+  }, [count]);
 
-    if (!slides.length) return null;
+  const goPrev = useCallback(() => {
+    setIndex((i) => Math.max(i - 1, 0));
+  }, []);
 
-    const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
-    const [scale, setScale] = useState(1);
+  // ── Fullscreen ───────────────────────────────────────────────────────
+  const toggleFullscreen = useCallback(async () => {
+    const el = rootRef.current;
+    if (!el) return;
+    try {
+      if (!document.fullscreenElement) {
+        await el.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch {
+      // Fullscreen can be refused (permissions policy, an iframe). The
+      // overlay already covers the viewport, so this is cosmetic.
+    }
+  }, []);
 
-    useEffect(() => {
-        if (!containerRef || !open) return;
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
 
-        const updateScale = () => {
-            const containerWidth = containerRef.clientWidth;
-            const containerHeight = containerRef.clientHeight;
-            const slideWidth = 960;
-            const slideHeight = 540;
+  // Leaving fullscreen with the browser's own Esc should not also close the
+  // player, so closing is driven by our own key handler rather than this.
+  useEffect(() => {
+    if (!open && document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {});
+    }
+  }, [open]);
 
-            const scaleX = containerWidth / slideWidth;
-            const scaleY = containerHeight / slideHeight;
-            const newScale = Math.min(scaleX, scaleY) * 0.95; // 95% of container
+  // ── Scale the fixed 960x540 stage to fit the viewport ────────────────
+  useEffect(() => {
+    if (!open) return;
+    const fit = () => {
+      // Leave a margin only when the chrome is on screen; in fullscreen the
+      // slide should reach the edges.
+      const margin = document.fullscreenElement ? 0 : 48;
+      const w = window.innerWidth - margin;
+      const h = window.innerHeight - margin;
+      setScale(Math.min(w / SLIDE_W, h / SLIDE_H));
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    document.addEventListener("fullscreenchange", fit);
+    return () => {
+      window.removeEventListener("resize", fit);
+      document.removeEventListener("fullscreenchange", fit);
+    };
+  }, [open]);
 
-            setScale(newScale);
-        };
+  // ── Chrome auto-hide ─────────────────────────────────────────────────
+  const wake = useCallback(() => {
+    setChromeVisible(true);
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(() => setChromeVisible(false), IDLE_MS);
+  }, []);
 
-        updateScale();
-        window.addEventListener('resize', updateScale);
-        return () => window.removeEventListener('resize', updateScale);
-    }, [containerRef, open, currentSlide]);
+  useEffect(() => {
+    if (!open) return;
+    wake();
+    return () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+    };
+  }, [open, wake]);
 
-    const progress = ((currentSlide + 1) / slides.length) * 100;
+  // ── Keyboard ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      wake();
+      switch (e.key) {
+        case "ArrowRight":
+        case "PageDown":
+        case " ":
+          e.preventDefault();
+          gridOpen ? setGridOpen(false) : goNext();
+          break;
+        case "ArrowLeft":
+        case "PageUp":
+          e.preventDefault();
+          goPrev();
+          break;
+        case "Home":
+          e.preventDefault();
+          setIndex(0);
+          break;
+        case "End":
+          e.preventDefault();
+          setIndex(Math.max(0, count - 1));
+          break;
+        case "g":
+        case "G":
+          setGridOpen((v) => !v);
+          break;
+        case "f":
+        case "F":
+          void toggleFullscreen();
+          break;
+        case "Escape":
+          // Esc closes the grid first, then the player.
+          if (gridOpen) setGridOpen(false);
+          else onClose();
+          break;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, gridOpen, goNext, goPrev, count, onClose, toggleFullscreen, wake]);
 
-    return (
-        <Dialog open={open} onClose={onClose} fullScreen>
+  if (!open || count === 0) return null;
+
+  const atStart = index === 0;
+  const atEnd = index === count - 1;
+
+  const chrome = {
+    opacity: chromeVisible || gridOpen ? 1 : 0,
+    pointerEvents: (chromeVisible || gridOpen ? "auto" : "none") as "auto" | "none",
+    transition: "opacity 0.3s ease",
+  };
+
+  const navButton = {
+    width: 44,
+    height: 44,
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "rgba(255,255,255,0.9)",
+    background: "rgba(255,255,255,0.08)",
+    backdropFilter: "blur(6px)",
+    cursor: "pointer",
+    transition: "background 0.15s ease, opacity 0.15s ease",
+    "&:hover": { background: "rgba(255,255,255,0.18)" },
+  } as const;
+
+  return (
+    <Box
+      ref={rootRef}
+      onMouseMove={wake}
+      sx={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 2000,
+        background: "#000",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: chromeVisible || gridOpen ? "default" : "none",
+      }}
+    >
+      {/* Click zones: the right two-thirds advance, the left third goes
+          back. This is how every presentation tool behaves, and it means
+          the deck can be driven without aiming at a button. */}
+      {!gridOpen && (
+        <>
+          <Box
+            onClick={goPrev}
+            sx={{ position: "absolute", inset: "0 66% 0 0", zIndex: 1, cursor: "w-resize" }}
+          />
+          <Box
+            onClick={goNext}
+            sx={{ position: "absolute", inset: "0 0 0 34%", zIndex: 1, cursor: "e-resize" }}
+          />
+        </>
+      )}
+
+      {/* The slide */}
+      <Box
+        key={index}
+        sx={{
+          width: SLIDE_W,
+          height: SLIDE_H,
+          flex: "0 0 auto",
+          overflow: "hidden",
+          transform: `scale(${scale})`,
+          transformOrigin: "center center",
+          animation: "slideIn 0.22s ease",
+          "@keyframes slideIn": {
+            from: { opacity: 0.4 },
+            to: { opacity: 1 },
+          },
+        }}
+      >
+        <HTMLSlideRenderer
+          slide={slides[index]}
+          theme={theme}
+          isEditing={false}
+          slideIndex={index}
+        />
+      </Box>
+
+      {/* ── Chrome ─────────────────────────────────────────────────── */}
+      <Box sx={{ ...chrome, position: "absolute", top: 18, right: 18, display: "flex", gap: 1, zIndex: 3 }}>
+        <Tooltip title="Slide grid (G)" placement="bottom">
+          <Box sx={navButton} onClick={() => setGridOpen((v) => !v)}>
+            <GridViewIcon sx={{ fontSize: 19 }} />
+          </Box>
+        </Tooltip>
+        <Tooltip title={isFullscreen ? "Exit fullscreen (F)" : "Fullscreen (F)"} placement="bottom">
+          <Box sx={navButton} onClick={() => void toggleFullscreen()}>
+            {isFullscreen ? <FullscreenExitIcon sx={{ fontSize: 21 }} /> : <FullscreenIcon sx={{ fontSize: 21 }} />}
+          </Box>
+        </Tooltip>
+        <Tooltip title="Close (Esc)" placement="bottom">
+          <Box sx={navButton} onClick={onClose}>
+            <CloseIcon sx={{ fontSize: 19 }} />
+          </Box>
+        </Tooltip>
+      </Box>
+
+      {!atStart && (
+        <Box sx={{ ...chrome, position: "absolute", left: 18, top: "50%", mt: "-22px", zIndex: 3 }}>
+          <Box sx={navButton} onClick={goPrev}>
+            <ArrowBackIosNewIcon sx={{ fontSize: 16, ml: "3px" }} />
+          </Box>
+        </Box>
+      )}
+      {!atEnd && (
+        <Box sx={{ ...chrome, position: "absolute", right: 18, top: "50%", mt: "-22px", zIndex: 3 }}>
+          <Box sx={navButton} onClick={goNext}>
+            <ArrowForwardIosIcon sx={{ fontSize: 16 }} />
+          </Box>
+        </Box>
+      )}
+
+      {/* Counter, doubling as the grid toggle */}
+      <Box
+        data-presenter-counter
+        onClick={() => setGridOpen((v) => !v)}
+        sx={{
+          ...chrome,
+          position: "absolute",
+          bottom: 20,
+          left: "50%",
+          transform: "translateX(-50%)",
+          px: 1.75,
+          py: 0.6,
+          borderRadius: "999px",
+          background: "rgba(255,255,255,0.1)",
+          backdropFilter: "blur(6px)",
+          cursor: "pointer",
+          zIndex: 3,
+          "&:hover": { background: "rgba(255,255,255,0.18)" },
+        }}
+      >
+        <Typography sx={{ color: "rgba(255,255,255,0.92)", fontSize: 12.5, fontWeight: 600, letterSpacing: "0.02em" }}>
+          {index + 1} / {count}
+        </Typography>
+      </Box>
+
+      {/* Progress: a hairline, so it reads as position rather than decoration */}
+      <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 2, background: "rgba(255,255,255,0.12)", zIndex: 3 }}>
+        <Box
+          sx={{
+            height: "100%",
+            width: `${((index + 1) / count) * 100}%`,
+            background: "linear-gradient(90deg, #8E2DE2, #4A00E0)",
+            transition: "width 0.25s ease",
+          }}
+        />
+      </Box>
+
+      {/* ── Slide grid ─────────────────────────────────────────────── */}
+      {gridOpen && (
+        <Box
+          onClick={() => setGridOpen(false)}
+          sx={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 4,
+            background: "rgba(0,0,0,0.9)",
+            backdropFilter: "blur(10px)",
+            overflowY: "auto",
+            p: 5,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+            gap: 2.5,
+            alignContent: "start",
+          }}
+        >
+          {slides.map((s, i) => (
             <Box
-                sx={{
-                    bgcolor: "#000",
-                    width: "100vw",
-                    height: "100vh",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    position: "relative",
-                    background: "radial-gradient(circle at center, #16213e 0%, #0f0f1a 100%)",
-                    overflow: "hidden",
-                }}
+              key={i}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIndex(i);
+                setGridOpen(false);
+              }}
+              sx={{
+                position: "relative",
+                aspectRatio: "16 / 9",
+                borderRadius: "8px",
+                overflow: "hidden",
+                cursor: "pointer",
+                outline: i === index ? "2.5px solid #8E2DE2" : "1px solid rgba(255,255,255,0.16)",
+                outlineOffset: i === index ? "1px" : 0,
+                transition: "transform 0.15s ease",
+                "&:hover": { transform: "translateY(-2px)" },
+              }}
             >
-                {/* Close & Counter */}
-                <IconButton onClick={onClose} sx={{ position: "absolute", top: 24, right: 24, color: "white", bgcolor: "rgba(255,255,255,0.1)", "&:hover": { bgcolor: "rgba(255,255,255,0.2)" } }}>
-                    <CloseIcon fontSize="large" />
-                </IconButton>
-
-                <Typography sx={{ position: "absolute", top: 32, left: 32, color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>
-                    {currentSlide + 1} / {slides.length}
-                </Typography>
-
-                {/* Snapshot Image */}
-                <Box
-                    ref={(el: HTMLDivElement) => setContainerRef(el)}
-                    sx={{
-                        width: "100%",
-                        height: "75vh",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        position: "relative",
-                        zIndex: 1,
-                    }}
-                >
-                    <Box
-                        sx={{
-                            width: 960,
-                            height: 540,
-                            bgcolor: "#fff",
-                            borderRadius: "12px",
-                            overflow: "hidden",
-                            boxShadow: "0 35px 80px rgba(0,0,0,0.8)",
-                            transform: `scale(${scale})`,
-                            transformOrigin: "center center",
-                            transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                        }}
-                    >
-                        <HTMLSlideRenderer
-                            slide={slides[currentSlide]}
-                            theme={theme}
-                            isEditing={false}
-                            slideIndex={currentSlide}
-                        />
-                    </Box>
-                </Box>
-
-                {/* Navigation */}
-                {slides.length > 1 && (
-                    <>
-                        <IconButton
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                goPrev();
-                            }}
-                            sx={{
-                                position: "absolute",
-                                left: 40,
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                bgcolor: "rgba(255,255,255,0.15)",
-                                color: "white",
-                                width: 70,
-                                height: 70,
-                                zIndex: 10,
-                                "&:hover": { bgcolor: "rgba(255,255,255,0.3)" }
-                            }}
-                        >
-                            <ArrowBackIosNewIcon sx={{ fontSize: 32 }} />
-                        </IconButton>
-                        <IconButton
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                goNext();
-                            }}
-                            sx={{
-                                position: "absolute",
-                                right: 40,
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                bgcolor: "rgba(255,255,255,0.15)",
-                                color: "white",
-                                width: 70,
-                                height: 70,
-                                zIndex: 10,
-                                "&:hover": { bgcolor: "rgba(255,255,255,0.3)" }
-                            }}
-                        >
-                            <ArrowForwardIosIcon sx={{ fontSize: 32 }} />
-                        </IconButton>
-                    </>
-                )}
-
-                {/* Progress Bar */}
-                <Box sx={{ position: "absolute", bottom: 40, width: "50%", left: "50%", transform: "translateX(-50%)" }}>
-                    <LinearProgress variant="determinate" value={progress} sx={{ height: 8, borderRadius: 4, bgcolor: "rgba(255,255,255,0.2)", "& .MuiLinearProgress-bar": { background: "linear-gradient(135deg, #8E2DE2, #4A00E0)" } }} />
-                </Box>
-
-                <Typography sx={{ position: "absolute", bottom: 16, color: "rgba(255,255,255,0.5)", fontSize: "0.9rem" }}>
-                    ← → or Space • ESC to exit
-                </Typography>
+              {/* Rendered at full size and scaled down, so the thumbnail is
+                  the real slide rather than a separate approximation. */}
+              <Box
+                sx={{
+                  width: SLIDE_W,
+                  height: SLIDE_H,
+                  transform: "scale(0.229)",
+                  transformOrigin: "top left",
+                  pointerEvents: "none",
+                }}
+              >
+                <HTMLSlideRenderer slide={s} theme={theme} isEditing={false} slideIndex={i} />
+              </Box>
+              <Typography
+                sx={{
+                  position: "absolute",
+                  bottom: 5,
+                  right: 7,
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  color: "#fff",
+                  background: "rgba(0,0,0,0.55)",
+                  px: 0.7,
+                  borderRadius: "4px",
+                }}
+              >
+                {i + 1}
+              </Typography>
             </Box>
-        </Dialog>
-    );
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
 };
 
 export default SlideShowPlayer;

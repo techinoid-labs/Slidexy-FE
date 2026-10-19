@@ -10,6 +10,7 @@ import { setSlides as setSlidesAction } from "@/app/slice/slidesSlice";
 import { useRouter } from "next/navigation";
 import { exportSlidesAsPDF } from "@/utils/exportSlides";
 import { exportSlidesAsPPT } from "@/utils/exportSlidesAsPPT";
+import { exportBlockDeckAsPPT } from "@/utils/exportBlockDeckAsPPT";
 import SettingsIcon from "@mui/icons-material/Settings";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageSettingsPanel from "../components/modify-presentation/ImagePanel";
@@ -22,12 +23,17 @@ import ImageSettingsPanelMobile from "../components/new-ui/Image-Panel";
 import TextSettingsPanelMobile from "@/app/components/new-ui/Text-Panel";
 import ShapeSettingsPanelMobile from "@/app/components/modify-presentation/ShapePanelMobile";
 import ThemePanelMobile from "../components/modify-presentation/ThemePalleteMobile";
+import BlockThemePanel from "../components/modify-presentation/BlockThemePanel";
+import { QUALITY_PRESETS, type ExportOptions } from "../components/modify-presentation/ExportMenu";
+import { Box } from "@mui/material";
 import SlideShowPlayer from "@/app/components/modify-presentation/Slide-Preview";
 import EditorEmptyState from "@/app/components/modify-presentation/EditorEmptyState";
 import { useSlideThemeContext } from "../context/ThemeContext";
 import { useSession } from "next-auth/react";
 import AuthModal from "../components/auth/AuthModal";
 import { useTemplateSlides } from "../context/TemplateSlidesContext";
+import { loadPresentation } from "@/utils/presentationApi";
+import { useDeckAutosave } from "@/app/hooks/useDeckAutosave";
 import { useUser } from "../context/AuthContext";
 import { getRandomSlide } from "@/utils/slideUtils";
 import { generateSlideVariants } from "@/utils/variantGenerator";
@@ -78,8 +84,24 @@ const Page = () => {
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [isExportingPPTX, setIsExportingPPTX] = useState(false);
   const { data: session } = useSession();
+  const accessToken = (session?.user as any)?.accessToken as string | undefined;
   const { user, loading } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [deckTitle, setDeckTitle] = useState<string | null>(null);
+  const [exportOptions, setExportOptions] = useState<ExportOptions>({
+    scope: "deck",
+    quality: "standard",
+  });
+  // Autosave stays off until the server copy has landed, otherwise the
+  // empty initial state would be written over the saved deck.
+  const [deckLoaded, setDeckLoaded] = useState(false);
+
+  // A deck opened without an id (started from a template) has nothing to
+  // fetch, so it is ready immediately. Without this autosave stayed off and
+  // the user got no indication their work was unsaved -- the worst case.
+  useEffect(() => {
+    if (!presentationId) setDeckLoaded(true);
+  }, [presentationId]);
   const [hadSelection, setHadSelection] = useState(false);
 
   // Fetch presentation slides on mount or when presentationId changes
@@ -87,13 +109,20 @@ const Page = () => {
     if (presentationId) {
       const fetchPresentation = async () => {
         try {
-          const response = await fetch(`/api/presentations/${presentationId}`);
-          if (response.ok) {
-            const data = await response.json();
-            let fetchedSlides = data.slides || [];
+          // Was a relative URL, which 404s: the API is a separate origin.
+          const loaded = await loadPresentation(presentationId, accessToken);
+          if (loaded) {
+            if (loaded.title) setDeckTitle(loaded.title);
+            let fetchedSlides = loaded.slides || [];
+
+            // Block-template slides are already complete documents. Running
+            // the legacy variant generator over them would overwrite their
+            // content with Konva-era elements.
+            const isBlockSlide = (sl: any) => !!sl?.blockSpec;
 
             // Only generate variants for slides that don't have them
             fetchedSlides = fetchedSlides.map((slide: any) => {
+              if (isBlockSlide(slide)) return slide;
               if (slide.layouts && slide.layouts.length > 0) {
                 return slide;
               }
@@ -121,22 +150,48 @@ const Page = () => {
               };
             });
 
-            console.log('Editor: Loaded slides with latest updates:', fetchedSlides.length);
             setSlides(fetchedSlides);
           }
+          setDeckLoaded(true);
         } catch (error) {
           console.error("Failed to fetch presentation:", error);
+          // Still enable autosave: the deck in IndexedDB is worth saving
+          // once the network recovers.
+          setDeckLoaded(true);
         }
       };
       fetchPresentation();
     }
-  }, [presentationId]); // Only depend on presentationId to avoid infinite loops
+  }, [presentationId, accessToken]); // token too: a private deck 404s without it
 
   useEffect(() => {
     if (slides.length > 0 && (selectedSlideIndex === undefined || selectedSlideIndex === -1)) {
       setSelectedSlideIndex(0);
     }
   }, [slides.length, selectedSlideIndex, setSelectedSlideIndex]);
+
+  // Keeps the deck on the server. Debounced, coalesced, and a no-op while
+  // signed out -- the status it returns is what the top bar shows.
+  const activeTemplateId =
+    (slides?.find((sl: any) => sl?.blockSpec?.templateId) as any)?.blockSpec?.templateId ?? null;
+  const autosave = useDeckAutosave({
+    presentationId: presentationId ?? null,
+    slides,
+    title: deckTitle,
+    blockTemplateId: activeTemplateId,
+    enabled: deckLoaded,
+    // A template deck gets its server record on first save. Put the id in
+    // the URL so a refresh reopens the saved deck instead of a blank one.
+    onCreated: (id: string) => {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("pid", id);
+        window.history.replaceState({}, "", url.toString());
+      } catch {
+        /* a failed URL rewrite must not break the save */
+      }
+    },
+  });
 
   useEffect(() => {
     const hasSelection = selectedTextId !== null || selectedImageIndex !== null || selectedShapeIndex !== null;
@@ -213,7 +268,15 @@ const Page = () => {
       setShowAuthModal(false);
       setIsExportingPDF(true);
       try {
-        await exportSlidesAsPDF(slides, selectedTheme);
+        const preset = QUALITY_PRESETS[exportOptions.quality];
+        const subset =
+          exportOptions.scope === "current" && slides[selectedSlideIndex]
+            ? [slides[selectedSlideIndex]]
+            : slides;
+        await exportSlidesAsPDF(subset, selectedTheme, {
+          scale: preset.scale,
+          jpegQuality: preset.jpegQuality,
+        });
       } catch (err) {
         console.error("PDF Export failed:", err);
       } finally {
@@ -230,7 +293,23 @@ const Page = () => {
       setShowAuthModal(false);
       setIsExportingPPTX(true);
       try {
-        await exportSlidesAsPPT(slides, selectedTheme);
+        // A deck of block slides exports as real PowerPoint objects --
+        // editable text, tables and charts. Legacy decks have no structure
+        // to work from, so they keep the picture-per-slide path.
+        const subset =
+          exportOptions.scope === "current" && slides[selectedSlideIndex]
+            ? [slides[selectedSlideIndex]]
+            : slides;
+        const hasBlockSlides = subset.some((sl: any) => !!sl?.blockSpec);
+        if (hasBlockSlides) {
+          const res = await exportBlockDeckAsPPT(subset, selectedTheme);
+          if (!res.ok) {
+            console.warn("[PPTX] native export produced nothing; falling back");
+            await exportSlidesAsPPT(subset, selectedTheme);
+          }
+        } else {
+          await exportSlidesAsPPT(subset, selectedTheme);
+        }
       } catch (err) {
         console.error("PPTX Export failed:", err);
       } finally {
@@ -249,6 +328,7 @@ const Page = () => {
   // not use, so they would render inert controls here.
   const activeSlideForPanel: any = slides?.[selectedSlideIndex];
   const activeBlockSpec = activeSlideForPanel?.blockSpec;
+  const hasBlockSlides = (slides || []).some((sl: any) => !!sl?.blockSpec);
   const selectedBlockRef = parseBlockElementId(selectedTextId);
 
   const updateActiveBlockSpec = (nextSpec: any) => {
@@ -390,6 +470,26 @@ const Page = () => {
               onClearCanvas={handleClearCanvas}
               onPreview={handlePreviewOpen}
               onOpenThemePanel={handleOpenThemePanel}
+
+              saveState={autosave.state}
+
+              onSaveNow={autosave.saveNow}
+
+
+              exportOptions={exportOptions}
+
+
+              onExportOptionsChange={setExportOptions}
+
+
+              slideCount={slides.length}
+
+
+              currentSlideNumber={selectedSlideIndex + 1}
+
+              title={deckTitle}
+
+              onTitleChange={setDeckTitle}
               isThemePanelOpen={isThemePanelOpen}
               showAuthModal={showAuthModal}
               setShowAuthModal={setShowAuthModal}
@@ -409,6 +509,26 @@ const Page = () => {
             onClearCanvas={handleClearCanvas}
             onPreview={handlePreviewOpen}
             onOpenThemePanel={handleOpenThemePanel}
+
+            saveState={autosave.state}
+
+            onSaveNow={autosave.saveNow}
+
+
+            exportOptions={exportOptions}
+
+
+            onExportOptionsChange={setExportOptions}
+
+
+            slideCount={slides.length}
+
+
+            currentSlideNumber={selectedSlideIndex + 1}
+
+            title={deckTitle}
+
+            onTitleChange={setDeckTitle}
             isThemePanelOpen={isThemePanelOpen}
             showAuthModal={showAuthModal}
             setShowAuthModal={setShowAuthModal}
@@ -472,11 +592,21 @@ const Page = () => {
                 />
               )}
               {isThemePanelOpen && !isShapeSelected && (
-                <ThemePanelMobile
-                  parsedSlides={slides}
-                  resetAll={resetAll}
-                  onClose={handleCloseThemePanel}
-                />
+                // Mobile has no left rail, so the menu is the only route to
+                // themes. The legacy palette writes fields a block slide does
+                // not read, so a template deck gets the block theme picker
+                // instead -- otherwise tapping Themes on mobile does nothing.
+                hasBlockSlides ? (
+                  <Box sx={{ position: "fixed", inset: 0, zIndex: 1300, bgcolor: "background.paper" }}>
+                    <BlockThemePanel onClose={handleCloseThemePanel} />
+                  </Box>
+                ) : (
+                  <ThemePanelMobile
+                    parsedSlides={slides}
+                    resetAll={resetAll}
+                    onClose={handleCloseThemePanel}
+                  />
+                )
               )}
             </>
           ) : (

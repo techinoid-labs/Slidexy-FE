@@ -74,7 +74,7 @@ export default function StepsAccordion() {
         </AccordionSummary>
         <AccordionDetails>
           <Typography sx={{ color: "#757575", fontSize: "1.05rem" }}>
-            Just share a thought—type it, record your voice, or paste a link.
+            Just share a thought. Type it, record your voice, or paste a link.
             Slidexy instantly understands your input and turns it into a
             presentation starting point.
           </Typography>
@@ -113,7 +113,7 @@ export default function StepsAccordion() {
         <AccordionDetails>
           <Typography sx={{ color: "#757575", fontSize: "1.05rem" }}>
             Our AI weaves your idea into a clear storyline and designs polished
-            slides—no formatting, no wasted hours, just a ready-to-use deck.
+            slides. No formatting, no wasted hours, just a deck you can use.
           </Typography>
         </AccordionDetails>
       </Accordion>

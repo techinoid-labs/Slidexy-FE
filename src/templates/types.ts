@@ -75,14 +75,38 @@ export type CoverStyle =
   | "typeLed"      // typography only, oversized
   | "geometric";   // shapes/motif driven
 
+/**
+ * Slide background decoration.
+ *
+ * The first six are the original CSS-based motifs: soft glows and tiled
+ * grids. They are kept so existing themes keep rendering, but they read as
+ * machine-made -- symmetrical, evenly weighted, fading to nothing.
+ *
+ * The names after them are drawn SVG assets in `decor.tsx`, built on the
+ * opposite principles: hard edges, asymmetry, shapes cropped by the canvas.
+ * Prefer those for new themes.
+ */
 export type Motif =
+  // Original CSS motifs
   | "none"
   | "blob"
   | "grid"
   | "diagonal"
   | "dots"
   | "arc"
-  | "topography";
+  | "topography"
+  // Drawn SVG assets
+  | "archStack"
+  | "cornerWedge"
+  | "ribbon"
+  | "concentric"
+  | "halfMoon"
+  | "hatch"
+  | "scatter"
+  | "contour"
+  | "blobCut"
+  | "ruleMark"
+  | "brokenFrame";
 
 /**
  * A template's complete visual identity. Two templates sharing every block can

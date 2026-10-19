@@ -10,7 +10,6 @@ import { TimelineSlideHTML } from '../layouts/TimelineSlideHTML';
 import { QuoteSlideHTML } from '../layouts/QuoteSlideHTML';
 import { ConclusionSlideHTML } from '../layouts/ConclusionSlideHTML';
 import { FullImageTextOverlayHTML } from '../layouts/FullImageTextOverlayHTML';
-import { TemplateHTMLSlide, TEMPLATE_REGISTRY } from '../layouts/TemplateHTMLSlide';
 import { SlideSpecRenderer } from '@/templates/SlideSpecRenderer';
 import { applyBlockTextEdit } from '@/templates/applyEdit';
 import {
@@ -224,18 +223,9 @@ export const HTMLSlideRenderer: React.FC<HTMLSlideRendererProps> = ({
 
     console.log(`[HTMLSlideRenderer] Rendering ${layoutType} with variant ${commonProps.variant} (currentVariantIndex: ${variantIndex})`);
 
-    // Template styles override the layout-type system entirely
-    if (currentSlide.templateStyle && TEMPLATE_REGISTRY[currentSlide.templateStyle]) {
-        return (
-            <TemplateHTMLSlide
-                slide={currentSlide}
-                templateStyle={currentSlide.templateStyle}
-                slideIndex={slideIndex}
-                isEditing={isEditing}
-                onSlideUpdate={onSlideUpdate}
-            />
-        );
-    }
+    // The Classic (non-editable) template system was removed. Slides that
+    // still carry a `templateStyle` now fall through to the layout switch
+    // below and render as ordinary editable slides.
 
     // Render based on layout type
     switch (layoutType) {

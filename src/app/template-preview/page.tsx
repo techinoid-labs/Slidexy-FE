@@ -7,16 +7,23 @@
  * without going through the generate flow. `?t=<template-id>` selects one.
  */
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { set } from "idb-keyval";
 import { SlideSpecRenderer } from "@/templates/SlideSpecRenderer";
 import { TEMPLATES, templateSummaries } from "@/templates/catalog";
 import { STAGE_HEIGHT, STAGE_WIDTH } from "@/templates/tokens";
 import { templateToDeck } from "@/templates/toDeck";
 
-export default function TemplatePreviewPage() {
+function TemplatePreviewInner() {
   const summaries = templateSummaries();
-  const [activeId, setActiveId] = useState(summaries[0]?.id);
+  const searchParams = useSearchParams();
+  // Deep link support, so /templates can send someone straight to the one
+  // they picked instead of dropping them on the first in the list.
+  const requested = searchParams.get("id");
+  const [activeId, setActiveId] = useState(
+    requested && summaries.some((s) => s.id === requested) ? requested : summaries[0]?.id
+  );
   const [scale, setScale] = useState(0.62);
 
   const template = TEMPLATES.find((t) => t.id === activeId) ?? TEMPLATES[0];
@@ -129,5 +136,14 @@ export default function TemplatePreviewPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+/** useSearchParams requires a Suspense boundary in the app router. */
+export default function TemplatePreviewPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 40 }}>Loading…</div>}>
+      <TemplatePreviewInner />
+    </Suspense>
   );
 }

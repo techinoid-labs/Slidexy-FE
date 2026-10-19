@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Features — AI-Powered Presentation Creation",
+  title: "Features | AI Presentation Creation",
   description:
     "Discover SlideXY features: AI slide generation, voice-to-deck, video-to-slides, brand templates, and real-time collaboration for professional presentations.",
   alternates: {

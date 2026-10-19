@@ -62,14 +62,14 @@ const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", preload: false, va
 const archivo = Archivo({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-archivo" });
 const outfit = Outfit({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-outfit" });
 const lora = Lora({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-lora" });
-const bricolage = Bricolage_Grotesque({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-bricolage" });
+const bricolage = Bricolage_Grotesque({ subsets: ["latin"], display: "swap", variable: "--font-bricolage" });
 // Text faces. Each template pairs a different one with its display face, so
 // no two decks read the same — Inter had been doing the body work in seven of
 // ten, which is what made them feel like one design.
 const plex = IBM_Plex_Sans({ subsets: ["latin"], display: "swap", preload: false, weight: ["400", "500", "600", "700"], variable: "--font-plex" });
 const manrope = Manrope({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-manrope" });
 const workSans = Work_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-work" });
-const figtree = Figtree({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-figtree" });
+const figtree = Figtree({ subsets: ["latin"], display: "swap", variable: "--font-figtree" });
 const publicSans = Public_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-public" });
 const nunitoSans = Nunito_Sans({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-nunito" });
 const karla = Karla({ subsets: ["latin"], display: "swap", preload: false, variable: "--font-karla" });
@@ -205,7 +205,7 @@ export default function RootLayout({
   `}
         </Script>
       </head>
-      <body className={`${raleway.className} slidexy-body`} suppressHydrationWarning>
+      <body className={`${figtree.className} slidexy-body`} suppressHydrationWarning>
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-K2HW8LJP"

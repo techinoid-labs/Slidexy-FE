@@ -1,7 +1,12 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
-import type { Slide } from "@/app/text-to-template/types/presentation";
+/**
+ * Minimal shape, inlined when the Classic-template system was removed.
+ * This context only ever used `Slide` as a type, never at runtime, so it
+ * does not need the old template package back.
+ */
+type Slide = Record<string, any>;
 
 interface TemplateSlidesContextType {
   slideTemplates: Slide[] | [];

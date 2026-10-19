@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pricing Plans — SlideXY AI Presentation Builder",
+  title: "Pricing Plans | SlideXY AI Presentation Builder",
   description:
     "Compare SlideXY pricing plans. Get AI-powered presentations with free and premium tiers for individuals, startups, and teams.",
   alternates: {

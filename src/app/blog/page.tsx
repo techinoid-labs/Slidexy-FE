@@ -1,33 +1,39 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { slugify } from "../../utils/slugUtils";
-import StepsHeader from "../components/headers-navbar/StepsHeader";
-import BlogList from "../components/blogs/BlogList";
-import {
-  Container,
-  Box,
-  Typography,
-  Button,
-  CircularProgress,
-  Alert,
-  Snackbar,
-  Chip,
-  Stack,
-  IconButton,
-} from "@mui/material";
-import Link from "next/link";
-import {
-  Add as AddIcon,
-  ChevronRight,
-  Facebook,
-  Twitter,
-  Instagram,
-} from "@mui/icons-material";
+
+import React, { useEffect, useMemo, useState } from "react";
+import { Box, Container, Typography, Snackbar, Alert, CircularProgress } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useUser } from "../context/AuthContext";
 import { useSession } from "next-auth/react";
+import AddRounded from "@mui/icons-material/AddRounded";
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
+import DeleteOutlineRounded from "@mui/icons-material/DeleteOutlineRounded";
+import { slugify } from "../../utils/slugUtils";
 import Header from "../components/headers-navbar/Header";
 import Footer from "../components/home/Footer";
+import { GraphPlane } from "../components/home/blocks";
+import { useUser } from "../context/AuthContext";
+import {
+  ACCENT,
+  BONE,
+  Display,
+  INK,
+  Lede,
+  MONO,
+  MUTED,
+  RULE,
+} from "../components/home/editorial";
+
+/**
+ * The writing.
+ *
+ * Rebuilt on the house system: bone ground, hairlines, one accent, no
+ * cards with shadows and no gradient-clipped headline. Posts are a ruled
+ * list rather than a wall of tiles, because a list can be read down in
+ * one pass and tiles cannot.
+ *
+ * Everything that touched the API is unchanged: the same endpoints, the
+ * same admin delete, the same slugs. Only the surface is new.
+ */
 
 interface Blog {
   _id: string;
@@ -41,551 +47,415 @@ interface Blog {
   createdAt?: string;
 }
 
-const darkBg = "rgba(26, 26, 26, 1)";
-const lightBg = "white";
-const textColor = "rgba(26, 26, 26, 1)";
+const PAGE = 6;
 
 export default function BlogPage() {
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
   const router = useRouter();
   const { user } = useUser();
   const { data: session } = useSession();
   const isAdmin = user?.admin || false;
 
   const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [showLoadMore, setShowLoadMore] = useState(false);
+  const [selected, setSelected] = useState("All");
+  const [shown, setShown] = useState(PAGE);
 
   useEffect(() => {
-    fetchBlogs();
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    if (selectedCategory === "All") {
-      setFilteredBlogs(blogs);
-    } else {
-      setFilteredBlogs(
-        blogs.filter((blog) => blog.category === selectedCategory)
-      );
-    }
-    setShowLoadMore(filteredBlogs.length > 6);
-  }, [selectedCategory, blogs]);
-
-  const fetchBlogs = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/blogs`);
-      if (!response.ok) throw new Error("Failed to fetch blogs");
-      const data = await response.json();
-      const blogsData = data.blogs || data;
-      setBlogs(blogsData);
-      setFilteredBlogs(blogsData);
-    } catch (err: any) {
-      setError(err.message || "Failed to load blogs");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/categories/list`);
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data);
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE_URL}/api/blogs`);
+        if (!res.ok) throw new Error("Failed to load the posts");
+        const data = await res.json();
+        setBlogs(data.blogs || data);
+      } catch (err: any) {
+        setError(err.message || "Failed to load the posts");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Failed to fetch categories");
-    }
-  };
+    };
+
+    const loadCategories = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/blogs/categories/list`);
+        if (res.ok) setCategories(await res.json());
+      } catch {
+        // A missing category list is not worth an error message: the
+        // filter simply shows All and the posts still read fine.
+      }
+    };
+
+    load();
+    loadCategories();
+  }, [API_BASE_URL]);
+
+  // Derived rather than stored. The old page kept a second copy of the
+  // list in state and read it one render behind, so the load more button
+  // was always deciding on the previous filter.
+  const filtered = useMemo(
+    () => (selected === "All" ? blogs : blogs.filter((b) => b.category === selected)),
+    [blogs, selected]
+  );
+
+  useEffect(() => setShown(PAGE), [selected]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this blog post?")) return;
-
+    if (!confirm("Delete this post? This cannot be undone.")) return;
     try {
-      const token = session?.user?.accessToken;
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/blogs/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${session?.user?.accessToken}` },
       });
-
-      if (!response.ok) throw new Error("Failed to delete blog");
-
-      setSuccessMessage("Blog deleted successfully");
-      setBlogs(blogs.filter((blog) => blog._id !== id));
+      if (!res.ok) throw new Error("Could not delete the post");
+      setBlogs((all) => all.filter((b) => b._id !== id));
+      setSuccessMessage("Post deleted");
     } catch (err: any) {
-      setError(err.message || "Failed to delete blog");
+      setError(err.message || "Could not delete the post");
     }
   };
 
-  const purpleColor = "#8E2DE2";
-  const purpleGradient =
-    "linear-gradient(80.89deg, #8E2DE2 -90.43%, #4A00E0 74.73%)";
-  const purpleLight = "rgba(142, 45, 226, 0.08)";
-  const blackBg = "rgba(26, 26, 26, 1)";
-  const lightGray = "#f5f5f5";
+  const open = (b: Blog) => router.push(`/blog/${slugify(b.title)}`);
 
-  const formatDate = (date?: string) => {
-    if (!date) return "MM/DD/YYYY";
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
+  const when = (d?: string) =>
+    d
+      ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+      : "";
+
+  /** Posts arrive as HTML, so the tags come out before the excerpt does. */
+  const excerpt = (html?: string, len = 150) => {
+    if (!html) return "";
+    const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    return text.length > len ? `${text.slice(0, len).trimEnd()}…` : text;
   };
 
-  const getDescription = (content?: string) => {
-    if (!content)
-      return "Turn any thought into a polished, on-brand presentation — powered by AI, styled by designers.";
-    return content.length > 100 ? `${content.substring(0, 100)}...` : content;
-  };
-
-  const allCategories = ["All", ...categories];
+  const tabs = ["All", ...categories];
+  const lead = filtered[0];
+  const rest = filtered.slice(1, shown);
 
   return (
-    <>
+    <Box
+      component="main"
+      sx={{ minHeight: "100vh", bgcolor: BONE, display: "flex", flexDirection: "column", overflowX: "clip" }}
+    >
       <Header />
-      <Box
-        sx={{
-          bgcolor: "#FAFBFC",
-          minHeight: "100vh",
-          pt: 8,
-          pb: 12,
-        }}
-      >
+
+      <Box sx={{ flex: "1 0 auto", py: { xs: 6, md: 9 } }}>
         <Container maxWidth="lg">
+          {/* Masthead */}
           <Box
             sx={{
-              textAlign: "center",
-              mb: 8,
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1.25fr 1fr" },
+              gap: { xs: 3, md: 8 },
+              alignItems: "end",
+              mb: { xs: 4, md: 6 },
             }}
           >
-            <Typography
-              component="h1"
-              gutterBottom
-              sx={{
-                fontWeight: 500,
-                fontSize: { xs: "2.5rem", md: "3.5rem" },
-                mb: 2,
-                background: "rgba(26, 26, 26, 1)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              SlideXY Blog
-            </Typography>
-            <Typography
-              variant="h6"
-              color="text.secondary"
-              sx={{
-                mb: 4,
-                maxWidth: 600,
-                mx: "auto",
-                fontWeight: 400,
-                lineHeight: 1.6,
-              }}
-            >
-              Stay up to date with the latest AI presentation tips, product
-              updates, and expert guides. Whether you are looking for ways to
-              improve your pitch deck, explore new SlideXY features, or learn
-              best practices for visual storytelling, our blog has you covered.
-            </Typography>
-            {isAdmin && (
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<AddIcon />}
-                onClick={() => router.push("/blog/create")}
+            <Display>
+              Notes on making
+              <br />
+              decks that hold up.
+            </Display>
+            <Lede sx={{ pb: 1 }}>
+              What we are learning about structure, type and getting a
+              presentation out the door. Written by the people building it.
+            </Lede>
+          </Box>
+
+          {/* The filter, as plain text with a rule under the live one */}
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: { xs: 2, md: 3 },
+              borderBottom: `1px solid ${INK}`,
+              pb: 1.5,
+              mb: 1,
+            }}
+          >
+            {tabs.map((c) => (
+              <Box
+                component="button"
+                key={c}
+                onClick={() => setSelected(c)}
+                aria-pressed={c === selected}
+                sx={{
+                  border: "none",
+                  background: "none",
+                  p: 0,
+                  pb: 0.4,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  fontSize: "0.92rem",
+                  fontWeight: 600,
+                  color: c === selected ? INK : "#A9A3B4",
+                  borderBottom: `2px solid ${c === selected ? ACCENT : "transparent"}`,
+                  mb: "-14px",
+                  transition: "color 0.15s ease",
+                  "&:hover": { color: INK },
+                }}
               >
-                Post Blog
-              </Button>
+                {c}
+              </Box>
+            ))}
+
+            {isAdmin && (
+              <Box
+                component="button"
+                onClick={() => router.push("/blog/create")}
+                sx={{
+                  ml: "auto",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.75,
+                  border: `1.5px solid ${INK}`,
+                  background: "none",
+                  px: 1.75,
+                  py: 0.6,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  fontSize: "0.82rem",
+                  fontWeight: 600,
+                  color: INK,
+                  transition: "background 0.15s ease, color 0.15s ease",
+                  "&:hover": { bgcolor: INK, color: "#fff" },
+                }}
+              >
+                <AddRounded sx={{ fontSize: 16 }} />
+                New post
+              </Box>
             )}
           </Box>
 
-          {!loading && filteredBlogs.length > 0 && (
+          {loading && (
+            <Box sx={{ py: 10, display: "flex", justifyContent: "center" }}>
+              <CircularProgress size={22} sx={{ color: ACCENT }} />
+            </Box>
+          )}
+
+          {!loading && filtered.length === 0 && (
+            <Typography sx={{ py: 8, color: MUTED }}>
+              Nothing here yet under {selected === "All" ? "any heading" : selected}.
+            </Typography>
+          )}
+
+          {/* The lead piece, given the room a lead deserves */}
+          {!loading && lead && (
             <Box
-              sx={{
-                mb: 6,
-                borderRadius: 4,
-                border: "1px solid rgba(246, 246, 246, 1)",
-                overflow: "hidden",
-                bgcolor: "white",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                transition: "all 0.3s ease",
-                cursor: "pointer",
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
-                },
-              }}
-              onClick={() => router.push(`/blog/${slugify(filteredBlogs[0].title)}`)}
+              onClick={() => open(lead)}
               role="link"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  router.push(`/blog/${slugify(filteredBlogs[0].title)}`);
-                }
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", md: "1fr 0.9fr" },
+                gap: { xs: 2.5, md: 6 },
+                alignItems: "center",
+                py: { xs: 4, md: 5 },
+                borderBottom: `1px solid ${RULE}`,
+                cursor: "pointer",
+                "&:hover .lead-title": { color: ACCENT },
               }}
             >
-              {filteredBlogs[0].coverImage && (
-                <Box
+              <Box>
+                <Box sx={{ display: "flex", gap: 2, alignItems: "baseline", mb: 1.5 }}>
+                  <Typography
+                    sx={{
+                      fontFamily: MONO,
+                      fontSize: "0.68rem",
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: ACCENT,
+                    }}
+                  >
+                    {lead.category || "Latest"}
+                  </Typography>
+                  <Typography sx={{ fontFamily: MONO, fontSize: "0.68rem", color: "#A9A3B4" }}>
+                    {when(lead.createdAt)}
+                  </Typography>
+                </Box>
+
+                <Typography
+                  className="lead-title"
                   sx={{
-                    width: "100%",
-                    height: { xs: 270, md: 310 },
-                    overflow: "hidden",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 600,
+                    fontSize: { xs: "1.8rem", md: "2.5rem" },
+                    lineHeight: 1.08,
+                    letterSpacing: "-0.025em",
+                    color: INK,
+                    mb: 1.5,
+                    transition: "color 0.15s ease",
                   }}
                 >
-                  <img
-                    src={filteredBlogs[0].coverImage}
-                    alt={filteredBlogs[0].title}
-                    style={{
+                  {lead.title}
+                </Typography>
+
+                <Typography sx={{ fontSize: "1rem", lineHeight: 1.6, color: MUTED, maxWidth: 520 }}>
+                  {excerpt(lead.content, 190)}
+                </Typography>
+              </Box>
+
+              {lead.coverImage && (
+                <Box sx={{ position: "relative" }}>
+                  <GraphPlane
+                    sx={{
+                      display: { xs: "none", md: "block" },
+                      inset: 0,
+                      transform: "translate(18px, 18px)",
+                      zIndex: 0,
+                    }}
+                  />
+                  <Box
+                    component="img"
+                    src={lead.coverImage}
+                    alt=""
+                    sx={{
+                      position: "relative",
+                      zIndex: 1,
                       width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
+                      height: "auto",
+                      border: `1px solid ${INK}`,
+                      display: "block",
                     }}
                   />
                 </Box>
               )}
-
-              <Box sx={{ p: 3 }}>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  {filteredBlogs[0].category && (
-                    <Chip
-                      label={filteredBlogs[0].category}
-                      size="small"
-                      sx={{
-                        bgcolor: purpleLight,
-                        color: purpleColor,
-                        fontWeight: 600,
-                        borderRadius: "12px",
-                        px: 1,
-                        mr: 1.5,
-                      }}
-                    />
-                  )}
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "text.secondary", fontSize: "0.9rem" }}
-                  >
-                    {formatDate(filteredBlogs[0].createdAt)}
-                    {"     "}
-                    {filteredBlogs[0].author?.name || 'Slidexy'} • Content Writing Team
-                  </Typography>
-                </Box>
-
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                    lineHeight: 1.4,
-                    mb: 1,
-                    color: "text.primary",
-                  }}
-                >
-                  {filteredBlogs[0].title}
-                </Typography>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: "0.95rem", flex: 1, pr: 2 }}
-                  >
-                    {getDescription(filteredBlogs[0].content)}
-                  </Typography>
-                  <IconButton sx={{ color: purpleColor }}>
-                    <ChevronRight />
-                  </IconButton>
-                </Box>
-              </Box>
             </Box>
           )}
 
-          <Box sx={{ mb: 8 }}>
-            <Typography
-              variant="h2"
-              gutterBottom
-              sx={{
-                fontWeight: 500,
-                textAlign: "center",
-                mb: 6,
-                background: "rgba(26, 26, 26, 1)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              Our Recent News & Insights
-            </Typography>
-
-            <Box sx={{ py: 3, mb: 0 }}>
-              <Stack
-                direction="row"
-                spacing={2}
+          {/* Everything else, as a list you read down */}
+          {!loading &&
+            rest.map((b) => (
+              <Box
+                key={b._id}
+                onClick={() => open(b)}
+                role="link"
                 sx={{
-                  flexWrap: "nowrap",
-                  overflowX: "auto",
-                  justifyContent: "flex-start",
-                  "&::-webkit-scrollbar": { display: "none" },
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "92px 1fr auto" },
+                  gap: { xs: 1, sm: 3 },
+                  alignItems: "center",
+                  py: 2.8,
+                  px: 2,
+                  mx: -2,
+                  borderBottom: `1px solid ${RULE}`,
+                  cursor: "pointer",
+                  transition: "background 0.12s ease",
+                  "&:hover": { bgcolor: "#fff" },
+                  "&:hover .row-title": { color: ACCENT },
                 }}
               >
-                {allCategories.map((category) => (
-                  <Chip
-                    key={category}
-                    label={category}
-                    onClick={() => setSelectedCategory(category)}
-                    clickable
-                    sx={{
-                      fontWeight: 600,
-                      px: 2,
-                      py: 1,
-                      borderRadius: "20px",
-                      flexShrink: 0,
-                      background:
-                        selectedCategory === category ? darkBg : lightBg,
-                      color:
-                        selectedCategory === category ? "white" : textColor,
-                      border: "none",
-                      boxShadow: "0px 1px 3px rgba(0,0,0,0.1)",
-                    }}
-                  />
-                ))}
-              </Stack>
-            </Box>
-
-            <Box sx={{ py: 6 }}>
-              <Container maxWidth="lg">
-                {loading ? (
-                  <Box
-                    sx={{ display: "flex", justifyContent: "center", py: 8 }}
-                  >
-                    <CircularProgress sx={{ color: purpleColor }} />
-                  </Box>
-                ) : error ? (
-                  <Alert severity="error" sx={{ maxWidth: 600, mx: "auto" }}>
-                    {error}
-                  </Alert>
-                ) : filteredBlogs.length > 1 ? (
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: {
-                        xs: "repeat(1, 1fr)",
-                        sm: "repeat(2, 1fr)",
-                        md: "repeat(3, 1fr)",
-                      },
-                      gap: 3,
-                    }}
-                  >
-                    {filteredBlogs.slice(1, 7).map((blog) => (
-                      <Box key={blog._id} sx={{ width: "100%" }}>
-                        <Box
-                          sx={{
-                            border: "1px solid #e0e0e0",
-                            borderRadius: 3,
-                            overflow: "hidden",
-                            backgroundColor: "white",
-                            transition: "all 0.3s ease",
-                            cursor: "pointer",
-                            "&:hover": {
-                              transform: "translateY(-4px)",
-                              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                            },
-                          }}
-                          onClick={() => router.push(`/blog/${slugify(blog.title)}`)}
-                          role="link"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              router.push(`/blog/${slugify(blog.title)}`);
-                            }
-                          }}
-                        >
-                          {blog.coverImage ? (
-                            <Box sx={{ position: "relative", height: 200 }}>
-                              <img
-                                src={blog.coverImage}
-                                alt={blog.title}
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                }}
-                              />
-                            </Box>
-                          ) : (
-                            <Box
-                              sx={{
-                                height: 280,
-                                bgcolor: blackBg,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                color: "white",
-                              }}
-                            >
-                              <Typography variant="h6">No Image</Typography>
-                            </Box>
-                          )}
-
-                          <Box sx={{ p: 3, bgcolor: "white" }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                mb: 1.5,
-                              }}
-                            >
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  color: purpleColor,
-                                  fontWeight: 500,
-                                  fontSize: "0.875rem",
-                                }}
-                              >
-                                {blog.category || "General"}
-                              </Typography>
-                              <Box
-                                sx={{
-                                  width: 32,
-                                  height: 32,
-                                  borderRadius: "50%",
-                                  bgcolor: purpleLight,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <ChevronRight
-                                  sx={{
-                                    color: purpleColor,
-                                    fontSize: 20,
-                                    transform: "rotate(-45deg)",
-                                  }}
-                                />
-                              </Box>
-                            </Box>
-                            <Typography
-                              variant="h6"
-                              sx={{
-                                color: textColor,
-                                fontWeight: 600,
-                                fontSize: "1.125rem",
-                                lineHeight: 1.3,
-                              }}
-                            >
-                              {blog.title}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                ) : null}
-
-                {showLoadMore && (
-                  <Box
-                    sx={{ display: "flex", justifyContent: "center", mt: 4 }}
-                  >
-                    <Button variant="outlined" size="large">
-                      Load More
-                    </Button>
-                  </Box>
-                )}
-              </Container>
-            </Box>
-          </Box>
-
-          {filteredBlogs.length > 7 && (
-            <Box sx={{ mb: 8, backgroundColor: lightGray, py: 6 }}>
-              <Container maxWidth="lg">
-                <Typography
-                  variant="h5"
-                  gutterBottom
-                  sx={{
-                    fontWeight: 600,
-                    mb: 4,
-                    color: "text.primary",
-                    textAlign: "left",
-                  }}
-                >
-                  Related Blogs
+                <Typography sx={{ fontFamily: MONO, fontSize: "0.7rem", color: "#A9A3B4" }}>
+                  {when(b.createdAt)}
                 </Typography>
-                <BlogList
-                  blogs={filteredBlogs.slice(7, 10)}
-                  isAdmin={isAdmin}
-                  onDelete={handleDelete}
-                  purpleColor={purpleColor}
-                />
-              </Container>
+
+                <Box>
+                  <Typography
+                    className="row-title"
+                    sx={{
+                      fontSize: "1.1rem",
+                      fontWeight: 600,
+                      color: INK,
+                      mb: 0.4,
+                      transition: "color 0.15s ease",
+                    }}
+                  >
+                    {b.title}
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.9rem", color: MUTED, lineHeight: 1.55 }}>
+                    {excerpt(b.content, 110)}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  {b.category && (
+                    <Typography
+                      sx={{
+                        fontFamily: MONO,
+                        fontSize: "0.66rem",
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        color: MUTED,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {b.category}
+                    </Typography>
+                  )}
+                  {isAdmin && (
+                    <Box
+                      component="button"
+                      aria-label="Delete this post"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        handleDelete(b._id);
+                      }}
+                      sx={{
+                        border: "none",
+                        background: "none",
+                        p: 0.5,
+                        display: "flex",
+                        cursor: "pointer",
+                        color: "#A9A3B4",
+                        "&:hover": { color: "#C0392B" },
+                      }}
+                    >
+                      <DeleteOutlineRounded sx={{ fontSize: 18 }} />
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            ))}
+
+          {!loading && filtered.length > shown && (
+            <Box
+              component="button"
+              onClick={() => setShown((n) => n + PAGE)}
+              sx={{
+                mt: 4,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1,
+                border: `1.5px solid ${INK}`,
+                background: "none",
+                px: 2.75,
+                py: 1.2,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                fontSize: "0.92rem",
+                fontWeight: 600,
+                color: INK,
+                transition: "background 0.15s ease, color 0.15s ease",
+                "&:hover": { bgcolor: ACCENT, borderColor: ACCENT, color: "#fff" },
+              }}
+            >
+              Show {Math.min(PAGE, filtered.length - shown)} more
+              <ArrowForwardRounded sx={{ fontSize: 16 }} />
             </Box>
           )}
-
-          <Box sx={{ mb: 8, textAlign: "center" }}>
-            <Container maxWidth="lg">
-              <Stack
-                direction="row"
-                spacing={2}
-                justifyContent="center"
-                flexWrap="wrap"
-              >
-                {categories.map((category) => (
-                  <Chip
-                    key={category}
-                    label={category}
-                    variant="outlined"
-                    sx={{
-                      color: "rgba(26, 26, 26, 1)",
-                      borderColor: "rgba(26, 26, 26, 1)",
-                      fontWeight: 500,
-                    }}
-                  />
-                ))}
-              </Stack>
-            </Container>
-          </Box>
-
-
-
         </Container>
-
-        <Footer />
-        <Snackbar
-          open={!!successMessage}
-          autoHideDuration={6000}
-          onClose={() => setSuccessMessage("")}
-        >
-          <Alert severity="success">{successMessage}</Alert>
-        </Snackbar>
-        <Snackbar
-          open={!!error}
-          autoHideDuration={6000}
-          onClose={() => setError("")}
-        >
-          <Alert severity="error">{error}</Alert>
-        </Snackbar>
       </Box>
-    </>
+
+      <Footer />
+
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={5000}
+        onClose={() => setSuccessMessage("")}
+      >
+        <Alert severity="success" sx={{ borderRadius: 0 }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError("")}>
+        <Alert severity="error" sx={{ borderRadius: 0 }}>
+          {error}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }

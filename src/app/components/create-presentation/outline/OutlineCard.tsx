@@ -22,14 +22,18 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Image from "next/image";
-import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
-import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import UnfoldMoreRounded from "@mui/icons-material/UnfoldMoreRounded";
+import UnfoldLessRounded from "@mui/icons-material/UnfoldLessRounded";
+import HistoryEduRounded from "@mui/icons-material/HistoryEduRounded";
+import CollectionsRounded from "@mui/icons-material/CollectionsRounded";
+import LightbulbOutlined from "@mui/icons-material/LightbulbOutlined";
 import ImageIcon from "@mui/icons-material/Image";
 import Grow from "@mui/material/Grow";
 import CloseIcon from "@mui/icons-material/Close";
-import AIicon from "../../../../../public/images/AIcon-08.svg";
+import DragIndicatorRounded from "@mui/icons-material/DragIndicatorRounded";
+import { ACCENT, FAINT, INK, MONO, MUTED, RULE } from "@/app/components/home/editorial";
 import type { Slide } from "@/app/slice/slidesSlice";
 import ImageWithClick from "../../ImageWithClick";
 
@@ -155,19 +159,19 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     {
       label: "Longer",
       value: "longer",
-      icon: <FormatAlignLeftIcon fontSize="small" />,
+      icon: <UnfoldMoreRounded fontSize="small" />,
       subtitle: "Expand the content with additional details",
     },
     {
       label: "Shorter",
       value: "shorter",
-      icon: <FormatAlignLeftIcon fontSize="small" />,
+      icon: <UnfoldLessRounded fontSize="small" />,
       subtitle: "Condense the information for quick reference",
     },
     {
       label: "Rewrite slide",
       value: "rewriteSlide",
-      icon: <AutoFixHighIcon fontSize="small" />,
+      icon: <HistoryEduRounded fontSize="small" />,
       subtitle: "Regenerate the title and all content outlines of the slide",
     },
     {
@@ -185,13 +189,13 @@ const OutlineCard: React.FC<OutlineCardProps> = (props) => {
     {
       label: "Regenerate Images",
       value: "regenerateImages",
-      icon: <ImageIcon fontSize="small" />,
+      icon: <CollectionsRounded fontSize="small" />,
       subtitle: "Generate fresh ideas and creative images as per prompt",
     },
     {
       label: "New Custom Suggestions",
       value: "custom",
-      icon: <ImageIcon fontSize="small" />,
+      icon: <LightbulbOutlined fontSize="small" />,
       subtitle: "Generate fresh ideas and creative content",
     },
   ];
@@ -346,10 +350,16 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
       elevation={0}
       sx={{
         width: "100%",
-        borderRadius: "20px",
-        bgcolor: "#F2F0FF",
-        boxShadow: isDragging ? 4 : 0,
-        transition: "box-shadow 0.2s",
+        // Square, white, ruled. The lilac pill it used to be made every
+        // line look like a notification rather than a line of a
+        // document, which is the one thing this screen is.
+        borderRadius: 0,
+        bgcolor: "#fff",
+        border: `1px solid ${isDragging ? INK : RULE}`,
+        // Lifted off the page while it is being moved.
+        boxShadow: isDragging ? `6px 6px 0 0 ${ACCENT}` : "none",
+        transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+        "&:hover": { borderColor: INK },
         overflow: "visible",
         position: "relative",
       }}
@@ -382,24 +392,12 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                   <InputAdornment position="start">
                     <Box
                       {...dragHandleProps}
-                      sx={{
-                        color: "#8E2DE2",
-                        fontWeight: 500,
-                        fontSize: 19,
-                        display: "flex",
-                        gap: 1.2,
-                        alignItems: "center",
-                        pr: 1,
-                      }}
+                      sx={{ display: "flex", gap: 0.75, alignItems: "center", pr: 1, color: FAINT }}
                     >
-                      <Image
-                        src="/images/left-grid.svg"
-                        alt="Card Icon"
-                        width={5}
-                        height={5}
-                        style={{ marginTop: -3, marginBottom: 2 }}
-                      />
-                      {index < 9 ? `0${index + 1}` : index + 1}
+                      <DragIndicatorRounded sx={{ fontSize: 17 }} />
+                      <Box component="span" sx={{ fontFamily: MONO, fontSize: "0.82rem", color: MUTED }}>
+                        {index < 9 ? `0${index + 1}` : index + 1}
+                      </Box>
                     </Box>
                   </InputAdornment>
                 ),
@@ -411,7 +409,7 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                         onDelete();
                       }}
                       size="small"
-                      sx={{ color: "#A095C6" }}
+                      sx={{ color: FAINT, "&:hover": { color: INK } }}
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -425,7 +423,7 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                         onToggleExpand?.();
                       }}
                       size="small"
-                      sx={{ color: "#A095C6" }}
+                      sx={{ color: FAINT, "&:hover": { color: INK } }}
                       disableRipple
                     >
                       {expanded ? (
@@ -439,22 +437,17 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
               }}
               sx={{
                 "& .MuiOutlinedInput-root": {
-                  borderRadius: 6,
+                  borderRadius: 0,
                   fontWeight: 500,
-                  color: "#18181B",
-                  fontSize: 13,
-                  "& fieldset": {
-                    borderColor: "#8E2DE2",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#8E2DE2",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#8E2DE2",
-                  },
-                  "& .MuiInputBase-input": {
-                    padding: "8px 8px 8px 0",
-                  },
+                  color: INK,
+                  // Matching the display size, so a line does not jump
+                  // when you click into it.
+                  fontSize: "1.08rem",
+                  pl: 2,
+                  "& fieldset": { borderColor: "transparent" },
+                  "&:hover fieldset": { borderColor: "transparent" },
+                  "&.Mui-focused fieldset": { borderColor: ACCENT, borderWidth: "1.5px" },
+                  "& .MuiInputBase-input": { padding: "14px 8px 14px 0" },
                 },
               }}
             />
@@ -470,31 +463,36 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
               <Box
                 {...dragHandleProps}
                 sx={{
-                  color: "#8E2DE2",
-                  fontWeight: 700,
-                  fontSize: 19,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.75,
                   px: 2,
                   py: 2,
-                  display: "flex",
-                  gap: 1.2,
+                  cursor: "grab",
+                  color: FAINT,
+                  transition: "color 0.15s ease",
+                  "&:hover": { color: ACCENT },
+                  "&:active": { cursor: "grabbing" },
                 }}
               >
-                <Image
-                  src="/images/left-grid.svg"
-                  alt="Card Icon"
-                  width={12}
-                  height={12}
-                  style={{ marginTop: 10, marginLeft: 2 }}
-                />
-                {index < 9 ? `0${index + 1}` : index + 1}
+                <DragIndicatorRounded sx={{ fontSize: 17 }} />
+                <Box
+                  component="span"
+                  sx={{ fontFamily: MONO, fontSize: "0.82rem", color: MUTED, letterSpacing: "0.04em" }}
+                >
+                  {index < 9 ? `0${index + 1}` : index + 1}
+                </Box>
               </Box>
               <Typography
                 sx={{
                   fontWeight: 500,
-                  color: "#18181B",
-                  fontSize: { xs: 13, md: 20 },
+                  color: INK,
+                  fontSize: { xs: "0.95rem", md: "1.08rem" },
+                  lineHeight: 1.4,
+                  cursor: editable ? "text" : "default",
+                  py: 2,
                   flex: 1,
-                  pl: 1,
+                  pl: 0.5,
                   minWidth: 0,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -524,7 +522,7 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                 onDelete();
               }}
               size="small"
-              sx={{ color: "#A095C6", pr: 0 }}
+              sx={{ color: FAINT, pr: 0, "&:hover": { color: INK } }}
             >
               <DeleteIcon fontSize="small" />
             </IconButton>
@@ -538,7 +536,7 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                 onToggleExpand?.();
               }}
               size="small"
-              sx={{ color: "#A095C6", pr: 2 }}
+              sx={{ color: FAINT, pr: 2, "&:hover": { color: ACCENT } }}
               disableRipple
             >
               {expanded ? (
@@ -554,12 +552,18 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
         <Box
           sx={{
             px: 3,
-            pt: 2,
-            pb: 2,
+            pt: 2.25,
+            pb: 2.25,
             bgcolor: "#fff",
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
+            borderTop: `1px solid ${RULE}`,
+            // Two columns: what the slide says on the left, what it
+            // shows on the right. Stacked, the picture sat alone on a
+            // line of its own with the whole width empty beside it.
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "minmax(0, 1fr) 232px" },
+            alignItems: "start",
+            columnGap: 3,
+            rowGap: 2,
             position: "relative",
             zIndex: 1,
           }}
@@ -768,8 +772,12 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                           <Typography
                             variant="body1"
                             sx={{
-                              fontSize: 16,
+                              fontSize: "0.98rem",
+                              lineHeight: 1.55,
+                              color: MUTED,
                               cursor: editable ? "pointer" : "default",
+                              transition: "color 0.15s ease",
+                              "&:hover": editable ? { color: INK } : undefined,
                             }}
                             onClick={() => {
                               //
@@ -800,8 +808,12 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                           <Typography
                             variant="body1"
                             sx={{
-                              fontSize: 16,
+                              fontSize: "0.98rem",
+                              lineHeight: 1.55,
+                              color: MUTED,
                               cursor: editable ? "pointer" : "default",
+                              transition: "color 0.15s ease",
+                              "&:hover": editable ? { color: INK } : undefined,
                             }}
                             onClick={() => {
                               if (editable) props.onBulletsEditStart?.(i);
@@ -817,8 +829,8 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                       sx={{
                         display: "flex",
                         flexDirection: "column",
-                        gap: 0.5,
-                        color: "#757575",
+                        gap: 1,
+                        color: MUTED,
                         fontSize: 16,
                       }}
                     >
@@ -829,8 +841,12 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                           <Typography
                             variant="body1"
                             sx={{
-                              fontSize: 16,
+                              fontSize: "0.98rem",
+                              lineHeight: 1.55,
+                              color: MUTED,
                               cursor: editable ? "pointer" : "default",
+                              transition: "color 0.15s ease",
+                              "&:hover": editable ? { color: INK } : undefined,
                             }}
                             onClick={() => {
                               if (editable) props.onBulletsEditStart?.(i);
@@ -885,7 +901,6 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
               gap: 3,
               zIndex: 3,
               position: "relative",
@@ -896,12 +911,11 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                 width: "100%",
                 display: "flex",
                 flexWrap: "wrap",
-                gap: 2,
+                gap: 1.25,
                 flex: 1,
                 bgcolor: "#fff",
-                borderRadius: 2,
-                p: { xs: "1rem 2rem 1rem 1rem", sm: 1 },
-                mt: { xs: 1, md: 0.5 },
+                borderRadius: 0,
+                p: 0,
                 overflow: "visible",
               }}
             >
@@ -909,17 +923,21 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
                 <Box
                   key={i}
                   sx={{
-                    border: "1px solid transparent",
-                    borderRadius: 1,
+                    border: `1px solid ${RULE}`,
+                    borderRadius: 0,
                     overflow: "hidden",
                     cursor: "pointer",
                     position: "relative",
                     zIndex: 1,
+                    // One picture fills the column; several share it.
+                    width: imageList.length > 1 ? "calc(50% - 5px)" : "100%",
                   }}
                 >
                   <ImageWithClick
                     src={src}
                     alt={`img-${i}`}
+                    width="100%"
+                    height={imageList.length > 1 ? 86 : 132}
                     isLoading={loadingImageIndex === i}
                     onPreviewImage={(imgSrc) => {
                       setModalImageSrc(imgSrc);
@@ -1045,35 +1063,59 @@ const uploadImageToS3 = async (base64Image: string): Promise<string | null> => {
               </Box>
             )}
           </Box>
+
+          {/* The one thing you can ask of this slide, written out.
+              It was a wand floating over the panel on absolute
+              coordinates, which collided with the bullets the moment a
+              slide had four of them, and a wand is the laziest icon in
+              software. A control in the flow cannot collide with
+              anything, and a word cannot be misread. */}
+          <Box
+            sx={{
+              gridColumn: "1 / -1",
+              display: "flex",
+              alignItems: "center",
+              pt: 1.75,
+              mt: 0.5,
+              borderTop: `1px solid ${RULE}`,
+            }}
+          >
+            <Box
+              component="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setAiEditMenuAnchorEl(e.currentTarget as unknown as HTMLElement);
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                setAiIconPosition({ x: rect.left, y: rect.top });
+              }}
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.9,
+                fontFamily: MONO,
+                fontSize: "0.7rem",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: MUTED,
+                background: "none",
+                border: "none",
+                p: 0,
+                cursor: "pointer",
+                transition: "color 0.15s ease",
+                "&:hover": { color: ACCENT },
+              }}
+            >
+              <Box
+                component="span"
+                sx={{ width: 7, height: 7, bgcolor: "currentColor", flexShrink: 0 }}
+              />
+              Rewrite this slide
+            </Box>
+          </Box>
         </Box>
       )}
       {expanded && (
         <>
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: 20,
-              right: 19,
-              width: 20,
-              height: 20,
-              cursor: "pointer",
-              zIndex: 6,
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setAiEditMenuAnchorEl(e.currentTarget);
-              const rect = e.currentTarget.getBoundingClientRect();
-              setAiIconPosition({ x: rect.left, y: rect.top });
-            }}
-          >
-            <Image
-              src={AIicon}
-              alt="AI Edit Icon"
-              width={20}
-              height={20}
-              style={{ width: "100%", height: "100%" }}
-            />
-          </Box>
           <Menu
             open={!!aiEditMenuAnchorEl}
             anchorEl={aiEditMenuAnchorEl}

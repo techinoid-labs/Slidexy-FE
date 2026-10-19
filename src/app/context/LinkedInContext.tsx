@@ -45,6 +45,12 @@ type LinkedInContextType = {
     imageUrl: string;
     message?: string;
   }) => Promise<{ success: boolean; message: string }>;
+  /** Post the whole deck as a swipeable document carousel. */
+  shareDeckAsCarousel: (params: {
+    pdf: Blob;
+    message: string;
+    title?: string;
+  }) => Promise<{ success: boolean; message: string }>;
 
   // Refresh
   refreshConnectionStatus: () => Promise<void>;
@@ -327,6 +333,56 @@ export const LinkedInProvider: React.FC<{ children: React.ReactNode }> = ({
     refreshConnectionStatus();
   }, [session?.user?.accessToken, refreshConnectionStatus]);
 
+
+  /**
+   * Share the deck as a LinkedIn document post, which the feed renders as
+   * a swipeable carousel.
+   *
+   * The PDF is produced in the browser and uploaded as multipart: it is
+   * already megabytes, and base64 in a JSON body would inflate it by a
+   * third for no benefit.
+   */
+  const shareDeckAsCarousel = useCallback(
+    async ({ pdf, message, title }: { pdf: Blob; message: string; title?: string }) => {
+      if (!session?.user?.accessToken) {
+        return { success: false, message: "Sign in to share" };
+      }
+      if (!isConnected) {
+        return { success: false, message: "Connect your LinkedIn account first" };
+      }
+
+      try {
+        const form = new FormData();
+        form.append("file", pdf, `${(title || "presentation").replace(/[^w.-]+/g, "-")}.pdf`);
+        form.append("message", message);
+        if (title) form.append("title", title);
+
+        const res = await axios.post(
+          `${API_BASE_URL}/api/linkedin/share-document`,
+          form,
+          {
+            headers: { Authorization: `Bearer ${session.user.accessToken}` },
+            maxBodyLength: Infinity,
+            maxContentLength: Infinity,
+          }
+        );
+        return {
+          success: true,
+          message: res.data?.message || "Shared to LinkedIn",
+        };
+      } catch (err: any) {
+        return {
+          success: false,
+          message:
+            err?.response?.data?.error ||
+            err?.message ||
+            "Could not share to LinkedIn",
+        };
+      }
+    },
+    [session?.user?.accessToken, isConnected, API_BASE_URL]
+  );
+
   const value: LinkedInContextType = {
     isConnected,
     connectionLoading,
@@ -337,6 +393,7 @@ export const LinkedInProvider: React.FC<{ children: React.ReactNode }> = ({
     disconnect,
     shareSlide,
     shareCustomContent,
+    shareDeckAsCarousel,
     refreshConnectionStatus,
   };
 

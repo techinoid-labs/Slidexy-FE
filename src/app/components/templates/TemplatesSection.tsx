@@ -1,318 +1,197 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
-import { Box, Typography, Button } from "@mui/material";
-import Template01 from "../../../../public/images/Template01.svg";
-import Template02 from "../../../../public/images/Template02.svg";
-import Template03 from "../../../../public/images/Template03.svg";
-import Template04 from "../../../../public/images/Template04.svg";
-import Template05 from "../../../../public/images/Template05.svg";
-import Template06 from "../../../../public/images/Template06.svg";
-import Template07 from "../../../../public/images/Template07.svg";
-import Template08 from "../../../../public/images/Template08.svg";
-import Template09 from "../../../../public/images/Template09.svg";
-import Template10 from "../../../../public/images/Template10.svg";
-import Template11 from "../../../../public/images/Template11.svg";
-import Template12 from "../../../../public/images/Template12.svg";
-import Stars from "../../../../public/images/Stars.svg";
+import React, { useMemo, useState } from "react";
+import { Box, Container, Typography } from "@mui/material";
+import Link from "next/link";
+import { LuArrowRight } from "react-icons/lu";
+import { TEMPLATES } from "@/templates/catalog";
+import {
+  ACCENT,
+  INK,
+  MONO,
+  MUTED,
+  RULE,
+} from "@/app/components/home/editorial";
+
+/**
+ * The template catalogue.
+ *
+ * What was here before: eleven static SVG pictures that had nothing to do
+ * with the templates the product actually ships, and no way to use any of
+ * them. Someone landing here could look and then leave, which is the one
+ * thing a catalogue page must not allow.
+ *
+ * This reads the real catalogue, so it cannot drift, and every row has an
+ * action. There are no slide screenshots because the slide designs are
+ * mid-revision; a palette and the type pairing describe a template honestly
+ * without showing work that is about to change.
+ */
+
+type Row = {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  slides: number;
+  mode: string;
+  swatch: string[];
+  display: string;
+  body: string;
+};
+
+/** "var(--font-archivo, 'Archivo'), sans-serif" becomes "Archivo". */
+function familyName(stack?: string): string {
+  if (!stack) return "";
+  const quoted = stack.match(/['"]([^'"]+)['"]/);
+  if (quoted) return quoted[1];
+  return (stack.split(",")[0] || "").replace(/var\(|\)|--font-/g, "").trim();
+}
+
+const ROWS: Row[] = TEMPLATES.map((t) => {
+  const p: any = t.theme?.palette ?? {};
+  return {
+    id: t.id,
+    name: t.name,
+    category: t.category,
+    description: t.description ?? "",
+    slides: t.slides.length,
+    mode: (t.theme as any)?.mode === "dark" ? "Dark" : "Light",
+    swatch: [p.accent, p.accent2, p.accent3, p.surfaceAlt].filter(Boolean),
+    display: familyName(t.theme?.fonts?.display),
+    body: familyName(t.theme?.fonts?.body),
+  };
+});
+
+const CATEGORIES = ["All", ...Array.from(new Set(ROWS.map((r) => r.category)))];
 
 export default function TemplatesSection() {
-  const categories = [
-    "All Templates",
-    "Educational",
-    "Project Proposal",
-    "Brand Awareness",
-    "Client Proposal",
-    "Financial Analysis",
-    "Business Report",
-  ];
-
-  const templates = [
-    {
-      id: 1,
-      image: Template01,
-      title: "Creative Brand Awareness Campaign Presentation Template",
-      category: "Brand Awareness",
-    },
-    {
-      id: 2,
-      image: Template02,
-      title: "Modern Educational Course Presentation Template",
-      category: "Educational",
-    },
-    {
-      id: 3,
-      image: Template03,
-      title: "Business Proposal Deck Template",
-      category: "Client Proposal",
-    },
-    {
-      id: 4,
-      image: Template04,
-      title: "Financial Report Template",
-      category: "Financial Analysis",
-    },
-    {
-      id: 5,
-      image: Template05,
-      title: "Financial Report Template",
-      category: "Financial Analysis",
-    },
-    {
-      id: 6,
-      image: Template06,
-      title: "Educational Seminar Template",
-      category: "Educational",
-    },
-    {
-      id: 7,
-      image: Template07,
-      title: "Brand Awareness Marketing Plan",
-      category: "Brand Awareness",
-    },
-    {
-      id: 8,
-      image: Template08,
-      title: "Business Project Proposal",
-      category: "Project Proposal",
-    },
-    {
-      id: 9,
-      image: Template09,
-      title: "Business Annual Report",
-      category: "Business Report",
-    },
-    {
-      id: 10,
-      image: Template10,
-      title: "Client Deal Closing Presentation",
-      category: "Client Proposal",
-    },
-    {
-      id: 11,
-      image: Template11,
-      title: "Advanced Financial Analysis",
-      category: "Financial Analysis",
-    },
-    {
-      id: 12,
-      image: Template12,
-      title: "Educational Workshop Template",
-      category: "Educational",
-    },
-  ];
-
-  const [selectedCategory, setSelectedCategory] = useState("All Templates");
-
-  const filteredTemplates =
-    selectedCategory === "All Templates"
-      ? templates
-      : templates.filter((t) => t.category === selectedCategory);
+  const [filter, setFilter] = useState("All");
+  const rows = useMemo(
+    () => (filter === "All" ? ROWS : ROWS.filter((r) => r.category === filter)),
+    [filter]
+  );
 
   return (
-    <>
-      <Box
-        component="section"
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "16px",
-          px: { xs: 2, sm: 4 },
-        }}
-      >
-        {/* AI Templates Badge */}
-        <Box
-          sx={{
-            display: "flex",
-            gap: "10px",
-            alignItems: "center",
-            background: "#E8E4FF",
-            px: { xs: 2, sm: "20px" },
-            py: { xs: "6px", sm: "8px" },
-            borderRadius: "48px",
-          }}
-        >
-          <Box>
-            <Image
-              src={Stars}
-              alt="TemplateHero"
-              style={{ width: "20px", height: "auto", objectFit: "cover" }}
-              priority
-            />
-          </Box>
-
-          <Box>
-            <Typography sx={{ ml: 1, fontSize: { xs: 14, sm: 16 } }}>
-              AI Templates
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Heading */}
-        <Box>
-          <Typography
-            sx={{
-              fontSize: { xs: "28px", sm: "36px", md: "40px" },
-              fontWeight: 500,
-              lineHeight: { xs: "36px", sm: "40px", md: "40px" },
-              textAlign: "center",
-            }}
-          >
-            Ready-to-Use Templates
-          </Typography>
-        </Box>
-      </Box>
-
-      <Box
-        component="section"
-        sx={{ px: { xs: 2, sm: 4, md: 6 }, mb: 12, marginTop: "36px" }}
-      >
-        {/* Categories */}
-        <Box
-          sx={{
-            display: "flex",
-            gap: { xs: 1.5, sm: 2 }, // Slightly smaller gap on mobile
-            flexDirection: { sm: "column", xs: "column", lg: "row" },
-            flexWrap: "nowrap", // Keep buttons in a single row
-            overflowX: "auto", // Allow horizontal scroll on small screens
-            pb: 1,
-            mb: 4,
-          }}
-        >
-          {categories.map((label) => (
-            <Button
-              key={label}
-              onClick={() => setSelectedCategory(label)}
-              variant={selectedCategory === label ? "contained" : "outlined"}
-              size="small"
-              color="primary"
-              sx={{ whiteSpace: "nowrap" }}
-            >
-              {label}
-            </Button>
-          ))}
-        </Box>
-
-        {/* Templates Grid */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr", // Mobile: 1 column
-              sm: "repeat(2, 1fr)", // Tablet: 2 columns
-              lg: "repeat(2, 1fr)", // Desktop: 3 columns
-            },
-            gap: { xs: 2, sm: 3, md: 4 },
-          }}
-        >
-          {filteredTemplates.map((template) => (
+    <Box component="section" sx={{ bgcolor: "#fff", pb: { xs: 8, md: 12 } }}>
+      <Container maxWidth="lg">
+        {/* Filters as plain tabs on a rule, not pill chips */}
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, borderBottom: `1px solid ${RULE}`, mb: 1 }}>
+          {CATEGORIES.map((c) => (
             <Box
-              key={template.id}
+              key={c}
+              onClick={() => setFilter(c)}
               sx={{
-                backgroundColor: "#fff",
-                border: "1px solid #F6F6F6",
-                borderRadius: "12px",
-                overflow: "hidden",
-                alignItems : "center"
+                pb: 1.4,
+                cursor: "pointer",
+                fontSize: "0.9rem",
+                fontWeight: filter === c ? 600 : 500,
+                color: filter === c ? INK : MUTED,
+                borderBottom: `2px solid ${filter === c ? ACCENT : "transparent"}`,
+                mb: "-1px",
+                transition: "color 0.15s ease",
+                "&:hover": { color: INK },
               }}
             >
-              {/* Image Container */}
-              <Box
-                className="image-container"
-                sx={{
-                  position: "relative",
-                  height: { xs: "220px", sm: "280px", md: "340px" },
-                  overflow: "hidden",
-                  "&:hover .hover-buttons": {
-                    opacity: 1,
-                    pointerEvents: "auto",
-                  },
-                }}
-              >
-                <Image
-                  src={template.image}
-                  alt={template.title}
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
-
-                {/* Hover Buttons */}
-                {/* <Box
-                  className="hover-buttons"
-                  sx={{
-                    position: "absolute",
-                    bottom: 60,
-                    left: 0,
-                    right: 0,
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: 1.5,
-                    py: 1.5,
-                    opacity: 0,
-                    transition: "opacity 0.3s ease",
-                    pointerEvents: "none",
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    sx={{
-                      borderColor: "#ccc",
-                      color: "#000",
-                      px: 3,
-                      fontWeight: 500,
-                      textTransform: "none",
-                      background: "white",
-                      width: { sm: "150px" },
-                    }}
-                  >
-                    Preview
-                  </Button>
-                  <Button
-                    variant="contained"
-                    sx={{
-                      backgroundColor: "#4A00E0",
-                      textTransform: "none",
-                      px: 3,
-                      "&:hover": { backgroundColor: "#4A00E0" },
-                      width: { sm: "150px" },
-                    }}
-                  >
-                    Customize
-                  </Button>
-                </Box> */}
+              {c}
+              <Box component="span" sx={{ fontFamily: MONO, fontSize: "0.68rem", color: "#B4AEC0", ml: 0.75 }}>
+                {c === "All" ? ROWS.length : ROWS.filter((r) => r.category === c).length}
               </Box>
-
-              {/* Title */}
-              <Typography
-                sx={{
-                  fontSize: { xs: "16px", sm: "18px" },
-                  fontWeight: 600,
-                  px: 2,
-                  mt: 2,
-                }}  
-              >
-                {template.title}
-              </Typography>
-
-              {/* Category */}
-              <Typography
-                sx={{
-                  fontSize: { xs: "14px", sm: "15px" },
-                  fontWeight: 500,
-                  px: 2,
-                  pb: 2,
-                  color: "text.secondary",
-                  alignContent: "center"
-                }}
-              >
-                {template.category}
-              </Typography>
             </Box>
           ))}
         </Box>
-      </Box>
-    </>
+
+        {/* Each template is a row with an action, not a picture you cannot use */}
+        <Box>
+          {rows.map((r) => (
+            <Box
+              key={r.id}
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", md: "auto 1fr auto auto" },
+                alignItems: { md: "center" },
+                gap: { xs: 1.5, md: 4 },
+                py: { xs: 3, md: 3.25 },
+                borderBottom: `1px solid ${RULE}`,
+                transition: "background 0.12s ease",
+                "&:hover": { bgcolor: "#FAFAFB", "& .go": { color: ACCENT, gap: "10px" } },
+              }}
+            >
+              {/* Palette: what the template looks like, without a screenshot */}
+              <Box sx={{ display: "flex", gap: 0.5 }}>
+                {r.swatch.map((c, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      width: 14,
+                      height: 42,
+                      bgcolor: c,
+                      border: i === r.swatch.length - 1 ? `1px solid ${RULE}` : "none",
+                    }}
+                  />
+                ))}
+              </Box>
+
+              <Box>
+                <Typography
+                  sx={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "1.15rem",
+                    fontWeight: 600,
+                    color: INK,
+                    letterSpacing: "-0.015em",
+                  }}
+                >
+                  {r.name}
+                </Typography>
+                {r.description && (
+                  <Typography sx={{ fontSize: "0.9rem", color: MUTED, mt: 0.3 }}>
+                    {r.description}
+                  </Typography>
+                )}
+              </Box>
+
+              <Typography
+                sx={{
+                  fontFamily: MONO,
+                  fontSize: "0.7rem",
+                  letterSpacing: "0.07em",
+                  color: "#9A94A6",
+                  lineHeight: 1.7,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {r.slides} slides · {r.mode}
+                <br />
+                {r.display} / {r.body}
+              </Typography>
+
+              <Link href={`/template-preview?id=${r.id}`} style={{ textDecoration: "none" }}>
+                <Box
+                  className="go"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontSize: "0.92rem",
+                    fontWeight: 600,
+                    color: INK,
+                    whiteSpace: "nowrap",
+                    transition: "color 0.15s ease, gap 0.15s ease",
+                  }}
+                >
+                  Use this template
+                  <LuArrowRight size={15} />
+                </Box>
+              </Link>
+            </Box>
+          ))}
+        </Box>
+
+        <Typography sx={{ mt: 4, fontSize: "0.88rem", color: "#9A94A6" }}>
+          Every template carries 25 swappable themes. Picking one now does not
+          lock you in.
+        </Typography>
+      </Container>
+    </Box>
   );
 }

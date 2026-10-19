@@ -1,136 +1,141 @@
-import React from 'react'
-import type { Metadata } from 'next'
-import PromptToDeck from './components/promptToDeck'
-import Header from '@/app/components/headers-navbar/Header'
-import Footer from '@/app/components/home/Footer'
-
-import { Box, Typography, Container } from '@mui/material'
-import ProblemSolution from '@/app/components/seo/ProblemSolution'
-import WhoItsFor from '@/app/components/seo/WhoItsFor'
-import WorkflowSteps from '@/app/components/seo/WorkflowSteps'
-import BenefitsList from '@/app/components/seo/BenefitsList'
-import ContextualFAQ from '@/app/components/seo/ContextualFAQ'
-import InternalLinks from '@/app/components/seo/InternalLinks'
-import CTASection from '@/app/components/seo/CTASection'
-import Reveal from '@/app/components/shared/Reveal'
+import React from "react";
+import type { Metadata } from "next";
+import { Box, Container, Typography } from "@mui/material";
+import PromptToDeck from "./components/promptToDeck";
+import Header from "@/app/components/headers-navbar/Header";
+import Footer from "@/app/components/home/Footer";
+import FaqList from "@/app/components/home/FaqList";
+import ComposeScene from "./components/ComposeScene";
+import SpinCubes from "./components/SpinCubes";
+import { ACCENT, BONE, BONE_DEEP, Display, INK, MONO, MUTED, SectionHead } from "@/app/components/home/editorial";
 
 export const metadata: Metadata = {
-  title: 'Prompt to Deck — AI Slide Generator',
+  title: "Create a deck | Slidexy",
   description:
-    'Turn a text prompt into a complete, professional slide deck in seconds. SlideXY AI handles content, layout, and visual design for your pitch decks and presentations.',
-  alternates: {
-    canonical: 'https://slidexy.ai/tools/prompt-to-deck',
+    "Describe what the deck is for and Slidexy writes the running order first, then the slides, then a PowerPoint file you can actually edit.",
+  alternates: { canonical: "https://slidexy.ai/tools/prompt-to-deck" },
+};
+
+/**
+ * Create a deck.
+ *
+ * The page was a centred headline over a tinted panel of dropdowns, then
+ * seven stacked marketing sections: problem and solution, personas,
+ * workflow steps, benefits, FAQ, related tools, call to action. Nobody
+ * who came here to make a deck read any of it, and three of the related
+ * tool links pointed at routes that no longer exist.
+ *
+ * What is left is the brief itself and a short answer to the question
+ * people actually ask before they type anything: what happens next.
+ */
+
+const FAQS = [
+  {
+    q: "How much do I need to write?",
+    a: "One line is enough. 'Q3 results for the board' will get you a sensible running order. The more you give it, the more specific the draft, but it is never a blank page problem.",
   },
-}
+  {
+    q: "What happens after I press the button?",
+    a: "You get the running order first, as a list you can rewrite, reorder or cut. Nothing is designed until you are happy with the structure, because that is where a deck is won or lost.",
+  },
+  {
+    q: "Can I use my own document instead?",
+    a: "Yes. Hand over a brief, a report, a transcript or an existing deck and it reads that instead of a prompt. It keeps your facts rather than inventing new ones.",
+  },
+  {
+    q: "What do I get at the end?",
+    a: "Slides you can edit down to the last caption, and a PowerPoint file with real text boxes, native tables and charts bound to their own data. Not one flat image per slide.",
+  },
+];
 
 export default function Page() {
-  const personas = [
-    { title: "Startup Founders", description: "Turn a rough pitch idea into slides you could actually send to an investor tonight.", icon: "business" as const },
-    { title: "Marketing Teams", description: "Get a campaign or social strategy deck out of your head and into a review meeting fast.", icon: "group" as const },
-    { title: "Educators", description: "Build a lesson deck from your notes without opening a design tool.", icon: "school" as const },
-  ];
-
-  const steps = [
-    { number: 1, title: "Say what it's for", description: "A sentence or two is enough — the topic, the audience, the point you're making." },
-    { number: 2, title: "Slidexy drafts it", description: "It structures the narrative, writes the copy, and picks visuals that fit." },
-    { number: 3, title: "Tweak and ship", description: "Adjust anything that's off, then export to PDF or PowerPoint." },
-  ];
-
-  const benefits = [
-    { title: "Fast, not rushed-looking", description: "A full deck in under a minute — but structured like someone actually thought about it.", icon: "speed" as const },
-    { title: "Layouts that fit the content", description: "Each slide gets a layout suited to what's actually on it, not a single repeated template.", icon: "design" as const },
-    { title: "Visuals that match the topic", description: "Images and icons are chosen based on what your deck is actually about.", icon: "ai" as const },
-  ];
-
-  const faqs = [
-    { question: "How detailed should my prompt be?", answer: "You can be as simple as 'A pitch deck for a coffee startup' or as detailed as providing a full business outline. The more detail you provide, the more tailored the content will be." },
-    { question: "Can I edit the generated slides?", answer: "Yes, once the AI generates the deck, you have full control to edit text, swap images, and reposition elements in our editor." },
-    { question: "Does it support custom branding?", answer: "SlideXY Pro allows you to apply your own brand kit (colors, fonts, logo) to every generated presentation." },
-  ];
-
-  const relatedLinks = [
-    { title: "Web-to-Deck", href: "/tools/web-to-deck", description: "Turn any webpage into a professional presentation." },
-    { title: "Video-to-Deck", href: "/tools/video-to-deck", description: "Convert YouTube videos or recordings into slide decks." },
-    { title: "Prompt-to-Template", href: "/tools/prompt-to-template", description: "Generate custom slide templates from a description." },
-  ];
-
   return (
-    <Box component="main">
+    <Box component="main" sx={{ bgcolor: BONE, minHeight: "100vh", overflowX: "clip" }}>
       <Header />
-      
+
       <Box
-        component="section"
         sx={{
-          textAlign: "center",
-          pt: { xs: 5, md: 7 },
-          pb: { xs: 2, md: 2 },
-          px: { xs: 3, md: 6 },
-          maxWidth: 720,
-          mx: "auto",
+          position: "relative",
+          overflow: "hidden",
+          minHeight: { md: "calc(100vh - 73px)" },
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-start",
+          pt: { xs: 2, md: 4 },
+          pb: { xs: 8, md: 10 },
         }}
       >
-        <Typography
-          component="h1"
-          className="sx-display"
-          sx={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 700,
-            fontSize: { xs: "1.85rem", md: "2.75rem" },
-            letterSpacing: "-0.03em",
-            color: "#0F0A19",
-            mb: 2,
-          }}
-        >
-          Turn a prompt into a real deck
-        </Typography>
-        <Typography
-          sx={{
-            color: "text.secondary",
-            fontSize: { xs: "1.05rem", md: "1.15rem" },
-            lineHeight: 1.7,
-            mb: 2,
-          }}
-        >
-          Describe what it&apos;s for in a sentence or two. Slidexy writes the
-          outline, drafts the copy, and lays out every slide.
-        </Typography>
+        <ComposeScene />
+        <SpinCubes />
+
+      <Box component="section" sx={{ position: "relative", zIndex: 1, pt: { xs: 4, md: 5.5 }, pb: { xs: 3, md: 4 } }}>
+        <Container maxWidth="md">
+          <Box sx={{ textAlign: "center", maxWidth: 680, mx: "auto" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1.75,
+                mb: { xs: 2, md: 2.75 },
+              }}
+            >
+              <Box sx={{ width: 26, height: "1px", bgcolor: ACCENT, opacity: 0.45 }} />
+              <Typography
+                component="span"
+                sx={{
+                  fontFamily: MONO,
+                  fontSize: "0.72rem",
+                  letterSpacing: "0.17em",
+                  textTransform: "uppercase",
+                  color: ACCENT,
+                }}
+              >
+                A sentence, an outline, a deck
+              </Typography>
+              <Box sx={{ width: 26, height: "1px", bgcolor: ACCENT, opacity: 0.45 }} />
+            </Box>
+            <Display sx={{ fontSize: { xs: "2.3rem", md: "3.6rem" } }}>
+              Say it badly first.
+            </Display>
+            <Typography sx={{ fontSize: "1.02rem", color: MUTED, mt: 1.75 }}>
+              We will hand you back a running order to argue with.
+            </Typography>
+          </Box>
+        </Container>
       </Box>
 
-      {/* Main Tool Component - already has "use client" inside */}
-      <PromptToDeck />
+      <Box sx={{ position: "relative", zIndex: 1 }}>
+        <PromptToDeck />
+      </Box>
+      </Box>
 
-      <Reveal>
-        <ProblemSolution
-          problem="Starting a presentation from scratch is intimidating. Between structuring the content and hunting for the right visuals, hours are lost to 'blank slide' syndrome."
-          solution="SlideXY's Prompt-to-Deck tool acts as your expert co-pilot. It instantly processes your ideas into a logical narrative, handles all the design work, and gives you a professional starting point in seconds."
-        />
-      </Reveal>
+      <Box component="section" sx={{ bgcolor: BONE_DEEP, py: { xs: 8, md: 11 } }}>
+        <Container maxWidth="lg">
+          <SectionHead index="01" label="Before you start" />
 
-      <Reveal><WhoItsFor personas={personas} /></Reveal>
+          <Box sx={{ mb: { xs: 4, md: 5 } }}>
+            <Display>What happens next.</Display>
+          </Box>
 
-      <Reveal><WorkflowSteps steps={steps} /></Reveal>
+          <FaqList items={FAQS} />
 
-      <Reveal><BenefitsList benefits={benefits} /></Reveal>
-
-      <Reveal>
-        <ContextualFAQ
-          title="Prompt-to-Deck FAQ"
-          subtitle="Learn how to get the best results from our AI generation engine."
-          faqs={faqs}
-        />
-      </Reveal>
-
-      <Reveal><InternalLinks title="Explore More Tools" links={relatedLinks} /></Reveal>
-
-      <Reveal>
-        <CTASection
-          title="Generate your first deck now"
-          subtitle="Experience the future of presentation design. No credit card required."
-        />
-      </Reveal>
-
+          <Typography
+            sx={{
+              mt: 4,
+              fontFamily: MONO,
+              fontSize: "0.78rem",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#9A94A6",
+            }}
+          >
+            No sign up for your first deck
+          </Typography>
+        </Container>
+      </Box>
 
       <Footer />
     </Box>
-  )
+  );
 }

@@ -125,14 +125,25 @@ const NavProfileHandler = ({ size, showMail }: any) => {
         <Button
           suppressHydrationWarning
           onClick={() => router.push("/auth")}
-          variant="outlined"
+          disableElevation
           size={size ? "small" : "medium"}
           sx={{
             ml: "10px",
             whiteSpace: "nowrap",
+            // Square and quiet, so the one filled block in the header stays
+            // the primary action. A second rounded pill competes with it.
+            borderRadius: 0,
+            border: "1.5px solid rgba(15,10,25,0.18)",
+            color: "#0F0A19",
+            bgcolor: "transparent",
+            fontWeight: 600,
+            fontSize: "0.93rem",
+            textTransform: "none",
+            px: 2.25,
+            "&:hover": { bgcolor: "transparent", borderColor: "#0F0A19" },
           }}
         >
-          {size ? `Sign In` : `Login / Signup`}
+          {size ? `Sign in` : `Log in`}
         </Button>
       )}
     </>

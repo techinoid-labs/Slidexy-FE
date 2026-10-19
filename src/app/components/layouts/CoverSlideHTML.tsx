@@ -1368,7 +1368,7 @@ export const CoverSlideHTML: React.FC<CoverSlideHTMLProps> = ({
                 <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ffbd2e' }} />
                 <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840' }} />
                 <div style={{ flex: 1, height: '22px', background: `${accentColor}10`, borderRadius: '6px', display: 'flex', alignItems: 'center', paddingLeft: '0.75rem' }}>
-                    <span style={{ fontSize: '0.65rem', color: textLightColor, fontWeight: 500 }}>slidexy.ai — {title.slice(0, 40)}</span>
+                    <span style={{ fontSize: '0.65rem', color: textLightColor, fontWeight: 500 }}>slidexy.ai · {title.slice(0, 40)}</span>
                 </div>
             </div>
 

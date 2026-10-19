@@ -1,68 +1,158 @@
 "use client";
 
-import {
-  Box,
-  Typography,
-  Button,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  IconButton,
-  Chip,
-  Stack,
-  Alert,
-  AlertTitle,
-} from "@mui/material";
-import GenerationOverlay from "@/app/components/shared/GenerationOverlay";
-import {
-  Add,
-  Remove,
-  AutoAwesome,
-  Close as CloseIcon,
-} from "@mui/icons-material";
-import { useState, useRef } from "react";
+import React, { useRef, useState } from "react";
+import { Box, Container, Typography, Alert, Menu, MenuItem } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
+import AttachFileRounded from "@mui/icons-material/AttachFileRounded";
+import CloseRounded from "@mui/icons-material/CloseRounded";
+import ExpandMoreRounded from "@mui/icons-material/ExpandMoreRounded";
+import GenerationOverlay from "@/app/components/shared/GenerationOverlay";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useTemplateSlides } from "@/app/context/TemplateSlidesContext";
 import { useUser } from "@/app/context/AuthContext";
-import FileUploadZone from "@/app/components/shared/FileUploadZone";
-import AnimatedOrb from "@/app/components/shared/AnimatedOrb";
-import { fadeUp, staggerContainer } from "@/lib/motion";
+import { ACCENT, INK, MONO } from "@/app/components/home/editorial";
+
+/** The composer sits on a busy field, so it is solid, not glass. */
+const GLASS = "#FFFFFF";
+const EDGE = "#0F0A19";
+const TEXT = "#0F0A19";
+const DIM = "#6B6478";
+const FAINT = "#A9A3B4";
+const LILAC = "#8E2DE2";
+
+/**
+ * The composer.
+ *
+ * One box, and the box is the page. Everything a person came here to do
+ * is type a sentence, so the sentence gets the whole surface and the
+ * five settings sit in a thin bar along the bottom of it, the way the
+ * tools in a text editor sit under the text and not in front of it.
+ *
+ * Two earlier attempts failed in opposite directions. A tinted panel of
+ * rounded dropdowns looked like every other AI tool; a numbered brief
+ * with a line per decision was honest but made you read six labels to
+ * find the one field that matters. The fix is not more layout, it is
+ * less: one thing at full size, the rest at a whisper until wanted.
+ */
+
+const GOALS = [
+  { value: "", label: "Any purpose" },
+  { value: "pitch", label: "A pitch" },
+  { value: "education", label: "Teaching" },
+  { value: "marketing", label: "Marketing" },
+];
+
+const TONES = [
+  { value: "", label: "Any voice" },
+  { value: "Professional", label: "Professional" },
+  { value: "Casual", label: "Plain and casual" },
+  { value: "Inspirational", label: "Inspirational" },
+];
+
+const STYLES = [
+  { value: "", label: "No pictures" },
+  { value: "Concept Art", label: "Concept art" },
+  { value: "3D Render / CGI", label: "3D render" },
+  { value: "Watercolor Illustration", label: "Watercolour" },
+  { value: "AI Collage / Mixed Media", label: "Collage" },
+  { value: "Digital Painting", label: "Digital painting" },
+  { value: "Fantasy / Sci-Fi Style", label: "Fantasy" },
+  { value: "Minimal Abstract", label: "Minimal abstract" },
+];
+
+const EXAMPLES = [
+  "Q3 marketing results for the leadership team",
+  "Pitch deck for a healthy snacks subscription box",
+  "Onboarding walkthrough for new hires",
+];
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const TEXT_ART_STYLES = [
-  { value: "Concept Art", label: "Concept Art" },
-  { value: "3D Render / CGI", label: "3D Render / CGI" },
-  { value: "Watercolor Illustration", label: "Watercolor Illustration" },
-  { value: "AI Collage / Mixed Media", label: "AI Collage / Mixed Media" },
-  { value: "Digital Painting", label: "Digital Painting" },
-  { value: "Fantasy / Sci-Fi Style", label: "Fantasy / Sci-Fi Style" },
-  { value: "Minimal Abstract", label: "Minimal Abstract" },
-];
+/** A setting in the toolbar: current value, and a plain list to change it. */
+function Setting({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const current = options.find((o) => o.value === value) ?? options[0];
 
-const controlSx = {
-  height: 44,
-  borderRadius: "12px",
-  bgcolor: "rgba(248, 246, 255, 1)",
-  border: "1px solid rgba(142, 45, 226, 0.1)",
-  "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-  "& .MuiSelect-select": { py: "10px", fontSize: "0.9rem" },
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "&:hover": { borderColor: "rgba(142, 45, 226, 0.3)" },
-  "&.Mui-focused, &:focus-within": {
-    borderColor: "#8E2DE2",
-    boxShadow: "0 0 0 3px rgba(142, 45, 226, 0.1)",
-  },
-};
+  return (
+    <>
+      <Box
+        component="button"
+        type="button"
+        onClick={(e: React.MouseEvent<HTMLElement>) => setAnchor(e.currentTarget)}
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 0.4,
+          border: "none",
+          background: "none",
+          px: 0,
+          py: 0.5,
+          cursor: "pointer",
+          fontFamily: "inherit",
+          fontSize: "0.86rem",
+          color: value ? TEXT : DIM,
+          fontWeight: value ? 600 : 400,
+          whiteSpace: "nowrap",
+          "&:hover": { color: LILAC },
+        }}
+      >
+        {current.label}
+        <ExpandMoreRounded sx={{ fontSize: 16 }} />
+      </Box>
+
+      <Menu
+        anchorEl={anchor}
+        open={Boolean(anchor)}
+        onClose={() => setAnchor(null)}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 0,
+              border: `1px solid ${EDGE}`,
+              boxShadow: "0 20px 40px -24px rgba(50,16,104,0.4)",
+              mt: 0.5,
+              minWidth: 190,
+            },
+          },
+        }}
+      >
+        {options.map((o) => (
+          <MenuItem
+            key={o.value || "any"}
+            selected={o.value === value}
+            onClick={() => {
+              onChange(o.value);
+              setAnchor(null);
+            }}
+            sx={{
+              fontSize: "0.88rem",
+              py: 1,
+              "&.Mui-selected": { bgcolor: "transparent", fontWeight: 600, color: LILAC },
+              "&.Mui-selected:hover": { bgcolor: "#F6F2FD" },
+            }}
+          >
+            {o.label}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
+}
 
 export default function PromptToDeck() {
   const [count, setCount] = useState(7);
-  const [goal, setGoal] = useState("Select Goal");
-  const [tone, setTone] = useState("Select Tone");
-  const [visualStyle, setVisualStyle] = useState("Choose Visual Art Style");
+  const [goal, setGoal] = useState("");
+  const [tone, setTone] = useState("");
+  const [visualStyle, setVisualStyle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -70,21 +160,19 @@ export default function PromptToDeck() {
   const [currentDetail, setCurrentDetail] = useState("");
   const [error, setError] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  /** Where we go once the overlay has finished travelling. */
+  const [nextRoute, setNextRoute] = useState<string | null>(null);
 
   const router = useRouter();
   const { setSlides } = useSlides();
   const { setPresentationId } = useTemplateSlides();
   const { user } = useUser();
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  const handleFileChange = (file: File) => {
-    setSelectedFile(file);
-    setError("");
-  };
+  const fileInput = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async () => {
     if (!description.trim()) {
-      setError("Please describe your idea.");
+      setError("Tell it what the deck is about first.");
       return;
     }
 
@@ -159,11 +247,14 @@ export default function PromptToDeck() {
               if (event.slides) setSlides(event.slides);
               if (event.presentation_id) {
                 setPresentationId(event.presentation_id);
-                router.push(
-                  `/presentation/outline?pid=${event.presentation_id}`
-                );
+                // Held, not taken. The overlay says when its journey has
+                // actually finished; jumping the moment the server said
+                // "done" pulled the page out from under a camera that
+                // was still halfway across the sheet.
+                setNextRoute(`/presentation/outline?pid=${event.presentation_id}`);
+              } else {
+                setLoading(false);
               }
-              setLoading(false);
             }
           } catch {
             console.error("Bad SSE chunk:", jsonStr);
@@ -171,9 +262,7 @@ export default function PromptToDeck() {
         }
       }
     } catch (err: any) {
-      if (err.name !== "AbortError") {
-        setError(err.message || "Network error");
-      }
+      if (err.name !== "AbortError") setError(err.message || "Network error");
       setLoading(false);
     } finally {
       abortControllerRef.current = null;
@@ -186,320 +275,283 @@ export default function PromptToDeck() {
     setProgress(0);
     setCurrentMessage("");
     setCurrentDetail("");
+    setNextRoute(null);
   };
 
-  const removeFile = () => setSelectedFile(null);
-
-  const quickPrompts = [
-    "Q3 marketing results for the leadership team",
-    "Pitch deck for a healthy-snacks subscription box",
-    "Onboarding walkthrough for new hires",
-    "Accessibility best practices for our design system",
-    "Sales update for a new enterprise client",
-    "Lecture on the history of jazz",
-  ];
+  const divider = (
+    <Box sx={{ width: "1px", height: 18, bgcolor: "#E4E1EA", display: { xs: "none", sm: "block" } }} />
+  );
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        width: "100%",
-        minHeight: "60vh",
-        overflow: "hidden",
-        background:
-          "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(142,45,226,0.1) 0%, transparent 55%)",
-      }}
-    >
-      <AnimatedOrb
-        size={300}
-        top="-5%"
-        left="-5%"
-        color="rgba(142, 45, 226, 0.15)"
-        blur={60}
-      />
-      <AnimatedOrb
-        size={260}
-        bottom="10%"
-        right="-5%"
-        color="rgba(74, 0, 224, 0.12)"
-        blur={50}
-        delay={1}
-      />
-
-      <Box
-        component={motion.div}
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        sx={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          py: { xs: 3, md: 4 },
-          px: { xs: 2, md: 6 },
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
+    <Box component="section" sx={{ pb: { xs: 7, md: 11 } }}>
+      <Container maxWidth="md">
+        {/* The box is the page. */}
         <Box
-          component={motion.div}
-          variants={fadeUp}
           sx={{
-            position: "relative",
-            width: "100%",
-            maxWidth: 920,
-            bgcolor: "rgba(255,255,255,0.92)",
-            backdropFilter: "blur(12px)",
-            borderRadius: "24px",
-            border: "1px solid rgba(142, 45, 226, 0.14)",
-            boxShadow:
-              "0 28px 60px -20px rgba(142, 45, 226, 0.28), 0 8px 24px rgba(15, 10, 25, 0.04)",
-            p: { xs: 3, md: 4 },
-            mb: 4,
-            overflow: "hidden",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 4,
-              background:
-                "linear-gradient(90deg, #8E2DE2, #C084FC, #4A00E0)",
-              backgroundSize: "200% 100%",
-              animation: "sx-gradient-shift 4s ease infinite",
-            },
+            border: `1.5px solid ${EDGE}`,
+            bgcolor: GLASS,
+            // It has to hold its own against a moving field behind it.
+            boxShadow: "0 40px 80px -36px rgba(50,16,104,0.45)",
+            transition: "box-shadow 0.2s ease",
+            "&:focus-within": { boxShadow: `6px 6px 0 0 ${ACCENT}` },
           }}
         >
-          <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1.5 }}>
-            <FormControl variant="outlined" sx={{ ...controlSx, minWidth: 150 }}>
-              <Select
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-                disabled={loading}
-                sx={{ height: 44, color: "#5B5568" }}
-              >
-                <MenuItem value="Select Goal" hidden>
-                  Select Goal
-                </MenuItem>
-                <MenuItem value="pitch">Pitch Deck</MenuItem>
-                <MenuItem value="education">Educational</MenuItem>
-                <MenuItem value="marketing">Marketing</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-
-          <TextField
-            fullWidth
-            multiline
-            minRows={4}
-            placeholder="Describe your idea… e.g. 'Pitch for a new mental health app'"
-            variant="outlined"
+          <Box
+            component="textarea"
+            autoFocus
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+            onKeyDown={(e: React.KeyboardEvent) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
+            }}
+            placeholder="What is the deck about?"
+            rows={5}
             sx={{
-              mb: 2,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "14px",
-                bgcolor: "rgba(248, 246, 255, 0.5)",
-              },
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(142, 45, 226, 0.12)",
-              },
-              "& .MuiInputBase-input": {
-                fontSize: "1rem",
-                lineHeight: 1.65,
-              },
+              width: "100%",
+              display: "block",
+              resize: "none",
+              border: "none",
+              outline: "none",
+              background: "transparent",
+              px: { xs: 2.5, md: 3.5 },
+              pt: { xs: 2.5, md: 3.5 },
+              pb: 2,
+              fontFamily: "inherit",
+              fontSize: { xs: "1.15rem", md: "1.45rem" },
+              lineHeight: 1.45,
+              color: TEXT,
+              "&::placeholder": { color: FAINT },
             }}
           />
+
+          {/* The settings, along the foot of the box and no louder. */}
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: { xs: 1.5, sm: 2 },
+              px: { xs: 2, md: 2.75 },
+              py: 1.5,
+              borderTop: "1px solid #E4E1EA",
+            }}
+          >
+            <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+              {[
+                { s: "−", go: () => setCount((c) => Math.max(3, c - 1)), off: count <= 3 },
+                { s: "+", go: () => setCount((c) => Math.min(20, c + 1)), off: count >= 20 },
+              ].map((b, i) => (
+                <React.Fragment key={b.s}>
+                  {i === 1 && (
+                    <Typography
+                      sx={{ fontFamily: MONO, fontSize: "0.86rem", color: TEXT, minWidth: 58, textAlign: "center" }}
+                    >
+                      {count} slides
+                    </Typography>
+                  )}
+                  <Box
+                    component="button"
+                    type="button"
+                    onClick={b.go}
+                    disabled={b.off}
+                    aria-label={i === 0 ? "One slide fewer" : "One slide more"}
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      border: "1px solid #E4E1EA",
+                      background: "none",
+                      cursor: b.off ? "default" : "pointer",
+                      fontSize: "0.95rem",
+                      lineHeight: 1,
+                      color: b.off ? "#D6D1DE" : TEXT,
+                      "&:hover": { borderColor: b.off ? "#E4E1EA" : LILAC },
+                    }}
+                  >
+                    {b.s}
+                  </Box>
+                </React.Fragment>
+              ))}
+            </Box>
+
+            {divider}
+            <Setting options={GOALS} value={goal} onChange={setGoal} />
+            {divider}
+            <Setting options={TONES} value={tone} onChange={setTone} />
+            {divider}
+            <Setting options={STYLES} value={visualStyle} onChange={setVisualStyle} />
+
+            {selectedFile ? (
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.75,
+                  border: "1px solid #E4E1EA",
+                  px: 1,
+                  py: 0.4,
+                  maxWidth: 190,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontFamily: MONO,
+                    fontSize: "0.74rem",
+                    color: TEXT,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {selectedFile.name}
+                </Typography>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={() => setSelectedFile(null)}
+                  aria-label="Remove the file"
+                  sx={{
+                    border: "none",
+                    background: "none",
+                    p: 0,
+                    display: "flex",
+                    cursor: "pointer",
+                    color: DIM,
+                    "&:hover": { color: TEXT },
+                  }}
+                >
+                  <CloseRounded sx={{ fontSize: 14 }} />
+                </Box>
+              </Box>
+            ) : (
+              <Box
+                component="button"
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  border: "none",
+                  background: "none",
+                  p: 0,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  fontSize: "0.86rem",
+                  color: DIM,
+                  "&:hover": { color: LILAC },
+                }}
+              >
+                <AttachFileRounded sx={{ fontSize: 15 }} />
+                Attach
+              </Box>
+            )}
+
+            <Box
+              component="button"
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading}
+              sx={{
+                ml: { xs: 0, sm: "auto" },
+                width: { xs: "100%", sm: "auto" },
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
+                bgcolor: TEXT,
+                color: "#FFFFFF",
+                border: "none",
+                px: 2.5,
+                py: 1.15,
+                cursor: loading ? "default" : "pointer",
+                fontFamily: "inherit",
+                fontSize: "0.92rem",
+                fontWeight: 600,
+                opacity: loading ? 0.6 : 1,
+                transition: "background 0.15s ease",
+                "&:hover": { bgcolor: loading ? TEXT : LILAC },
+              }}
+            >
+              {loading ? "Building" : "Build the outline"}
+              <ArrowForwardRounded sx={{ fontSize: 16 }} />
+            </Box>
+          </Box>
 
           <Box
             sx={{
               display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              justifyContent: "space-between",
-              alignItems: { xs: "stretch", md: "center" },
-              gap: 2,
+              flexWrap: "wrap",
+              alignItems: "baseline",
+              gap: 1.5,
+              px: { xs: 2, md: 2.75 },
+              py: 1.4,
+              borderTop: "1px solid #EFECF4",
             }}
           >
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              alignItems={{ xs: "stretch", sm: "center" }}
-              spacing={1.5}
-              sx={{ flex: 1, flexWrap: "wrap" }}
-            >
-              <FileUploadZone
-                selectedFile={selectedFile}
-                onFileSelect={handleFileChange}
-                onFileRemove={removeFile}
-                onError={setError}
-                disabled={loading}
-              />
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  height: 44,
-                  borderRadius: "12px",
-                  bgcolor: "rgba(248, 246, 255, 1)",
-                  border: "1px solid rgba(142, 45, 226, 0.1)",
-                  px: 0.5,
-                }}
-              >
-                <IconButton
-                  size="small"
-                  onClick={() => setCount(Math.max(1, count - 1))}
-                  disabled={loading}
-                >
-                  <Remove sx={{ fontSize: 18 }} />
-                </IconButton>
-                <Typography
-                  sx={{
-                    px: 1.5,
-                    fontWeight: 600,
-                    fontFamily: "var(--font-display)",
-                    minWidth: 28,
-                    textAlign: "center",
-                  }}
-                >
-                  {count}
-                </Typography>
-                <IconButton
-                  size="small"
-                  onClick={() => setCount(Math.min(10, count + 1))}
-                  disabled={loading}
-                >
-                  <Add sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Box>
-
-              <FormControl variant="outlined" sx={{ ...controlSx, minWidth: 150 }}>
-                <Select
-                  value={tone}
-                  onChange={(e) => setTone(e.target.value)}
-                  disabled={loading}
-                  sx={{ height: 44, color: "#5B5568" }}
-                >
-                  <MenuItem value="Select Tone" hidden>
-                    Select Tone
-                  </MenuItem>
-                  <MenuItem value="Professional">Professional</MenuItem>
-                  <MenuItem value="Casual">Casual</MenuItem>
-                  <MenuItem value="Inspirational">Inspirational</MenuItem>
-                </Select>
-              </FormControl>
-
-              <FormControl
-                variant="outlined"
-                sx={{ ...controlSx, minWidth: { xs: "100%", sm: 200 } }}
-              >
-                <Select
-                  value={visualStyle}
-                  onChange={(e) => setVisualStyle(e.target.value)}
-                  displayEmpty
-                  disabled={loading}
-                  sx={{ height: 44, color: "#5B5568" }}
-                >
-                  <MenuItem value="Choose Visual Art Style" hidden>
-                    Visual style
-                  </MenuItem>
-                  {TEXT_ART_STYLES.map((style) => (
-                    <MenuItem key={style.value} value={style.value}>
-                      {style.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Stack>
-
-            <Button
-              variant="contained"
-              size="large"
-              disabled={loading}
-              onClick={handleSubmit}
-              startIcon={<AutoAwesome />}
-              sx={{
-                minWidth: { xs: "100%", sm: 150 },
-                py: 1.35,
-                alignSelf: { xs: "stretch", md: "center" },
-              }}
-            >
-              Generate
-            </Button>
-          </Box>
-
-          {error && (
-            <Alert
-              severity="error"
-              sx={{ mt: 2, borderRadius: "12px" }}
-              action={
-                <IconButton size="small" onClick={() => setError("")} color="inherit">
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              }
-            >
-              <AlertTitle>Error</AlertTitle>
-              {error}
-            </Alert>
-          )}
-        </Box>
-
-        <GenerationOverlay
-          open={loading}
-          progress={progress}
-          message={currentMessage || "Crafting your deck"}
-          detail={currentDetail}
-          onCancel={cancelGeneration}
-        />
-
-        <Box
-          component={motion.div}
-          variants={fadeUp}
-          sx={{ textAlign: "center", maxWidth: 820 }}
-        >
           <Typography
             sx={{
-              color: "text.secondary",
-              fontSize: "0.9rem",
-              fontWeight: 500,
-              mb: 2,
+              fontFamily: MONO,
+              fontSize: "0.7rem",
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: FAINT,
             }}
           >
-            Not sure where to start? Try one of these
+            Or try
           </Typography>
-          <Stack
-            direction="row"
-            flexWrap="wrap"
-            justifyContent="center"
-            gap={1.5}
-          >
-            {quickPrompts.map((prompt, index) => (
-              <Chip
-                key={index}
-                label={prompt}
-                onClick={() => setDescription(prompt)}
-                sx={{
-                  border: "1px solid rgba(142, 45, 226, 0.14)",
-                  bgcolor: "rgba(255,255,255,0.8)",
-                  color: "#0F0A19",
-                  fontWeight: 450,
-                  borderRadius: "999px",
-                  cursor: "pointer",
-                  transition: "transform 0.2s ease, background 0.2s ease, border-color 0.2s ease",
-                  "&:hover": {
-                    bgcolor: "rgba(242, 240, 255, 1)",
-                    borderColor: "rgba(142, 45, 226, 0.35)",
-                    transform: "translateY(-2px)",
-                  },
-                  px: 1,
-                }}
-              />
-            ))}
-          </Stack>
+          {EXAMPLES.map((ex) => (
+            <Box
+              component="button"
+              type="button"
+              key={ex}
+              onClick={() => setDescription(ex)}
+              sx={{
+                border: "none",
+                background: "none",
+                p: 0,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                fontSize: "0.86rem",
+                color: DIM,
+                borderBottom: "1px solid #E4E1EA",
+                "&:hover": { color: LILAC, borderBottomColor: LILAC },
+              }}
+            >
+              {ex}
+            </Box>
+          ))}
+          </Box>
+
+          <Box
+            component="input"
+            ref={fileInput}
+            type="file"
+            accept=".pdf,.doc,.docx,.txt,.md,.ppt,.pptx"
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              e.target.files?.[0] && setSelectedFile(e.target.files[0])
+            }
+            sx={{ display: "none" }}
+          />
         </Box>
-      </Box>
+
+        {error && (
+          <Alert severity="error" sx={{ borderRadius: 0, mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+      </Container>
+
+      <GenerationOverlay
+        open={loading}
+        progress={progress}
+        message={currentMessage}
+        detail={currentDetail}
+        onCancel={cancelGeneration}
+        onArrived={() => {
+          if (nextRoute) router.push(nextRoute);
+        }}
+      />
     </Box>
   );
 }

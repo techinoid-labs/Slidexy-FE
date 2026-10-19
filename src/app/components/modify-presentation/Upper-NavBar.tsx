@@ -18,7 +18,6 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
-import PaletteIcon from "@mui/icons-material/Palette";
 import EditIcon from "@mui/icons-material/Edit";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
@@ -28,6 +27,10 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useUser } from "@/app/context/AuthContext";
 import NavProfileHandler from "../auth/NavProfileHandler";
 import { LinkedInShareButton } from "../linkedin/LinkedInShareButton";
+import SaveStatus from "./SaveStatus";
+import ExportMenu, { type ExportOptions } from "./ExportMenu";
+import TuneIcon from "@mui/icons-material/Tune";
+import type { SaveState } from "@/app/hooks/useDeckAutosave";
 import { SHELL } from "./shellTheme";
 
 // helper: extract readable name from email
@@ -68,6 +71,15 @@ const UpperNavBar: React.FC<{
   onZoomOut?: () => void;
   onZoomFit?: () => void;
   isZoomFit?: boolean;
+  saveState?: SaveState;
+  /** Deck title owned by the editor, so autosave can persist it. */
+  title?: string | null;
+  onTitleChange?: (title: string) => void;
+  onSaveNow?: () => void;
+  exportOptions?: ExportOptions;
+  onExportOptionsChange?: (next: ExportOptions) => void;
+  slideCount?: number;
+  currentSlideNumber?: number;
 }> = ({
   onExportPDF,
   onExportPPT,
@@ -77,6 +89,14 @@ const UpperNavBar: React.FC<{
   isThemePanelOpen = false,
   showAuthModal,
   setShowAuthModal,
+  saveState,
+  title,
+  onTitleChange,
+  onSaveNow,
+  exportOptions,
+  onExportOptionsChange,
+  slideCount = 0,
+  currentSlideNumber = 1,
   isExportingPDF = false,
   isExportingPPT = false,
   zoomPercent = 100,
@@ -119,14 +139,22 @@ const UpperNavBar: React.FC<{
   // File name state
   const [fileName, setFileName] = React.useState("Untitled Presentation");
   const [editing, setEditing] = React.useState(false);
+  const [exportMenuAnchor, setExportMenuAnchor] = React.useState<HTMLElement | null>(null);
   const [tempFileName, setTempFileName] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  // Load saved file name on mount
+  // The title belongs to the deck on the server. localStorage is only a
+  // fallback for decks that predate saving, and still backs the export
+  // filename, which is read synchronously deep in the export utils.
   React.useEffect(() => {
+    if (typeof title === "string" && title.trim()) {
+      setFileName(title);
+      localStorage.setItem("fileName", title);
+      return;
+    }
     const saved = localStorage.getItem("fileName");
     if (saved) setFileName(saved);
-  }, []);
+  }, [title]);
 
   // Focus input when editing starts
   React.useEffect(() => {
@@ -143,9 +171,11 @@ const UpperNavBar: React.FC<{
 
   const handleSave = () => {
     const trimmed = tempFileName.trim();
-    if (trimmed.length >= 1) {
+    if (trimmed.length >= 1 && trimmed !== fileName) {
       setFileName(trimmed);
       localStorage.setItem("fileName", trimmed);
+      // Hand it up so it reaches the server with the next autosave.
+      onTitleChange?.(trimmed);
     }
     setEditing(false);
   };
@@ -154,6 +184,27 @@ const UpperNavBar: React.FC<{
     setTempFileName(fileName);
     setEditing(false);
   };
+
+  // Ctrl/Cmd+Z and Ctrl+Shift+Z / Ctrl+Y. Suppressed while a field or a
+  // contentEditable has focus, where the browser's own undo is correct.
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+
+      const k = e.key.toLowerCase();
+      if (k === "z" && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo) undo();
+      } else if ((k === "z" && e.shiftKey) || k === "y") {
+        e.preventDefault();
+        if (canRedo) redo();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undo, redo, canUndo, canRedo]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -229,6 +280,18 @@ const UpperNavBar: React.FC<{
                 <EditIcon className="pen" sx={{ fontSize: 12, color: SHELL.textMuted, opacity: 0, transition: "opacity 0.15s" }} />
               </Box>
             )}
+
+            {/* Where the deck lives right now. Always visible: people ask
+                "is my work safe?" at arbitrary moments, usually just
+                before closing the tab. */}
+            {saveState && (
+              <SaveStatus
+                state={saveState}
+                onSaveNow={() => onSaveNow?.()}
+                onSignIn={() => setShowAuthModal?.(true)}
+                compact={isMobile}
+              />
+            )}
           </Box>
 
           {/* ── Center: undo / redo / zoom ── */}
@@ -241,12 +304,12 @@ const UpperNavBar: React.FC<{
               px: 0.5, py: 0.25,
             }}
           >
-            <IconButton onClick={undo} disabled={!canUndo || isExportingPDF || isExportingPPT} size="small" sx={iconButtonSx}>
+            <Tooltip title="Undo (Ctrl+Z)"><span><IconButton onClick={undo} disabled={!canUndo || isExportingPDF || isExportingPPT} size="small" sx={iconButtonSx}>
               <UndoIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-            <IconButton onClick={redo} disabled={!canRedo || isExportingPDF || isExportingPPT} size="small" sx={iconButtonSx}>
+            </IconButton></span></Tooltip>
+            <Tooltip title="Redo (Ctrl+Shift+Z)"><span><IconButton onClick={redo} disabled={!canRedo || isExportingPDF || isExportingPPT} size="small" sx={iconButtonSx}>
               <RedoIcon sx={{ fontSize: 16 }} />
-            </IconButton>
+            </IconButton></span></Tooltip>
 
             {!isMobile && onZoomIn && onZoomOut && onZoomFit && (
               <>
@@ -278,26 +341,13 @@ const UpperNavBar: React.FC<{
 
             {/* Preview */}
             {!isMobile && (
-              <Tooltip title="Preview">
+              <Tooltip title="Present (keyboard: arrows, G for grid, F for fullscreen)">
                 <IconButton onClick={onPreview} disabled={isExportingPDF || isExportingPPT} size="small" sx={iconButtonSx}>
                   <Box component="img" src="/preview.svg" alt="Preview" sx={{ width: 15, height: 15, opacity: 0.65 }} />
                 </IconButton>
               </Tooltip>
             )}
 
-            {/* Theme */}
-            {!isMobile && (
-              <Tooltip title="Theme">
-                <IconButton
-                  onClick={onOpenThemePanel}
-                  disabled={isExportingPDF || isExportingPPT}
-                  size="small"
-                  sx={{ ...iconButtonSx, color: isThemePanelOpen ? SHELL.accent : SHELL.textMuted, background: isThemePanelOpen ? SHELL.accentBg : "transparent" }}
-                >
-                  <PaletteIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Tooltip>
-            )}
 
             {/* LinkedIn share */}
             {!isMobile && <LinkedInShareButton sx={{ mr: 0.25 }} />}
@@ -305,6 +355,19 @@ const UpperNavBar: React.FC<{
             {/* Export group (desktop) */}
             {!isMobile && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, ml: 0.25 }}>
+                {/* Scope and quality. A gear rather than two more buttons:
+                    most exports take the defaults. */}
+                {exportOptions && onExportOptionsChange && (
+                  <Tooltip title="Export options">
+                    <IconButton
+                      size="small"
+                      onClick={(e) => setExportMenuAnchor(e.currentTarget)}
+                      sx={{ ...iconButtonSx, width: 26, height: 26 }}
+                    >
+                      <TuneIcon sx={{ fontSize: 15 }} />
+                    </IconButton>
+                  </Tooltip>
+                )}
                 <Box
                   component="button"
                   onClick={() => !isExportingPDF && handleExportWithFileName(onExportPDF)}
@@ -354,6 +417,17 @@ const UpperNavBar: React.FC<{
         </Toolbar>
 
         {/* Mobile Menu */}
+        {exportOptions && onExportOptionsChange && (
+          <ExportMenu
+            anchorEl={exportMenuAnchor}
+            onClose={() => setExportMenuAnchor(null)}
+            options={exportOptions}
+            onChange={onExportOptionsChange}
+            slideCount={slideCount}
+            currentSlideNumber={currentSlideNumber}
+          />
+        )}
+
         <Menu anchorEl={mobileMenuAnchor} open={Boolean(mobileMenuAnchor)} onClose={handleMobileMenuClose}>
           <MenuItem onClick={onPreview}>Preview</MenuItem>
           <MenuItem onClick={onOpenThemePanel}>Themes</MenuItem>

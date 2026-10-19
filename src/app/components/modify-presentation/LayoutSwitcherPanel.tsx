@@ -9,7 +9,6 @@ import LayersIcon from "@mui/icons-material/Layers";
 import { useSlides } from "@/app/context/SlidesContext";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { generateSlideVariants } from "@/utils/variantGenerator";
-import { TEMPLATE_META } from "../layouts/TemplateHTMLSlide";
 import { TEMPLATES } from "@/templates/catalog";
 import { applyTemplateToDeck } from "@/templates/applyTemplate";
 import { PANEL, panelContainerSx, panelCloseButtonSx } from "./panelTheme";
@@ -235,7 +234,7 @@ const LayoutSwitcherPanel = forwardRef<HTMLDivElement, LayoutSwitcherPanelProps>
                 Design Studio
               </Typography>
               <Typography sx={{ fontSize: "0.72rem", color: PANEL.textMuted, mt: 0.25 }}>
-                {TEMPLATE_META.length} templates · {variantCount} layouts
+                {TEMPLATES.length} templates · {variantCount} layouts
               </Typography>
             </Box>
             <IconButton size="small" onClick={onClose} sx={panelCloseButtonSx}>
@@ -335,7 +334,7 @@ const LayoutSwitcherPanel = forwardRef<HTMLDivElement, LayoutSwitcherPanelProps>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                       <Box sx={{ width: 8, height: 8, borderRadius: "50%", background: accentColor }} />
                       <Typography sx={{ fontSize: "0.72rem", fontWeight: 700, color: accentColor }}>
-                        {TEMPLATE_META.find(t => t.id === activeTemplateStyle)?.name || activeTemplateStyle}
+                        {activeTemplateStyle}
                       </Typography>
                     </Box>
                     <Typography
@@ -407,94 +406,10 @@ const LayoutSwitcherPanel = forwardRef<HTMLDivElement, LayoutSwitcherPanelProps>
                   </Box>
                 </Box>
 
-                {/* ── Legacy templates ─────────────────────────────────────
-                    Hand-authored HTML. Not editable and they override the
-                    theme, so they are kept below the editable set. */}
-                <Typography sx={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: PANEL.textMuted, mb: 1 }}>
-                  Classic styles
-                </Typography>
-                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
-                  {TEMPLATE_META.map((tmpl) => {
-                    const isActive = activeTemplateStyle === tmpl.id;
-                    // Determine if bg is dark
-                    const isDark = ["#050508", "#0B0F1A", "#0C0A09", "#111827", "#0D0D0D", "#0F172A", "#114B5F"].includes(tmpl.bg);
-                    return (
-                      <Box
-                        key={tmpl.id}
-                        onClick={() => handleSelectTemplate(tmpl.id)}
-                        sx={{
-                          cursor: "pointer",
-                          borderRadius: "12px",
-                          border: isActive ? `2px solid ${accentColor}` : "2px solid transparent",
-                          overflow: "hidden",
-                          transition: "all 0.18s ease",
-                          boxShadow: isActive
-                            ? `0 0 0 3px ${accentColor}20, 0 4px 16px rgba(0,0,0,0.1)`
-                            : "0 1px 4px rgba(0,0,0,0.08)",
-                          "&:hover": {
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                            borderColor: isActive ? accentColor : `${accentColor}60`,
-                          },
-                        }}
-                      >
-                        {/* Color preview area */}
-                        <Box sx={{
-                          height: 64,
-                          background: `linear-gradient(135deg, ${tmpl.bg} 0%, ${tmpl.accent}44 100%)`,
-                          position: "relative",
-                          overflow: "hidden",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "flex-start",
-                          p: "10px 12px",
-                          gap: "6px",
-                        }}>
-                          {/* Mock slide elements */}
-                          <Box sx={{ flex: 1 }}>
-                            <Box sx={{ height: 4, width: "70%", borderRadius: 2, background: isDark ? `rgba(255,255,255,0.7)` : `${tmpl.accent}`, mb: "4px" }} />
-                            <Box sx={{ height: 2.5, width: "50%", borderRadius: 1, background: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.15)" }} />
-                            <Box sx={{ height: 2, width: "40%", borderRadius: 1, background: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)", mt: "3px" }} />
-                          </Box>
-                          <Box sx={{
-                            width: 28, height: 28,
-                            borderRadius: "6px",
-                            background: `${tmpl.accent}44`,
-                            border: `1px solid ${tmpl.accent}66`,
-                            flexShrink: 0,
-                          }} />
-                          {/* Active checkmark */}
-                          {isActive && (
-                            <Box sx={{
-                              position: "absolute", top: 5, right: 5,
-                              width: 16, height: 16, borderRadius: "50%",
-                              background: accentColor,
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                            }}>
-                              <CheckIcon sx={{ fontSize: 10, color: "#fff" }} />
-                            </Box>
-                          )}
-                        </Box>
-                        {/* Name label */}
-                        <Box sx={{
-                          px: 1, py: 0.6,
-                          background: PANEL.surfaceSunken,
-                          borderTop: isActive ? `1px solid ${accentColor}30` : `1px solid ${PANEL.border}`,
-                        }}>
-                          <Typography sx={{
-                            fontSize: "0.68rem",
-                            fontWeight: isActive ? 700 : 500,
-                            color: isActive ? accentColor : PANEL.text,
-                            textAlign: "center",
-                            lineHeight: 1,
-                          }}>
-                            {tmpl.name}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    );
-                  })}
-                </Box>
+                {/* The Classic (hand-authored HTML) templates were removed:
+                    they were not editable, they overrode the theme, and they
+                    were the main source of "why can I not edit this slide?".
+                    The editable template catalogue above replaces them. */}
 
                 {/* Scope info */}
                 <Box sx={{ mt: 1.5, px: 1, py: 0.875, borderRadius: "8px", background: PANEL.surfaceSunken, textAlign: "center" }}>

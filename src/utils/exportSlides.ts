@@ -16,7 +16,25 @@ import { OffscreenSlideStage } from "./offscreenSlideStage";
 const EXPORT_SCALE = 2;
 const EXPORT_JPEG_QUALITY = 0.92;
 
-export const exportSlidesAsPDF = async (slides: any[], theme?: any) => {
+export interface PdfExportOptions {
+  /**
+   * "download" saves the file (the default). "blob" returns the bytes
+   * instead, for callers that upload rather than save -- sharing the deck
+   * to LinkedIn as a document carousel, for one.
+   */
+  output?: "download" | "blob";
+  /** Render scale. 2 = 1920x1080. Higher is sharper and larger. */
+  scale?: number;
+  /** JPEG quality, 0..1. */
+  jpegQuality?: number;
+  onProgress?: (done: number, total: number) => void;
+}
+
+export const exportSlidesAsPDF = async (
+  slides: any[],
+  theme?: any,
+  options?: PdfExportOptions
+): Promise<boolean | Blob> => {
   const slidesCount = slides.length;
   const WIDTH = 960;
   const HEIGHT = 540;
@@ -49,7 +67,7 @@ export const exportSlidesAsPDF = async (slides: any[], theme?: any) => {
         const node = await stage.render(slides[i], resolvedTheme);
 
         const canvas = await html2canvas(node, {
-          scale: EXPORT_SCALE,
+          scale: options?.scale ?? EXPORT_SCALE,
           useCORS: true,
           width: WIDTH,
           height: HEIGHT,
@@ -70,7 +88,7 @@ export const exportSlidesAsPDF = async (slides: any[], theme?: any) => {
         // JPEG, not PNG. A full-bleed slide is photographic content: lossless
         // PNG pages were producing ~14 MB *per slide* (an 84 MB deck for six
         // slides), which is not something anyone can email.
-        const imgData = canvas.toDataURL("image/jpeg", EXPORT_JPEG_QUALITY);
+        const imgData = canvas.toDataURL("image/jpeg", options?.jpegQuality ?? EXPORT_JPEG_QUALITY);
 
         if (addedPages > 0) {
           pdf.addPage([WIDTH, HEIGHT]);
@@ -78,6 +96,7 @@ export const exportSlidesAsPDF = async (slides: any[], theme?: any) => {
 
         pdf.addImage(imgData, "JPEG", 0, 0, WIDTH, HEIGHT, undefined, "FAST");
         addedPages++;
+        options?.onProgress?.(addedPages, slidesCount);
         console.log(`[PDF Export] Processed slide ${i + 1}/${slidesCount}`);
       } catch (err) {
         console.error(`[PDF Export] Failed to capture slide ${i}`, err);
@@ -86,6 +105,10 @@ export const exportSlidesAsPDF = async (slides: any[], theme?: any) => {
 
     if (addedPages === 0) {
       throw new Error("No slides were successfully exported");
+    }
+
+    if (options?.output === "blob") {
+      return pdf.output("blob");
     }
 
     pdf.save(`${pdfFileName}.pdf`);

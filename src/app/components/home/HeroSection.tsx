@@ -1,497 +1,491 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  Box,
-  Container,
-  Typography,
-  Button,
-  InputBase,
-  Chip,
-} from "@mui/material";
-import { ArrowForward, AutoAwesome, PlayArrow } from "@mui/icons-material";
+import { Box, Container, Typography } from "@mui/material";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
+import ArticleRounded from "@mui/icons-material/ArticleRounded";
+import InsertLinkRounded from "@mui/icons-material/InsertLinkRounded";
+import FormatQuoteRounded from "@mui/icons-material/FormatQuoteRounded";
 import { analyticsEvent } from "@/lib/gtag";
-import AnimatedOrb from "@/app/components/shared/AnimatedOrb";
-import { fadeUp, staggerContainer, easeOutExpo } from "@/lib/motion";
-import { InfographicBulletsHTML } from "@/app/components/layouts/InfographicBulletsHTML";
+import { ACCENT, halfBorder, INK, Mark, MONO, MUTED, RULE } from "./editorial";
+import DemoCursor from "./DemoCursor";
+import { GraphPlane } from "./blocks";
+import Gutter, { HERO_GUTTER } from "./Gutter";
 
-const HERO_PREVIEW_SLIDE = {
-  slide_title: { text: "Why teams switch to Slidexy" },
-  elements: [
-    { element_type: "bullet_point", id: "hp-1", text: "10x - Faster than building decks by hand" },
-    { element_type: "bullet_point", id: "hp-2", text: "50+ - Layout variations to choose from" },
-    { element_type: "bullet_point", id: "hp-3", text: "100% - On-brand colors, every slide" },
-    { element_type: "bullet_point", id: "hp-4", text: "0 - Design skills required" },
-  ],
+/**
+ * Hero.
+ *
+ * Two deliberate choices here.
+ *
+ * First, no slide screenshots. The templates are still being worked on, and
+ * a marketing page that shows output you are mid-way through redesigning
+ * ages badly. What it shows instead is the outline, which is real output,
+ * is honest, and is the part people actually judge first.
+ *
+ * Second, the outline is live. Pick a different starting point and the
+ * panel rewrites itself. It is the product's actual behaviour in miniature,
+ * not an illustration of it.
+ */
+
+type Example = {
+  key: string;
+  icon: React.ReactNode;
+  kind: string;
+  prompt: string;
+  meta: string;
+  outline: string[];
 };
-const HERO_PREVIEW_THEME = {
-  backgroundColor: "#ffffff",
-  artPalette: ["#8E2DE2", "#4A00E0", "#C084FC", "#F0ABFC"],
-};
 
-const PLACEHOLDERS = [
-  "Pitch deck for a climate-tech startup…",
-  "Q3 sales review for the leadership team…",
-  "Lecture on the history of jazz…",
-  "Onboarding walkthrough for new hires…",
-];
-
-const FLOATING_TAGS = [
-  { label: "Outline generated", top: "-46px", left: "8%", delay: 0.2 },
-  { label: "12 slides, ready", bottom: "-46px", right: "8%", delay: 0.6 },
+const EXAMPLES: Example[] = [
+  {
+    key: "pitch",
+    icon: <FormatQuoteRounded />,
+    kind: "From a sentence",
+    prompt: "Seed pitch for a climate tech startup cutting shipping emissions",
+    meta: "12 slides · Investor & Fundraising",
+    outline: [
+      "Shipping burns a billion tonnes a year",
+      "Why the obvious fixes have not worked",
+      "What we built, in one diagram",
+      "Three pilots, nine months, the numbers",
+      "The market, sized honestly",
+      "What the round buys",
+    ],
+  },
+  {
+    key: "review",
+    icon: <ArticleRounded />,
+    kind: "From a document",
+    prompt: "Q3 board review (uploaded: Q3-performance.pdf)",
+    meta: "9 slides · Annual Report",
+    outline: [
+      "The quarter in one number",
+      "Revenue against plan",
+      "Where margin moved, and why",
+      "Pipeline going into Q4",
+      "Two risks worth your attention",
+      "What we are asking for",
+    ],
+  },
+  {
+    key: "link",
+    icon: <InsertLinkRounded />,
+    kind: "From a link",
+    prompt: "https://example.com/our-2026-research",
+    meta: "11 slides · Marketing Strategy",
+    outline: [
+      "What the research actually found",
+      "The claim everyone repeats, tested",
+      "Four segments, one surprise",
+      "What changed since last year",
+      "Where the opportunity sits",
+      "What to do on Monday",
+    ],
+  },
 ];
 
 export default function HeroSection() {
+  const [active, setActive] = useState(0);
   const [inputValue, setInputValue] = useState("");
-  const [placeholderIdx, setPlaceholderIdx] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const paused = useRef(false);
 
-  const cardRef = useRef<HTMLDivElement>(null);
-  const previewWrapRef = useRef<HTMLDivElement>(null);
-  const [previewScale, setPreviewScale] = useState(0.4);
-  const mvX = useMotionValue(0);
-  const mvY = useMotionValue(0);
-  const rotateX = useSpring(useTransform(mvY, [-0.5, 0.5], [6, -6]), { stiffness: 150, damping: 20 });
-  const rotateY = useSpring(useTransform(mvX, [-0.5, 0.5], [-6, 6]), { stiffness: 150, damping: 20 });
+  // The demo cursor: which tab it is heading for, a counter bumped on
+  // each press so the ring replays, whether a person has taken over, and
+  // the measured centre of every tab in the panel's own coordinates.
+  const [aim, setAim] = useState(0);
+  const [press, setPress] = useState(0);
+  const [taken, setTaken] = useState(false);
+  const panel = useRef<HTMLDivElement>(null);
+  const resume = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeRef = useRef(0);
+  const tabs = useRef<(HTMLDivElement | null)[]>([]);
+  const [marks, setMarks] = useState<{ x: number; y: number }[]>([]);
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const rect = cardRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    mvX.set((e.clientX - rect.left) / rect.width - 0.5);
-    mvY.set((e.clientY - rect.top) / rect.height - 0.5);
+  const example = EXAMPLES[active];
+
+  useEffect(() => {
+    const measure = () => {
+      const box = panel.current?.getBoundingClientRect();
+      if (!box) return;
+      setMarks(
+        tabs.current.map((t) => {
+          if (!t) return { x: 0, y: 0 };
+          const r = t.getBoundingClientRect();
+          return { x: r.left - box.left + r.width * 0.42, y: r.top - box.top + r.height * 0.5 };
+        })
+      );
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (panel.current) ro.observe(panel.current);
+    return () => ro.disconnect();
+  }, []);
+
+  // The cursor drives the panel: it travels to the next tab, and the
+  // tab only changes once the pointer has actually arrived and pressed.
+  // Anyone touching the panel takes the wheel and the pointer leaves.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!paused.current) setAim((i) => (i + 1) % EXAMPLES.length);
+    }, 2800);
+    return () => clearInterval(id);
+  }, []);
+
+  const arrive = () => {
+    if (paused.current) return;
+    setActive(aim);
+    setPress((n) => n + 1);
   };
-  const handlePointerLeave = () => {
-    mvX.set(0);
-    mvY.set(0);
+
+  // Someone's real pointer is on the panel: stand down.
+  const takeOver = () => {
+    if (resume.current) clearTimeout(resume.current);
+    paused.current = true;
+    setTaken(true);
   };
 
-  const handleRedirect = () => {
-    analyticsEvent("get_started_click", {
-      category: "engagement",
-      label: "home_page_to_tools",
-    });
+  // They have moved off again. Wait a beat in case they are coming back,
+  // then pick up from whichever tab they left showing rather than from
+  // wherever the demo had got to.
+  const handBack = () => {
+    if (resume.current) clearTimeout(resume.current);
+    resume.current = setTimeout(() => {
+      setAim(activeRef.current);
+      paused.current = false;
+      setTaken(false);
+    }, 1600);
+  };
+
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
+
+  useEffect(() => () => {
+    if (resume.current) clearTimeout(resume.current);
+  }, []);
+
+  const go = () => {
     const prompt = inputValue.trim();
-    router.push(prompt ? `/tools?prompt=${encodeURIComponent(prompt)}` : "/tools");
+    analyticsEvent("get_started_click", { location: "hero", has_prompt: !!prompt });
+    router.push(
+      prompt
+        ? `/tools/prompt-to-deck?prompt=${encodeURIComponent(prompt)}`
+        : "/tools/prompt-to-deck"
+    );
   };
 
   useEffect(() => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
-    if (inputValue.trim()) {
-      current.set("prompt", inputValue.trim());
-    } else {
-      current.delete("prompt");
-    }
-    const search = current.toString();
-    router.replace(`?${search}`, { scroll: false });
+    if (inputValue.trim()) current.set("prompt", inputValue.trim());
+    else current.delete("prompt");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputValue]);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setPlaceholderIdx((i) => (i + 1) % PLACEHOLDERS.length);
-    }, 3200);
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    const el = previewWrapRef.current;
-    if (!el) return;
-    const update = () => setPreviewScale(el.clientWidth / 960);
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <Box
       component="section"
       sx={{
         position: "relative",
-        width: "100%",
         overflow: "hidden",
-        background: "#FFFFFF",
-        pt: { xs: 6, md: 8 },
-        pb: { xs: 8, md: 10 },
+        pt: { xs: 7, md: 10 },
+        pb: { xs: 8, md: 9 },
       }}
     >
-      {/* Soft light-purple wash + floating pastel orbs */}
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "radial-gradient(ellipse 60% 45% at 82% 12%, rgba(142,45,226,0.08) 0%, transparent 60%), radial-gradient(ellipse 55% 40% at 5% 85%, rgba(74,0,224,0.06) 0%, transparent 55%)",
-          pointerEvents: "none",
-        }}
-      />
-      <AnimatedOrb
-        size={{ xs: 200, md: 380 }}
-        top="-6%"
-        right="-6%"
-        color="rgba(142, 45, 226, 0.14)"
-        blur={70}
-        duration={9}
-      />
-      <AnimatedOrb
-        size={{ xs: 160, md: 300 }}
-        bottom="-8%"
-        left="-6%"
-        color="rgba(240, 171, 252, 0.16)"
-        blur={70}
-        duration={11}
-        delay={1.2}
-      />
+      {/* Two anchors in the bottom corners, each cropped by the side trim
+          and by the foot of the section. They sit in the margin the text
+          does not use, so they cannot reach it at any width. */}
+      <Gutter items={HERO_GUTTER} />
 
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 2 }}>
+      <Container maxWidth="lg" sx={{ position: "relative" }}>
         <Box
           sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            alignItems: "center",
-            gap: { xs: 6, md: 4 },
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1.08fr 0.92fr" },
+            gap: { xs: 6, md: 9 },
+            alignItems: "start",
           }}
         >
-          {/* Left column — copy + composer */}
-          <Box
-            component={motion.div}
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            sx={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: { xs: "center", md: "flex-start" },
-              textAlign: { xs: "center", md: "left" },
-              maxWidth: 560,
-            }}
-          >
-            <motion.div variants={fadeUp} custom={0}>
-              <Chip
-                icon={<AutoAwesome sx={{ fontSize: 16, color: "#8E2DE2 !important" }} />}
-                label="AI presentation generator"
+          {/* ── Left: the pitch and the input ─────────────────────── */}
+          <Box>
+
+            <Typography
+              sx={{
+                fontSize: "1rem",
+                lineHeight: 1.55,
+                color: MUTED,
+                maxWidth: 420,
+                mb: 2.25,
+              }}
+            >
+              Outline first, slides after
+            </Typography>
+
+            <Typography
+              component="h1"
+              sx={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 600,
+                fontSize: { xs: "2.6rem", sm: "3.4rem", md: "4.15rem" },
+                lineHeight: 0.99,
+                letterSpacing: "-0.03em",
+                color: INK,
+                mb: 3,
+              }}
+            >
+              You already know
+              <br />
+              what to say.
+              <Box component="span" sx={{ display: "block", color: ACCENT, fontStyle: "italic" }}>
+                We will set it.
+              </Box>
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: "1.06rem",
+                lineHeight: 1.6,
+                color: MUTED,
+                maxWidth: 480,
+                mb: 4,
+              }}
+            >
+              Hand over a topic, a document or a link. You get an outline you
+              can argue with, slides where every piece is editable, and a file
+              your client can actually open and change.
+            </Typography>
+
+            {/* The input, set as a card rather than a search bar */}
+            <Box
+              sx={{
+                ...halfBorder(),
+                bgcolor: "#fff",
+                display: "flex",
+                alignItems: "stretch",
+                maxWidth: 560,
+                transition: "box-shadow 0.18s ease",
+                "&:focus-within": { boxShadow: `5px 5px 0 0 ${ACCENT}` },
+              }}
+            >
+              <Box
+                component="input"
+                value={inputValue}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
+                onKeyDown={(e: React.KeyboardEvent) => e.key === "Enter" && go()}
+                placeholder="What is the deck about?"
                 sx={{
-                  bgcolor: "rgba(142, 45, 226, 0.08)",
-                  color: "#4A00E0",
-                  fontWeight: 600,
-                  border: "1px solid rgba(142, 45, 226, 0.16)",
-                  mb: 3,
+                  flex: 1,
+                  border: "none",
+                  outline: "none",
+                  px: 2.25,
+                  py: 2,
+                  fontSize: "1rem",
+                  fontFamily: "inherit",
+                  color: INK,
+                  bgcolor: "transparent",
+                  "&::placeholder": { color: "#A9A3B4" },
                 }}
               />
-            </motion.div>
-
-            <motion.div variants={fadeUp} custom={1}>
-              <Typography
-                component="h1"
-                className="sx-display"
+              <Box
+                component="button"
+                onClick={go}
+                aria-label="Start a deck"
                 sx={{
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 700,
-                  fontSize: { xs: "2.1rem", sm: "2.6rem", md: "3.1rem" },
-                  lineHeight: 1.12,
-                  letterSpacing: "-0.035em",
-                  color: "#0F0A19",
-                  mb: 2,
+                  border: "none",
+                  borderLeft: `1.5px solid ${INK}`,
+                  bgcolor: INK,
+                  color: "#fff",
+                  px: 2.5,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  fontSize: "0.92rem",
+                  fontWeight: 600,
+                  transition: "background 0.15s ease",
+                  "&:hover": { bgcolor: ACCENT },
                 }}
               >
-                Skip the blank slide.
+                Start
+                <ArrowForwardRounded />
+              </Box>
+            </Box>
+
+            {/* Two routes in, equally weighted. The input is for people who
+                know what they want; the template route is for people who
+                want to see the work before they commit a sentence. */}
+            <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 3, mt: 2.5 }}>
+              <Link href="/templates" style={{ textDecoration: "none" }}>
                 <Box
                   component="span"
                   sx={{
-                    display: "block",
-                    background: "linear-gradient(90deg, #8E2DE2, #C084FC, #8E2DE2)",
-                    backgroundSize: "200% auto",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    animation: "sx-gradient-shift 5s ease infinite",
-                  }}
-                >
-                  Just describe it.
-                </Box>
-              </Typography>
-            </motion.div>
-
-            <motion.div variants={fadeUp} custom={2}>
-              <Typography
-                sx={{
-                  color: "#5B5568",
-                  fontSize: { xs: "1rem", md: "1.1rem" },
-                  lineHeight: 1.65,
-                  maxWidth: 480,
-                  mb: 3.5,
-                }}
-              >
-                Hand Slidexy a topic, document, or link. Get a full deck —
-                outlined, designed, ready to present — in seconds.
-              </Typography>
-            </motion.div>
-
-            {/* Prompt composer */}
-            <motion.div variants={fadeUp} custom={3} style={{ width: "100%" }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  bgcolor: "#fff",
-                  borderRadius: "999px",
-                  border: "1.5px solid rgba(142,45,226,0.18)",
-                  boxShadow: "0 12px 32px -12px rgba(142,45,226,0.25)",
-                  pl: { xs: 2.5, md: 3 },
-                  pr: 0.75,
-                  py: 0.75,
-                  mb: 2,
-                  transition: "border-color 0.25s ease, box-shadow 0.25s ease",
-                  "&:focus-within": {
-                    borderColor: "#8E2DE2",
-                    boxShadow: "0 12px 32px -8px rgba(142,45,226,0.35), 0 0 0 4px rgba(142,45,226,0.1)",
-                  },
-                }}
-              >
-                <Box sx={{ position: "relative", flex: 1, minHeight: 28 }}>
-                  {!inputValue && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        inset: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        pointerEvents: "none",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <AnimatePresence mode="wait">
-                        <motion.span
-                          key={placeholderIdx}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -8 }}
-                          transition={{ duration: 0.35, ease: easeOutExpo }}
-                          style={{
-                            fontSize: "0.95rem",
-                            color: "#8A8496",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {PLACEHOLDERS[placeholderIdx]}
-                        </motion.span>
-                      </AnimatePresence>
-                    </Box>
-                  )}
-                  <InputBase
-                    fullWidth
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleRedirect();
-                      }
-                    }}
-                    sx={{
-                      color: "#0F0A19",
-                      fontSize: { xs: "0.95rem", md: "1rem" },
-                      "& input::placeholder": { color: "transparent" },
-                    }}
-                    inputProps={{ "aria-label": "Describe your presentation" }}
-                  />
-                </Box>
-                <Button
-                  component={motion.button}
-                  whileHover={{ scale: 1.06 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleRedirect}
-                  variant="contained"
-                  sx={{
-                    borderRadius: "999px",
-                    minWidth: 0,
-                    px: 2.75,
-                    py: 1.25,
-                    flexShrink: 0,
-                  }}
-                  aria-label="Create presentation"
-                >
-                  <ArrowForward fontSize="small" />
-                </Button>
-              </Box>
-            </motion.div>
-
-            <motion.div variants={fadeUp} custom={4}>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  justifyContent: { xs: "center", md: "flex-start" },
-                  alignItems: "center",
-                  gap: 2.5,
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
+                    display: "inline-flex",
                     alignItems: "center",
-                    gap: 0.75,
-                    color: "#8A8496",
-                    fontSize: "0.875rem",
-                  }}
-                >
-                  <AutoAwesome sx={{ fontSize: 15, color: "#8E2DE2" }} />
-                  No sign-up needed for your first deck
-                </Box>
-                <Box
-                  component={motion.button}
-                  whileHover={{ x: 3 }}
-                  onClick={() =>
-                    document
-                      .getElementById("how-it-works")
-                      ?.scrollIntoView({ behavior: "smooth" })
-                  }
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#4A00E0",
+                    gap: 1,
+                    fontSize: "0.95rem",
                     fontWeight: 600,
-                    fontSize: "0.875rem",
-                    p: 0,
+                    color: INK,
+                    borderBottom: `2px solid ${ACCENT}`,
+                    pb: 0.3,
+                    transition: "color 0.15s ease",
+                    "&:hover": { color: ACCENT },
                   }}
                 >
-                  <PlayArrow sx={{ fontSize: 16 }} />
-                  See how it works
+                  Browse the templates
+                  <ArrowForwardRounded sx={{ fontSize: 15 }} />
                 </Box>
-              </Box>
-            </motion.div>
+              </Link>
+              <Typography sx={{ fontSize: "0.85rem", color: "#9A94A6" }}>
+                No sign up for your first deck.
+              </Typography>
+            </Box>
           </Box>
 
-          {/* Right column — interactive floating product preview */}
-          <Box
-            sx={{
-              flex: 1,
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-              position: "relative",
-              perspective: 1000,
-            }}
-          >
-            <Box
-              component={motion.div}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3, ease: easeOutExpo }}
-              sx={{ position: "relative", width: "100%", maxWidth: 460 }}
-            >
-              <Box
-                ref={cardRef}
-                component={motion.div}
-                onPointerMove={handlePointerMove}
-                onPointerLeave={handlePointerLeave}
-                style={{ rotateX, rotateY }}
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                sx={{
-                  position: "relative",
-                  borderRadius: "20px",
-                  overflow: "hidden",
-                  border: "1px solid rgba(142,45,226,0.12)",
-                  boxShadow:
-                    "0 30px 60px -24px rgba(142,45,226,0.35), 0 8px 24px rgba(15,10,25,0.08)",
-                  bgcolor: "#fff",
-                  transformStyle: "preserve-3d",
-                }}
-              >
-                {/* Real rendered slide layout, scaled to fit — not a static mockup */}
-                <Box
-                  ref={previewWrapRef}
-                  sx={{
-                    position: "relative",
-                    width: "100%",
-                    aspectRatio: "960 / 540",
-                    overflow: "hidden",
-                    pointerEvents: "none",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "960px",
-                      height: "540px",
-                      transformOrigin: "top left",
-                      transform: `scale(${previewScale})`,
-                    }}
-                  >
-                    <InfographicBulletsHTML
-                      slide={HERO_PREVIEW_SLIDE}
-                      theme={HERO_PREVIEW_THEME}
-                      variant={1}
-                      isEditing={false}
-                      slideIndex={0}
-                    />
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    position: "absolute",
-                    inset: 0,
-                    background:
-                      "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%)",
-                    backgroundSize: "200% 100%",
-                    animation: "sx-shimmer 4.5s linear infinite",
-                    pointerEvents: "none",
-                  }}
-                />
-              </Box>
+          {/* ── Right: live outline ───────────────────────────────── */}
+          <Box sx={{ position: "relative" }}>
+            {/* Squared paper behind the panel, offset so a band of it
+                shows along two edges. Plain rectangle: the cut corner and
+                the dissolving teeth before it were both decoration the
+                panel did not need. */}
+            <GraphPlane
+              sx={{
+                display: { xs: "none", md: "block" },
+                inset: 0,
+                transform: "translate(30px, 30px)",
+                zIndex: 0,
+              }}
+            />
 
-              {FLOATING_TAGS.map((tag) => (
+            <Box
+              ref={panel}
+              onPointerEnter={takeOver}
+              onPointerLeave={handBack}
+              sx={{
+                position: "relative",
+                zIndex: 1,
+                bgcolor: "#fff",
+                ...halfBorder(),
+                p: { xs: 2.5, md: 3 },
+              }}
+            >
+            {/* Starting points, as a ruled selector */}
+            <Box sx={{ display: "flex", borderBottom: `1px solid ${RULE}`, mb: 0 }}>
+              {EXAMPLES.map((ex, i) => (
                 <Box
-                  key={tag.label}
-                  component={motion.div}
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1, y: [0, -6, 0] }}
-                  transition={{
-                    opacity: { duration: 0.5, delay: tag.delay + 0.6 },
-                    scale: { duration: 0.5, delay: tag.delay + 0.6 },
-                    y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: tag.delay },
+                  key={ex.key}
+                  ref={(n: HTMLDivElement | null) => {
+                    tabs.current[i] = n;
+                  }}
+                  onClick={() => {
+                    takeOver();
+                    setActive(i);
                   }}
                   sx={{
-                    position: "absolute",
-                    top: tag.top,
-                    bottom: tag.bottom,
-                    left: tag.left,
-                    right: tag.right,
-                    display: { xs: "none", sm: "flex" },
+                    flex: 1,
+                    display: "flex",
                     alignItems: "center",
-                    gap: 0.75,
-                    bgcolor: "#fff",
-                    borderRadius: "999px",
-                    border: "1px solid rgba(142,45,226,0.14)",
-                    boxShadow: "0 12px 28px -10px rgba(142,45,226,0.3)",
-                    px: 1.75,
-                    py: 0.9,
-                    fontSize: "0.8rem",
-                    fontWeight: 600,
-                    color: "#0F0A19",
-                    zIndex: 3,
+                    gap: 0.9,
+                    pb: 1.4,
+                    cursor: "pointer",
+                    color: i === active ? INK : "#A9A3B4",
+                    borderBottom: `2px solid ${i === active ? ACCENT : "transparent"}`,
+                    mb: "-1px",
+                    transition: "color 0.15s ease",
+                    "&:hover": { color: INK },
                   }}
                 >
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      background: "linear-gradient(135deg, #8E2DE2, #4A00E0)",
-                    }}
-                  />
-                  {tag.label}
+                  <Box sx={{ fontSize: 14, display: "flex" }}>{ex.icon}</Box>
+                  <Typography sx={{ fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap" }}>
+                    {ex.kind}
+                  </Typography>
                 </Box>
               ))}
+            </Box>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={example.key}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15 }}
+              >
+                <Box sx={{ pt: 3 }}>
+                  <Typography
+                    sx={{
+                      fontSize: "0.95rem",
+                      color: INK,
+                      lineHeight: 1.5,
+                      mb: 0.75,
+                      fontStyle: example.key === "link" ? "normal" : "italic",
+                      fontFamily: example.key === "link" ? MONO : "inherit",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {example.key === "link" ? example.prompt : `"${example.prompt}"`}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: MONO,
+                      fontSize: "0.7rem",
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      color: ACCENT,
+                      mb: 2.5,
+                    }}
+                  >
+                    {example.meta}
+                  </Typography>
+
+                  <Box sx={{ borderTop: `1px solid ${RULE}` }}>
+                    {example.outline.map((line, i) => (
+                      <Box
+                        key={line}
+                        component={motion.div}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.05 + i * 0.045, duration: 0.2 }}
+                        sx={{
+                          display: "flex",
+                          gap: 2,
+                          alignItems: "baseline",
+                          py: 1.35,
+                          borderBottom: `1px solid ${RULE}`,
+                        }}
+                      >
+                        <Typography
+                          sx={{ fontFamily: MONO, fontSize: "0.72rem", color: "#B4AEC0", minWidth: 18 }}
+                        >
+                          {String(i + 1).padStart(2, "0")}
+                        </Typography>
+                        <Typography sx={{ fontSize: "0.95rem", color: INK, lineHeight: 1.45 }}>
+                          {line}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+
+                  <Typography sx={{ mt: 2, fontSize: "0.8rem", color: "#9A94A6", lineHeight: 1.5 }}>
+                    Edit any line before a single slide gets built.
+                  </Typography>
+                </Box>
+              </motion.div>
+              </AnimatePresence>
+
+
+              {marks.length === EXAMPLES.length && (
+                <DemoCursor
+                  to={marks[aim]}
+                  show={!taken}
+                  press={press}
+                  onArrive={arrive}
+                />
+              )}
             </Box>
           </Box>
         </Box>

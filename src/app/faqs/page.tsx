@@ -10,7 +10,7 @@ import ContextualFAQ from "../components/seo/ContextualFAQ";
 import CTASection from "../components/seo/CTASection";
 
 export const metadata: Metadata = {
-  title: "Frequently Asked Questions (FAQ) — SlideXY AI",
+  title: "Frequently Asked Questions (FAQ) | SlideXY AI",
   description:
     "Find answers to common questions about SlideXY AI, pricing, credits, and how to use our AI presentation maker to create stunning slides in seconds.",
   alternates: {

@@ -10,7 +10,14 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
 import { useSearchParams, useRouter } from "next/navigation";
-import StepIndicator from "@/app/components/shared/StepIndicator";
+import {
+  ACCENT,
+  BONE,
+  INK,
+  MONO,
+  MUTED,
+  RULE,
+} from "@/app/components/home/editorial";
 import StepsHeader from "@/app/components/headers-navbar/StepsHeader";
 import debounce from "lodash/debounce";
 
@@ -368,42 +375,117 @@ export default function OutlinePage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <CircularProgress />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          bgcolor: BONE,
+        }}
+      >
+        <CircularProgress size={22} sx={{ color: ACCENT }} />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", width: "100vw", bgcolor: "#FBFAFF", position: "relative", overflowX: "hidden" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: BONE, position: "relative", overflowX: "clip", pb: 14 }}>
       <StepsHeader />
-      <Box sx={{ mt: 4 }}>
-        <StepIndicator activeStep={1} />
-      </Box>
 
-      <Box sx={{ width: "100%", maxWidth: 1440, mx: "auto", px: { xs: 1, md: 8, lg: 0 } }}>
-        <Box sx={{ textAlign: "center", pt: { xs: 4, md: 10 }, pb: { xs: 1, md: 2 } }}>
-          <Typography variant="h3" sx={{ fontWeight: 700, fontSize: { xs: "1.8rem", md: "3rem" }, mb: 2 }}>
-            Review the Outline
-          </Typography>
-          <Typography sx={{ color: "#757575", mb: 6, maxWidth: 700, mx: "auto" }}>
-            Enhance and tailor your slide content to deliver a powerful, persuasive presentation.
-          </Typography>
-          <Typography sx={{ fontWeight: 600, mb: 1 }}>Personal portfolio outline</Typography>
-          <Typography sx={{ color: "#757575", mb: 4 }}>{cards.length} Cards</Typography>
-          {isSaving && (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-              <CircularProgress size={16} />
-              <Typography variant="caption" color="primary">Saving changes...</Typography>
+      <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: { xs: 2, md: 4 } }}>
+        {/* Where you are, as three ruled stages rather than a widget */}
+        <Box
+          sx={{
+            display: "flex",
+            gap: { xs: 2, md: 5 },
+            borderBottom: `1px solid ${RULE}`,
+            pt: { xs: 3, md: 4 },
+            pb: 1.4,
+            fontFamily: MONO,
+            fontSize: "0.68rem",
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+          }}
+        >
+          {["The brief", "The running order", "The slides"].map((label, i) => (
+            <Box
+              key={label}
+              sx={{
+                display: "flex",
+                gap: 1,
+                color: i === 1 ? INK : "#BDB7C8",
+                borderBottom: i === 1 ? `2px solid ${ACCENT}` : "2px solid transparent",
+                mb: "-13px",
+                pb: 1.1,
+              }}
+            >
+              <Box component="span" sx={{ color: i === 1 ? ACCENT : "#D6D1DE" }}>
+                0{i + 1}
+              </Box>
+              <Box component="span">{label}</Box>
             </Box>
-          )}
+          ))}
         </Box>
 
-        <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+        {/* Masthead */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1.3fr 1fr" },
+            gap: { xs: 2, md: 6 },
+            alignItems: "end",
+            pt: { xs: 4, md: 6 },
+            pb: { xs: 3, md: 4 },
+          }}
+        >
+          <Typography
+            component="h1"
+            sx={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 600,
+              fontSize: { xs: "2rem", md: "3rem" },
+              lineHeight: 1.04,
+              letterSpacing: "-0.03em",
+              color: INK,
+            }}
+          >
+            Argue with it
+            <br />
+            before it is designed.
+          </Typography>
+
+          <Box sx={{ pb: 1 }}>
+            <Typography sx={{ fontSize: "1rem", lineHeight: 1.6, color: MUTED, maxWidth: 400, mb: 2 }}>
+              Rewrite a line, drop a section, drag the middle around. Nothing
+              is laid out until you say so.
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                fontFamily: MONO,
+                fontSize: "0.72rem",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: MUTED,
+              }}
+            >
+              <Box component="span">{cards.length} slides</Box>
+              <Box component="span" sx={{ color: RULE }}>/</Box>
+              <Box component="span" sx={{ color: isSaving ? ACCENT : "#A9A3B4" }}>
+                {isSaving ? "Saving" : "Saved"}
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+
+        <Box>
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="outline-cards">
               {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {cards.map((card, idx) => (
                     <Draggable key={idx} draggableId={String(idx)} index={idx}>
                       {(provided, snapshot) => (
@@ -472,21 +554,68 @@ export default function OutlinePage() {
         sx={{
           position: "sticky",
           bottom: 0,
-          bgcolor: "#FBFAFF",
-          py: 4,
-          textAlign: "center",
           zIndex: 10,
+          bgcolor: "rgba(241,240,238,0.94)",
+          backdropFilter: "blur(10px)",
+          borderTop: `1px solid ${INK}`,
         }}
       >
-        <Button
-          variant="contained"
-          size="large"
-          onClick={handleContinue}
-          disabled={isSaving}
-          sx={{ width: { xs: "80%", md: 320 }, fontSize: "1.1rem" }}
+        <Box
+          sx={{
+            maxWidth: 1200,
+            mx: "auto",
+            px: { xs: 2, md: 4 },
+            py: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+          }}
         >
-          {isSaving ? "Saving..." : "Continue"}
-        </Button>
+          <Typography
+            sx={{
+              fontFamily: MONO,
+              fontSize: "0.72rem",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: MUTED,
+              display: { xs: "none", sm: "block" },
+            }}
+          >
+            {cards.length} slides in this order
+          </Typography>
+
+          <Box
+            component="button"
+            onClick={handleContinue}
+            disabled={isSaving}
+            sx={{
+              ml: { xs: 0, sm: "auto" },
+              width: { xs: "100%", sm: "auto" },
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1.25,
+              bgcolor: INK,
+              color: "#fff",
+              border: `1.5px solid ${INK}`,
+              px: 3.25,
+              py: 1.45,
+              cursor: isSaving ? "default" : "pointer",
+              fontFamily: "inherit",
+              fontSize: "0.96rem",
+              fontWeight: 600,
+              opacity: isSaving ? 0.6 : 1,
+              transition: "background 0.15s ease, border-color 0.15s ease",
+              "&:hover": {
+                bgcolor: isSaving ? INK : ACCENT,
+                borderColor: isSaving ? INK : ACCENT,
+              },
+            }}
+          >
+            {isSaving ? "Saving" : "Design these slides"} →
+          </Box>
+        </Box>
       </Box>
 
       {/* Image Suggestions Popup */}

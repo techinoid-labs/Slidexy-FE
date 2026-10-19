@@ -5,6 +5,8 @@ import { Box, Button, CircularProgress } from "@mui/material";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import ShareIcon from "@mui/icons-material/Share";
 import { useLinkedIn } from "@/app/context/LinkedInContext";
+import { useSlides } from "@/app/context/SlidesContext";
+import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { LinkedInConnectButton, LinkedInShareDialog } from "@/app/components/linkedin";
 import { useSearchParams } from "next/navigation";
 import html2canvas from "html2canvas";
@@ -22,6 +24,10 @@ export const LinkedInShareButton: React.FC<LinkedInShareButtonProps> = ({
   sx = {},
 }) => {
   const { isConnected, connectionLoading } = useLinkedIn();
+  // The deck, so the dialog can offer a carousel post rather than only
+  // the single slide this button used to share.
+  const { slides } = useSlides() as any;
+  const { selectedTheme } = useSlideThemeContext() as any;
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [slideScreenshot, setSlideScreenshot] = useState<string | null>(null);
   const searchParams = useSearchParams();
@@ -100,7 +106,9 @@ export const LinkedInShareButton: React.FC<LinkedInShareButtonProps> = ({
         presentationId={presentationId || undefined}
         slideIndex={0}
         slideThumbnail={slideScreenshot || undefined}
-        slideTitle="Presentation Slide"
+        slideTitle="Presentation Slide"
+        slides={slides}
+        theme={selectedTheme}
       />
     </>
   );

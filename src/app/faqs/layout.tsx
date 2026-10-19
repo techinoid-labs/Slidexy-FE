@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Frequently Asked Questions — SlideXY",
+  title: "Frequently Asked Questions | SlideXY",
   description:
     "Find answers to common questions about SlideXY: features, pricing, customization, and how our AI presentation tool works.",
   alternates: {

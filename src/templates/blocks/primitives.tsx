@@ -3,6 +3,7 @@
 import React, { createContext, useContext } from "react";
 import { EditableElement } from "@/app/components/editor/EditableElement";
 import type { ResolvedTokens } from "../tokens";
+import { BACKGROUND_DECOR } from "../decor";
 import { withAlpha } from "../tokens";
 import type { CardStyle, RichText } from "../types";
 import { ICONS, FallbackIcon } from "./icons";
@@ -344,6 +345,17 @@ export const MotifLayer: React.FC = () => {
   const t = useTokens();
   const { motif, palette } = t.theme;
   if (motif === "none") return null;
+
+  // Drawn SVG assets take precedence. They live in decor.tsx rather than
+  // here because they are artwork, not layout primitives.
+  const Drawn = (BACKGROUND_DECOR as Record<string, React.FC<any>>)[motif];
+  if (Drawn) {
+    return (
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }} aria-hidden>
+        <Drawn palette={palette} dark={t.theme.mode === "dark"} />
+      </div>
+    );
+  }
 
   const soft = withAlpha(palette.accent, t.theme.mode === "dark" ? 0.16 : 0.07);
   const soft2 = withAlpha(palette.accent2, t.theme.mode === "dark" ? 0.14 : 0.06);

@@ -1,22 +1,24 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import {
-  CircularProgress,
-  Box,
-  Alert,
-  Typography,
-  Breadcrumbs,
-  Container,
-  Grid,
-} from "@mui/material";
-import { Home as HomeIcon, NavigateNext } from "@mui/icons-material";
-import { redirect, useParams, useRouter } from "next/navigation";
+
+import React, { useEffect, useMemo, useState } from "react";
+import { Box, Container, Typography, CircularProgress, Alert } from "@mui/material";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useUser } from "../../context/AuthContext";
 import { slugify } from "../../../utils/slugUtils";
-import StepsHeader from "../../components/headers-navbar/StepsHeader";
-import BlogDetail from "../../components/blogs/BlogDetail";
-import { useSession } from "next-auth/react";
 import Header from "@/app/components/headers-navbar/Header";
+import Footer from "@/app/components/home/Footer";
+import BlogDetail from "../../components/blogs/BlogDetail";
+import { ACCENT, BONE, INK, MONO, MUTED } from "../../components/home/editorial";
+
+/**
+ * One post.
+ *
+ * The page owns loading, the crumb trail and the admin delete; the
+ * reading surface is BlogDetail. Same endpoints and the same slug
+ * matching as before, on the house system instead of the old grey card.
+ */
 
 interface Blog {
   _id: string;
@@ -30,176 +32,136 @@ interface Blog {
   createdAt?: string;
   updatedAt?: string;
 }
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+
 export default function BlogDetailPage() {
-  // redirect("/");
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
-  const isAdmin = user?.admin || false;
   const { data: session } = useSession();
+  const isAdmin = user?.admin || false;
+
+  const [all, setAll] = useState<Blog[]>([]);
   const [blog, setBlog] = useState<Blog | null>(null);
-  const [allBlogs, setAllBlogs] = useState<Blog[]>([]);
-  const [relatedBlogs, setRelatedBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const purpleColor = "#8E2DE2";
-  const purpleLight = "rgba(142, 45, 226, 0.08)";
-
   useEffect(() => {
-    const loadData = async () => {
+    const load = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/blogs`);
-        if (!response.ok) throw new Error("Failed to fetch blogs");
-        const data = await response.json();
-        const blogsData = data.blogs || data;
-        setAllBlogs(blogsData);
+        const res = await fetch(`${API_BASE_URL}/api/blogs`);
+        if (!res.ok) throw new Error("Could not load the post");
+        const data = await res.json();
+        const list: Blog[] = data.blogs || data;
+        setAll(list);
 
-        if (params.slug) {
-          const foundBlog = blogsData.find(
-            (b: Blog) => slugify(b.title) === params.slug
-          );
-          if (foundBlog) {
-            setBlog(foundBlog);
-          } else {
-            setError("Blog not found");
-          }
-        }
+        const found = list.find((b) => slugify(b.title) === params.slug);
+        if (found) setBlog(found);
+        else setError("That post does not exist, or it has moved.");
       } catch (err: any) {
-        setError(err.message || "Failed to load blog");
+        setError(err.message || "Could not load the post");
       } finally {
         setLoading(false);
       }
     };
-
-    loadData();
+    load();
   }, [params.slug]);
 
-  useEffect(() => {
-    if (blog && allBlogs.length > 0) {
-      const related = allBlogs
-        .filter((b) => b.category === blog.category && b._id !== blog._id)
-        .slice(0, 3);
-      setRelatedBlogs(related);
-    }
-  }, [blog, allBlogs]);
+  // Same category first; if there is nothing in it, fall back to the most
+  // recent posts, because an empty Next block is worse than a loose one.
+  const related = useMemo(() => {
+    if (!blog) return [];
+    const sameTopic = all.filter((b) => b.category === blog.category && b._id !== blog._id);
+    const pool = sameTopic.length > 0 ? sameTopic : all.filter((b) => b._id !== blog._id);
+    return pool.slice(0, 3);
+  }, [blog, all]);
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this blog post?")) return;
-
+    if (!blog?._id) return;
+    if (!confirm("Delete this post? This cannot be undone.")) return;
     try {
-      const token = session?.user?.accessToken;
-      if (!blog?._id) return;
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/blogs/${blog._id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${session?.user?.accessToken}` },
       });
-
-      if (!response.ok) throw new Error("Failed to delete blog");
-
+      if (!res.ok) throw new Error("Could not delete the post");
       router.push("/blog");
     } catch (err: any) {
-      setError(err.message || "Failed to delete blog");
+      setError(err.message || "Could not delete the post");
     }
   };
 
-  if (loading) {
-    return (
-      <>
-        <Header />
-        <Box sx={{ bgcolor: "#FAFBFC", minHeight: "100vh", py: 4 }}>
-          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress sx={{ color: purpleColor }} />
-          </Box>
-        </Box>
-      </>
-    );
-  }
-
   return (
-    <>
+    <Box
+      component="main"
+      sx={{ minHeight: "100vh", bgcolor: BONE, display: "flex", flexDirection: "column", overflowX: "clip" }}
+    >
       <Header />
 
-      <Box sx={{ bgcolor: "#FAFBFC", minHeight: "100vh" }}>
-        {error ? (
-          <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Alert severity="error">{error}</Alert>
-          </Container>
-        ) : blog ? (
-          <>
-            <Container maxWidth="lg" sx={{ pt: 3, pb: 0 }}>
-              <Breadcrumbs
-                separator={
-                  <NavigateNext
-                    fontSize="small"
-                    sx={{ color: "text.secondary" }}
-                  />
-                }
-                sx={{ mb: 0 }}
-              >
-                <Box
-                  component="a"
-                  href="/"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    router.push("/");
-                  }}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    color: "text.secondary",
-                    textDecoration: "none",
-                    "&:hover": { color: "primary.main" },
-                  }}
-                >
-                  <HomeIcon sx={{ fontSize: 16 }} />
-                  <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
-                    Home
-                  </Typography>
-                </Box>
-                <Typography
-                  component="a"
-                  href="/blog"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    router.push("/blog");
-                  }}
-                  variant="body2"
-                  sx={{
-                    fontSize: "0.875rem",
-                    color: "text.secondary",
-                    textDecoration: "none",
-                    "&:hover": { color: "primary.main" },
-                  }}
-                >
-                  Blog
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ fontSize: "0.875rem", color: "text.primary" }}
-                >
-                  {blog.title}
-                </Typography>
-              </Breadcrumbs>
-            </Container>
+      <Box sx={{ flex: "1 0 auto" }}>
+        <Container maxWidth="md" sx={{ pt: { xs: 2.5, md: 3.5 } }}>
+          <Box
+            component={Link}
+            href="/blog"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 1,
+              fontFamily: MONO,
+              fontSize: "0.66rem",
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              color: MUTED,
+              textDecoration: "none",
+              "&:hover": { color: ACCENT },
+            }}
+          >
+            ← Back to writing
+          </Box>
+        </Container>
 
-            <BlogDetail
-              blog={blog}
-              relatedBlogs={relatedBlogs}
-              purpleColor={purpleColor}
-              purpleLight={purpleLight}
-              isAdmin={isAdmin}
-              onDelete={handleDelete}
-            />
-          </>
-        ) : null}
+        {loading && (
+          <Box sx={{ py: 14, display: "flex", justifyContent: "center" }}>
+            <CircularProgress size={22} sx={{ color: ACCENT }} />
+          </Box>
+        )}
+
+        {!loading && error && (
+          <Container maxWidth="md" sx={{ py: 10 }}>
+            <Alert severity="error" sx={{ borderRadius: 0, mb: 3 }}>
+              {error}
+            </Alert>
+            <Box
+              component={Link}
+              href="/blog"
+              sx={{
+                display: "inline-block",
+                fontSize: "0.95rem",
+                fontWeight: 600,
+                color: INK,
+                borderBottom: `2px solid ${ACCENT}`,
+                pb: 0.3,
+                textDecoration: "none",
+              }}
+            >
+              Back to everything we have written
+            </Box>
+          </Container>
+        )}
+
+        {!loading && blog && (
+          <BlogDetail
+            blog={blog}
+            relatedBlogs={related}
+            isAdmin={isAdmin}
+            onDelete={handleDelete}
+          />
+        )}
       </Box>
-    </>
+
+      <Footer />
+    </Box>
   );
 }

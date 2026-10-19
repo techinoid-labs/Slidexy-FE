@@ -22,6 +22,19 @@ import { clearPersistedSlides } from "@/app/store/store";
 import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "../auth/AuthModal";
 import NavProfileHandler from "../auth/NavProfileHandler";
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
+import { ACCENT, INK, MONO, MUTED, RULE } from "@/app/components/home/editorial";
+
+/**
+ * The bar above the making-a-deck steps.
+ *
+ * It was the last bit of the old kit still showing: an outlined pill
+ * with a borrowed arrow icon, a text button, and a centred logo, all
+ * sitting on nothing. The rest of the product is ruled, square and set
+ * in mono at this size, and a header that disagrees with the page
+ * under it is the thing that makes software look assembled rather than
+ * designed.
+ */
 export default function StepsHeader() {
   const theme = useMuiTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -30,13 +43,25 @@ export default function StepsHeader() {
   const { removeSlides } = useSlides();
   const pathname = usePathname();
   const [isAuthModalOpen, setAuthModalOpen] = React.useState(false);
+  /**
+   * Back a step, not back a page.
+   *
+   * The outline used to send you to /tools, which has never been a
+   * route: the product was cut back to decks only and the index page
+   * went with it, leaving this pointing at a 404. The step before an
+   * outline is the composer that asked for it.
+   */
   const handleGoBack = () => {
     if (pathname === "/editor") {
       router.push("/presentation/outline");
     } else if (pathname === "/presentation/outline") {
-      router.push("/tools");
+      router.push("/tools/prompt-to-deck");
+    } else if (pathname === "/presentation/preview-slides") {
+      router.push("/presentation/outline");
     } else if (pathname === "/presentation/create") {
       router.push("/");
+    } else if (pathname.startsWith("/blog/")) {
+      router.push("/blog");
     } else {
       router.back(); // fallback
     }
@@ -49,19 +74,19 @@ export default function StepsHeader() {
         elevation={0}
         sx={{
           background: "#fff",
-          minHeight: 80,
           boxShadow: "none",
-          color: "text.primary",
+          borderBottom: `1px solid ${RULE}`,
+          color: INK,
         }}
       >
         <Toolbar
+          disableGutters
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            px: { xs: 2, md: 8 },
-            minHeight: 60,
-            mt: 1,
+            px: { xs: 2, md: 5 },
+            minHeight: { xs: 60, md: 72 },
             flexDirection: "row",
           }}
         >
@@ -72,32 +97,35 @@ export default function StepsHeader() {
               alignItems: "center",
             }}
           >
-            <Button
-              onClick={() => {
-                handleGoBack();
-              }}
-              variant="outlined"
-              color="inherit"
-              startIcon={
-                <Image
-                  src="/arrow-left.svg"
-                  alt="Back"
-                  width={19}
-                  height={19}
-                />
-              }
+            <Box
+              component="button"
+              onClick={handleGoBack}
               sx={{
-                color: "#1A1A1A",
-                borderColor: "rgba(0,0,0,0.12)",
-                fontSize: { xs: "0.8rem", md: "1rem" },
-                "&:hover": {
-                  borderColor: "rgba(142, 45, 226, 0.4)",
-                  backgroundColor: "rgba(142, 45, 226, 0.06)",
-                },
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.9,
+                fontFamily: MONO,
+                fontSize: "0.72rem",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: MUTED,
+                background: "none",
+                border: "none",
+                p: 0,
+                cursor: "pointer",
+                transition: "color 0.15s ease",
+                "&:hover": { color: ACCENT },
+                // The arrow moves, not the label, so the hover reads as
+                // a direction rather than a wobble.
+                "&:hover .step-back-arrow": { transform: "translateX(-3px)" },
               }}
             >
-              {!isMobile ? "Go back" : ""}
-            </Button>
+              <ArrowBackRounded
+                className="step-back-arrow"
+                sx={{ fontSize: 16, transition: "transform 0.15s ease" }}
+              />
+              {!isMobile ? "Back" : ""}
+            </Box>
           </Box>
 
           {/* Logo */}
@@ -118,23 +146,31 @@ export default function StepsHeader() {
               alignItems: "center",
             }}
           >
-            <Button
+            <Box
+              component="button"
               onClick={() => {
                 localStorage.removeItem("fileName");
                 clearPersistedSlides();
                 removeSlides();
                 handleGoBack();
               }}
-              variant="text"
-              color="inherit"
               sx={{
-                color: "#1A1A1A",
-                fontSize: { xs: "0.8rem", md: "1rem" },
-                mr: 1,
+                fontFamily: MONO,
+                fontSize: "0.72rem",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: MUTED,
+                background: "none",
+                border: "none",
+                p: 0,
+                mr: 3,
+                cursor: "pointer",
+                transition: "color 0.15s ease",
+                "&:hover": { color: ACCENT },
               }}
             >
-              Cancel
-            </Button>
+              Start over
+            </Box>
             <NavProfileHandler setAuthModalOpen={setAuthModalOpen} />
           </Box>
         </Toolbar>

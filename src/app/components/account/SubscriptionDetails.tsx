@@ -304,7 +304,7 @@
 //               variant="body2"
 //               sx={{ color: "success.main", mt: 2, fontWeight: 500 }}
 //             >
-//               🎉 Trial Active — {trial?.daysLeft} days left
+//               Trial active, {trial?.daysLeft} days left
 //             </Typography>
 //           )}
 
@@ -653,7 +653,7 @@ const SubscriptionDetails: React.FC = () => {
                         color="success.main"
                         sx={{ mt: 0.5 }}
                       >
-                        🎟 Discount applied — Saved{" "}
+                        Discount applied, saved{" "}
                         {sub?.plan?.price - billing.discountedPrice}{" "}
                         {sub?.plan?.currency}
                       </Typography>
@@ -743,7 +743,7 @@ const SubscriptionDetails: React.FC = () => {
               variant="body2"
               sx={{ color: "success.main", mt: 2, fontWeight: 500 }}
             >
-              🎉 Trial Active — {trial?.daysLeft} days left
+              Trial active, {trial?.daysLeft} days left
             </Typography>
           )}
           {!isActive && !trialActive && !isEnded && (

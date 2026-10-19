@@ -41,8 +41,7 @@ export default function Header() {
 
   const navigationItems = [
     { label: "Home", link: "/" },
-    { label: "Tools", link: "/tools" },
-    { label: "Templates", link: "/templates" },
+    { label: "How it works", link: "/how-it-works" },
     { label: "Pricing", link: "/pricing" },
     { label: "Blogs", link: "/blog" },
   ];
@@ -56,7 +55,9 @@ export default function Header() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       sx={{
-        background: scrolled ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.92)",
+        // Bone, not white, so the bar reads as part of the page rather
+        // than a tray sitting on top of it.
+        background: scrolled ? "rgba(241,240,238,0.84)" : "rgba(241,240,238,0.94)",
         backdropFilter: "blur(16px) saturate(1.4)",
         WebkitBackdropFilter: "blur(16px) saturate(1.4)",
         borderBottom: scrolled
@@ -95,43 +96,27 @@ export default function Header() {
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           {!isMobile && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, mr: 1.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mr: 4 }}>
               {navigationItems.map((item) => {
                 const isActive = pathname === item.link;
                 return (
-                  <Link key={item.label} href={item.link} passHref>
-                    <Button
-                      color="inherit"
+                  <Link key={item.label} href={item.link} passHref style={{ textDecoration: "none", color: "inherit" }}>
+                    <Box
+                      component="span"
                       sx={{
-                        position: "relative",
-                        color: isActive ? "primary.main" : "inherit",
-                        opacity: isActive ? 1 : 0.75,
-                        fontSize: "0.95rem",
+                        display: "inline-block",
+                        px: 1.75,
+                        py: 0.5,
+                        fontSize: "0.93rem",
                         fontWeight: isActive ? 600 : 500,
-                        px: 2,
-                        py: 1,
-                        borderRadius: "999px",
-                        "&:hover": {
-                          opacity: 1,
-                          backgroundColor: "rgba(142, 45, 226, 0.06)",
-                        },
-                        "&::after": isActive
-                          ? {
-                              content: '""',
-                              position: "absolute",
-                              bottom: 4,
-                              left: "50%",
-                              transform: "translateX(-50%)",
-                              width: 18,
-                              height: 3,
-                              borderRadius: 2,
-                              background: "linear-gradient(90deg, #8E2DE2, #4A00E0)",
-                            }
-                          : {},
+                        color: isActive ? "#0F0A19" : "#6B6478",
+                        borderBottom: isActive ? "2px solid #8E2DE2" : "2px solid transparent",
+                        transition: "color 0.15s ease",
+                        "&:hover": { color: "#0F0A19" },
                       }}
                     >
                       {item.label}
-                    </Button>
+                    </Box>
                   </Link>
                 );
               })}
@@ -139,16 +124,45 @@ export default function Header() {
           )}
 
           {!isMobile && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <Button
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2.5, pl: 3, borderLeft: "1px solid #E4E1EA" }}>
+              <Link href="/templates" style={{ textDecoration: "none", color: "inherit" }}>
+                <Box
+                  component="span"
+                  sx={{
+                    fontSize: "0.93rem",
+                    fontWeight: 600,
+                    color: "#0F0A19",
+                    borderBottom: "2px solid #8E2DE2",
+                    pb: 0.3,
+                    whiteSpace: "nowrap",
+                    transition: "color 0.15s ease",
+                    "&:hover": { color: "#8E2DE2" },
+                  }}
+                >
+                  Explore templates
+                </Box>
+              </Link>
+              <Box
                 component={Link}
                 href="/tools/prompt-to-deck"
-                variant="contained"
-                size="small"
-                sx={{ px: 2.5 }}
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 1,
+                  bgcolor: "#0F0A19",
+                  color: "#fff",
+                  px: 2.75,
+                  py: 1.15,
+                  fontSize: "0.93rem",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                  transition: "background 0.15s ease",
+                  "&:hover": { bgcolor: "#8E2DE2" },
+                }}
               >
                 Create deck
-              </Button>
+              </Box>
               <NavProfileHandler />
             </Box>
           )}

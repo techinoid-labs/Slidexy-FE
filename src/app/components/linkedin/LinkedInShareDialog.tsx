@@ -27,6 +27,10 @@ interface LinkedInShareDialogProps {
   slideIndex?: number;
   slideThumbnail?: string;
   slideTitle?: string;
+  /** The whole deck, needed for a carousel post. */
+  slides?: any[];
+  theme?: any;
+  deckTitle?: string;
 }
 
 /**
@@ -40,8 +44,11 @@ export const LinkedInShareDialog: React.FC<LinkedInShareDialogProps> = ({
   slideIndex = 0,
   slideThumbnail,
   slideTitle = "Check out this presentation!",
+  slides,
+  theme,
+  deckTitle,
 }) => {
-  const { shareSlide, shareCustomContent, connectionLoading, connectionError, connectionStatus } =
+  const { shareSlide, shareCustomContent, shareDeckAsCarousel, connectionLoading, connectionError, connectionStatus } =
     useLinkedIn();
 
   const [message, setMessage] = useState(
@@ -52,6 +59,17 @@ export const LinkedInShareDialog: React.FC<LinkedInShareDialogProps> = ({
   const [shareSuccess, setShareSuccess] = useState(false);
   const [includeCaption, setIncludeCaption] = useState(true);
 
+  // Carousel by default when there is a deck to post. A document carousel
+  // is the format that actually travels on LinkedIn; a single slide as a
+  // flat image is the weakest thing you can publish.
+  const canCarousel = Array.isArray(slides) && slides.length > 1;
+  const [mode, setMode] = useState<"carousel" | "slide">("carousel");
+  const [buildProgress, setBuildProgress] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    setMode(canCarousel ? "carousel" : "slide");
+  }, [canCarousel]);
+
   const handleShare = async () => {
     try {
       setIsSharing(true);
@@ -60,7 +78,25 @@ export const LinkedInShareDialog: React.FC<LinkedInShareDialogProps> = ({
 
       let result;
 
-      if (presentationId && slideIndex !== undefined) {
+      if (mode === "carousel" && canCarousel) {
+        setBuildProgress("Rendering deck…");
+        const { exportSlidesAsPDF } = await import("@/utils/exportSlides");
+        const pdf = (await exportSlidesAsPDF(slides!, theme, {
+          output: "blob",
+          onProgress: (done, total) => setBuildProgress(`Rendering slide ${done} of ${total}…`),
+        })) as Blob;
+        setBuildProgress("Uploading to LinkedIn…");
+
+        if (!pdf || !(pdf instanceof Blob)) {
+          setShareError("Could not render the deck as a PDF");
+          return;
+        }
+        result = await shareDeckAsCarousel({
+          pdf,
+          message: includeCaption ? message : " ",
+          title: deckTitle || slideTitle,
+        });
+      } else if (presentationId && slideIndex !== undefined) {
         result = await shareSlide({
           presentationId,
           slideIndex,
@@ -93,6 +129,7 @@ export const LinkedInShareDialog: React.FC<LinkedInShareDialogProps> = ({
       setShareError(error.message || "Failed to share");
     } finally {
       setIsSharing(false);
+      setBuildProgress(null);
     }
   };
 
@@ -115,6 +152,42 @@ export const LinkedInShareDialog: React.FC<LinkedInShareDialogProps> = ({
       </DialogTitle>
 
       <DialogContent sx={{ py: 2 }}>
+        {/* What gets posted. A document carousel is the format the feed
+            actually rewards, so it leads and is the default. */}
+        {canCarousel && (
+          <Box sx={{ display: "flex", gap: 1.25, mb: 2 }}>
+            {([
+              { id: "carousel" as const, title: `Whole deck · ${slides!.length} slides`, sub: "Swipeable carousel" },
+              { id: "slide" as const, title: "This slide only", sub: "Single image" },
+            ]).map((opt) => (
+              <Box
+                key={opt.id}
+                onClick={() => !isSharing && setMode(opt.id)}
+                sx={{
+                  flex: 1,
+                  p: 1.25,
+                  borderRadius: "10px",
+                  cursor: isSharing ? "default" : "pointer",
+                  border: (t) =>
+                    mode === opt.id
+                      ? `2px solid ${t.palette.primary.main}`
+                      : "2px solid rgba(0,0,0,0.1)",
+                  background: mode === opt.id ? "rgba(142,45,226,0.06)" : "transparent",
+                  transition: "border-color 0.15s, background 0.15s",
+                }}
+              >
+                <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{opt.title}</Typography>
+                <Typography sx={{ fontSize: 11.5, color: "text.secondary" }}>{opt.sub}</Typography>
+              </Box>
+            ))}
+          </Box>
+        )}
+
+        {buildProgress && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            {buildProgress}
+          </Alert>
+        )}
         {/* Profile Preview */}
         {connectionStatus?.profile && (
           <Box
@@ -250,7 +323,11 @@ export const LinkedInShareDialog: React.FC<LinkedInShareDialogProps> = ({
             )
           }
         >
-          {isSharing ? "Sharing..." : "Share to LinkedIn"}
+          {isSharing
+            ? buildProgress || "Sharing…"
+            : mode === "carousel" && canCarousel
+            ? "Post carousel"
+            : "Share to LinkedIn"}
         </Button>
       </DialogActions>
     </Dialog>

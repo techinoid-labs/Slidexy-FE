@@ -37,7 +37,7 @@ export default function Home() {
         building a pitch deck, a sales team preparing a quarterly review, or an
         educator crafting lesson slides, SlideXY handles the design so you can
         focus on your message. Paste a prompt, upload a video, drop in a website
-        link, or speak your ideas aloud — our AI creates polished, on-brand
+        link, or speak your ideas aloud. Slidexy creates polished, on-brand
         presentations instantly. No design skills needed. No templates to wrestle
         with. Just your content, beautifully presented.
       </p>

@@ -1,138 +1,160 @@
 "use client";
 
-import { Box, Typography, Chip, Button } from "@mui/material";
+import React from "react";
+import { Box, Container, Typography } from "@mui/material";
 import Link from "next/link";
-import Lottie from "lottie-react";
-import Gif10ContextAware from "@/json/Gif10-context-aware.json";
-import StepsAccordion from "./components/working/StepsAccordion";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { analyticsEvent } from "@/lib/gtag";
+import {
+  ACCENT,
+  Display,
+  Hairline,
+  INK,
+  Lede,
+  MONO,
+  MUTED,
+  RULE,
+  SectionHead,
+} from "./editorial";
+import Gutter, { WORKING_GUTTER } from "./Gutter";
 
-export default function WorkingSection() {
-  const router = useRouter();
-  const handleRedirect = () => {
-    analyticsEvent("get_started_click", {
-      category: "engagement",
-      label: "home_page_to_slide_generation",
-    });
-    router.push(`/tools`);
-  };
+/**
+ * How it works.
+ *
+ * The old version leaned on animated Lottie files and a purple glow. This
+ * uses one drawing that carries the whole argument, because the argument is
+ * visual: a sentence has one line of structure, an outline has six, a deck
+ * has a grid. Showing that growth is more convincing than describing it.
+ */
 
+const STEPS = [
+  {
+    n: "01",
+    title: "Say what it is about",
+    body:
+      "A sentence is enough. If you have more, give it more: a brief, a report, a link, a transcript. It reads whatever you hand it.",
+    note: "Takes about ten seconds",
+  },
+  {
+    n: "02",
+    title: "Argue with the outline",
+    body:
+      "Before anything gets designed you see the running order. Rewrite a line, drop a section, reorder the middle. This is where a deck is won or lost, so it happens first.",
+    note: "The step most tools skip",
+  },
+  {
+    n: "03",
+    title: "Take the file",
+    body:
+      "Pick a template, edit anything you want on the slides themselves, then export. PowerPoint gets real text boxes and tables, not a flat picture.",
+    note: "Yours to keep and change",
+  },
+];
+
+
+export default function Working() {
   return (
     <Box
       id="how-it-works"
-      sx={{
-        width: "100%",
-        background: "linear-gradient(180deg, #fff 0%, #F8F5FF 100%)",
-        px: { xs: 2.5, md: 10 },
-        py: { xs: 6, md: 10 },
-        display: "flex",
-        flexDirection: "column",
-        gap: 4,
-        boxSizing: "border-box",
-        mx: "auto",
-        position: "relative",
-        overflow: "hidden",
-      }}
+      component="section"
+      sx={{ position: "relative", overflow: "hidden", py: { xs: 8, md: 14 } }}
     >
-      <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
-        <Chip
-          icon={
-            <img
-              src="/images/Stars.svg"
-              alt=""
-              width={16}
-              height={16}
-              style={{ marginRight: 4 }}
-            />
-          }
-          label="How it works"
-          sx={{
-            background: "#F3F0FF",
-            color: "#4A00E0",
-            px: 2,
-            py: 0.5,
-            fontWeight: 500,
-            border: "1px solid rgba(142, 45, 226, 0.12)",
-            mb: 2,
-          }}
-        />
-      </Box>
+      <Gutter items={WORKING_GUTTER} />
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          justifyContent: "space-between",
-          alignItems: { xs: "center", md: "flex-end" },
-          gap: 3,
-          textAlign: { xs: "center", md: "left" },
-        }}
-      >
-        <Typography
-          variant="h2"
-          className="sx-display"
-          sx={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 700,
-            fontSize: { xs: "1.75rem", md: "2.5rem" },
-            color: "#0F0A19",
-            letterSpacing: "-0.03em",
-            maxWidth: 480,
-          }}
-        >
-          From blank page to finished deck in three steps
-        </Typography>
-
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleRedirect}
-            endIcon={<span style={{ fontSize: 20 }}>→</span>}
-          >
-            Get started
-          </Button>
-      </Box>
-
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", lg: "row" },
-          gap: 4,
-          alignItems: "center",
-        }}
-      >
-        <Box sx={{ flex: 1, width: "100%" }}>
-          <StepsAccordion />
-        </Box>
+      <Container maxWidth="lg" sx={{ position: "relative" }}>
+        <SectionHead index="04" label="How it works" />
 
         <Box
-          component={motion.div}
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           sx={{
-            flex: 1,
-            width: "100%",
-            maxWidth: 480,
-            borderRadius: "24px",
-            overflow: "hidden",
-            background:
-              "radial-gradient(circle at 50% 50%, rgba(142,45,226,0.1), transparent 70%)",
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1.25fr 1fr" },
+            gap: { xs: 3, md: 8 },
+            alignItems: "end",
+            mb: { xs: 5, md: 7 },
           }}
         >
-          <Lottie
-            animationData={Gif10ContextAware}
-            loop
-            autoplay
-            style={{ width: "100%", height: "auto" }}
-          />
+          <Display>
+            Three steps, and<br />you can stop at any of them.
+          </Display>
+          <Lede sx={{ pb: 1 }}>
+            Some people take the outline and build the deck themselves. Some
+            take the first draft and present it. Both are fine. Nothing here
+            locks you into finishing the way it started.
+          </Lede>
         </Box>
-      </Box>
 
-      <Box sx={{ display: "none" }}>
-        <Link href="/tools">tools</Link>
-      </Box>
+        {/* Steps as three ruled columns rather than three floating cards */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
+            borderTop: `1px solid ${INK}`,
+          }}
+        >
+          {STEPS.map((s, i) => (
+            <Box
+              key={s.n}
+              sx={{
+                pt: 3,
+                pb: { xs: 3, md: 4 },
+                pr: { md: 4 },
+                pl: { md: i === 0 ? 0 : 4 },
+                borderBottom: { xs: `1px solid ${RULE}`, md: "none" },
+                borderRight: { xs: "none", md: i < 2 ? `1px solid ${RULE}` : "none" },
+              }}
+            >
+              <Typography
+                sx={{ fontFamily: MONO, fontSize: "0.78rem", color: ACCENT, mb: 2 }}
+              >
+                {s.n}
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "1.3rem",
+                  fontWeight: 600,
+                  color: INK,
+                  letterSpacing: "-0.015em",
+                  mb: 1.25,
+                }}
+              >
+                {s.title}
+              </Typography>
+              <Typography sx={{ fontSize: "0.95rem", lineHeight: 1.6, color: MUTED, mb: 2 }}>
+                {s.body}
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: MONO,
+                  fontSize: "0.68rem",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "#A9A3B4",
+                }}
+              >
+                {s.note}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+
+        <Hairline sx={{ mt: { xs: 4, md: 6 }, mb: 3 }} />
+
+        <Link href="/tools/prompt-to-deck" style={{ textDecoration: "none" }}>
+          <Typography
+            component="span"
+            sx={{
+              fontSize: "0.95rem",
+              fontWeight: 600,
+              color: INK,
+              borderBottom: `2px solid ${ACCENT}`,
+              pb: 0.25,
+              "&:hover": { color: ACCENT },
+              transition: "color 0.15s",
+            }}
+          >
+            Try it with your own topic
+          </Typography>
+        </Link>
+      </Container>
     </Box>
   );
 }

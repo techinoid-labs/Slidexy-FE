@@ -9,12 +9,18 @@ export default function ImageWithClick({
   onShowLarge,
   onPreviewImage,
   isLoading = false,
+  width,
+  height,
 }: {
   src: string;
   alt: string;
   onShowLarge?: () => void;
   onPreviewImage?: (src: string) => void;
   isLoading?: boolean;
+  /** Overrides the default square. Given so a caller with a column to
+   *  fill can fill it, instead of leaving a stamp in the corner. */
+  width?: object | string | number;
+  height?: object | string | number;
 }) {
   const [imgError, setImgError] = React.useState(false);
   const handleClick = (e: React.MouseEvent) => {
@@ -28,8 +34,8 @@ export default function ImageWithClick({
     <Box
       sx={{
         position: "relative",
-        width: { xs: 62, sm: 80 },
-        height: { xs: 59, sm: 80 },
+        width: width ?? { xs: 62, sm: 80 },
+        height: height ?? { xs: 59, sm: 80 },
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

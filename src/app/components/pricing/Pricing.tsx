@@ -1,332 +1,353 @@
 "use client";
 
-import {
-  Box,
-  Typography,
-  Chip,
-  Button,
-  CircularProgress,
-  Alert,
-} from "@mui/material";
-import { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
+import { Box, Container, Typography, CircularProgress, Alert } from "@mui/material";
+import CheckRounded from "@mui/icons-material/CheckRounded";
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
 import { usePricingPlans } from "@/hooks/usePricingPlans";
 import { useUser } from "@/app/context/AuthContext";
-import AuthModal from "../auth/AuthModal";
-import { useRouter } from "next/navigation";
+import {
+  ACCENT,
+  Display,
+  INK,
+  Lede,
+  MONO,
+  MUTED,
+  RULE,
+  SectionHead,
+} from "@/app/components/home/editorial";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export default function PricingSection() {
+/**
+ * Pricing, shared by /pricing and the landing page.
+ *
+ * The old version was three rounded cards with drop shadows, a lifted
+ * middle tier and a sparkle badge over the heading. Every SaaS site ships
+ * that layout, which is why none of them are remembered, and lifting one
+ * card off the page makes the other two look like mistakes.
+ *
+ * This sets the plans as a comparison on rules. Prices are monospace so
+ * they read as figures rather than claims, features are a plain list, and
+ * the recommended plan is marked by being filled rather than by floating.
+ *
+ * Checkout behaviour is unchanged.
+ */
+
+export default function PricingSection({ compact = false }: { compact?: boolean }) {
   const { plans, loading, error } = usePricingPlans();
   const { user } = useUser();
-  const router = useRouter();
-  // console.log({ plans });
-  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
 
   const handleCheckout = async (pricePlan: string) => {
     try {
-      // console.log({ plan: pricePlan, userId: user?._id });
-      const res = await fetch(
-        `${API_BASE_URL}/api/stripe/create-checkout-session`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            plan: pricePlan,
-            userId: user?._id,
-            email: user?.email,
-          }),
-        }
-      );
-
+      const res = await fetch(`${API_BASE_URL}/api/stripe/create-checkout-session`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan: pricePlan,
+          userId: user?._id,
+          email: user?.email,
+        }),
+      });
       const data = await res.json();
-      if (data.url) {
-        window.open(data.url, "_blank");
-      } else {
-        console.error("No checkout URL returned");
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
+      if (data.url) window.open(data.url, "_blank");
+      else console.error("No checkout URL returned");
+    } catch (err) {
+      console.error("Checkout error:", err);
     }
   };
 
+  const period = (p: string) =>
+    p === "yearly" ? "year" : p === "weekly" ? "week" : "month";
+
+  // Each plan is billed on its own cadence: one weekly, one monthly, one
+  // yearly. Side by side those numbers mean nothing, so the table can be
+  // put on a single cadence and the real terms shown underneath. Weeks
+  // per month is 365/12/7, not 4, or a year's worth of weeks goes missing.
+  const WEEKS_PER_MONTH = 365 / 12 / 7;
+  const PER_YEAR: Record<string, number> = { weekly: 52, monthly: 12, yearly: 1 };
+  const UNITS = [
+    { key: "weekly", label: "Per week", noun: "week" },
+    { key: "monthly", label: "Per month", noun: "month" },
+    { key: "yearly", label: "Per year", noun: "year" },
+  ];
+
+  const [unit, setUnit] = useState("monthly");
+
+  const mixed = useMemo(
+    () => new Set(plans.map((p) => p.billingPeriod)).size > 1,
+    [plans]
+  );
+
+  /** A plan's price expressed in the cadence the reader picked. */
+  const inUnit = (p: { price: number; billingPeriod: string }) => {
+    const yearly = p.price * (PER_YEAR[p.billingPeriod] ?? 12);
+    const v =
+      unit === "yearly" ? yearly : unit === "monthly" ? yearly / 12 : yearly / 52;
+    // Whole numbers where the figure is big enough to carry them.
+    return v >= 20 ? Math.round(v).toString() : v.toFixed(2).replace(/\.00$/, "");
+  };
+
+  const unitNoun = UNITS.find((u) => u.key === unit)?.noun ?? "month";
+  const shown = plans;
+
   return (
-    <Box
-      sx={{
-        width: "100%",
-        maxWidth: 1440,
-        background: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        pt: { xs: 6, md: "80px" },
-        px: { xs: 2, md: "162px" },
-        pb: { xs: 6, md: "80px" },
-        gap: "10px",
-        boxSizing: "border-box",
-        mx: "auto",
-      }}
-    >
-      {/* Header */}
-      <Chip
-        icon={
-          <img
-            src="/images/side-star-purple.svg"
-            alt="Icon"
-            width={20}
-            height={20}
-            style={{ marginRight: 4 }}
-          />
-        }
-        label={
-          <span style={{ fontWeight: 500, fontSize: "1rem", color: "#4A00E0" }}>
-            Pricing Plans
-          </span>
-        }
-        sx={{
-          background: "#F3F0FF",
-          color: "#4A00E0",
-          px: 2,
-          py: 0.5,
-          fontWeight: 500,
-          fontSize: "1rem",
-          borderRadius: "999px",
-          mb: 3,
-          width: "fit-content",
-          "& .MuiChip-icon": {
-            marginRight: "6px",
-          },
-        }}
-      />
+    <Box component="section" sx={{ py: compact ? { xs: 8, md: 12 } : { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg">
+        {compact && <SectionHead index="05" label="Pricing" />}
 
-      <Typography
-        component="h1"
-        sx={{
-          fontWeight: 600,
-          fontSize: { xs: "30px", md: "48px" },
-          color: "#222",
-          mb: 1,
-          textAlign: "center",
-        }}
-      >
-        SlideXY Pricing
-      </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1.25fr 1fr" },
+            gap: { xs: 3, md: 8 },
+            alignItems: "end",
+            mb: { xs: 5, md: 7 },
+          }}
+        >
+          <Display>
+            Pay for the decks,
+            <br />
+            not the seat count.
+          </Display>
+          <Lede sx={{ pb: 1 }}>
+            Start free and find out whether the output is good enough for
+            your work before you pay for anything. Paid plans carry a 7 day
+            money back guarantee.
+          </Lede>
+        </Box>
 
-      <Typography
-        sx={{
-          fontWeight: 700,
-          fontSize: { xs: "18px", md: "18px" },
-          color: "#6D6D6D",
-          textAlign: "center",
-        }}
-      >
-        Unlock the power of AI — start free, then upgrade to a plan that fits
-        your goals.
-      </Typography>
+        {loading && (
+          <Box sx={{ py: 8, display: "flex", justifyContent: "center" }}>
+            <CircularProgress size={22} sx={{ color: ACCENT }} />
+          </Box>
+        )}
 
-      <Typography
-        sx={{
-          color: "#757575",
-          fontSize: "1rem",
-          mb: 4,
-          textAlign: "center",
-          maxWidth: "40rem",
-        }}
-      >
-        SlideXY offers flexible plans for every team size and budget. Start with
-        the free tier to explore AI-powered slide generation. When you are ready
-        for more features, premium templates, and advanced export controls,
-        upgrade to a paid plan. All paid plans include a 7-day money-back
-        guarantee and secure payment through Stripe.
-      </Typography>
+        {error && !loading && (
+          <Alert severity="error" sx={{ borderRadius: 0, mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
-      {/* Pricing Cards / Loader */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", lg: "row" },
-          gap: { xs: 4, md: "48px" },
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-          minHeight: "300px", // ensures space is reserved
-        }}
-      >
-        {loading ? (
-          <CircularProgress size={48} sx={{ color: "#6C2BD7" }} />
-        ) : (
-          <>
-            {error && <Alert severity="error">{error}</Alert>}
-            {plans.length &&
-              plans
-                // .filter((plan) => plan.isActive)
-                ?.map((plan) => {
-                  const styleMap: Record<
-                    string,
-                    {
-                      color: string;
-                      textColor: string;
-                      borderColor: string;
-                      btnHover: string;
-                    }
-                  > = {
-                    Basic: {
-                      color: "#F3F0FF",
-                      textColor: "#6C2BD7",
-                      borderColor: "#E9E9FF",
-                      btnHover: "#E9E9FF",
+        {!loading && mixed && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4, flexWrap: "wrap" }}>
+            <Typography
+              sx={{
+                fontFamily: MONO,
+                fontSize: "0.7rem",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: MUTED,
+              }}
+            >
+              Compare
+            </Typography>
+
+            <Box sx={{ display: "inline-flex", border: `1px solid ${RULE}` }}>
+            {UNITS.map((u) => (
+              <Box
+                component="button"
+                key={u.key}
+                onClick={() => setUnit(u.key)}
+                aria-pressed={u.key === unit}
+                sx={{
+                  px: 2.5,
+                  py: 1.1,
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: MONO,
+                  fontSize: "0.72rem",
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  bgcolor: u.key === unit ? INK : "transparent",
+                  color: u.key === unit ? "#fff" : MUTED,
+                  transition: "background 0.15s ease, color 0.15s ease",
+                  "&:hover": { color: u.key === unit ? "#fff" : INK },
+                }}
+              >
+                {u.label}
+              </Box>
+            ))}
+            </Box>
+          </Box>
+        )}
+
+        {!loading && shown.length > 0 && (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: `repeat(${Math.min(shown.length, 3)}, 1fr)` },
+              borderTop: `1px solid ${INK}`,
+            }}
+          >
+            {shown.map((plan, i) => {
+              const featured = shown.length > 1 && i === 1;
+              return (
+                <Box
+                  key={plan._id}
+                  sx={{
+                    bgcolor: featured ? INK : "transparent",
+                    color: featured ? "#fff" : INK,
+                    px: { xs: 2.5, md: 3.5 },
+                    pl: { md: i === 0 && !featured ? 0 : 3.5 },
+                    py: { xs: 4, md: 5 },
+                    borderBottom: `1px solid ${RULE}`,
+                    borderRight: {
+                      xs: "none",
+                      md: i < shown.length - 1 && !featured ? `1px solid ${RULE}` : "none",
                     },
-                    Exclusive: {
-                      color: "#6C2BD7",
-                      textColor: "#fff",
-                      borderColor: "#6C2BD7",
-                      btnHover: "#4A00E0",
-                    },
-                    Platinum: {
-                      color: "#F3F0FF",
-                      textColor: "#6C2BD7",
-                      borderColor: "#E9E9FF",
-                      btnHover: "#E9E9FF",
-                    },
-                  };
-
-                  const styles = styleMap[plan.name] || styleMap["Basic"];
-
-                  const tenure =
-                    plan.billingPeriod === "weekly"
-                      ? "Week"
-                      : plan.billingPeriod === "monthly"
-                      ? "Month"
-                      : "Year";
-
-                  return (
-                    <Box
-                      key={plan._id}
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "baseline",
+                      justifyContent: "space-between",
+                      mb: 2.5,
+                    }}
+                  >
+                    <Typography
                       sx={{
-                        minWidth: { xs: "335px" },
-                        maxWidth: { sm: "355px", xs: "auto" },
-                        background: "#fff",
-                        borderRadius: "20px",
-                        border: `1px solid ${styles.borderColor}`,
-                        boxShadow: "0 2px 16px 0 rgba(80, 80, 120, 0.07)",
-                        p: { sm: "40px", xs: "30px" },
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
+                        fontFamily: MONO,
+                        fontSize: "0.72rem",
+                        letterSpacing: "0.16em",
+                        textTransform: "uppercase",
+                        color: featured ? "rgba(255,255,255,0.65)" : MUTED,
                       }}
                     >
-                      {/* Name + Price */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "row",
-                          gap: "20px",
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            fontWeight: 600,
-                            fontSize: "24px",
-                            color: "#222",
-                            mt: "15px",
-                          }}
-                        >
-                          {plan.name}
-                        </Typography>
-
-                        <Box sx={{ display: "flex", pb: "15px" }}>
-                          <Typography
-                            sx={{
-                              fontWeight: 500,
-                              fontSize: "42px",
-                              color: "#18181B",
-                            }}
-                          >
-                            ${plan.price}
-                          </Typography>
-                          <Typography sx={{ color: "#757575", mt: "40px" }}>
-                            /{tenure}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {/* Description */}
+                      {plan.name}
+                    </Typography>
+                    {featured && (
                       <Typography
                         sx={{
-                          color: "#757575",
-                          fontSize: "1rem",
-                          mb: 3,
-                          textAlign: "center",
+                          fontFamily: MONO,
+                          fontSize: "0.62rem",
+                          letterSpacing: "0.12em",
+                          textTransform: "uppercase",
+                          color: "#C9A6F2",
                         }}
                       >
-                        {plan.description ||
-                          "Choose the plan that fits your business needs"}
+                        Most picked
                       </Typography>
+                    )}
+                  </Box>
 
-                      {/* Button */}
-                      <Button
-                        variant="contained"
-                        disableElevation
-                        size="large"
-                        sx={{
-                          background: styles.color,
-                          color: styles.textColor,
-                          width: "100%",
-                          mb: 3,
-                          boxShadow: "none",
-                          "&:hover": { background: styles.btnHover, boxShadow: "none" },
-                        }}
-                        endIcon={<span style={{ fontSize: 22 }}>→</span>}
-                        onClick={() => {
-                          if (!user) {
-                            setAuthModalOpen(true);
-                            return;
-                          }
-                          // handleCheckout(plan.name);
-                          router.push(`/pricing/${plan._id}`);
-                        }}
+                  <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+                    <Typography
+                      sx={{
+                        fontFamily: MONO,
+                        fontSize: { xs: "2.6rem", md: "3.2rem" },
+                        fontWeight: 500,
+                        lineHeight: 1,
+                        letterSpacing: "-0.035em",
+                      }}
+                    >
+                      ${mixed ? inUnit(plan) : plan.price}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontFamily: MONO,
+                        fontSize: "0.76rem",
+                        color: featured ? "rgba(255,255,255,0.55)" : "#A9A3B4",
+                      }}
+                    >
+                      per {mixed ? unitNoun : period(plan.billingPeriod)}
+                    </Typography>
+                  </Box>
+
+                  {mixed && plan.billingPeriod !== unit && (
+                    <Typography
+                      sx={{
+                        mt: 1,
+                        fontFamily: MONO,
+                        fontSize: "0.68rem",
+                        color: featured ? "rgba(255,255,255,0.45)" : "#A9A3B4",
+                      }}
+                    >
+                      Billed ${plan.price} {period(plan.billingPeriod)}ly
+                    </Typography>
+                  )}
+
+                  <Box
+                    sx={{
+                      height: 1,
+                      bgcolor: featured ? "rgba(255,255,255,0.18)" : RULE,
+                      my: 3,
+                    }}
+                  />
+
+                  <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0, mb: 4, flex: 1 }}>
+                    {plan.features.map((f, k) => (
+                      <Box
+                        component="li"
+                        key={k}
+                        sx={{ display: "flex", gap: 1.25, alignItems: "flex-start", mb: 1.6 }}
                       >
-                        Get Started
-                      </Button>
-                      {/* Features */}
-                      <Box sx={{ width: "100%" }}>
-                        {plan.features.map((feature, i) => (
-                          <Box
-                            key={i}
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              mb: 1.5,
-                              width: "100%",
-                            }}
-                          >
-                            <span
-                              style={{
-                                color: "#6C2BD7",
-                                fontSize: 20,
-                                marginRight: 10,
-                              }}
-                            >
-                              ✔
-                            </span>
-                            <Typography
-                              sx={{ color: "#222", fontSize: "1rem" }}
-                            >
-                              {feature}
-                            </Typography>
-                          </Box>
-                        ))}
+                        <Box
+                          sx={{
+                            color: featured ? "#C9A6F2" : ACCENT,
+                            fontSize: 13,
+                            pt: "4px",
+                            flexShrink: 0,
+                            display: "flex",
+                          }}
+                        >
+                          <CheckRounded />
+                        </Box>
+                        <Typography
+                          sx={{
+                            fontSize: "0.92rem",
+                            lineHeight: 1.5,
+                            color: featured ? "rgba(255,255,255,0.84)" : MUTED,
+                          }}
+                        >
+                          {f}
+                        </Typography>
                       </Box>
-                    </Box>
-                  );
-                })}
-          </>
+                    ))}
+                  </Box>
+
+                  <Box
+                    component="button"
+                    onClick={() => handleCheckout(plan.name)}
+                    sx={{
+                      alignSelf: "flex-start",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 1,
+                      px: 2.75,
+                      py: 1.35,
+                      fontFamily: "inherit",
+                      fontSize: "0.92rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      bgcolor: featured ? "#fff" : "transparent",
+                      color: INK,
+                      border: featured ? "1.5px solid #fff" : `1.5px solid ${INK}`,
+                      transition: "background 0.15s ease, color 0.15s ease, border-color 0.15s ease",
+                      "&:hover": {
+                        bgcolor: ACCENT,
+                        borderColor: ACCENT,
+                        color: "#fff",
+                      },
+                    }}
+                  >
+                    Choose {plan.name}
+                    <ArrowForwardRounded sx={{ fontSize: 15 }} />
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
         )}
-        <AuthModal
-          open={isAuthModalOpen}
-          onClose={() => setAuthModalOpen(false)}
-        />
-      </Box>
+
+        <Typography sx={{ mt: 3.5, fontSize: "0.88rem", color: "#9A94A6" }}>
+          Editable PowerPoint export is on every plan, including the free
+          one. It is not held back for the expensive tier.
+        </Typography>
+      </Container>
     </Box>
   );
 }

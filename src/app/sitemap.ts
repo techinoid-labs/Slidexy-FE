@@ -21,12 +21,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      url: `${SITE_URL}/tools`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
       url: `${SITE_URL}/templates`,
       lastModified: now,
       changeFrequency: "weekly",
@@ -71,18 +65,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // ── Individual tool pages (feature-specific action intent) ──
-  const toolSlugs = [
-    "prompt-to-deck",
-    "prompt-to-template",
-    "prompt-to-ebook",
-    "prompt-to-pdf",
-    "prompt-to-proposal",
-    "prompt-to-video",
-    "text-to-infographics",
-    "url-to-website",
-    "video-to-deck",
-    "web-to-deck",
-  ];
+  // Only the deck flow ships now; the other tool pages were removed, and
+  // listing dead URLs in a sitemap is actively harmful for indexing.
+  const toolSlugs = ["prompt-to-deck"];
 
   const toolPages: MetadataRoute.Sitemap = toolSlugs.map((slug) => ({
     url: `${SITE_URL}/tools/${slug}`,

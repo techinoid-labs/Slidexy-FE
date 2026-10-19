@@ -1,18 +1,12 @@
 "use client";
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Snackbar,
-  Alert,
-  InputAdornment,
-} from "@mui/material";
-import { useForm, Controller } from "react-hook-form";
+
 import { useState } from "react";
-import Image from "next/image";
-import { motion } from "framer-motion";
+import { Box, Container, Typography, Snackbar, Alert, CircularProgress } from "@mui/material";
+import { Controller, useForm } from "react-hook-form";
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
+import MailOutlineRounded from "@mui/icons-material/MailOutlineRounded";
+import { ACCENT, BONE_DEEP, Display, INK, Lede, MONO, MUTED, RULE, SectionHead } from "./editorial";
+import Gutter, { CONTACT_GUTTER } from "./Gutter";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -22,13 +16,103 @@ type ContactFormInputs = {
   message: string;
 };
 
+/**
+ * Contact.
+ *
+ * Was a rounded card holding three outlined MUI text fields, which is the
+ * default contact form on roughly every site built this decade. The fields
+ * here are underlines rather than boxes: fewer borders competing with the
+ * ruled layout, and it reads like a form on paper, which suits the rest of
+ * the page.
+ *
+ * The submit logic and endpoint are unchanged.
+ */
+
+/** A text field as a single rule, with the label sitting above it. */
+function RuledField({
+  label,
+  placeholder,
+  value,
+  onChange,
+  error,
+  multiline = false,
+  type = "text",
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
+  multiline?: boolean;
+  type?: string;
+}) {
+  const shared = {
+    width: "100%",
+    border: "none",
+    outline: "none",
+    background: "transparent",
+    fontFamily: "inherit",
+    fontSize: "1rem",
+    color: INK,
+    padding: "10px 0",
+    resize: "none" as const,
+    "&::placeholder": { color: "#B4AEC0" },
+  };
+
+  return (
+    <Box sx={{ mb: 3.5 }}>
+      <Typography
+        component="label"
+        sx={{
+          display: "block",
+          fontFamily: MONO,
+          fontSize: "0.68rem",
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          color: error ? "#C0392B" : MUTED,
+          mb: 0.5,
+        }}
+      >
+        {label}
+      </Typography>
+      <Box
+        sx={{
+          borderBottom: `1.5px solid ${error ? "#C0392B" : RULE}`,
+          transition: "border-color 0.15s ease",
+          "&:focus-within": { borderColor: INK },
+        }}
+      >
+        {multiline ? (
+          <Box
+            component="textarea"
+            rows={4}
+            value={value}
+            placeholder={placeholder}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
+            sx={shared}
+          />
+        ) : (
+          <Box
+            component="input"
+            type={type}
+            value={value}
+            placeholder={placeholder}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+            sx={shared}
+          />
+        )}
+      </Box>
+      {error && (
+        <Typography sx={{ mt: 0.75, fontSize: "0.8rem", color: "#C0392B" }}>{error}</Typography>
+      )}
+    </Box>
+  );
+}
+
+
 export default function ContactSection() {
   const { handleSubmit, control, reset } = useForm<ContactFormInputs>({
-    defaultValues: {
-      name: "",
-      email: "",
-      message: "",
-    },
+    defaultValues: { name: "", email: "", message: "" },
   });
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -38,19 +122,12 @@ export default function ContactSection() {
   const onSubmit = async (data: ContactFormInputs) => {
     try {
       setLoading(true);
-
       const res = await fetch(`${API_BASE_URL}/api/contact`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-
-      if (!res.ok) {
-        throw new Error("Failed to submit contact form");
-      }
-
+      if (!res.ok) throw new Error("Failed to submit contact form");
       reset();
       setOpenSnackbar(true);
     } catch (error) {
@@ -64,241 +141,146 @@ export default function ContactSection() {
   return (
     <Box
       component="section"
-      id="contact-section"
       sx={{
-        py: { xs: 5, md: 7 },
-        px: { xs: 2, md: 6 },
-        backgroundColor: "#ffffff",
-        textAlign: "center",
+        position: "relative",
+        overflow: "hidden",
+        bgcolor: BONE_DEEP,
+        py: { xs: 8, md: 14 },
       }}
     >
-      {/* Form Wrapper */}
-      <Paper
-        component={motion.div}
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        sx={{
-          maxWidth: { xs: "100%", md: "1120px" },
-          height: { xs: "auto", md: "505px" },
-          mx: "auto",
-          p: { xs: 3, md: 5 },
-          borderRadius: "16px",
-          backgroundColor: "rgba(251, 250, 255, 1)",
-          border: "1px solid rgba(232, 228, 255, 1)",
-          justifyContent: 'center',
-          boxShadow: "none",
-          transition: "box-shadow 0.3s ease, border-color 0.3s ease",
-          "&:hover": {
-            boxShadow: "0 20px 44px -22px rgba(142,45,226,0.25)",
-            borderColor: "rgba(142, 45, 226, 0.25)",
-          },
-        }}
-      >
-        {/* Title */}
-        <Typography
-          sx={{
-            fontFamily: "Raleway",
-            fontWeight: 500,
-            fontSize: "32px",
-            lineHeight: "100%",
-            letterSpacing: "0px",
-            textAlign: "center",
-            color: "#111827",
-          }}
-        >
-          Reach Our Customer Service Team
-        </Typography>
-        <Typography
-          variant="body1"
-          sx={{
-            mb: -4,
-            color: "text.secondary",
-            maxWidth: "810px",
-            height: "123px",
-            mx: "auto",
-          }}
-        >
-          Have questions or feedback? We'd love to hear from you. Fill out the form below and our team will get back to you shortly.
-        </Typography>
+      <Gutter items={CONTACT_GUTTER} />
+
+      <Container maxWidth="lg" sx={{ position: "relative" }}>
+        <SectionHead index="06" label="Talk to us" />
+
         <Box
-          component="form"
-          onSubmit={handleSubmit(onSubmit)}
-          sx={{ display: "grid", gap: 3, justifyContent: "center" }}
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "0.9fr 1.1fr" },
+            gap: { xs: 5, md: 10 },
+            alignItems: "start",
+          }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 3,
-              alignItems: 'center',
-              flexDirection: {
-                sm: "row",
-              },
-            }}
-          >
+          <Box>
+            <Display sx={{ fontSize: { xs: "1.9rem", md: "2.7rem" }, mb: 2.5 }}>
+              Tell us what is
+              <br />
+              getting in the way.
+            </Display>
+            <Lede sx={{ mb: 4 }}>
+              If something is broken, say so plainly and we will fix it. If
+              you want a template that does not exist yet, describe it. Both
+              are useful to us.
+            </Lede>
+
+            <Box sx={{ borderTop: `1px solid ${RULE}`, pt: 3 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, color: MUTED }}>
+                <MailOutlineRounded sx={{ fontSize: 15 }} />
+                <Typography sx={{ fontSize: "0.92rem" }}>
+                  Every message reaches a person, not a queue.
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <Controller
               name="name"
               control={control}
-              rules={{ required: "Name is required" }}
+              rules={{ required: "Tell us who you are" }}
               render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label="Full Name"
-                  placeholder="Enter Your Full Name"
-                  variant="outlined"
-                  fullWidth
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Image src='/images/home/name-icon.svg' width={19.518817901611328} height={18.769651412963867} alt="icon" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    width: {
-                      sm: "100%",
-                      md: "360px",
-                      lg: "486px",
-                    },
-                    backgroundColor: "#fff",
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(176, 176, 176, 1)",
-                      fontWeight: 400,
-                    },
-                    "& .MuiInputBase-input": {
-                      paddingTop: "14px",
-                      paddingBottom: "14px",
-                    },
-                  }}
+                <RuledField
+                  label="Your name"
+                  placeholder="Jordan Avery"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={fieldState.error?.message}
                 />
               )}
             />
-
             <Controller
               name="email"
               control={control}
               rules={{
-                required: "Email is required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Enter a valid email",
-                },
+                required: "We need somewhere to reply",
+                pattern: { value: /\S+@\S+\.\S+/, message: "That address looks off" },
               }}
               render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  label="Email Address"
-                  placeholder="you@example.com"
+                <RuledField
+                  label="Email"
                   type="email"
-                  variant="outlined"
-                  fullWidth
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Image src='/images/home/email-icon.svg' width={19.5} height={15} alt="icon" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    width: {
-                      sm: "100%",
-                      md: "360px",
-                      lg: "486px",
-                    },
-                    backgroundColor: "#fff",
-                    "& .MuiInputLabel-root": {
-                      color: "rgba(176, 176, 176, 1)",
-                      fontWeight: 400,
-                    },
-                    "& .MuiInputBase-input": {
-                      paddingTop: "14px",
-                      paddingBottom: "14px",
-                    },
-                  }}
+                  placeholder="jordan@studio.com"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={fieldState.error?.message}
                 />
               )}
             />
-          </Box>
+            <Controller
+              name="message"
+              control={control}
+              rules={{ required: "A sentence is enough" }}
+              render={({ field, fieldState }) => (
+                <RuledField
+                  label="Message"
+                  multiline
+                  placeholder="What are you trying to do?"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={fieldState.error?.message}
+                />
+              )}
+            />
 
-          <Controller
-            name="message"
-            control={control}
-            rules={{ required: "Message is required" }}
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                label="Your Message"
-                placeholder="Enter Your Message"
-                variant="outlined"
-                fullWidth
-                multiline
-                minRows={4}
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message}
-                sx={{
-                  width: {
-                    sm: "100%",
-                    md: "740px",
-                    lg: "992px",
-                  },
-                  backgroundColor: "#fff",
-                  "& .MuiInputLabel-root": {
-                    color: "rgba(176, 176, 176, 1)",
-                    fontWeight: 400,
-                  },
-                }}
-              />
-            )}
-          />
-
-          <Box textAlign="center" mt={2}>
-            <Button
+            <Box
+              component="button"
               type="submit"
-              variant="contained"
-              size="large"
               disabled={loading}
-              sx={{ width: { sm: "350px", md: "100%", lg: "992px" } }}
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1.25,
+                mt: 1,
+                px: 3,
+                py: 1.5,
+                border: "none",
+                bgcolor: INK,
+                color: "#fff",
+                fontFamily: "inherit",
+                fontSize: "0.95rem",
+                fontWeight: 600,
+                cursor: loading ? "default" : "pointer",
+                opacity: loading ? 0.6 : 1,
+                transition: "background 0.15s ease",
+                "&:hover": { bgcolor: loading ? INK : ACCENT },
+              }}
             >
-              {loading ? "Sending..." : "Send Message"}
-            </Button>
+              {loading ? <CircularProgress size={14} sx={{ color: "#fff" }} /> : null}
+              {loading ? "Sending" : "Send it"}
+              {!loading && <ArrowForwardRounded sx={{ fontSize: 15 }} />}
+            </Box>
           </Box>
         </Box>
-      </Paper>
+      </Container>
 
-      {/* Success Snackbar */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={5000}
         onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert
-          onClose={() => setOpenSnackbar(false)}
-          severity="success"
-          sx={{ width: "100%" }}
-        >
-          ✅ Thank you! Your message has been sent.
+        <Alert severity="success" sx={{ borderRadius: 0 }} onClose={() => setOpenSnackbar(false)}>
+          Got it. We will come back to you.
         </Alert>
       </Snackbar>
-
-      {/* Error Snackbar */}
       <Snackbar
         open={errorSnackbar}
         autoHideDuration={5000}
         onClose={() => setErrorSnackbar(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert
-          onClose={() => setErrorSnackbar(false)}
-          severity="error"
-          sx={{ width: "100%" }}
-        >
-          ❌ Oops! Something went wrong. Please try again.
+        <Alert severity="error" sx={{ borderRadius: 0 }} onClose={() => setErrorSnackbar(false)}>
+          That did not send. Try again in a moment.
         </Alert>
       </Snackbar>
     </Box>

@@ -3,9 +3,9 @@
 import React, { useEffect, useRef } from "react";
 import { Box, Tooltip } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
-import TemplatePanel from "../Template";
 import TextEditor from "./TextEditor";
 import MediaPanel from "../Media";
+import BlockThemePanel from "./BlockThemePanel";
 import Shapes from "../Shapes";
 import LayoutSwitcherPanel from "./LayoutSwitcherPanel";
 import { SHELL } from "./shellTheme";
@@ -17,7 +17,7 @@ import TextFieldsIcon from "@mui/icons-material/TextFields";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 
-type PanelType = null | "template" | "text" | "media" | "shapes" | "layouts";
+type PanelType = null | "themes" | "text" | "media" | "shapes" | "layouts";
 
 interface SideNavBarProps {
   showTemplatePanel: boolean;
@@ -29,11 +29,13 @@ const NAV_ITEMS: {
   panel: PanelType;
   Icon: React.ElementType;
 }[] = [
-  { label: "Themes",  panel: "template", Icon: PaletteOutlinedIcon  },
-  { label: "Layouts", panel: "layouts",  Icon: ViewQuiltOutlinedIcon },
-  { label: "Text",    panel: "text",     Icon: TextFieldsIcon        },
-  { label: "Images",  panel: "media",    Icon: ImageOutlinedIcon     },
-  { label: "Shapes",  panel: "shapes",   Icon: CategoryOutlinedIcon  },
+  // Templates first: it is what people come looking for, and it was
+  // previously hidden behind a tab labelled "Layouts".
+  { label: "Templates", panel: "layouts",  Icon: ViewQuiltOutlinedIcon },
+  { label: "Themes",    panel: "themes",   Icon: PaletteOutlinedIcon   },
+  { label: "Text",      panel: "text",     Icon: TextFieldsIcon        },
+  { label: "Images",    panel: "media",    Icon: ImageOutlinedIcon     },
+  { label: "Shapes",    panel: "shapes",   Icon: CategoryOutlinedIcon  },
 ];
 
 const ACCENT = SHELL.accent;
@@ -117,6 +119,7 @@ const SideNavBar = ({ showTemplatePanel, setShowTemplatePanel }: SideNavBarProps
             <Tooltip key={label} title={label} placement="right" arrow>
               <Box
                 data-panel-trigger={panel}
+                data-rail-label={label}
                 onClick={() => toggle(panel)}
                 sx={{
                   width: 40,
@@ -156,9 +159,9 @@ const SideNavBar = ({ showTemplatePanel, setShowTemplatePanel }: SideNavBarProps
 
       {/* ── Sliding panels ─────────────────────────────────────────── */}
       <AnimatePresence>
-        {openPanel === "template" && (
-          <motion.div key="template" initial={{ x: -16, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -16, opacity: 0 }} transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.8 }} style={{ display: "flex" }}>
-            <TemplatePanel sidebarHeight={sidebarHeight} onClose={() => setOpenPanel(null)} ref={(el: HTMLDivElement | null) => registerPanelRef("template", el)} />
+        {openPanel === "themes" && (
+          <motion.div key="themes" initial={{ x: -16, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -16, opacity: 0 }} transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.8 }} style={{ display: "flex" }}>
+            <BlockThemePanel sidebarHeight={sidebarHeight} onClose={() => setOpenPanel(null)} ref={(el: HTMLDivElement | null) => registerPanelRef("themes", el)} />
           </motion.div>
         )}
         {openPanel === "text" && (
