@@ -1,34 +1,31 @@
 /**
- * 10 — Case Study
+ * 10. Case Study
  *
- * Narrative arc: situation, intervention, result. Green/impact palette,
- * kicker rules, full-bleed quote and before/after comparison.
+ * DEVICE: movement over time. Arrows, climbs and fanned cards on a
+ * receding plane, because a case study is a before and an after with the
+ * work in between.
+ * 
+ * DENSITY: narrative. A serif display, a sidebar rule on every heading,
+ * and each band reading as a chapter rather than a list.
+ *
+ * COMPOSITIONS: hero, band, chart, showcase, split, quote, people, statement.
+ * Every template shares the frame, and draws a different sequence from
+ * it, so no two decks run the same shapes in the same order.
  */
 
 import { impactGreen } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
-  bigStat,
-  callout,
   chart,
   checklist,
-  comparisonTable,
   contactFooter,
-  cta,
   heading,
-  iconBullets,
-  iconGrid,
-  image,
-  imageGrid,
+  iso3d,
   metricRow,
-  numbered,
   paragraph,
-  processFlow,
   quote,
   slide,
-  spotlight,
-  statCards,
-  timeline,
+  teamCards,
 } from "./helpers";
 
 export const caseStudy: SlideTemplate = {
@@ -37,332 +34,309 @@ export const caseStudy: SlideTemplate = {
   name: "Case Study",
   category: "Business",
   archetype: "casestudy",
-  description: "Show real-world success stories.",
+  description: "Forest green and a serif display, one story told in order.",
   theme: impactGreen,
-  coverPrompt: "person reaching a summit at sunrise, green valley below, cinematic, no text",
   slides: [
     slide({
       id: "cover",
       name: "Cover",
-      layout: "cover",
-      background: {
-        prompt: "hiker reaching a green mountain summit at sunrise, valley below, cinematic wide shot, no text, no logos",
-        scrim: 0.6,
-      },
+      layout: "hero",
+      motif: "meshPlane",
+      split: 0.52,
       blocks: [
-        heading({ kicker: "Case Study", title: "How Northwind cut delivery time by a third", subtitle: "A twelve-month transformation, in their words and ours." }),
-        contactFooter({ slot: "footer", items: [{ icon: "leaf", label: "YOUR COMPANY" }] }),
-      ],
-    }),
-
-    slide({
-      id: "client",
-      name: "The Client",
-      layout: "splitRight",
-      split: 0.54,
-      blocks: [
-        heading({
-          slot: "full",
-          kicker: "The client",
-          title: "A 240-vehicle operator with an invisible problem",
-          subtitle: "Profitable, growing, well run — and quietly losing a fifth of its margin to something no single report showed.",
-        }),
-        paragraph({ slot: "main", body: "Northwind is a mid-market logistics operator running 240 vehicles across four regions, serving retail and industrial customers." }),
-        statCards({
-          slot: "main",
-          style: { columns: 2 },
-          items: [
-            { icon: "building", value: "240", label: "Vehicles" },
-            { icon: "users", value: "1,100", label: "Employees" },
-            { icon: "globe", value: "4", label: "Regions" },
-            { icon: "calendar", value: "18 yrs", label: "In operation" },
-          ],
-        }),
-        image({ slot: "aside", prompt: "logistics warehouse interior with racking and daylight, wide shot, no text" }),
-      ],
-    }),
-
-    slide({
-      id: "challenge",
-      name: "The Challenge",
-      layout: "splitLeft",
-      split: 0.55,
-      blocks: [
-        heading({
-          slot: "full",
-          kicker: "The challenge",
-          title: "One in five deliveries missed its window",
-          subtitle: "Each depot had a plausible explanation. None of them was wrong, and none of them explained the whole number.",
-        }),
-        iconBullets({
+        heading({ slot: "full", kicker: "Case Study", title: "Nine months, one number" }),
+        paragraph({ slot: "main", body: "How a two hundred person logistics business took eleven days out of its order cycle without hiring anyone." }),
+        metricRow({
           slot: "main",
           items: [
-            { icon: "clock", label: "Missed delivery windows", body: "One in five arrived outside the promised slot." },
-            { icon: "database", label: "No shared visibility", body: "Four systems, none of them agreeing." },
-            { icon: "dollar", label: "Rising cost per drop", body: "Up 14% over two years with flat volume." },
+            { value: "11d", label: "Removed" },
+            { value: "£2.4M", label: "Released" },
+            { value: "9mo", label: "Elapsed" },
           ],
         }),
-        image({ slot: "aside", prompt: "delivery trucks queued at a depot in grey overcast light, slightly desaturated, no text" }),
+        iso3d({ slot: "aside", scale: 340, items: [{ asset: "arrow", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "CLIENT STORY" }, { label: "2026" }] }),
       ],
     }),
 
     slide({
-      id: "stakes",
-      name: "What Was at Stake",
-      layout: "stack",
+      id: "contents",
+      name: "Contents",
+      layout: "band",
+      motif: "meshBands",
       blocks: [
-        heading({
-          kicker: "The stakes",
-          title: "Two contracts worth a third of revenue were up",
-          subtitle: "Both renewals had on-time performance written into them. Twelve months was not a preference, it was the deadline.",
-        }),
-        iconGrid({
-          grow: 1,
-          style: { columns: 3 },
+        heading({ slot: "full", kicker: "Contents", title: "The story" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 56,
+          style: { columns: 4 },
           items: [
-            { icon: "handshake", title: "Two contracts up for renewal", body: "Worth 31% of annual revenue." },
-            { icon: "trendingUp", title: "Margin compression", body: "Cost per drop rising faster than price." },
-            { icon: "users", title: "Driver retention", body: "Churn at 28% and climbing." },
+            {
+              asset: "cube",
+              value: "01",
+              title: "Before",
+              body: "What the order cycle looked like and what it was costing",
+              accent: 1,
+            },
+            {
+              asset: "shards",
+              value: "02",
+              title: "The problem",
+              body: "The three places the eleven days were actually hiding",
+              accent: 1,
+            },
+            {
+              asset: "steps",
+              value: "03",
+              title: "The work",
+              body: "What we changed, in the order we changed it",
+              accent: 1,
+            },
+            {
+              asset: "gem",
+              value: "04",
+              title: "After",
+              body: "Where the numbers landed, and what has held since",
+              accent: 1,
+            },
           ],
         }),
-        callout({
-          slot: "footer",
-          icon: "flag",
-          solid: true,
-          statement: "Two renewals worth 31% of revenue, both with on-time clauses",
-          detail: "Twelve months was not a preference. It was written into the contracts.",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "02" }] }),
       ],
     }),
 
     slide({
-      id: "approach",
-      name: "Our Approach",
+      id: "before",
+      name: "Before",
       layout: "stack",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ kicker: "Intervention", title: "Our Approach", subtitle: "Four phases over twelve months." }),
-        processFlow({
+        heading({ kicker: "Before", title: "Where the nineteen days went" }),
+        chart({
           grow: 1,
-          numbered: true,
+          kind: "barChart",
+          categories: ["Approvals","Re-keying","Picking","In the yard","Transit"],
+          series: [
+            { name: "Days", values: [6,3,2,2,6], accent: 1 },
+          ],
+          caption: "Measured across a full quarter before anything changed.",
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "03" }] }),
+      ],
+    }),
+
+    slide({
+      id: "problem",
+      name: "The problem",
+      layout: "band",
+      motif: "meshBands",
+      blocks: [
+        heading({ slot: "full", kicker: "The problem", title: "Where the days were hiding" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 66,
           items: [
-            { title: "Baseline", body: "Instrument every drop, honestly." },
-            { title: "Consolidate", body: "One system of record for routing." },
-            { title: "Automate", body: "Dynamic routing replacing manual plans." },
-            { title: "Embed", body: "Train dispatch and hand over." },
+            {
+              asset: "wedge",
+              value: "6d",
+              title: "In approvals",
+              body: "Orders waiting for a signature nobody was chasing",
+              accent: 1,
+            },
+            {
+              asset: "shards",
+              value: "3d",
+              title: "In re-keying",
+              body: "The same order typed into three systems by three people",
+              accent: 1,
+            },
+            {
+              asset: "cylinder",
+              value: "2d",
+              title: "In the yard",
+              body: "Picked stock waiting for a carrier slot already booked",
+              accent: 1,
+            },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "04" }] }),
       ],
     }),
 
     slide({
       id: "solution",
-      name: "What We Built",
-      layout: "splitRight",
-      split: 0.52,
+      name: "The work",
+      layout: "showcase",
+      motif: "meshLattice",
+      split: 0.54,
       blocks: [
-        heading({ slot: "full", title: "What We Built" }),
-        iconBullets({
-          slot: "main",
-          items: [
-            { icon: "database", label: "Unified operations data", body: "Telematics, orders and dispatch in one model." },
-            { icon: "bolt", label: "Dynamic routing", body: "Re-planned continuously, not once each morning." },
-            { icon: "barChart", label: "Live performance view", body: "Window adherence visible to every depot." },
-          ],
-        }),
-        image({ slot: "aside", prompt: "logistics control room with large screens showing maps and routes, no readable text" }),
-      ],
-    }),
-
-    slide({
-      id: "timeline",
-      name: "Timeline",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Timeline",
-          title: "Twelve months, four phases, two false starts",
-          subtitle: "The dates below are what happened, including the month we spent rebuilding a baseline we got wrong the first time.",
-        }),
-        timeline({
-          grow: 1,
-          items: [
-            { icon: "search", date: "Month 1", title: "Baseline", body: "Instrumented every drop." },
-            { icon: "database", date: "Month 3", title: "Consolidated", body: "One system of record live." },
-            { icon: "bolt", date: "Month 7", title: "Automated", body: "Dynamic routing in two regions." },
-            { icon: "globe", date: "Month 10", title: "Scaled", body: "All four regions." },
-            { icon: "graduation", date: "Month 12", title: "Handover", body: "Run entirely in-house." },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "before-after",
-      name: "Before & After",
-      layout: "fullBleed",
-      blocks: [
-        heading({ title: "Before & After", subtitle: "Measured against the month-one baseline." }),
-        comparisonTable({
-          grow: 1,
-          columns: [{ label: "Before" }, { label: "After", highlight: true }, { label: "Change" }],
-          rows: [
-            { label: "On-time delivery", cells: ["79%", "94%", "+15 pts"] },
-            { label: "Average cycle time", cells: ["4.2 days", "2.8 days", "-33%"] },
-            { label: "Cost per drop", cells: ["$18.40", "$14.10", "-23%"] },
-            { label: "Driver churn", cells: ["28%", "16%", "-12 pts"] },
-            { label: "Dispatch headcount", cells: ["22", "22", "unchanged"] },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "results",
-      name: "The Results",
-      layout: "stack",
-      blocks: [
-        heading({ kicker: "Outcome", title: "The Results", subtitle: "Twelve months after kickoff." }),
-        statCards({
-          grow: 1,
-          style: { columns: 4 },
-          items: [
-            { icon: "clock", value: "-33%", label: "Delivery cycle time" },
-            { icon: "checkCircle", value: "94%", label: "On-time rate", delta: "from 79%" },
-            { icon: "dollar", value: "$2.1M", label: "Annual saving" },
-            { icon: "users", value: "-12 pts", label: "Driver churn" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "trend",
-      name: "Performance Over Time",
-      layout: "splitRight",
-      split: 0.62,
-      blocks: [
-        heading({ slot: "full", title: "Performance Over Time" }),
-        chart({
-          slot: "main",
-          kind: "comboChart",
-          categories: ["M1", "M3", "M5", "M7", "M9", "M12"],
-          series: [
-            { name: "On-time %", values: [79, 82, 86, 89, 92, 94], accent: 1, kind: "line" },
-            { name: "Cost per drop", values: [18.4, 18.0, 17.1, 16.0, 15.0, 14.1], accent: 4, kind: "bar" },
-          ],
-        }),
+        heading({ slot: "full", kicker: "The work", title: "Three changes, in order" }),
+        paragraph({ slot: "main", body: "Approval thresholds raised, one order record shared across all four teams, and carrier slots booked at the point of picking rather than after it." }),
         checklist({
-          slot: "aside",
-          items: ["Improvement held for six months", "No increase in headcount", "Both renewals secured"],
+          slot: "main",
+          items: [
+            "Approval thresholds raised, with an audit trail",
+            "One order record, written once and read by all",
+            "Carrier slots booked at pick, not after",
+          ],
         }),
+        iso3d({ slot: "aside", scale: 236, items: [{ asset: "cluster", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "05" }] }),
       ],
     }),
 
     slide({
-      id: "quote",
-      name: "In Their Words",
-      layout: "fullBleed",
+      id: "proof",
+      name: "After",
+      layout: "stack",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ title: "In Their Words" }),
+        heading({ kicker: "After", title: "Before and after" }),
+        chart({
+          grow: 1,
+          kind: "barChart",
+          categories: ["Approvals","Re-keying","Picking","In the yard","Transit"],
+          series: [
+            { name: "Before", values: [6,3,2,2,6], accent: 3 },
+            { name: "After", values: [1,0,1,0,6], accent: 1 },
+          ],
+          caption: "Transit was never the problem, which is where they had been looking.",
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "06" }] }),
+      ],
+    }),
+
+    slide({
+      id: "market",
+      name: "The client",
+      layout: "split",
+      motif: "meshPlane",
+      split: 0.5,
+      blocks: [
+        heading({ slot: "full", kicker: "The client", title: "Who they are" }),
+        paragraph({ slot: "main", body: "A family-owned logistics business, two hundred people across four sites, trading for thirty one years and profitable in every one of them." }),
+        metricRow({
+          slot: "main",
+          items: [
+            { value: "200", label: "People" },
+            { value: "4", label: "Sites" },
+            { value: "31yr", label: "Trading" },
+          ],
+        }),
+        iso3d({ slot: "aside", scale: 380, items: [{ asset: "meeting", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "07" }] }),
+      ],
+    }),
+
+    slide({
+      id: "model",
+      name: "The client",
+      layout: "fullBleed",
+      motif: "meshPlane",
+      blocks: [
         quote({
           grow: 1,
-          quote: "We had tried to fix this twice before with new software. What was different this time was starting with an honest baseline — it showed us the problem was not the routing tool at all.",
-          author: "Daniel Okafor",
-          role: "Operations Director, Northwind",
-          avatarPrompt: "professional headshot of a man in business casual, soft natural lighting, neutral background",
+          slot: "full",
+          quote: "Nobody here believed eleven days were available. We had been told for years that the cycle was as short as the industry allows.",
+          author: "Hannah Royce",
+          role: "Operations Director",
         }),
+        contactFooter({ slot: "footer", items: [{ label: "08" }] }),
       ],
     }),
 
     slide({
-      id: "why-worked",
-      name: "Why It Worked",
-      layout: "stack",
+      id: "people",
+      name: "The people",
+      layout: "band",
+      motif: "none",
       blocks: [
-        heading({
-          kicker: "What worked",
-          title: "Three decisions that made the difference",
-          subtitle: "None of them were technical. The technology was the easy part of this engagement.",
-        }),
-        iconGrid({
-          grow: 1,
+        heading({ slot: "full", kicker: "The people", title: "Who did the work" }),
+        teamCards({
+          slot: "main",
           style: { columns: 3 },
           items: [
-            { icon: "search", title: "Honest baseline first", body: "Nothing was changed until the numbers were trusted." },
-            { icon: "users", title: "Dispatch led the design", body: "The people doing the work set the rules." },
-            { icon: "refresh", title: "Shipped in increments", body: "Two regions proved it before all four." },
+            {
+              name: "Hannah Royce",
+              role: "Operations Director",
+              bio: "The client's own lead, and the reason this stuck",
+              photoPrompt: "professional headshot of a woman in practical workwear, soft studio lighting, neutral background",
+            },
+            {
+              name: "Peter Nwosu",
+              role: "Engagement Lead",
+              bio: "On site three days a week for the first three months",
+              photoPrompt: "professional headshot of a man in a shirt without a tie, soft studio lighting, neutral background",
+            },
+            {
+              name: "Sofia Marchetti",
+              role: "Analyst",
+              bio: "Built the measurement that proved the eleven days were real",
+              photoPrompt: "professional headshot of a woman in business casual, soft studio lighting, neutral background",
+            },
           ],
         }),
-        callout({
-          slot: "footer",
-          icon: "search",
-          statement: "The honest baseline was the whole engagement",
-          detail: "Two previous attempts failed because they started by buying software instead of measuring the problem.",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "09" }] }),
       ],
     }),
 
     slide({
-      id: "lessons",
-      name: "Lessons",
-      layout: "stack",
+      id: "next",
+      name: "What held",
+      layout: "band",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ title: "What We Would Do Differently", subtitle: "Being straight about the hard parts." }),
-        iconBullets({
-          grow: 1,
-          style: { columns: 2 },
+        heading({ slot: "full", kicker: "Eighteen months on", title: "What held, and what did not" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 66,
           items: [
-            { icon: "clock", label: "Baseline took longer", body: "Six weeks, not three. Data access was the bottleneck." },
-            { icon: "users", label: "Training started late", body: "Dispatch should have been involved from month one." },
+            {
+              asset: "arrow",
+              value: "8d",
+              title: "Still eight days",
+              body: "The cycle time has not drifted back in eighteen months",
+              accent: 1,
+            },
+            {
+              asset: "lattice",
+              value: "1",
+              title: "One record",
+              body: "Still the only place an order is written, which is the key",
+              accent: 1,
+            },
+            {
+              asset: "torus",
+              value: "2d",
+              title: "Crept back",
+              body: "In approvals, after a leadership change, now corrected",
+              accent: 1,
+            },
           ],
         }),
-        callout({
-          slot: "footer",
-          icon: "clock",
-          statement: "We got the baseline wrong the first time",
-          detail: "Six weeks instead of three, and we rebuilt it. Reporting that is more useful to you than a clean story.",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "10" }] }),
       ],
     }),
 
     slide({
-      id: "applicability",
-      name: "Could This Work for You?",
-      layout: "stack",
+      id: "close",
+      name: "Close",
+      layout: "statement",
+      motif: "meshPlane",
       blocks: [
-        heading({
-          kicker: "Applicability",
-          title: "Three conditions that made this work",
-          subtitle: "If you have all three, this is repeatable. If you are missing one, we would tell you before taking the engagement.",
-        }),
-        imageGrid({
-          grow: 1,
-          style: { columns: 3 },
-          items: [
-            { icon: "database", title: "You have the data", body: "Even messy data is enough to baseline.", prompt: "abstract data visualisation in green tones, clean, no text" },
-            { icon: "users", title: "Operations will engage", body: "The people doing the work must shape it.", prompt: "team in discussion in an operations office, candid, no text" },
-            { icon: "calendar", title: "You have two quarters", body: "Enough time to prove it before scaling.", prompt: "wall calendar and planning board, soft light, no readable text" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "cta",
-      name: "Talk to Us",
-      layout: "closing",
-      background: {
-        prompt: "wide green valley at sunrise with soft mist, hopeful and calm, cinematic, no text, no logos",
-        scrim: 0.58,
-      },
-      blocks: [
-        heading({ title: "Let's look at your numbers", subtitle: "We start every engagement with a baseline, not a pitch." }),
-        cta({ label: "Request a Baseline Review" }),
+        heading({ slot: "full", kicker: "Talk to them", title: "They will take your call" }),
+        paragraph({ slot: "main", body: "The operations director has agreed to speak to anyone considering similar work. We will make the introduction." }),
         contactFooter({
           slot: "footer",
           items: [
-            { icon: "mail", label: "hello@yourcompany.com" },
-            { icon: "globe", label: "yourcompany.com/case-studies" },
+            { icon: "globe", label: "yourfirm.com" },
+            { icon: "mail", label: "hello@yourfirm.com" },
           ],
         }),
       ],

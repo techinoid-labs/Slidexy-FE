@@ -1,35 +1,31 @@
 /**
- * 02 — Startup Pitch Deck
+ * 02. Startup Pitch Deck
  *
- * Light, energetic counterpart to the investor deck: geometric display face,
- * outlined cards, filled-circle icons, split-image cover.
+ * DEVICE: objects that move, a helix climbing, a bolt, an arrow, an
+ * orbit. Everything in this deck is going somewhere.
+ * 
+ * DENSITY: fast. Short headlines, one figure a column, and a mesh field
+ * behind so the slides feel lit rather than printed.
+ *
+ * COMPOSITIONS: showcase, band, hero, chart, split, pricing, table, people.
+ * Every template shares the frame, and draws a different sequence from
+ * it, so no two decks run the same shapes in the same order.
  */
 
 import { startupViolet } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
-  bigStat,
-  callout,
   chart,
   checklist,
+  comparisonTable,
   contactFooter,
-  cta,
-  device,
   heading,
-  iconBullets,
-  iconGrid,
-  image,
-  imageGrid,
+  iso3d,
   metricRow,
-  nestedCircles,
-  numbered,
-  processFlow,
-  scatter,
+  paragraph,
+  pricingTable,
   slide,
-  spotlight,
-  statCards,
   teamCards,
-  timeline,
 } from "./helpers";
 
 export const startupPitch: SlideTemplate = {
@@ -38,422 +34,340 @@ export const startupPitch: SlideTemplate = {
   name: "Startup Pitch Deck",
   category: "Business",
   archetype: "pitch",
-  description: "Turn your idea into an investment story.",
+  description: "Violet on near-black, objects in motion, built to be read in ten minutes.",
   theme: startupViolet,
-  coverPrompt:
-    "lone hiker on a mountain summit at sunrise, vast valley below, warm violet and orange sky, cinematic, no text",
   slides: [
     slide({
       id: "cover",
       name: "Cover",
-      layout: "cover",
-      background: {
-        prompt:
-          "lone figure standing on a mountain summit at sunrise, sweeping valley below, violet and amber sky, cinematic wide shot, no text, no logos",
-        scrim: 0.6,
-      },
+      layout: "showcase",
+      motif: "meshField",
+      split: 0.5,
       blocks: [
-        heading({
-          kicker: "Seed Round",
-          title: "A bold idea for a brighter tomorrow",
-          subtitle: "Building innovative solutions for a more connected, sustainable world.",
+        heading({ slot: "full", kicker: "Seed Round", title: "Ship it faster" }),
+        paragraph({ slot: "main", body: "The tooling that cuts a team's release cycle from three weeks to two days, now used by 400 engineering teams." }),
+        metricRow({
+          slot: "main",
+          items: [
+            { value: "400", label: "Teams" },
+            { value: "8.4x", label: "Faster" },
+            { value: "$2.1M", label: "ARR" },
+          ],
         }),
-        contactFooter({ slot: "footer", items: [{ icon: "rocket", label: "YOUR LOGO" }] }),
+        iso3d({ slot: "aside", scale: 236, items: [{ asset: "spiral", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "YOUR LOGO" }, { label: "2026" }] }),
+      ],
+    }),
+
+    slide({
+      id: "contents",
+      name: "Contents",
+      layout: "band",
+      motif: "meshBands",
+      blocks: [
+        heading({ slot: "full", kicker: "Contents", title: "Ten minutes" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 56,
+          style: { columns: 4 },
+          items: [
+            {
+              asset: "bolt",
+              value: "01",
+              title: "The problem",
+              body: "Why shipping is still slow in teams that know better",
+              accent: 1,
+            },
+            {
+              asset: "orbit",
+              value: "02",
+              title: "The product",
+              body: "One tool, and the thing it replaces in every workflow",
+              accent: 1,
+            },
+            {
+              asset: "arrow",
+              value: "03",
+              title: "Traction",
+              body: "What four hundred teams have done with it so far",
+              accent: 1,
+            },
+            {
+              asset: "steps",
+              value: "04",
+              title: "The ask",
+              body: "What we are raising and exactly where it goes",
+              accent: 1,
+            },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "02" }] }),
       ],
     }),
 
     slide({
       id: "problem",
-      name: "The Problem",
-      layout: "splitRight",
-      split: 0.56,
+      name: "The problem",
+      layout: "band",
+      motif: "meshBands",
       blocks: [
-        heading({
-          slot: "full",
-          kicker: "The problem",
-          title: "Everyone has accepted a workflow nobody designed",
-          subtitle:
-            "Four tools, three handoffs, and a spreadsheet holding it together — in teams that would never ship a product this way.",
-        }),
-        iconBullets({
+        heading({ slot: "full", kicker: "The problem", title: "Shipping is slow for boring reasons" }),
+        iso3d({
           slot: "main",
+          divided: true,
+          scale: 66,
           items: [
             {
-              icon: "clock",
-              label: "Nine hours a week, per person",
-              body: "Teams lose more than a working day each week to steps nobody would design on purpose.",
+              asset: "torus",
+              value: "19d",
+              title: "Release cycle",
+              body: "The median for a team of twenty, and it is getting worse",
+              accent: 1,
             },
             {
-              icon: "dollar",
-              label: "Priced for enterprises only",
-              body: "The tools that solve this start at forty thousand a year, ruling out the teams who need it most.",
+              asset: "shards",
+              value: "6",
+              title: "Tools in the chain",
+              body: "Each one owned by a different team with its own queue",
+              accent: 1,
             },
             {
-              icon: "user",
-              label: "Generic by design",
-              body: "Every product assumes one way of working, then charges services to bend it to yours.",
+              asset: "blob",
+              value: "41%",
+              title: "Time waiting",
+              body: "Engineers blocked on something they cannot unblock",
+              accent: 1,
             },
           ],
         }),
-        spotlight({
-          slot: "aside",
-          duotone: true,
-          prompt:
-            "frustrated professional at a cluttered desk late at night, documentary photography, no text",
-          stat: { value: "9 hrs", label: "Lost per person, per week" },
-          cardTitle: "The cost is invisible",
-          cardBody: "It never appears on a budget line, which is exactly why it goes unfixed for years.",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "03" }] }),
       ],
     }),
 
     slide({
       id: "solution",
-      name: "Our Solution",
-      layout: "splitRight",
+      name: "The product",
+      layout: "hero",
+      motif: "meshLattice",
       split: 0.54,
       blocks: [
-        heading({ slot: "full", title: "Our Solution", subtitle: "A smarter, simpler and more powerful way." }),
-        iconBullets({
+        heading({ slot: "full", kicker: "The product", title: "One pipeline, no queue" }),
+        paragraph({ slot: "main", body: "A single pipeline that owns build, review and release, so the thing blocking a deploy is visible to the person who can clear it." }),
+        checklist({
           slot: "main",
           items: [
-            { icon: "bolt", label: "AI-powered", body: "Intelligent automation that removes the busywork." },
-            { icon: "dollar", label: "Cost effective", body: "High value at a fraction of the incumbent price." },
-            { icon: "heart", label: "Personalised", body: "Adapts to each team's goals instead of the reverse." },
+            "Build, review and release in one place",
+            "Blockers routed to whoever can clear them",
+            "Deploys in minutes, not approvals in days",
           ],
         }),
-        device({ slot: "aside", device: "phone", prompt: "clean mobile app dashboard UI, violet accent, light theme, no text" }),
+        iso3d({ slot: "aside", scale: 350, items: [{ asset: "orbit", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "04" }] }),
       ],
     }),
 
     slide({
-      id: "product",
-      name: "Product Overview",
-      layout: "splitLeft",
-      split: 0.46,
+      id: "proof",
+      name: "Traction",
+      layout: "stack",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ slot: "full", title: "Product Overview", subtitle: "A clean and intuitive product experience." }),
-        iconGrid({
-          slot: "main",
-          style: { columns: 1 },
-          items: [
-            { icon: "checkCircle", title: "Easy to use", body: "An interface people understand on first open." },
-            { icon: "bolt", title: "Powerful features", body: "Built for real, everyday work — not demos." },
-            { icon: "globe", title: "Accessible anywhere", body: "Web and mobile, wherever the team is." },
+        heading({ kicker: "Traction", title: "Teams on the platform" }),
+        chart({
+          grow: 1,
+          kind: "lineChart",
+          categories: ["Jan","Mar","May","Jul","Sep","Nov"],
+          series: [
+            { name: "Active teams", values: [42,96,168,241,326,400], accent: 1 },
           ],
+          yFormat: "compact",
+          caption: "Net of churn, which has run under 2% a month all year.",
         }),
-        device({ slot: "aside", device: "browser", prompt: "modern SaaS analytics dashboard UI with charts, violet accent, light theme, no text" }),
+        contactFooter({ slot: "footer", items: [{ label: "05" }] }),
       ],
     }),
 
     slide({
       id: "market",
-      name: "Market Opportunity",
-      layout: "splitRight",
-      split: 0.45,
+      name: "Market",
+      layout: "split",
+      motif: "meshField",
+      split: 0.5,
       blocks: [
-        heading({ slot: "full", title: "Market Opportunity", subtitle: "A massive and growing market." }),
-        nestedCircles({
+        heading({ slot: "full", kicker: "Market", title: "Every team that ships" }),
+        paragraph({ slot: "main", body: "Two million engineering teams run a release process complex enough to need this, and the tools they use today were designed for a different decade." }),
+        metricRow({
           slot: "main",
           items: [
-            { value: "$500B", label: "Total addressable market" },
-            { value: "$120B", label: "Serviceable market" },
-            { value: "$25B", label: "Obtainable market" },
+            { value: "$14B", label: "Addressable" },
+            { value: "2M", label: "Teams" },
+            { value: "29%", label: "Growth" },
           ],
         }),
-        chart({
-          slot: "aside",
-          kind: "barChart",
-          categories: ["2024", "2025", "2026", "2027", "2028"],
-          series: [{ name: "Market size", values: [120, 168, 232, 320, 430], accent: 2 }],
-          yFormat: "currency",
-          caption: "Growing 29% annually through 2028.",
-        }),
+        iso3d({ slot: "aside", scale: 390, items: [{ asset: "climb", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "06" }] }),
       ],
     }),
 
     slide({
-      id: "audience",
-      name: "Target Audience",
+      id: "model",
+      name: "Business model",
       layout: "stack",
+      motif: "meshBands",
       blocks: [
-        heading({ title: "Target Audience", subtitle: "Built for the people who need it most." }),
-        imageGrid({
+        heading({ kicker: "Business model", title: "Per seat, per month" }),
+        pricingTable({
           grow: 1,
-          style: { columns: 3 },
-          items: [
+          plans: [
             {
-              icon: "user",
-              title: "Individuals",
-              body: "Save time and get more done on their own terms.",
-              prompt: "young professional working on a laptop in a bright cafe, candid, warm light, no text",
+              name: "Free",
+              price: "$0",
+              period: "up to 5",
+              features: ["The full pipeline","Unlimited repositories","Community support"],
             },
             {
-              icon: "users",
-              title: "Small businesses",
-              body: "Access affordable, powerful tools without a big team.",
-              prompt: "small business owner in a workshop reviewing orders on a tablet, natural light, no text",
+              name: "Team",
+              price: "$29",
+              period: "per seat",
+              highlight: true,
+              features: ["Everything in Free","Policy rules","Audit history","Priority support"],
             },
             {
-              icon: "building",
-              title: "Enterprises",
-              body: "Scale efficiently with advanced controls and support.",
-              prompt: "corporate team collaborating in a modern glass meeting room, no text",
+              name: "Enterprise",
+              price: "Custom",
+              features: ["Self-hosted","Single sign-on","A named engineer"],
             },
           ],
         }),
-      ],
-    }),
-
-    slide({
-      id: "business-model",
-      name: "Business Model",
-      layout: "stack",
-      blocks: [
-        heading({ title: "Business Model", subtitle: "A scalable and sustainable revenue model." }),
-        iconGrid({
-          grow: 1,
-          style: { columns: 3 },
-          items: [
-            { icon: "refresh", title: "Subscription", body: "Recurring revenue from individual and team plans." },
-            { icon: "cart", title: "Marketplace", body: "Commission on transactions between our customers." },
-            { icon: "building", title: "Enterprise", body: "Tailored contracts for large organisations." },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "refresh",
-          statement: "Three revenue lines, one acquisition motion",
-          detail: "Every customer enters the same way, then expands into whichever line matches how they work.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "traction",
-      name: "Traction",
-      layout: "splitRight",
-      split: 0.44,
-      blocks: [
-        heading({ slot: "full", title: "Traction", subtitle: "Strong early momentum and real results." }),
-        statCards({
-          slot: "main",
-          style: { columns: 2 },
-          items: [
-            { icon: "users", value: "100K+", label: "Active users" },
-            { icon: "trendingUp", value: "25%", label: "Monthly growth" },
-            { icon: "dollar", value: "$1.2M", label: "Annual revenue" },
-            { icon: "star", value: "95%", label: "User satisfaction" },
-          ],
-        }),
-        chart({
-          slot: "aside",
-          kind: "barChart",
-          categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-          series: [{ name: "Users", values: [18, 24, 33, 44, 58, 78], accent: 1 }],
-          yFormat: "compact",
-          caption: "+25% month on month.",
-        }),
-        callout({
-          slot: "footer",
-          icon: "trendingUp",
-          solid: true,
-          statement: "25% month-on-month growth, nine months running",
-          detail: "Compounding at this rate, the cohort signing up this quarter is worth more than our entire first year.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "gtm",
-      name: "Go-to-Market Strategy",
-      layout: "stack",
-      blocks: [
-        heading({ title: "Go-to-Market Strategy", subtitle: "A focused, multi-channel approach to growth." }),
-        processFlow({
-          grow: 1,
-          numbered: true,
-          items: [
-            { title: "Acquire", body: "Targeted marketing and founder-led partnerships." },
-            { title: "Activate", body: "Onboarding that reaches value in the first session." },
-            { title: "Retain", body: "Habit-forming workflows and responsive support." },
-            { title: "Scale", body: "Expand into new markets and customer segments." },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "rocket",
-          statement: "Our cheapest customer is one we already have",
-          detail: "Expansion inside existing accounts costs us a fifth of what a new logo does.",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "07" }] }),
       ],
     }),
 
     slide({
       id: "competition",
-      name: "Competitive Landscape",
-      layout: "splitRight",
-      split: 0.36,
-      blocks: [
-        heading({ slot: "full", title: "Competitive Landscape", subtitle: "A clear advantage in the market." }),
-        iconBullets({
-          slot: "main",
-          style: { compact: true },
-          items: [
-            { icon: "award", label: "Better product", body: "Purpose-built where competitors are generic." },
-            { icon: "dollar", label: "Better price", body: "A third of the cost of the incumbent." },
-          ],
-        }),
-        scatter({
-          slot: "aside",
-          xAxis: { low: "High price", high: "Low price" },
-          yAxis: { low: "Low features", high: "High features" },
-          points: [
-            { label: "Our product", x: 0.76, y: 0.84, highlight: true },
-            { label: "Competitor A", x: 0.2, y: 0.66 },
-            { label: "Competitor B", x: 0.18, y: 0.24 },
-            { label: "Competitor C", x: 0.72, y: 0.3 },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "financials",
-      name: "Financial Projections",
-      layout: "splitRight",
-      split: 0.62,
-      blocks: [
-        heading({ slot: "full", title: "Financial Projections", subtitle: "A clear path to strong, sustainable growth." }),
-        chart({
-          slot: "main",
-          kind: "barChart",
-          categories: ["2024", "2025", "2026", "2027", "2028"],
-          series: [
-            { name: "Revenue", values: [5, 9, 14, 19, 26], accent: 1 },
-            { name: "Expenses", values: [6, 8, 11, 13, 16], accent: 2 },
-            { name: "Profit", values: [-1, 1, 3, 6, 10], accent: 3 },
-          ],
-          yFormat: "currency",
-        }),
-        statCards({
-          slot: "aside",
-          style: { columns: 1 },
-          items: [
-            { icon: "dollar", value: "$5M", label: "Revenue in 2024" },
-            { icon: "trendingUp", value: "$26M", label: "Projected 2028" },
-            { icon: "barChart", value: "40%", label: "CAGR 2024–2028" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "team",
-      name: "Our Team",
+      name: "Competition",
       layout: "stack",
+      motif: "meshBands",
       blocks: [
-        heading({ title: "Our Team", subtitle: "A team with the right mix of experience and vision." }),
-        teamCards({
+        heading({ kicker: "Landscape", title: "Why the incumbents cannot follow" }),
+        comparisonTable({
           grow: 1,
+          columns: [
+            { label: "Us", highlight: true },
+            { label: "Incumbent" },
+            { label: "Point tools" },
+          ],
+          rows: [
+            { label: "Owns the whole chain", cells: ["yes","no","no"] },
+            { label: "Priced per seat", cells: ["yes","no","partial"] },
+            { label: "Blockers routed automatically", cells: ["yes","no","no"] },
+            { label: "Median time to deploy", cells: ["2 days","19 days","11 days"] },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "08" }] }),
+      ],
+    }),
+
+    slide({
+      id: "people",
+      name: "Team",
+      layout: "band",
+      motif: "none",
+      blocks: [
+        heading({ slot: "full", kicker: "Team", title: "Who is building it" }),
+        teamCards({
+          slot: "main",
           style: { columns: 3 },
           items: [
             {
               name: "Sarah Khan",
-              role: "CEO & Co-founder",
-              bio: "Ten years in product and technology innovation.",
+              role: "Co-founder, CEO",
+              bio: "Ran release engineering for a thousand-person team",
               photoPrompt: "professional headshot of a woman founder, soft studio lighting, neutral background",
             },
             {
               name: "Ali Raza",
-              role: "CTO & Co-founder",
-              bio: "Builds AI and scalable distributed systems.",
+              role: "Co-founder, CTO",
+              bio: "Built the pipeline that this product started as",
               photoPrompt: "professional headshot of a man in a casual shirt, soft studio lighting, neutral background",
             },
             {
-              name: "Ayesha Malik",
-              role: "COO",
-              bio: "Operations and growth strategy specialist.",
-              photoPrompt: "professional headshot of a woman in business casual, soft studio lighting, neutral background",
+              name: "Jonas Weber",
+              role: "Head of Product",
+              bio: "Eight years shipping developer tools people like",
+              photoPrompt: "professional headshot of a man in a plain jumper, soft studio lighting, neutral background",
             },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "09" }] }),
       ],
     }),
 
     slide({
-      id: "roadmap",
+      id: "next",
       name: "Roadmap",
-      layout: "stack",
+      layout: "band",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ title: "Roadmap", subtitle: "Our journey ahead." }),
-        timeline({
-          grow: 1,
+        heading({ slot: "full", kicker: "Roadmap", title: "The next four quarters" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 56,
+          style: { columns: 4 },
           items: [
-            { icon: "rocket", date: "Q1 2024", title: "Product launch", body: "MVP release to early adopters." },
-            { icon: "users", date: "Q2 2024", title: "User growth", body: "First 100K active users." },
-            { icon: "layers", date: "Q3 2024", title: "New features", body: "Expand core product capabilities." },
-            { icon: "globe", date: "Q4 2024", title: "Global expansion", body: "Enter three new regions." },
-            { icon: "award", date: "2025+", title: "Scale", body: "Become the category leader." },
+            {
+              asset: "cone",
+              value: "Q1",
+              title: "Self-hosted",
+              body: "The blocker on every enterprise conversation we have",
+              accent: 1,
+            },
+            {
+              asset: "capsule",
+              value: "Q2",
+              title: "Policy engine",
+              body: "Rules teams can write instead of asking us to",
+              accent: 1,
+            },
+            {
+              asset: "badge",
+              value: "Q3",
+              title: "Compliance",
+              body: "SOC 2 Type II, which unlocks the regulated buyers",
+              accent: 1,
+            },
+            {
+              asset: "helix",
+              value: "Q4",
+              title: "Open plugins",
+              body: "Anyone can extend the pipeline and charge for it",
+              accent: 1,
+            },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "10" }] }),
       ],
     }),
 
     slide({
-      id: "impact",
-      name: "Impact",
-      layout: "stack",
+      id: "close",
+      name: "The ask",
+      layout: "hero",
+      motif: "meshField",
+      split: 0.52,
       blocks: [
-        heading({ title: "Impact", subtitle: "Creating meaningful impact for people, businesses and communities." }),
-        imageGrid({
-          grow: 1,
-          style: { columns: 3 },
-          items: [
-            {
-              icon: "user",
-              title: "Empower people",
-              body: "Give individuals more time and freedom.",
-              prompt: "person with arms raised on a hilltop at sunrise, silhouette, hopeful, no text",
-            },
-            {
-              icon: "briefcase",
-              title: "Support businesses",
-              body: "Help businesses grow and operate efficiently.",
-              prompt: "small team celebrating around a laptop in a bright office, candid, no text",
-            },
-            {
-              icon: "leaf",
-              title: "Build a better future",
-              body: "Contribute to a more connected, sustainable world.",
-              prompt: "young green plant seedling in soil, macro, soft morning light, no text",
-            },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "ask",
-      name: "The Ask",
-      layout: "closing",
-      background: {
-        prompt:
-          "hiker reaching a mountain ridge at golden hour, expansive landscape, warm cinematic light, no text, no logos",
-        scrim: 0.62,
-      },
-      blocks: [
-        heading({ kicker: "Seed Round", title: "$5M to scale faster", subtitle: "We are looking for partners to help us grow." }),
-        checklist({
-          style: { columns: 2 },
-          items: ["Product development", "Market expansion", "Team growth", "Strategic partnerships"],
-        }),
-        cta({ label: "Let's Build the Future Together" }),
+        heading({ slot: "full", kicker: "The ask", title: "$5M to go faster" }),
+        paragraph({ slot: "main", body: "Eighteen months of runway, twelve engineers, and the self-hosted build that converts the pipeline we already have." }),
+        iso3d({ slot: "aside", scale: 330, items: [{ asset: "helix", title: "", accent: 1 }] }),
         contactFooter({
           slot: "footer",
           items: [
             { icon: "globe", label: "yourcompany.com" },
-            { icon: "mail", label: "hello@yourcompany.com" },
+            { icon: "mail", label: "founders@yourcompany.com" },
           ],
         }),
       ],

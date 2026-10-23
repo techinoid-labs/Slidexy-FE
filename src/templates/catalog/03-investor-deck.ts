@@ -1,34 +1,31 @@
 /**
- * 03 — Investor & Fundraising
+ * 03. Investor & Fundraising
  *
- * Dark, high-contrast counterpart to the startup pitch: same narrative beats,
- * deliberately different identity (midnight palette, grotesk display face,
- * kicker rules, topographic motif).
+ * DEVICE: objects that count things, terrain, stacked discs, fanned
+ * cards. An investor deck is an argument made of figures.
+ * 
+ * DENSITY: dense in the band, empty above it. A lattice fogs out behind,
+ * so the slides read as a model rather than a brochure.
+ *
+ * COMPOSITIONS: hero, band, quote, split, chart, showcase, table, people, statement.
+ * Every template shares the frame, and draws a different sequence from
+ * it, so no two decks run the same shapes in the same order.
  */
 
 import { investorMidnight } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
-  bigStat,
-  callout,
   chart,
+  checklist,
+  comparisonTable,
   contactFooter,
-  cta,
-  device,
-  donut,
   heading,
-  iconBullets,
-  iconGrid,
+  iso3d,
   metricRow,
-  nestedCircles,
-  numbered,
-  processFlow,
-  scatter,
+  paragraph,
+  quote,
   slide,
-  spotlight,
-  statCards,
   teamCards,
-  timeline,
 } from "./helpers";
 
 export const investorDeck: SlideTemplate = {
@@ -37,430 +34,321 @@ export const investorDeck: SlideTemplate = {
   name: "Investor & Fundraising",
   category: "Business",
   archetype: "pitch",
-  description: "Attract investors with a compelling story.",
+  description: "Capital green on ink, every slide led by a number.",
   theme: investorMidnight,
-  coverPrompt:
-    "climber silhouetted on a dark mountain ridge under a star-filled sky, deep blue and violet, cinematic, no text",
   slides: [
     slide({
       id: "cover",
       name: "Cover",
-      layout: "cover",
-      background: {
-        prompt:
-          "climber silhouetted on a dark mountain ridge beneath a star-filled sky, deep blue and violet tones, cinematic wide shot, no text, no logos",
-        scrim: 0.55,
-      },
+      layout: "hero",
+      motif: "meshLattice",
+      split: 0.5,
       blocks: [
-        heading({
-          kicker: "Series A",
-          title: "Big ideas. Real impact.",
-          subtitle: "A scalable solution to a global problem.",
+        heading({ slot: "full", kicker: "Series B", title: "The case for capital" }),
+        paragraph({ slot: "main", body: "Three years of compounding revenue, a model that gets cheaper to run at scale, and the reason the next round is the last one we need." }),
+        metricRow({
+          slot: "main",
+          items: [
+            { value: "$18.4M", label: "ARR" },
+            { value: "141%", label: "Net retention" },
+            { value: "28mo", label: "Payback" },
+          ],
         }),
-        contactFooter({ slot: "footer", items: [{ icon: "star", label: "YOUR LOGO" }] }),
+        iso3d({ slot: "aside", scale: 400, items: [{ asset: "terrain", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "YOUR COMPANY" }, { label: "SERIES B" }] }),
+      ],
+    }),
+
+    slide({
+      id: "contents",
+      name: "Contents",
+      layout: "band",
+      motif: "meshBands",
+      blocks: [
+        heading({ slot: "full", kicker: "Contents", title: "The argument" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 56,
+          style: { columns: 4 },
+          items: [
+            {
+              asset: "coinStack",
+              value: "01",
+              title: "The numbers",
+              body: "Revenue, retention and what each costs to produce",
+              accent: 1,
+            },
+            {
+              asset: "terrain",
+              value: "02",
+              title: "The market",
+              body: "Who is buying, and the part of it nobody serves",
+              accent: 1,
+            },
+            {
+              asset: "lattice",
+              value: "03",
+              title: "The model",
+              body: "Why unit economics improve rather than erode",
+              accent: 1,
+            },
+            {
+              asset: "arrow",
+              value: "04",
+              title: "The round",
+              body: "The amount, the runway and the milestone it buys",
+              accent: 1,
+            },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "02" }] }),
+      ],
+    }),
+
+    slide({
+      id: "about",
+      name: "The company",
+      layout: "fullBleed",
+      motif: "meshLattice",
+      blocks: [
+        quote({
+          grow: 1,
+          slot: "full",
+          quote: "We replaced a system that took four months to implement with one that was running before the invoice cleared. That is the whole argument.",
+          author: "Head of Operations",
+          role: "A customer since 2024",
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "03" }] }),
       ],
     }),
 
     slide({
       id: "problem",
-      name: "The Problem",
-      layout: "splitRight",
-      split: 0.55,
+      name: "The problem",
+      layout: "band",
+      motif: "meshBands",
       blocks: [
-        heading({
-          slot: "full",
-          kicker: "The problem",
-          title: "A $12 trillion inefficiency nobody owns",
-          subtitle: "Every participant in the chain knows the cost exists. None of them can see it end to end, so none of them can fix it.",
-        }),
-        statCards({
+        heading({ slot: "full", kicker: "The problem", title: "What the incumbents cannot price" }),
+        iso3d({
           slot: "main",
-          style: { columns: 1 },
+          divided: true,
+          scale: 66,
           items: [
-            { icon: "dollar", value: "$12T", label: "Lost annually to market inefficiency" },
-            { icon: "users", value: "2.5B", label: "People affected worldwide" },
-            { icon: "close", value: "70%", label: "Say current solutions are inadequate" },
+            {
+              asset: "torus",
+              value: "$240k",
+              title: "Entry price",
+              body: "What the incumbent charges before a line is configured",
+              accent: 1,
+            },
+            {
+              asset: "shards",
+              value: "14wk",
+              title: "Implementation",
+              body: "Billed separately, and the reason most pilots stall",
+              accent: 1,
+            },
+            {
+              asset: "blob",
+              value: "62%",
+              title: "Never deploy",
+              body: "Of licences bought in this category, by the vendors' own numbers",
+              accent: 1,
+            },
           ],
         }),
-        chart({
-          slot: "aside",
-          kind: "lineChart",
-          categories: ["2020", "2021", "2022", "2023", "2024"],
-          series: [{ name: "Cost of inaction", values: [6, 7.4, 9.1, 10.6, 12], accent: 3 }],
-          yFormat: "currency",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "04" }] }),
       ],
     }),
 
     slide({
       id: "solution",
-      name: "Our Solution",
-      layout: "splitRight",
+      name: "The product",
+      layout: "split",
+      motif: "meshField",
       split: 0.54,
       blocks: [
-        heading({
-          slot: "full",
-          kicker: "Our solution",
-          title: "Make the whole chain legible, then automate it",
-          subtitle: "One model across every participant, so the waste becomes visible — and once it is visible, removing it is engineering rather than negotiation.",
-        }),
-        iconBullets({
+        heading({ slot: "full", kicker: "The product", title: "Priced to be bought" }),
+        paragraph({ slot: "main", body: "The same capability, delivered in a fortnight and priced per outcome, so a buyer can start without a committee and expand without a renegotiation." }),
+        checklist({
           slot: "main",
           items: [
-            { icon: "cpu", label: "AI at the core", body: "Automation and intelligence built into every workflow." },
-            { icon: "checkCircle", label: "Easy to adopt", body: "Value in the first session, not the first quarter." },
-            { icon: "dollar", label: "Cost effective", body: "Delivers more value at a materially lower cost." },
+            "Live in fourteen days, not fourteen weeks",
+            "Priced per outcome, expanding with usage",
+            "No implementation fee, ever",
           ],
         }),
-        device({ slot: "aside", device: "phone", prompt: "dark-mode mobile app interface with charts, violet and cyan accents, no text" }),
+        iso3d({ slot: "aside", scale: 350, items: [{ asset: "vortex", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "05" }] }),
+      ],
+    }),
+
+    slide({
+      id: "proof",
+      name: "Traction",
+      layout: "stack",
+      motif: "none",
+      invert: true,
+      blocks: [
+        heading({ kicker: "Traction", title: "Three years of compounding" }),
+        chart({
+          grow: 1,
+          kind: "barChart",
+          categories: ["2023","2024","2025","2026"],
+          series: [
+            { name: "ARR", values: [2.1,5.8,11.4,18.4], accent: 1 },
+          ],
+          yFormat: "currency",
+          caption: "No change of pricing model across the period.",
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "06" }] }),
       ],
     }),
 
     slide({
       id: "market",
-      name: "Market Opportunity",
-      layout: "splitRight",
-      split: 0.48,
+      name: "Market",
+      layout: "showcase",
+      motif: "meshLattice",
+      split: 0.52,
       blocks: [
-        heading({
-          slot: "full",
-          kicker: "Market",
-          title: "A $3.2T market growing 25% a year",
-          subtitle: "Large enough that a single-digit share is a category-defining business, and fragmented enough that no incumbent holds more than 11%.",
-        }),
-        nestedCircles({
+        heading({ slot: "full", kicker: "Market", title: "Where the money is" }),
+        paragraph({ slot: "main", body: "The enterprise tier is well served and slow. The mid-market below it spends almost as much in aggregate and has no credible vendor built for it." }),
+        metricRow({
           slot: "main",
           items: [
-            { value: "$3.2T", label: "Total addressable market" },
-            { value: "$680B", label: "Serviceable market" },
-            { value: "$45B", label: "Obtainable market" },
+            { value: "$22B", label: "Addressable" },
+            { value: "68%", label: "Unserved" },
+            { value: "17%", label: "CAGR" },
           ],
         }),
-        statCards({
-          slot: "aside",
-          style: { columns: 1 },
-          items: [
-            { icon: "trendingUp", value: "25%", label: "Annual market growth 2024–2030" },
-            { icon: "globe", value: "40+", label: "Markets we can serve today" },
-          ],
-        }),
+        iso3d({ slot: "aside", scale: 236, items: [{ asset: "coinStack", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "07" }] }),
       ],
     }),
 
     slide({
-      id: "why-now",
-      name: "Why Now",
+      id: "model",
+      name: "Unit economics",
       layout: "stack",
+      motif: "meshBands",
       blocks: [
-        heading({
-          kicker: "Timing",
-          title: "Why this is solvable now and was not three years ago",
-          subtitle: "Four things changed at once. Any one of them alone would not have been enough.",
-        }),
-        iconGrid({
+        heading({ kicker: "Unit economics", title: "Why this improves with scale" }),
+        comparisonTable({
           grow: 1,
-          style: { columns: 2 },
-          items: [
-            { icon: "trendingUp", title: "Market shift", body: "Demand has moved decisively toward our category." },
-            { icon: "cpu", title: "Tech advances", body: "Model costs fell far enough to make this viable." },
-            { icon: "scale", title: "Favourable regulation", body: "New rules actively support adoption." },
-            { icon: "users", title: "Growing awareness", body: "Buyers now understand the problem we solve." },
+          columns: [
+            { label: "2024" },
+            { label: "2025" },
+            { label: "2026", highlight: true },
+          ],
+          rows: [
+            { label: "Average contract", cells: ["$21k","$26k","$31k"] },
+            { label: "CAC payback", cells: ["41mo","34mo","28mo"] },
+            { label: "Net retention", cells: ["118%","129%","141%"] },
+            { label: "Gross margin", cells: ["88%","91%","94%"] },
           ],
         }),
-        callout({
-          slot: "footer",
-          icon: "bolt",
-          statement: "Model costs fell 92% in eighteen months",
-          detail: "That single change moved this from a research project to a product with a gross margin.",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "08" }] }),
       ],
     }),
 
     slide({
-      id: "product",
-      name: "Product Overview",
-      layout: "splitLeft",
-      split: 0.44,
+      id: "people",
+      name: "Team",
+      layout: "band",
+      motif: "none",
       blocks: [
-        heading({
-          slot: "full",
-          kicker: "Product",
-          title: "Built for the operator, not the buyer",
-          subtitle: "The people who use it daily chose how it works. That is why adoption does not need a change-management programme.",
-        }),
-        iconBullets({
-          slot: "main",
-          style: { compact: true },
-          items: [
-            { icon: "layers", label: "Core features", body: "Solves the key job end to end." },
-            { icon: "palette", label: "Intuitive design", body: "Simple and seamless for every role." },
-            { icon: "cloud", label: "Scalable platform", body: "Built for global growth from day one." },
-          ],
-        }),
-        device({ slot: "aside", device: "laptop", prompt: "dark analytics dashboard on a laptop screen, cyan and violet data visualisation, no text" }),
-      ],
-    }),
-
-    slide({
-      id: "traction",
-      name: "Traction",
-      layout: "splitRight",
-      split: 0.58,
-      blocks: [
-        heading({
-          slot: "full",
-          kicker: "Traction",
-          title: "320% user growth in six months, with churn falling",
-          subtitle: "Growth and retention moved together, which is the signal that the product is solving the problem rather than being bought on hope.",
-        }),
-        chart({
-          slot: "main",
-          kind: "barChart",
-          categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-          series: [{ name: "Active users", values: [8, 12, 19, 27, 38, 52], accent: 1 }],
-          yFormat: "compact",
-          caption: "+320% user growth in six months.",
-        }),
-        statCards({
-          slot: "aside",
-          style: { columns: 1 },
-          items: [
-            { icon: "users", value: "100K+", label: "Active users" },
-            { icon: "trendingUp", value: "+250%", label: "Revenue growth" },
-            { icon: "userCheck", value: "95%", label: "Customer retention" },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "trendingUp",
-          solid: true,
-          statement: "Churn has fallen for four consecutive quarters",
-          detail: "Growth driven by retention compounds. Growth driven by acquisition has to be bought again every year.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "business-model",
-      name: "Business Model",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Business model",
-          title: "Three revenue lines, one acquisition motion",
-          subtitle: "Every customer enters through the same door, then expands into whichever line fits how they operate.",
-        }),
-        iconGrid({
-          grow: 1,
-          style: { columns: 3 },
-          items: [
-            { icon: "refresh", title: "Subscription", body: "Recurring revenue from individuals and teams." },
-            { icon: "building", title: "Enterprise", body: "Custom solutions for large organisations." },
-            { icon: "cart", title: "Marketplace", body: "Commission-based revenue from partners." },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "refresh",
-          statement: "118% net revenue retention",
-          detail: "Our existing customers alone would grow the business 18% next year if we never signed another logo.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "gtm",
-      name: "Go-to-Market Strategy",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Go to market",
-          title: "Land with one team, expand across the account",
-          subtitle: "Our cheapest customers to acquire are the ones already inside an account that bought a single seat eighteen months ago.",
-        }),
-        processFlow({
-          grow: 1,
-          numbered: true,
-          items: [
-            { title: "Acquire", body: "Targeted marketing and channel partnerships." },
-            { title: "Activate", body: "Strong onboarding and early engagement." },
-            { title: "Scale", body: "Expand to new markets and segments." },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "competition",
-      name: "Competitive Landscape",
-      layout: "fullBleed",
-      blocks: [
-        heading({
-          kicker: "Competition",
-          title: "We win where cost and capability both matter",
-          subtitle: "The incumbents are capable and expensive. The challengers are cheap and thin. Nobody else is sitting where we are.",
-        }),
-        scatter({
-          grow: 1,
-          xAxis: { low: "Low cost", high: "High cost" },
-          yAxis: { low: "Low value", high: "High value" },
-          points: [
-            { label: "Our solution", x: 0.74, y: 0.86, highlight: true },
-            { label: "Competitor A", x: 0.22, y: 0.7 },
-            { label: "Competitor B", x: 0.2, y: 0.26 },
-            { label: "Competitor C", x: 0.78, y: 0.3 },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "financials",
-      name: "Financial Projections",
-      layout: "splitRight",
-      split: 0.62,
-      blocks: [
-        heading({
-          slot: "full",
-          kicker: "Financials",
-          title: "To $38M revenue by 2028, profitable from 2026",
-          subtitle: "Built on the retention we already have rather than on acquisition we have not proven.",
-        }),
-        chart({
-          slot: "main",
-          kind: "comboChart",
-          categories: ["2024", "2025", "2026", "2027", "2028"],
-          series: [
-            { name: "Revenue", values: [5, 11, 18, 26, 38], accent: 1, kind: "bar" },
-            { name: "Profit", values: [-2, 1, 5, 11, 19], accent: 2, kind: "line" },
-          ],
-          yFormat: "currency",
-        }),
-        statCards({
-          slot: "aside",
-          style: { columns: 1 },
-          items: [
-            { icon: "dollar", value: "$5M", label: "Revenue in 2024" },
-            { icon: "trendingUp", value: "$28M", label: "Revenue in 2027" },
-            { icon: "barChart", value: "45%", label: "CAGR 2024–2028" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "team",
-      name: "The Team",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "The team",
-          title: "Operators who have run the function we sell into",
-          subtitle: "Between them, three previous exits and two decades inside the industry this product serves.",
-        }),
+        heading({ slot: "full", kicker: "Team", title: "Who you are backing" }),
         teamCards({
-          grow: 1,
+          slot: "main",
           style: { columns: 3 },
           items: [
             {
-              name: "Sarah Khan",
-              role: "CEO & Co-founder",
-              bio: "Ten years in product and technology innovation.",
-              photoPrompt: "professional headshot of a woman founder, dark studio background, dramatic lighting",
+              name: "Amara Diallo",
+              role: "Co-founder, CEO",
+              bio: "Sold her last company to the incumbent in this category",
+              photoPrompt: "professional headshot of a woman founder in a dark blazer, soft studio lighting, neutral background",
             },
             {
-              name: "Ali Raza",
-              role: "CTO & Co-founder",
-              bio: "Expert in AI and scalable systems.",
-              photoPrompt: "professional headshot of a man in a dark shirt, dark studio background, dramatic lighting",
+              name: "Tom Lindqvist",
+              role: "Co-founder, CTO",
+              bio: "Built the pricing engine the whole model depends on",
+              photoPrompt: "professional headshot of a man with glasses, soft studio lighting, neutral background",
             },
             {
-              name: "Ayesha Malik",
-              role: "COO",
-              bio: "Operations and growth strategy specialist.",
-              photoPrompt: "professional headshot of a woman executive, dark studio background, dramatic lighting",
+              name: "Ruth Mensah",
+              role: "Chief Revenue Officer",
+              bio: "Took the previous business from $4M to $60M",
+              photoPrompt: "professional headshot of a woman in business attire, soft studio lighting, neutral background",
             },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "09" }] }),
       ],
     }),
 
     slide({
-      id: "ask",
-      name: "Funding Ask",
-      layout: "splitRight",
-      split: 0.46,
+      id: "next",
+      name: "Use of funds",
+      layout: "band",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ slot: "full", title: "Funding Ask", subtitle: "We are raising $10M to accelerate growth and impact." }),
-        statCards({
+        heading({ slot: "full", kicker: "Use of funds", title: "Where the round goes" }),
+        iso3d({
           slot: "main",
-          style: { columns: 1 },
+          divided: true,
+          scale: 56,
+          style: { columns: 4 },
           items: [
-            { icon: "dollar", value: "$10M", label: "Series A round" },
-            { icon: "clock", value: "24 mo", label: "Runway this provides" },
+            {
+              asset: "tower",
+              value: "46%",
+              title: "Engineering",
+              body: "Twenty hires against a roadmap already sold",
+              accent: 1,
+            },
+            {
+              asset: "arrow",
+              value: "31%",
+              title: "Go to market",
+              body: "Two regions where the channel already asks for us",
+              accent: 1,
+            },
+            {
+              asset: "cylinder",
+              value: "15%",
+              title: "Infrastructure",
+              body: "The margin improvement that funds the year after",
+              accent: 1,
+            },
+            {
+              asset: "cube",
+              value: "8%",
+              title: "Reserve",
+              body: "Because the plan has never survived first contact",
+              accent: 1,
+            },
           ],
         }),
-        donut({
-          slot: "aside",
-          centerValue: "$10M",
-          centerLabel: "Allocation",
-          items: [
-            { label: "Product development", value: 40 },
-            { label: "Market expansion", value: 30 },
-            { label: "Team growth", value: 20 },
-            { label: "Strategic partnerships", value: 10 },
-          ],
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "10" }] }),
       ],
     }),
 
     slide({
-      id: "use-of-funds",
-      name: "Use of Funds",
-      layout: "stack",
+      id: "close",
+      name: "The round",
+      layout: "statement",
+      motif: "meshLattice",
       blocks: [
-        heading({
-          kicker: "Use of funds",
-          title: "Where the $10M goes, and what it buys",
-          subtitle: "Seventy per cent into product and market expansion. The rest keeps the engine running while those two compound.",
-        }),
-        iconGrid({
-          grow: 1,
-          style: { columns: 2 },
-          items: [
-            { icon: "cpu", title: "Product & technology", body: "Ship the roadmap faster and deepen the platform." },
-            { icon: "megaphone", title: "Sales & marketing", body: "Build repeatable demand generation." },
-            { icon: "users", title: "Team & operations", body: "Hire senior engineering and customer leadership." },
-            { icon: "handshake", title: "Strategic initiatives", body: "Partnerships and selective acquisitions." },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "future",
-      name: "The Future",
-      layout: "closing",
-      background: {
-        prompt:
-          "mountain summit with a flag at dawn, dramatic clouds below, deep blue and violet palette, cinematic, no text, no logos",
-        scrim: 0.58,
-      },
-      blocks: [
-        heading({ title: "A bigger, brighter tomorrow", subtitle: "Join us on this journey." }),
-        timeline({
-          items: [
-            { icon: "flag", date: "2024", title: "Build & validate" },
-            { icon: "trendingUp", date: "2025", title: "Scale & expand" },
-            { icon: "globe", date: "2026+", title: "Global leader" },
-          ],
-        }),
-        cta({ label: "Join Us on This Journey" }),
+        heading({ slot: "full", kicker: "The round", title: "$24M, Series B" }),
+        paragraph({ slot: "main", body: "Twenty four months of runway to $60M of recurring revenue, at which point the business funds itself." }),
         contactFooter({
           slot: "footer",
           items: [
             { icon: "globe", label: "yourcompany.com" },
-            { icon: "mail", label: "invest@yourcompany.com" },
+            { icon: "mail", label: "investors@yourcompany.com" },
           ],
         }),
       ],
