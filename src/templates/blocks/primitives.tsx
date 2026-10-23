@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext } from "react";
 import { EditableElement } from "@/app/components/editor/EditableElement";
-import type { ResolvedTokens } from "../tokens";
+import type { ResolvedTokens, TypeToken } from "../tokens";
 import { BACKGROUND_DECOR } from "../decor";
 import { withAlpha } from "../tokens";
 import type { CardStyle, RichText } from "../types";
@@ -239,6 +239,25 @@ export const Icon: React.FC<{
 // Section heading
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Picks the headline size from how long the headline is.
+ *
+ * A banner headline is the composition, so it wants to be enormous, but a
+ * thirty character line at 94px runs to three lines and lands on top of
+ * the content band. Rather than policing copy length in every template,
+ * the size steps down as the line gets longer.
+ */
+function bannerToken(
+  variant: string | undefined,
+  text: string,
+  isCover: boolean
+): TypeToken {
+  const n = text.length;
+  if (variant === "banner") return n <= 22 ? "displayXl" : n <= 38 ? "displayMd" : "displayLg";
+  if (variant === "bannerSm") return n <= 34 ? "displayLg" : "display";
+  return isCover ? "display" : "h1";
+}
+
 export const SectionHeading: React.FC<{
   blockId: string;
   kicker?: RichText;
@@ -247,13 +266,17 @@ export const SectionHeading: React.FC<{
   slideNumber?: number;
   align?: "left" | "center";
   /** Cover headings drop the numbering chip and use the display size. */
-  variant?: "section" | "cover";
+  variant?: "section" | "cover" | "banner" | "bannerSm";
 }> = ({ blockId, kicker, title, subtitle, slideNumber, align = "left", variant = "section" }) => {
   const t = useTokens();
   const isCover = variant === "cover";
+  // A banner headline is the composition rather than a label above it, so
+  // it drops the numbering chip the way a cover does.
+  const isBanner = variant === "banner" || variant === "bannerSm";
   // On a cover the slide-number chip is noise, and the accent may not have
   // enough contrast against a photograph — so kickers use the ink colour.
-  const style = isCover && t.theme.headingStyle === "numbered" ? "plain" : t.theme.headingStyle;
+  const style =
+    (isCover || isBanner) && t.theme.headingStyle === "numbered" ? "plain" : t.theme.headingStyle;
   const accent = isCover ? t.palette.text : t.palette.accent;
 
   const titleRow = (
@@ -277,8 +300,8 @@ export const SectionHeading: React.FC<{
         blockId={blockId}
         path="title"
         value={title}
-        token={isCover ? "display" : "h1"}
-        tag={isCover ? "h1" : "h2"}
+        token={bannerToken(variant, title?.text ?? "", isCover)}
+        tag={isCover || isBanner ? "h1" : "h2"}
         align={align}
       />
     </div>
@@ -322,7 +345,7 @@ export const SectionHeading: React.FC<{
           blockId={blockId}
           path="subtitle"
           value={subtitle}
-          token={isCover ? "h3" : "bodyLg"}
+          token={isCover || isBanner ? "h3" : "bodyLg"}
           color={t.palette.textMuted}
           align={align}
           clamp={2}

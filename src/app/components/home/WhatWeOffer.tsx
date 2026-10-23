@@ -124,9 +124,8 @@ export default function WhatWeOffer() {
             A template is a design<br />system, not a skin.
           </Display>
           <Lede sx={{ pb: 1 }}>
-            Not a theme picker bolted onto a text editor. Each template is a
-            complete design system, covering typography, colour, spacing and
-            card treatment. You can change any of it, on any slide.
+            Typography, colour, spacing and card treatment. Change any of
+            it, on any slide.
           </Lede>
         </Box>
 
@@ -202,25 +201,25 @@ export default function WhatWeOffer() {
               index="01"
               icon={<DriveFileRenameOutlineRounded />}
               title="Edit anything, in place"
-              body="Headings, bullets, captions, stat labels, icons, images. Click it and change it. No inspector round trip, no fields that quietly do nothing."
+              body="Headings, bullets, captions, icons, images. Click it and change it."
             />
             <ListEntry
               index="02"
               icon={<DashboardCustomizeRounded />}
               title="Move it, or let the layout hold it"
-              body="Blocks sit in a layout that keeps the deck consistent. Unlock any one of them and drag, resize or rotate it freely, with snapping to every other element."
+              body="Unlock any block and drag, resize or rotate it, with snapping."
             />
             <ListEntry
               index="03"
               icon={<PaletteRounded />}
               title="Restyle the whole deck at once"
-              body="Switch theme and every slide follows: colour, typeface pairing, card treatment, icon style. Your content never moves."
+              body="Switch theme and every slide follows. Your content never moves."
             />
             <ListEntry
               index="04"
               icon={<FileDownloadRounded />}
               title="Hand over a file people can edit"
-              body="PowerPoint export writes real text boxes, native tables and charts carrying their own data. Not a picture of a slide."
+              body="Real text boxes, native tables, charts with their own data."
               last
             />
           </Box>

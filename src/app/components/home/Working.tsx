@@ -30,21 +30,21 @@ const STEPS = [
     n: "01",
     title: "Say what it is about",
     body:
-      "A sentence is enough. If you have more, give it more: a brief, a report, a link, a transcript. It reads whatever you hand it.",
+      "A sentence is enough. A brief, report or link works too.",
     note: "Takes about ten seconds",
   },
   {
     n: "02",
     title: "Argue with the outline",
     body:
-      "Before anything gets designed you see the running order. Rewrite a line, drop a section, reorder the middle. This is where a deck is won or lost, so it happens first.",
+      "You see the running order before anything is designed. Rewrite, drop, reorder.",
     note: "The step most tools skip",
   },
   {
     n: "03",
     title: "Take the file",
     body:
-      "Pick a template, edit anything you want on the slides themselves, then export. PowerPoint gets real text boxes and tables, not a flat picture.",
+      "Pick a template, edit the slides, export a file people can change.",
     note: "Yours to keep and change",
   },
 ];
@@ -75,9 +75,8 @@ export default function Working() {
             Three steps, and<br />you can stop at any of them.
           </Display>
           <Lede sx={{ pb: 1 }}>
-            Some people take the outline and build the deck themselves. Some
-            take the first draft and present it. Both are fine. Nothing here
-            locks you into finishing the way it started.
+            Take the outline and build it yourself, or take the first draft
+            and present it. Both are fine.
           </Lede>
         </Box>
 

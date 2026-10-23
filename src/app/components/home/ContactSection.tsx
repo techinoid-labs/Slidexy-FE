@@ -168,9 +168,8 @@ export default function ContactSection() {
               getting in the way.
             </Display>
             <Lede sx={{ mb: 4 }}>
-              If something is broken, say so plainly and we will fix it. If
-              you want a template that does not exist yet, describe it. Both
-              are useful to us.
+              Something broken, or a template that does not exist yet.
+              Both are useful to us.
             </Lede>
 
             <Box sx={{ borderTop: `1px solid ${RULE}`, pt: 3 }}>

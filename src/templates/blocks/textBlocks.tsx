@@ -17,6 +17,8 @@ export const HeadingBlockView: React.FC<{ block: HeadingBlock; slideNumber?: num
 }) => {
   const { slideLayout } = useBlockEdit();
   const isCover = slideLayout === "cover" || slideLayout === "closing";
+  const isBand = slideLayout === "band";
+  const isHero = slideLayout === "hero";
   return (
     <SectionHeading
       blockId={block.id}
@@ -24,7 +26,7 @@ export const HeadingBlockView: React.FC<{ block: HeadingBlock; slideNumber?: num
       title={block.title}
       subtitle={block.subtitle}
       slideNumber={slideNumber}
-      variant={isCover ? "cover" : "section"}
+      variant={isBand ? "banner" : isHero ? "bannerSm" : isCover ? "cover" : "section"}
       align={block.style?.align === "center" ? "center" : "left"}
     />
   );

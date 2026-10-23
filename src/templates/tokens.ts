@@ -16,6 +16,15 @@ export const STAGE_HEIGHT = 540;
  * sizes — the thing that makes hand-tuned decks look accidental.
  */
 const BASE_TYPE = {
+  // The editorial headline. It is the composition on a band slide, not a
+  // label on top of one, so it runs about eight times the body size.
+  displayXl: { size: 94, weight: 800, tracking: -3.4, leading: 0.9 },
+  // The same headline in a half-width column. At displayXl it overruns
+  // the column and lands on top of the body copy.
+  displayLg: { size: 58, weight: 800, tracking: -1.9, leading: 0.98 },
+  // The step between. A headline of thirty characters at displayXl runs
+  // to three lines and lands on the content band underneath it.
+  displayMd: { size: 72, weight: 800, tracking: -2.6, leading: 0.94 },
   display: { size: 52, weight: 800, tracking: -1.4, leading: 1.06 },
   h1: { size: 36, weight: 700, tracking: -0.8, leading: 1.15 },
   h2: { size: 26, weight: 700, tracking: -0.4, leading: 1.2 },
@@ -24,6 +33,7 @@ const BASE_TYPE = {
   body: { size: 13, weight: 400, tracking: 0, leading: 1.5 },
   small: { size: 11.5, weight: 400, tracking: 0, leading: 1.45 },
   micro: { size: 10, weight: 600, tracking: 0.4, leading: 1.3 },
+  label: { size: 12, weight: 700, tracking: 0.9, leading: 1.25 },
   stat: { size: 30, weight: 800, tracking: -1, leading: 1 },
 } as const;
 
@@ -188,7 +198,14 @@ export function resolveTokens(theme: TemplateTheme): ResolvedTokens {
     card,
     type: (token: TypeToken) => {
       const t = BASE_TYPE[token];
-      const isDisplay = token === "display" || token === "h1" || token === "h2" || token === "stat";
+      const isDisplay =
+        token === "displayXl" ||
+        token === "displayLg" ||
+        token === "displayMd" ||
+        token === "display" ||
+        token === "h1" ||
+        token === "h2" ||
+        token === "stat";
       return {
         fontSize: `${Math.round(t.size * typeScale * 100) / 100}px`,
         fontWeight: t.weight,

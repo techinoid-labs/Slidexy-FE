@@ -75,9 +75,8 @@ export default function Purpose() {
             A PowerPoint file,<br />not a picture of one.
           </Display>
           <Lede sx={{ pb: 1 }}>
-            Export from most AI deck tools and you get a flat image per slide.
-            It opens, and nothing in it can be touched. Slidexy writes the
-            actual objects, so the person you send it to can work.
+            Most AI tools export a flat image per slide. We write the real
+            objects, so the person you send it to can work.
           </Lede>
         </Box>
 
@@ -114,9 +113,7 @@ export default function Purpose() {
               One flattened image per slide.
             </Typography>
             <Typography sx={{ fontSize: "0.92rem", color: MUTED, lineHeight: 1.6, maxWidth: 420 }}>
-              Your client opens it six months later to change a number, and
-              finds a photograph. The deck goes back to whoever made it, or
-              gets rebuilt by hand.
+              Your client goes to change a number and finds a photograph.
             </Typography>
           </Box>
 
@@ -137,8 +134,7 @@ export default function Purpose() {
               Native objects, editable like anything else.
             </Typography>
             <Typography sx={{ fontSize: "0.92rem", color: MUTED, lineHeight: 1.6, maxWidth: 420 }}>
-              Open it in PowerPoint, click a headline, and a cursor appears.
-              Nothing about the file says it came from somewhere else.
+              Click a headline in PowerPoint and a cursor appears.
             </Typography>
           </Box>
         </Box>
@@ -221,9 +217,8 @@ export default function Purpose() {
         <Hairline sx={{ mt: { xs: 5, md: 8 }, mb: 3 }} />
 
         <Typography sx={{ fontSize: "0.88rem", color: MUTED, maxWidth: 680, lineHeight: 1.6 }}>
-          A handful of visuals have no honest PowerPoint equivalent: a Venn
-          diagram, a device mockup. Those export as a picture of that one
-          element, never the whole slide.
+          A Venn diagram or a device mockup has no PowerPoint equivalent.
+          Those export as one picture, never the whole slide.
         </Typography>
       </Container>
     </Box>

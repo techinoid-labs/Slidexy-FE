@@ -1,31 +1,31 @@
 /**
- * 09 — Training & Workshop
+ * 09. Training & Workshop
  *
- * Teaching voice: rounded friendly type, flat cards, numbered headings, dots
- * motif, geometric cover. Section dividers break the deck into modules.
+ * DEVICE: things that are assembled. Steps, lattices, stacked plates
+ * and a badge at the end, in one blue, on a lattice that fades out.
+ * 
+ * DENSITY: open and friendly. A rounded humanist face, large radii, and
+ * one idea a column so the room can follow it while you talk.
+ *
+ * COMPOSITIONS: split, timeline, band, hero, quote, process, showcase, people, table.
+ * Every template shares the frame, and draws a different sequence from
+ * it, so no two decks run the same shapes in the same order.
  */
 
 import { educationSky } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
-  bigStat,
-  callout,
   checklist,
+  comparisonTable,
   contactFooter,
-  cta,
   heading,
-  iconBullets,
-  iconGrid,
-  image,
-  imageGrid,
+  iso3d,
   metricRow,
-  numbered,
   paragraph,
   processFlow,
   quote,
   slide,
-  spotlight,
-  statCards,
+  teamCards,
   timeline,
 } from "./helpers";
 
@@ -35,331 +35,288 @@ export const trainingWorkshop: SlideTemplate = {
   name: "Training & Workshop",
   category: "Education",
   archetype: "education",
-  description: "Build skills and knowledge.",
+  description: "Studio sky and rounded type, objects that build up step by step.",
   theme: educationSky,
-  coverPrompt: "bright classroom with soft daylight and blue accents, welcoming, no text",
   slides: [
     slide({
       id: "cover",
       name: "Cover",
-      layout: "cover",
-      background: {
-        prompt: "bright modern classroom with soft daylight, blue and white palette, welcoming and uncluttered, no text, no logos",
-        scrim: 0.55,
-      },
+      layout: "split",
+      motif: "meshLattice",
+      split: 0.52,
       blocks: [
-        heading({ kicker: "Workshop", title: "Practical skills, in one session", subtitle: "A hands-on workshop you can apply the same week." }),
-        contactFooter({ slot: "footer", items: [{ icon: "graduation", label: "YOUR ORGANISATION" }] }),
-      ],
-    }),
-
-    slide({
-      id: "welcome",
-      name: "Welcome",
-      layout: "splitRight",
-      split: 0.56,
-      blocks: [
-        heading({ slot: "full", title: "Welcome", subtitle: "What we will cover and how the session runs." }),
-        iconBullets({
+        heading({ slot: "full", kicker: "Workshop", title: "Learn it by building it" }),
+        paragraph({ slot: "main", body: "A full day, four exercises, and one thing you will have built by the end that you can take back and use on Monday." }),
+        metricRow({
           slot: "main",
           items: [
-            { icon: "clock", label: "Three hours", body: "Two short breaks, finishing on time." },
-            { icon: "users", label: "Hands-on", body: "You will build something, not just watch." },
-            { icon: "document", label: "Take-aways", body: "Slides, templates and a checklist to keep." },
+            { value: "1 day", label: "Length" },
+            { value: "4", label: "Exercises" },
+            { value: "12", label: "Places" },
           ],
         }),
-        image({ slot: "aside", prompt: "small group workshop around a table with laptops, bright daylight, candid, no text" }),
+        iso3d({ slot: "aside", scale: 360, items: [{ asset: "climb", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "YOUR ACADEMY" }, { label: "2026" }] }),
       ],
     }),
 
     slide({
-      id: "objectives",
-      name: "Learning Objectives",
+      id: "contents",
+      name: "The day",
       layout: "stack",
+      motif: "meshBands",
       blocks: [
-        heading({
-          kicker: "Objectives",
-          title: "Four things you will be able to do by five o'clock",
-          subtitle: "Not things you will have heard about. Each one is something you will have done at least once before you leave.",
-        }),
-        checklist({
-          grow: 1,
-          style: { columns: 2 },
-          items: [
-            "Explain the core concepts in your own words",
-            "Apply the framework to a real example",
-            "Identify the three most common mistakes",
-            "Run the process independently next week",
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "checkCircle",
-          statement: "You will have done each of these at least once before you leave",
-          detail: "Hearing about a method and having used it are different things, and only one of them survives the week.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "agenda",
-      name: "Agenda",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Agenda",
-          title: "Three hours, half of it hands-on",
-          subtitle: "The second half is you working on your own example, with us in the room. That is the part that makes it stick.",
-        }),
+        heading({ kicker: "The day", title: "How it runs" }),
         timeline({
           grow: 1,
           items: [
-            { icon: "lightbulb", date: "0:00", title: "Foundations", body: "Concepts and vocabulary." },
-            { icon: "settings", date: "0:45", title: "The method", body: "Walk through, step by step." },
-            { icon: "users", date: "1:30", title: "Practice", body: "Work on your own example." },
-            { icon: "checkCircle", date: "2:30", title: "Review", body: "Share back and troubleshoot." },
+            { date: "09:30", title: "Groundwork", body: "The ideas you need before the first exercise makes sense" },
+            { date: "11:00", title: "Build one", body: "Your first working version, wrong in instructive ways" },
+            { date: "14:00", title: "Build two", body: "The same problem again, with everything you just learned" },
+            { date: "16:30", title: "Take it home", body: "Packaging what you built so it survives the journey" },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "02" }] }),
       ],
     }),
 
     slide({
-      id: "module-1",
-      name: "Module 1 — Foundations",
-      layout: "stack",
+      id: "about",
+      name: "Who it is for",
+      layout: "band",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ kicker: "Module 1", title: "Foundations", subtitle: "The ideas everything else builds on." }),
-        iconGrid({
-          grow: 1,
-          style: { columns: 3 },
+        heading({ slot: "full", kicker: "Who it is for", title: "Come if this is you" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 66,
           items: [
-            { icon: "lightbulb", title: "Concept one", body: "What it is and why it matters in practice." },
-            { icon: "layers", title: "Concept two", body: "How it relates to the first." },
-            { icon: "target", title: "Concept three", body: "Where teams usually get this wrong." },
+            {
+              asset: "prism",
+              value: "1yr",
+              title: "Some experience",
+              body: "Enough that the basics will bore you, which we skip",
+              accent: 1,
+            },
+            {
+              asset: "capsule",
+              value: "0",
+              title: "Prerequisites",
+              body: "No setup, no reading list, nothing to install beforehand",
+              accent: 1,
+            },
+            {
+              asset: "orbit",
+              value: "12",
+              title: "Per session",
+              body: "Small enough that everyone gets looked at twice",
+              accent: 1,
+            },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "03" }] }),
       ],
     }),
 
     slide({
-      id: "key-idea",
-      name: "The Key Idea",
-      layout: "fullBleed",
+      id: "problem",
+      name: "Why a workshop",
+      layout: "band",
+      motif: "meshBands",
       blocks: [
-        heading({ title: "If you remember one thing" }),
+        heading({ slot: "full", kicker: "Why a workshop", title: "Why reading does not work" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 66,
+          items: [
+            {
+              asset: "blob",
+              value: "9%",
+              title: "Retained",
+              body: "From reading alone, measured a fortnight afterwards",
+              accent: 1,
+            },
+            {
+              asset: "torus",
+              value: "3x",
+              title: "By doing",
+              body: "Retention when the learner builds the thing themselves",
+              accent: 1,
+            },
+            {
+              asset: "shards",
+              value: "0",
+              title: "Slides to read",
+              body: "You will be building for five of the six hours",
+              accent: 1,
+            },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "04" }] }),
+      ],
+    }),
+
+    slide({
+      id: "solution",
+      name: "The method",
+      layout: "hero",
+      motif: "meshField",
+      split: 0.54,
+      blocks: [
+        heading({ slot: "full", kicker: "The method", title: "Build, break, build again" }),
+        paragraph({ slot: "main", body: "You build it once badly, we break it together in front of the room, and you build it again knowing why the first one failed." }),
+        checklist({
+          slot: "main",
+          items: [
+            "Build before you are ready, deliberately",
+            "Break it publicly, where it is safe",
+            "Build it again with the reason in hand",
+          ],
+        }),
+        iso3d({ slot: "aside", scale: 340, items: [{ asset: "lattice", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "05" }] }),
+      ],
+    }),
+
+    slide({
+      id: "proof",
+      name: "What people say",
+      layout: "fullBleed",
+      motif: "none",
+      invert: true,
+      blocks: [
         quote({
           grow: 1,
-          quote: "Start from the outcome you need, then work backwards. Most of the difficulty comes from starting in the middle.",
-          author: "Workshop principle",
+          slot: "full",
+          quote: "I had read about this for two years and understood none of it. I built a working one before lunch and have used it every week since.",
+          author: "An attendee",
+          role: "March session",
         }),
+        contactFooter({ slot: "footer", items: [{ label: "06" }] }),
       ],
     }),
 
     slide({
-      id: "module-2",
-      name: "Module 2 — The Method",
+      id: "exercises",
+      name: "The exercises",
       layout: "stack",
+      motif: "meshBands",
       blocks: [
-        heading({ kicker: "Module 2", title: "The Method", subtitle: "Five steps, in order." }),
+        heading({ kicker: "The exercises", title: "What you will build" }),
         processFlow({
           grow: 1,
           numbered: true,
           items: [
-            { title: "Define", body: "State the outcome precisely." },
-            { title: "Gather", body: "Collect only what you need." },
-            { title: "Analyse", body: "Find the pattern, not the anecdote." },
-            { title: "Decide", body: "Commit and write it down." },
-            { title: "Review", body: "Check against the outcome." },
+            { title: "The simplest version", body: "Working, ugly, and finished inside ninety minutes" },
+            { title: "The one that scales", body: "The same problem rebuilt for the case that breaks it" },
+            { title: "The one you keep", body: "Documented well enough to hand to someone else" },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "07" }] }),
       ],
     }),
 
     slide({
-      id: "example",
-      name: "Worked Example",
-      layout: "splitRight",
-      split: 0.54,
-      blocks: [
-        heading({ slot: "full", title: "Worked Example", subtitle: "The method applied to a real case." }),
-        iconBullets({
-          slot: "main",
-          items: [
-            { icon: "search", label: "The situation", body: "A team missing its deadline every sprint." },
-            { icon: "barChart", label: "What we found", body: "Work entered the sprint after it started." },
-            { icon: "checkCircle", label: "The change", body: "One rule: nothing added mid-sprint." },
-          ],
-        }),
-        statCards({
-          slot: "aside",
-          style: { columns: 1 },
-          items: [
-            { icon: "trendingUp", value: "+41%", label: "Sprint completion" },
-            { icon: "clock", value: "-2 days", label: "Average cycle time" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "mistakes",
-      name: "Common Mistakes",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Pitfalls",
-          title: "Four mistakes we see in almost every team",
-          subtitle: "None of them are about intelligence or effort. They are all about skipping a step that feels optional and is not.",
-        }),
-        iconBullets({
-          grow: 1,
-          style: { columns: 2 },
-          items: [
-            { icon: "close", label: "Skipping the define step", body: "You cannot measure against an outcome you never stated." },
-            { icon: "close", label: "Gathering everything", body: "More data is not more insight; it is more delay." },
-            { icon: "close", label: "Deciding verbally", body: "If it is not written down, it was not decided." },
-            { icon: "close", label: "Never reviewing", body: "Without review the method becomes ritual." },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "lightbulb",
-          solid: true,
-          statement: "None of these are about intelligence or effort",
-          detail: "Every one is about skipping a step that feels optional and is not.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "exercise",
-      name: "Your Turn",
-      layout: "splitLeft",
+      id: "market",
+      name: "Logistics",
+      layout: "showcase",
+      motif: "meshLattice",
       split: 0.5,
       blocks: [
-        heading({ slot: "full", kicker: "Exercise", title: "Your Turn", subtitle: "Twenty minutes, working on your own example." }),
-        checklist({
+        heading({ slot: "full", kicker: "Logistics", title: "Where and when" }),
+        paragraph({ slot: "main", body: "Central location, nine thirty to five, lunch included, and everything you need provided on the day." }),
+        metricRow({
           slot: "main",
           items: [
-            "Pick a real problem from your team",
-            "Write the outcome in one sentence",
-            "List what you actually need to know",
-            "Draft the decision you would make",
+            { value: "09:30", label: "Start" },
+            { value: "17:00", label: "Finish" },
+            { value: "£340", label: "Per place" },
           ],
         }),
-        image({ slot: "aside", prompt: "person writing in a notebook at a bright desk, focused, natural light, no text" }),
+        iso3d({ slot: "aside", scale: 236, items: [{ asset: "team", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "08" }] }),
       ],
     }),
 
     slide({
-      id: "discussion",
-      name: "Share Back",
-      layout: "stack",
+      id: "people",
+      name: "Who teaches",
+      layout: "band",
+      motif: "none",
       blocks: [
-        heading({
-          kicker: "Discussion",
-          title: "Explain yours to someone who was not in your head",
-          subtitle: "The gaps show up the moment you try to say it out loud. That is the useful part of this exercise, not the answer itself.",
-        }),
-        iconGrid({
-          grow: 1,
+        heading({ slot: "full", kicker: "Who teaches", title: "In the room" }),
+        teamCards({
+          slot: "main",
           style: { columns: 3 },
           items: [
-            { icon: "users", title: "In pairs", body: "Five minutes each, explain your outcome." },
-            { icon: "search", title: "Look for", body: "Where the outcome was vague." },
-            { icon: "checkCircle", title: "Then", body: "Rewrite it once, more precisely." },
+            {
+              name: "Rosa Delgado",
+              role: "Lead facilitator",
+              bio: "Has run this workshop eleven times and rewritten it twice",
+              photoPrompt: "professional headshot of a woman smiling, soft studio lighting, neutral background",
+            },
+            {
+              name: "Kwame Boateng",
+              role: "Assistant",
+              bio: "Sits with whoever is stuck, which is everyone at some point",
+              photoPrompt: "professional headshot of a man in a casual jumper, soft studio lighting, neutral background",
+            },
+            {
+              name: "Mira Petrova",
+              role: "Materials",
+              bio: "Writes the exercises and the handbook you take away",
+              photoPrompt: "professional headshot of a woman in casual wear, soft studio lighting, neutral background",
+            },
           ],
         }),
-      ],
-    }),
-
-    slide({
-      id: "resources",
-      name: "Resources",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Resources",
-          title: "Everything you need to run this without us",
-          subtitle: "Take the worksheet and the recording. If you teach this to your own team, we have done our job.",
-        }),
-        imageGrid({
-          grow: 1,
-          style: { columns: 3 },
-          items: [
-            { icon: "document", title: "Worksheet", body: "The template used in today's exercise.", prompt: "clean printed worksheet on a desk, overhead, no readable text" },
-            { icon: "book", title: "Reading list", body: "Four short pieces worth your time.", prompt: "small stack of books on a bright desk, no readable text" },
-            { icon: "play", title: "Recording", body: "This session, available for a month.", prompt: "laptop showing a video player interface, soft light, no text" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "recap",
-      name: "Recap",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Recap",
-          title: "If you forget everything else, keep these four",
-          subtitle: "Written deliberately short so they fit on a sticky note above your desk.",
-        }),
-        checklist({
-          grow: 1,
-          style: { columns: 2 },
-          items: [
-            "Start from the outcome, not the data",
-            "Gather only what changes the decision",
-            "Write the decision down",
-            "Review against the outcome you stated",
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "book",
-          statement: "If you teach this to one other person, it is yours",
-          detail: "Teaching it is the fastest way to find the parts you have not actually understood yet.",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "09" }] }),
       ],
     }),
 
     slide({
       id: "next",
-      name: "Next Steps",
-      layout: "splitRight",
-      split: 0.56,
+      name: "Dates",
+      layout: "stack",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ slot: "full", title: "Next Steps", subtitle: "What to do in the next seven days." }),
-        processFlow({
-          slot: "main",
-          numbered: true,
-          items: [
-            { title: "This week", body: "Run the method once on a real problem." },
-            { title: "Next week", body: "Bring it to your team retro." },
-            { title: "This month", body: "Teach it to one other person." },
+        heading({ kicker: "Dates", title: "Upcoming sessions" }),
+        comparisonTable({
+          grow: 1,
+          columns: [
+            { label: "Spring" },
+            { label: "Early summer", highlight: true },
+            { label: "Autumn" },
+            { label: "Winter" },
+          ],
+          rows: [
+            { label: "Date", cells: ["12 Mar","09 May","18 Sep","20 Nov"] },
+            { label: "Places left", cells: ["4","12","12","12"] },
+            { label: "Exercise set", cells: ["Current","Revised","Revised","Revised"] },
           ],
         }),
-        paragraph({ slot: "aside", body: "Teaching it to someone else is the fastest way to find the parts you have not understood yet." }),
+        contactFooter({ slot: "footer", items: [{ label: "10" }] }),
       ],
     }),
 
     slide({
-      id: "thanks",
-      name: "Thank You",
-      layout: "closing",
-      background: {
-        prompt: "soft blue sky with light clouds, bright and optimistic, minimal, no text, no logos",
-        scrim: 0.45,
-      },
+      id: "close",
+      name: "Close",
+      layout: "hero",
+      motif: "meshLattice",
+      split: 0.54,
       blocks: [
-        heading({ title: "Thank you for joining", subtitle: "Questions are welcome any time." }),
-        cta({ label: "Book a Follow-up" }),
+        heading({ slot: "full", kicker: "Book a place", title: "See you there" }),
+        paragraph({ slot: "main", body: "Twelve places a session. Bring a laptop and nothing else; everything you need is provided on the day." }),
+        iso3d({ slot: "aside", scale: 290, items: [{ asset: "badge", title: "", accent: 1 }] }),
         contactFooter({
           slot: "footer",
           items: [
-            { icon: "mail", label: "training@yourorg.com" },
-            { icon: "globe", label: "yourorg.com/workshops" },
+            { icon: "globe", label: "youracademy.com" },
+            { icon: "mail", label: "workshops@youracademy.com" },
           ],
         }),
       ],

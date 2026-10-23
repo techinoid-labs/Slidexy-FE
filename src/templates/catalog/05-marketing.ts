@@ -1,34 +1,32 @@
 /**
- * 05 — Marketing Strategy
+ * 05. Marketing Strategy
  *
- * Saturated and playful: gradient cover, pill radii, venn positioning and a
- * donut budget split. Uses the venn block nothing else does.
+ * DEVICE: soft objects, blobs, orbits, rings and stars. The only
+ * template in the set with curves rather than corners, because a brand
+ * plan should not look like an audit.
+ * 
+ * DENSITY: airy, pill radii, a mesh field behind, and headlines allowed
+ * to be a little louder than the evidence strictly requires.
+ *
+ * COMPOSITIONS: showcase, band, chart, split, gallery, hero, people, timeline, statement.
+ * Every template shares the frame, and draws a different sequence from
+ * it, so no two decks run the same shapes in the same order.
  */
 
 import { marketingMagenta } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
-  bigStat,
-  callout,
   chart,
-  metricRow,
-  numbered,
-  spotlight,
   checklist,
   contactFooter,
-  cta,
-  device,
-  donut,
   heading,
-  iconBullets,
-  iconGrid,
-  image,
   imageGrid,
-  comparisonTable,
+  iso3d,
+  metricRow,
+  paragraph,
   slide,
-  statCards,
+  teamCards,
   timeline,
-  venn,
 } from "./helpers";
 
 export const marketingStrategy: SlideTemplate = {
@@ -37,400 +35,314 @@ export const marketingStrategy: SlideTemplate = {
   name: "Marketing Strategy",
   category: "Marketing",
   archetype: "marketing",
-  description: "Plan, promote and grow your brand.",
+  description: "Blush and magenta, soft organic objects, a plan with a voice.",
   theme: marketingMagenta,
-  coverPrompt: "bold magenta and violet gradient with abstract 3D shapes, studio lighting, no text",
   slides: [
     slide({
       id: "cover",
       name: "Cover",
-      layout: "cover",
-      background: {
-        prompt: "vivid magenta and violet gradient with floating abstract 3D geometric shapes, studio lighting, no text, no logos",
-        scrim: 0.45,
-      },
+      layout: "showcase",
+      motif: "meshField",
+      split: 0.52,
       blocks: [
-        heading({
-          kicker: "Annual Plan",
-          title: "Bold ideas. Bigger brands.",
-          subtitle: "A data-driven strategy for awareness, engagement and measurable growth.",
+        heading({ slot: "full", kicker: "Brand Plan", title: "Be worth repeating" }),
+        paragraph({ slot: "main", body: "A year of work aimed at one outcome: that people describe us to each other in roughly the words we would choose." }),
+        metricRow({
+          slot: "main",
+          items: [
+            { value: "3", label: "Audiences" },
+            { value: "1", label: "Message" },
+            { value: "12mo", label: "Horizon" },
+          ],
         }),
-        contactFooter({ slot: "footer", items: [{ icon: "megaphone", label: "YOUR LOGO" }] }),
+        iso3d({ slot: "aside", scale: 236, items: [{ asset: "blob", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "YOUR BRAND" }, { label: "2026" }] }),
+      ],
+    }),
+
+    slide({
+      id: "contents",
+      name: "Contents",
+      layout: "band",
+      motif: "meshBands",
+      blocks: [
+        heading({ slot: "full", kicker: "Contents", title: "The plan" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 56,
+          style: { columns: 4 },
+          items: [
+            {
+              asset: "ring",
+              value: "01",
+              title: "Where we stand",
+              body: "What people currently say when we are not in the room",
+              accent: 1,
+            },
+            {
+              asset: "orbit",
+              value: "02",
+              title: "What we will say",
+              body: "One message, and the three proofs that carry it",
+              accent: 1,
+            },
+            {
+              asset: "star",
+              value: "03",
+              title: "Where we say it",
+              body: "The channels that earn their place and the ones that do not",
+              accent: 1,
+            },
+            {
+              asset: "arrow",
+              value: "04",
+              title: "How we will know",
+              body: "The four numbers we will be judged on",
+              accent: 1,
+            },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "02" }] }),
+      ],
+    }),
+
+    slide({
+      id: "about",
+      name: "Where we stand",
+      layout: "stack",
+      motif: "none",
+      invert: true,
+      blocks: [
+        heading({ kicker: "Where we stand", title: "What people say now" }),
+        chart({
+          grow: 1,
+          kind: "barChart",
+          categories: ["Unprompted recall","Correct category","Would recommend","Can name a product"],
+          series: [
+            { name: "Us", values: [39,54,28,31], accent: 1 },
+            { name: "Category leader", values: [81,88,62,74], accent: 3 },
+          ],
+          yFormat: "percent",
+          caption: "1,400 responses and 32 interviews, run over six weeks in the spring.",
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "03" }] }),
+      ],
+    }),
+
+    slide({
+      id: "problem",
+      name: "The problem",
+      layout: "band",
+      motif: "meshBands",
+      blocks: [
+        heading({ slot: "full", kicker: "The problem", title: "We are hard to repeat" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 66,
+          items: [
+            {
+              asset: "shards",
+              value: "9",
+              title: "Value props",
+              body: "On the homepage alone, which is nine too many",
+              accent: 1,
+            },
+            {
+              asset: "cards",
+              value: "4",
+              title: "Visual systems",
+              body: "Running at once, none of them finished",
+              accent: 1,
+            },
+            {
+              asset: "ring",
+              value: "0",
+              title: "Owned phrases",
+              body: "Nothing we say that a customer says back to us",
+              accent: 1,
+            },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "04" }] }),
+      ],
+    }),
+
+    slide({
+      id: "solution",
+      name: "The idea",
+      layout: "split",
+      motif: "meshLattice",
+      split: 0.54,
+      blocks: [
+        heading({ slot: "full", kicker: "The idea", title: "One thing, said everywhere" }),
+        paragraph({ slot: "main", body: "A single claim, carried by three proofs, repeated without variation until it is boring to us and new to everyone else." }),
+        checklist({
+          slot: "main",
+          items: [
+            "One claim, in the same words everywhere",
+            "Three proofs, each a number or a name",
+            "Nothing new said until this one lands",
+          ],
+        }),
+        iso3d({ slot: "aside", scale: 350, items: [{ asset: "vortex", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "05" }] }),
+      ],
+    }),
+
+    slide({
+      id: "proof",
+      name: "The work",
+      layout: "stack",
+      motif: "meshBands",
+      blocks: [
+        heading({ kicker: "The work", title: "Where it shows up" }),
+        imageGrid({
+          grow: 1,
+          style: { columns: 3 },
+          items: [
+            { title: "The site", body: "Every page carrying the claim and one proof", prompt: "bright modern office wall with a large screen showing a clean website, no text, soft daylight" },
+            { title: "The stage", body: "Ten conferences, one talk, delivered the same way", prompt: "speaker on a conference stage facing a seated audience, warm lighting, no text" },
+            { title: "The inbox", body: "A fortnightly letter people actually finish", prompt: "person reading on a phone at a kitchen table, morning light, candid, no text" },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "06" }] }),
       ],
     }),
 
     slide({
       id: "market",
-      name: "Market Overview",
-      layout: "splitRight",
+      name: "Audience",
+      layout: "hero",
+      motif: "meshField",
       split: 0.5,
       blocks: [
-        heading({
-          slot: "full",
-          kicker: "The market",
-          title: "A $500B category still growing 8.5% a year",
-          subtitle: "Digital adoption is only a quarter of the way through, which means the cheapest attention we will ever buy is the attention available now.",
-        }),
-        statCards({
+        heading({ slot: "full", kicker: "Audience", title: "Three people, not a segment" }),
+        paragraph({ slot: "main", body: "We will write for three named roles and ignore everyone else for twelve months, because a message built for everybody is heard by nobody." }),
+        metricRow({
           slot: "main",
-          style: { columns: 2 },
           items: [
-            { icon: "dollar", value: "$500B", label: "Total market size" },
-            { icon: "trendingUp", value: "8.5%", label: "Annual growth" },
-            { icon: "users", value: "3.2B", label: "Potential customers" },
-            { icon: "smartphone", value: "25%", label: "Digital adoption" },
+            { value: "3", label: "Roles" },
+            { value: "1", label: "Message" },
+            { value: "0", label: "Exceptions" },
           ],
         }),
-        image({
-          slot: "aside",
-          prompt: "abstract data visualisation with magenta and violet gradients, glass shapes, dark background, no text",
-        }),
+        iso3d({ slot: "aside", scale: 370, items: [{ asset: "team", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "07" }] }),
       ],
     }),
 
     slide({
-      id: "audience",
-      name: "Target Audience",
-      layout: "stack",
+      id: "model",
+      name: "Channels",
+      layout: "band",
+      motif: "meshBands",
       blocks: [
-        heading({
-          kicker: "Audience",
-          title: "Three segments that buy for completely different reasons",
-          subtitle: "Same product, three stories. Treating them as one audience is why most campaigns in this category underperform.",
+        heading({ slot: "full", kicker: "Channels", title: "Where the budget goes" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 66,
+          items: [
+            {
+              asset: "cylinder",
+              value: "48%",
+              title: "Owned",
+              body: "The site, the newsletter and the documentation nobody reads yet",
+              accent: 1,
+            },
+            {
+              asset: "capsule",
+              value: "34%",
+              title: "Earned",
+              body: "Ten conference talks and the press that follows them",
+              accent: 1,
+            },
+            {
+              asset: "coinStack",
+              value: "18%",
+              title: "Paid",
+              body: "Retargeting only, because broad paid has never worked for us",
+              accent: 1,
+            },
+          ],
         }),
-        imageGrid({
-          grow: 1,
+        contactFooter({ slot: "footer", items: [{ label: "08" }] }),
+      ],
+    }),
+
+    slide({
+      id: "people",
+      name: "Team",
+      layout: "band",
+      motif: "none",
+      blocks: [
+        heading({ slot: "full", kicker: "Team", title: "Who delivers it" }),
+        teamCards({
+          slot: "main",
           style: { columns: 3 },
           items: [
-            { icon: "user", title: "Gen Z · 18–24", body: "Trendy, digital-first, values authenticity.", prompt: "portrait of a young woman in casual streetwear, soft studio light, no text" },
-            { icon: "users", title: "Millennials · 25–40", body: "Career-focused, values quality and experience.", prompt: "portrait of a young professional man with glasses, soft studio light, no text" },
-            { icon: "briefcase", title: "Professionals · 40+", body: "Seeks reliable solutions and long-term value.", prompt: "portrait of a confident professional woman, soft studio light, no text" },
+            {
+              name: "Lucia Ferrari",
+              role: "Brand Director",
+              bio: "Owns the claim and the right to say no to new ones",
+              photoPrompt: "professional headshot of a woman with short hair, soft studio lighting, neutral background",
+            },
+            {
+              name: "Marcus Bell",
+              role: "Content Lead",
+              bio: "Writes the proofs and keeps every channel saying one thing",
+              photoPrompt: "professional headshot of a man in a plain shirt, soft studio lighting, neutral background",
+            },
+            {
+              name: "Hana Sato",
+              role: "Growth",
+              bio: "Runs the measurement, and will tell us when it is not working",
+              photoPrompt: "professional headshot of a woman in casual business wear, soft studio lighting, neutral background",
+            },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "09" }] }),
       ],
     }),
 
     slide({
-      id: "positioning",
-      name: "Brand Positioning",
-      layout: "splitRight",
-      split: 0.46,
-      blocks: [
-        heading({
-          slot: "full",
-          kicker: "Positioning",
-          title: "Where quality, innovation and people overlap",
-          subtitle: "Plenty of brands claim two of these. The position worth owning is the narrow space where all three are credible at once.",
-        }),
-        venn({
-          slot: "main",
-          centerLabel: "Our brand",
-          items: [
-            { label: "Quality", body: "You can trust" },
-            { label: "Innovation", body: "For tomorrow" },
-            { label: "People", body: "First, always" },
-          ],
-        }),
-        iconGrid({
-          slot: "aside",
-          style: { columns: 2 },
-          items: [
-            { icon: "shield", title: "Reliable" },
-            { icon: "bolt", title: "Modern" },
-            { icon: "heart", title: "Customer centric" },
-            { icon: "leaf", title: "Sustainable" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "goals",
-      name: "Marketing Goals",
+      id: "next",
+      name: "The year",
       layout: "stack",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({
-          kicker: "Goals",
-          title: "Four targets, each with a number attached",
-          subtitle: "If a goal cannot be checked at the end of the quarter, it is a sentiment rather than a goal.",
-        }),
-        iconBullets({
-          grow: 1,
-          style: { columns: 2 },
-          items: [
-            { icon: "megaphone", label: "Increase brand awareness", body: "Reach 10M+ people across priority channels." },
-            { icon: "globe", label: "Drive website traffic", body: "Grow organic sessions by 50%." },
-            { icon: "target", label: "Generate qualified leads", body: "10K+ new leads at a lower cost per lead." },
-            { icon: "trendingUp", label: "Boost sales", body: "30% revenue growth year on year." },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "target",
-          statement: "Every goal here has a number and an owner",
-          detail: "Anything without both is a sentiment, and sentiments do not get reviewed in October.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "strategies",
-      name: "Key Strategies",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Strategy",
-          title: "Earn attention first, then buy more of it",
-          subtitle: "Paid amplifies what already works organically. Running it the other way around is how budgets get spent without compounding.",
-        }),
-        iconGrid({
-          grow: 1,
-          style: { columns: 2 },
-          items: [
-            { icon: "document", title: "Content marketing", body: "Create valuable, relevant content that earns attention." },
-            { icon: "users", title: "Social media", body: "Build engagement across the platforms that matter." },
-            { icon: "megaphone", title: "Paid campaigns", body: "Targeted advertising for efficient reach." },
-            { icon: "star", title: "Influencer partnerships", body: "Partner with trusted voices in the category." },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "megaphone",
-          solid: true,
-          statement: "Paid amplifies what already works organically",
-          detail: "We do not put budget behind a message until it has earned attention without one.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "channels",
-      name: "Marketing Channels",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Channels",
-          title: "Six channels, two of which will carry the quarter",
-          subtitle: "We fund all six to find out which two. By month three the budget concentrates behind whatever is working.",
-        }),
-        iconGrid({
-          grow: 1,
-          style: { columns: 3 },
-          items: [
-            { icon: "users", title: "Social", body: "Instagram, TikTok, LinkedIn, YouTube" },
-            { icon: "search", title: "Search", body: "Google Ads and organic SEO" },
-            { icon: "mail", title: "Email", body: "Newsletters and lifecycle campaigns" },
-            { icon: "document", title: "Content", body: "Blog, guides and thought leadership" },
-            { icon: "star", title: "Influencers", body: "Category partners and creators" },
-            { icon: "calendar", title: "Events", body: "Webinars and industry conferences" },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "barChart",
-          statement: "Six channels funded, two will carry the quarter",
-          detail: "By month three the budget concentrates behind whichever two are actually converting.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "campaigns",
-      name: "Campaign Plan",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Campaigns",
-          title: "Three campaigns, sequenced so each feeds the next",
-          subtitle: "Awareness builds the audience that the launch converts, and the launch creates the customers the engagement campaign retains.",
-        }),
-        imageGrid({
-          grow: 1,
-          style: { columns: 3 },
-          items: [
-            { icon: "megaphone", title: "Brand awareness", body: "Q1 · social and video ads", prompt: "mountain landscape at dawn, moody cinematic colour grade, no text" },
-            { icon: "rocket", title: "Product launch", body: "Q2 · influencers and paid ads", prompt: "sleek modern laptop on a dark reflective surface, product photography, no text" },
-            { icon: "heart", title: "Customer engagement", body: "Q3 · email and community", prompt: "smiling customer using a phone in a bright cafe, candid, no text" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "content",
-      name: "Content Strategy",
-      layout: "splitRight",
-      split: 0.55,
-      blocks: [
-        heading({ slot: "full", title: "Content Strategy", subtitle: "Delivering the right content at the right time." }),
-        iconBullets({
-          slot: "main",
-          items: [
-            { icon: "book", label: "Educational", body: "How-to guides, tips and industry insight." },
-            { icon: "play", label: "Entertaining", body: "Short-form video and behind the scenes." },
-            { icon: "star", label: "Inspirational", body: "Customer stories and success journeys." },
-            { icon: "megaphone", label: "Promotional", body: "Product highlights and special offers." },
-          ],
-        }),
-        device({ slot: "aside", device: "phone", prompt: "social media feed UI on a phone, vibrant imagery, no text" }),
-      ],
-    }),
-
-    slide({
-      id: "social",
-      name: "Social Media Strategy",
-      layout: "splitRight",
-      split: 0.5,
-      blocks: [
-        heading({ slot: "full", title: "Social Media Strategy", subtitle: "Building a strong community." }),
-        iconGrid({
-          slot: "main",
-          style: { columns: 2 },
-          items: [
-            { icon: "camera", title: "Instagram", body: "Visual storytelling and reels." },
-            { icon: "play", title: "TikTok", body: "Short-form, trend-led video." },
-            { icon: "briefcase", title: "LinkedIn", body: "Thought leadership and B2B." },
-            { icon: "users", title: "YouTube", body: "Long-form education and demos." },
-          ],
-        }),
-        statCards({
-          slot: "aside",
-          style: { columns: 1 },
-          items: [
-            { icon: "globe", value: "10M+", label: "Total reach" },
-            { icon: "heart", value: "250K", label: "Engagements" },
-            { icon: "trendingUp", value: "+120%", label: "Follower growth" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "metrics",
-      name: "Performance Metrics",
-      layout: "splitRight",
-      split: 0.6,
-      blocks: [
-        heading({ slot: "full", title: "Performance Metrics", subtitle: "Tracking progress and impact." }),
-        chart({
-          slot: "main",
-          kind: "comboChart",
-          categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-          series: [
-            { name: "Website traffic", values: [52, 68, 81, 96, 128, 170], accent: 2, kind: "bar" },
-            { name: "Conversions", values: [8, 11, 15, 19, 26, 36], accent: 1, kind: "line" },
-          ],
-          yFormat: "compact",
-        }),
-        statCards({
-          slot: "aside",
-          style: { columns: 1 },
-          items: [
-            { icon: "globe", value: "+68%", label: "Website traffic" },
-            { icon: "target", value: "+45%", label: "Lead generation" },
-            { icon: "trendingUp", value: "+32%", label: "Sales growth" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "budget",
-      name: "Budget Allocation",
-      layout: "splitRight",
-      split: 0.52,
-      blocks: [
-        heading({ slot: "full", title: "Budget Allocation", subtitle: "Optimising investment for maximum ROI." }),
-        donut({
-          slot: "main",
-          centerValue: "$500K",
-          centerLabel: "Total budget",
-          items: [
-            { label: "Paid advertising", value: 35 },
-            { label: "Content creation", value: 25 },
-            { label: "Influencer marketing", value: 15 },
-            { label: "Events and webinars", value: 15 },
-            { label: "Tools and software", value: 10 },
-          ],
-        }),
-        checklist({
-          slot: "aside",
-          items: [
-            "Reviewed quarterly against performance",
-            "20% held back for opportunistic spend",
-            "Reallocated toward the best CAC channels",
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "competitors",
-      name: "Competitor Analysis",
-      layout: "fullBleed",
-      blocks: [
-        heading({
-          kicker: "Competition",
-          title: "Where we are genuinely stronger, and where we are not",
-          subtitle: "Being honest about the two columns we lose is what makes the five we win believable.",
-        }),
-        comparisonTable({
-          grow: 1,
-          columns: [{ label: "Our brand", highlight: true }, { label: "Competitor A" }, { label: "Competitor B" }],
-          rows: [
-            { label: "Pricing", cells: ["yes", "partial", "no"] },
-            { label: "Product quality", cells: ["yes", "no", "no"] },
-            { label: "Brand awareness", cells: ["yes", "yes", "partial"] },
-            { label: "Customer support", cells: ["yes", "partial", "no"] },
-            { label: "Innovation", cells: ["yes", "no", "partial"] },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "timeline",
-      name: "Timeline & Roadmap",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Timeline",
-          title: "Four quarters, with a decision point at each one",
-          subtitle: "Nothing is committed past the next quarter until the current one reports.",
-        }),
+        heading({ kicker: "The year", title: "Four quarters" }),
         timeline({
           grow: 1,
           items: [
-            { icon: "megaphone", date: "Q1", title: "Build awareness", body: "Launch brand campaign." },
-            { icon: "heart", date: "Q2", title: "Drive engagement", body: "Community and content push." },
-            { icon: "rocket", date: "Q3", title: "Scale campaigns", body: "Double down on what works." },
-            { icon: "target", date: "Q4", title: "Optimise and grow", body: "Refine spend against CAC." },
+            { date: "Q1", title: "Agree the claim", body: "One sentence, signed off by three people and nobody else" },
+            { date: "Q2", title: "Rebuild the site", body: "Every page carrying the claim and one of the three proofs" },
+            { date: "Q3", title: "Earn the talks", body: "Ten stages, same talk, measured on unprompted recall" },
+            { date: "Q4", title: "Measure honestly", body: "Repeat the survey and publish it internally whatever it says" },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "10" }] }),
       ],
     }),
 
     slide({
-      id: "next-steps",
-      name: "Next Steps",
-      layout: "closing",
-      background: {
-        prompt: "person standing on a hilltop looking at a vivid magenta and violet sunset, cinematic, no text, no logos",
-        scrim: 0.58,
-      },
+      id: "close",
+      name: "Close",
+      layout: "statement",
+      motif: "meshField",
       blocks: [
-        heading({ title: "Let's turn strategy into impact", subtitle: "Here is what happens next." }),
-        checklist({
-          style: { columns: 2 },
+        heading({ slot: "full", kicker: "The ask", title: "Say one thing" }),
+        paragraph({ slot: "main", body: "Approve the claim, protect it for twelve months, and judge us on whether people repeat it." }),
+        contactFooter({
+          slot: "footer",
           items: [
-            "Finalise campaign plans",
-            "Align budget and resources",
-            "Launch Q1 initiatives",
-            "Monitor, report and optimise",
+            { icon: "globe", label: "yourbrand.com" },
+            { icon: "mail", label: "brand@yourbrand.com" },
           ],
         }),
-        cta({ label: "Let's Grow Together" }),
-        contactFooter({ slot: "footer", items: [{ icon: "mail", label: "marketing@yourcompany.com" }] }),
       ],
     }),
   ],

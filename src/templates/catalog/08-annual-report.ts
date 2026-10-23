@@ -1,32 +1,30 @@
 /**
- * 08 — Annual / Quarterly Report
+ * 08. Annual Report
  *
- * Data-forward and deliberately plain: graphite palette, mono numerals,
- * square corners, side-bar headings, charts on most slides.
+ * DEVICE: objects that measure. Terrain, columns, pie wedges and
+ * stacked discs, in one teal, on paper.
+ * 
+ * DENSITY: editorial. A serif display against a plain text face, very
+ * quiet bands behind, and nothing on a slide that is not a figure or the
+ * sentence explaining it.
+ *
+ * COMPOSITIONS: hero, band, chart, split, quote, people.
+ * Every template shares the frame, and draws a different sequence from
+ * it, so no two decks run the same shapes in the same order.
  */
 
 import { reportGraphite } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
-  bigStat,
-  callout,
   chart,
-  checklist,
-  comparisonTable,
   contactFooter,
-  donut,
   heading,
-  iconBullets,
-  iconGrid,
+  iso3d,
   metricRow,
-  numbered,
   paragraph,
   quote,
-  roadmapPhases,
   slide,
-  spotlight,
-  statCards,
-  timeline,
+  teamCards,
 } from "./helpers";
 
 export const annualReport: SlideTemplate = {
@@ -35,372 +33,339 @@ export const annualReport: SlideTemplate = {
   name: "Annual Report",
   category: "Reports",
   archetype: "report",
-  description: "Share progress and performance.",
+  description: "Paper white and a serif display, figures given room to be read.",
   theme: reportGraphite,
-  coverPrompt: "minimal architectural lines in grey and white, high key, no text",
   slides: [
     slide({
       id: "cover",
       name: "Cover",
-      layout: "cover",
+      layout: "hero",
+      motif: "meshBands",
+      split: 0.5,
       blocks: [
-        heading({ kicker: "Annual Report", title: "FY2026 in review", subtitle: "Performance, progress and priorities for the year ahead." }),
-        contactFooter({
-          slot: "footer",
+        heading({ slot: "full", kicker: "Annual Report", title: "The year in figures" }),
+        paragraph({ slot: "main", body: "Twelve months of trading, the decisions behind the numbers, and an honest account of the two that did not work." }),
+        metricRow({
+          slot: "main",
           items: [
-            { icon: "calendar", label: "Published October 2026" },
-            { icon: "building", label: "YOUR COMPANY" },
+            { value: "£1.21B", label: "Revenue" },
+            { value: "18.9%", label: "Margin" },
+            { value: "11,200", label: "People" },
           ],
         }),
+        iso3d({ slot: "aside", scale: 400, items: [{ asset: "terrain", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "ANNUAL REPORT" }, { label: "2026" }] }),
       ],
     }),
 
     slide({
-      id: "highlights",
-      name: "Year Highlights",
-      layout: "stack",
+      id: "contents",
+      name: "Contents",
+      layout: "band",
+      motif: "meshBands",
       blocks: [
-        heading({
-          kicker: "FY2026",
-          title: "The year growth and discipline finally moved together",
-          subtitle: "Revenue up 46% with margin up five points. Every prior year of growth cost us margin to buy.",
-        }),
-        statCards({
-          grow: 1,
+        heading({ slot: "full", kicker: "Contents", title: "In this report" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 56,
           style: { columns: 4 },
           items: [
-            { icon: "dollar", value: "$152M", label: "Revenue", delta: "+46% YoY" },
-            { icon: "trendingUp", value: "24%", label: "Operating margin", delta: "+5 pts" },
-            { icon: "users", value: "1.2M", label: "Customers", delta: "+31%" },
-            { icon: "globe", value: "28", label: "Markets", delta: "+6" },
+            {
+              asset: "tower",
+              value: "01",
+              title: "Performance",
+              body: "Revenue, margin and cash across the four divisions",
+              accent: 1,
+            },
+            {
+              asset: "pieWedge",
+              value: "02",
+              title: "Where it came from",
+              body: "The mix by region, product and channel",
+              accent: 1,
+            },
+            {
+              asset: "coinStack",
+              value: "03",
+              title: "Where it went",
+              body: "Cost, capital expenditure and what we returned",
+              accent: 1,
+            },
+            {
+              asset: "arrow",
+              value: "04",
+              title: "The year ahead",
+              body: "Guidance, and the assumptions it depends on",
+              accent: 1,
+            },
           ],
         }),
-        callout({
-          slot: "footer",
-          icon: "trendingUp",
-          solid: true,
-          statement: "First year we grew revenue and margin together",
-          detail: "Every prior year of growth cost us margin to buy. This one did not.",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "02" }] }),
       ],
     }),
 
     slide({
-      id: "letter",
-      name: "Letter from the CEO",
-      layout: "splitRight",
-      split: 0.6,
+      id: "headline",
+      name: "Headline",
+      layout: "stack",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ slot: "full", title: "From the Chief Executive" }),
-        paragraph({
-          slot: "main",
-          body: "This was the year the business moved from growth at any cost to growth with discipline. Revenue rose 46% while operating margin improved five points — the first time we have done both at once.",
-        }),
-        paragraph({
-          slot: "main",
-          body: "The priorities for the year ahead are unchanged: deepen the core product, enter two new markets, and keep cost of delivery falling as volume rises.",
-        }),
-        quote({
-          slot: "aside",
-          quote: "Discipline did not slow us down. It is what let us grow this fast without breaking anything.",
-          author: "A. Khan",
-          role: "Chief Executive",
-          avatarPrompt: "professional corporate headshot, neutral grey studio background",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "revenue",
-      name: "Revenue",
-      layout: "splitRight",
-      split: 0.62,
-      blocks: [
-        heading({ slot: "full", title: "Revenue", subtitle: "Five-year trajectory." }),
+        heading({ kicker: "Headline", title: "Five years of trading" }),
         chart({
-          slot: "main",
+          grow: 1,
           kind: "comboChart",
-          categories: ["2022", "2023", "2024", "2025", "2026"],
+          categories: ["2022","2023","2024","2025","2026"],
           series: [
-            { name: "Revenue", values: [34, 52, 78, 104, 152], accent: 2, kind: "bar" },
-            { name: "Gross profit", values: [18, 29, 46, 64, 98], accent: 3, kind: "line" },
+            { name: "Revenue", values: [0.94,1.01,1.06,1.13,1.21], accent: 1 },
+            { name: "Operating margin", values: [14.1,15.2,16.8,17.5,18.9], accent: 3 },
           ],
           yFormat: "currency",
+          caption: "Audited, prepared under IFRS, twelve months to 31 December.",
         }),
-        statCards({
-          slot: "aside",
-          style: { columns: 1 },
-          items: [
-            { icon: "trendingUp", value: "46%", label: "Revenue growth" },
-            { icon: "pieChart", value: "64%", label: "Gross margin" },
-            { icon: "refresh", value: "118%", label: "Net revenue retention" },
-          ],
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "03" }] }),
       ],
     }),
 
     slide({
-      id: "segments",
-      name: "Revenue by Segment",
-      layout: "splitRight",
-      split: 0.52,
-      blocks: [
-        heading({ slot: "full", title: "Revenue by Segment" }),
-        donut({
-          slot: "main",
-          centerValue: "$152M",
-          centerLabel: "Total",
-          items: [
-            { label: "Enterprise", value: 46 },
-            { label: "Mid-market", value: 31 },
-            { label: "Self-serve", value: 15 },
-            { label: "Services", value: 8 },
-          ],
-        }),
-        iconBullets({
-          slot: "aside",
-          style: { compact: true },
-          items: [
-            { icon: "building", label: "Enterprise led growth", body: "Up 58%, now the largest segment." },
-            { icon: "users", label: "Self-serve stabilised", body: "Lower volume, materially better retention." },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "geography",
-      name: "Performance by Region",
+      id: "mix",
+      name: "Revenue mix",
       layout: "stack",
+      motif: "meshBands",
       blocks: [
-        heading({
-          kicker: "Geography",
-          title: "Every region grew, which is the point",
-          subtitle: "Concentration risk was the board's main concern last year. No single region now accounts for more than 44% of revenue.",
-        }),
+        heading({ kicker: "Revenue mix", title: "Where the money came from" }),
         chart({
           grow: 1,
           kind: "barChart",
-          categories: ["North America", "Europe", "Asia Pacific", "Middle East", "Latin America"],
+          categories: ["Europe","Americas","Rest of world"],
           series: [
-            { name: "FY2025", values: [48, 29, 16, 7, 4], accent: 1 },
-            { name: "FY2026", values: [66, 44, 26, 11, 5], accent: 2 },
+            { name: "2025", values: [612,318,197], accent: 3 },
+            { name: "2026", values: [629,379,206], accent: 1 },
           ],
           yFormat: "currency",
+          caption: "The Americas carried the year; rest of world is under review.",
         }),
+        contactFooter({ slot: "footer", items: [{ label: "04" }] }),
       ],
     }),
 
     slide({
-      id: "operations",
-      name: "Operational Metrics",
-      layout: "stack",
+      id: "capital",
+      name: "Capital",
+      layout: "split",
+      motif: "meshBands",
+      split: 0.52,
       blocks: [
-        heading({
-          kicker: "Operations",
-          title: "Cost to serve fell 28% while volume rose 31%",
-          subtitle: "The platform rebuild is the reason. It is also why capital expenditure was unusually high this year.",
-        }),
-        statCards({
-          grow: 1,
-          style: { columns: 3 },
-          items: [
-            { icon: "clock", value: "-28%", label: "Cost to serve per customer" },
-            { icon: "checkCircle", value: "99.97%", label: "Platform uptime" },
-            { icon: "users", value: "4.6", label: "Customer satisfaction (of 5)" },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "settings",
-          statement: "Cost to serve fell 28% while volume rose 31%",
-          detail: "The platform rebuild is the cause, and also why capital expenditure was unusually high this year.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "customers",
-      name: "Customer Growth",
-      layout: "splitRight",
-      split: 0.6,
-      blocks: [
-        heading({ slot: "full", title: "Customer Growth" }),
-        chart({
+        heading({ slot: "full", kicker: "Capital", title: "What we spent it on" }),
+        paragraph({ slot: "main", body: "Ninety six million of capital expenditure, two thirds of it on the three plants, and the first dividend increase since 2021." }),
+        metricRow({
           slot: "main",
-          kind: "lineChart",
-          categories: ["Q1", "Q2", "Q3", "Q4"],
-          series: [
-            { name: "New customers", values: [62, 78, 94, 121], accent: 2 },
-            { name: "Churned", values: [11, 10, 9, 8], accent: 4 },
+          items: [
+            { value: "£96M", label: "Capex" },
+            { value: "£64M", label: "Dividend" },
+            { value: "1.4x", label: "Net debt" },
           ],
-          yFormat: "compact",
         }),
-        checklist({
-          slot: "aside",
-          items: ["Churn down four quarters running", "Expansion revenue up 2.1x", "Enterprise logos up 58%"],
+        iso3d({ slot: "aside", scale: 330, items: [{ asset: "coinStack", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "05" }] }),
+      ],
+    }),
+
+    slide({
+      id: "proof",
+      name: "Operations",
+      layout: "band",
+      motif: "none",
+      invert: true,
+      blocks: [
+        heading({ slot: "full", kicker: "Operations", title: "What the programmes delivered" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 66,
+          items: [
+            {
+              asset: "arrow",
+              value: "£41M",
+              title: "Supply savings",
+              body: "Against a target of thirty eight, a year ahead of plan",
+              accent: 1,
+            },
+            {
+              asset: "lattice",
+              value: "9",
+              title: "Sites consolidated",
+              body: "Into four, with no interruption to customer supply",
+              accent: 1,
+            },
+            {
+              asset: "gem",
+              value: "22%",
+              title: "Energy reduction",
+              body: "Per unit produced, which also took cost out",
+              accent: 1,
+            },
+          ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "06" }] }),
+      ],
+    }),
+
+    slide({
+      id: "candour",
+      name: "What did not work",
+      layout: "fullBleed",
+      motif: "meshBands",
+      blocks: [
+        quote({
+          grow: 1,
+          slot: "full",
+          quote: "We cancelled the platform programme in September and wrote off eighteen million. It was the right decision a year later than it should have been taken.",
+          author: "Samuel Addo",
+          role: "Chief Executive",
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "07" }] }),
       ],
     }),
 
     slide({
       id: "people",
-      name: "Our People",
-      layout: "stack",
+      name: "Board",
+      layout: "band",
+      motif: "none",
       blocks: [
-        heading({
-          kicker: "People",
-          title: "640 people, and attrition at a four-year low",
-          subtitle: "We added 180 roles while voluntary attrition fell to 9%, which is the first time those two have moved in opposite directions.",
-        }),
-        statCards({
-          grow: 1,
-          style: { columns: 4 },
-          items: [
-            { icon: "users", value: "640", label: "Employees", delta: "+180" },
-            { icon: "globe", value: "19", label: "Countries" },
-            { icon: "heart", value: "88%", label: "Engagement score" },
-            { icon: "refresh", value: "9%", label: "Voluntary attrition" },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "sustainability",
-      name: "Sustainability",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Sustainability",
-          title: "On track for 2030, behind on one commitment",
-          subtitle: "Emissions and renewables are ahead of plan. Supply-chain reporting is not, and we have moved its deadline rather than quietly dropped it.",
-        }),
-        iconGrid({
-          grow: 1,
+        heading({ slot: "full", kicker: "Board", title: "Who is accountable" }),
+        teamCards({
+          slot: "main",
           style: { columns: 3 },
           items: [
-            { icon: "leaf", title: "Emissions", body: "Scope 1 and 2 down 34% against the 2022 baseline." },
-            { icon: "cloud", title: "Renewable energy", body: "81% of operations on renewable supply." },
-            { icon: "users", title: "Community", body: "12,000 volunteer hours contributed." },
+            {
+              name: "Eleanor Whitfield",
+              role: "Chair",
+              bio: "Appointed 2019, and chairs the remuneration committee",
+              photoPrompt: "professional headshot of an older woman in a dark suit, soft studio lighting, neutral background",
+            },
+            {
+              name: "Samuel Addo",
+              role: "Chief Executive",
+              bio: "Six years in post, and the author of the supply programme",
+              photoPrompt: "professional headshot of a man in a dark suit, soft studio lighting, neutral background",
+            },
+            {
+              name: "Greta Lindholm",
+              role: "Chief Financial Officer",
+              bio: "Joined in 2024 from the audit practice",
+              photoPrompt: "professional headshot of a woman in business attire, soft studio lighting, neutral background",
+            },
           ],
         }),
-        callout({
-          slot: "footer",
-          icon: "leaf",
-          statement: "On track for 2030, behind on supply-chain reporting",
-          detail: "We have moved that deadline publicly rather than quietly dropping the commitment.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "risks",
-      name: "Risks",
-      layout: "fullBleed",
-      blocks: [
-        heading({ title: "Principal Risks", subtitle: "What we are watching, and our response." }),
-        comparisonTable({
-          grow: 1,
-          columns: [{ label: "Likelihood" }, { label: "Impact" }, { label: "Mitigated", highlight: true }],
-          rows: [
-            { label: "Market concentration", cells: ["Medium", "High", "partial"] },
-            { label: "Regulatory change", cells: ["Medium", "Medium", "yes"] },
-            { label: "Key talent retention", cells: ["Low", "High", "yes"] },
-            { label: "Supply chain", cells: ["Low", "Medium", "yes"] },
-            { label: "Cyber security", cells: ["Medium", "High", "partial"] },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "financials",
-      name: "Financial Summary",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Financials",
-          title: "The full picture, year on year",
-          subtitle: "Free cash flow tripled, which matters more than the revenue line for what we can fund next year without raising.",
-        }),
-        comparisonTable({
-          grow: 1,
-          columns: [{ label: "FY2025" }, { label: "FY2026", highlight: true }, { label: "Change" }],
-          rows: [
-            { label: "Revenue", cells: ["$104M", "$152M", "+46%"] },
-            { label: "Gross profit", cells: ["$64M", "$98M", "+53%"] },
-            { label: "Operating margin", cells: ["19%", "24%", "+5 pts"] },
-            { label: "Free cash flow", cells: ["$9M", "$27M", "+200%"] },
-            { label: "Cash position", cells: ["$68M", "$95M", "+40%"] },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "outlook",
-      name: "Outlook",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Outlook",
-          title: "Two halves, four commitments",
-          subtitle: "Deliberately short. We would rather commit to four things publicly than list twenty and report on none.",
-        }),
-        roadmapPhases({
-          grow: 1,
-          items: [
-            { icon: "target", phase: "H1", period: "FY2027", points: ["Enter two new markets", "Ship the platform rebuild", "Hold margin at 24%"] },
-            { icon: "trendingUp", phase: "H2", period: "FY2027", points: ["Scale enterprise motion", "Lower cost to serve a further 15%"] },
-          ],
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "08" }] }),
       ],
     }),
 
     slide({
       id: "guidance",
       name: "Guidance",
-      layout: "splitRight",
-      split: 0.55,
+      layout: "band",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ slot: "full", title: "FY2027 Guidance" }),
-        chart({
+        heading({ slot: "full", kicker: "Guidance", title: "What we expect" }),
+        iso3d({
           slot: "main",
-          kind: "barChart",
-          categories: ["FY2026 actual", "FY2027 low", "FY2027 high"],
-          series: [{ name: "Revenue", values: [152, 196, 218], accent: 2 }],
-          yFormat: "currency",
-        }),
-        statCards({
-          slot: "aside",
-          style: { columns: 1 },
+          divided: true,
+          scale: 56,
+          style: { columns: 4 },
           items: [
-            { icon: "trendingUp", value: "29–43%", label: "Revenue growth" },
-            { icon: "pieChart", value: "24–26%", label: "Operating margin" },
+            {
+              asset: "arrow",
+              value: "4 to 6%",
+              title: "Revenue growth",
+              body: "Organic, excluding any contribution from acquisitions",
+              accent: 1,
+            },
+            {
+              asset: "tower",
+              value: "19.5%",
+              title: "Margin target",
+              body: "Assuming input costs hold within the hedged range",
+              accent: 1,
+            },
+            {
+              asset: "cylinder",
+              value: "£80M",
+              title: "Capex",
+              body: "Lower than this year, with the plant programme complete",
+              accent: 1,
+            },
+            {
+              asset: "coinStack",
+              value: "+5%",
+              title: "Dividend",
+              body: "Subject to the usual approval at the annual meeting",
+              accent: 1,
+            },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "09" }] }),
+      ],
+    }),
+
+    slide({
+      id: "next",
+      name: "Priorities",
+      layout: "band",
+      motif: "meshBands",
+      blocks: [
+        heading({ slot: "full", kicker: "Priorities", title: "Three for the year" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 66,
+          items: [
+            {
+              asset: "cube",
+              value: "01",
+              title: "Finish the plants",
+              body: "The last two sites, on the schedule published in March",
+              accent: 1,
+            },
+            {
+              asset: "arch",
+              value: "02",
+              title: "Fix the Americas",
+              body: "New leadership, and the warehouse live by midsummer",
+              accent: 1,
+            },
+            {
+              asset: "lattice",
+              value: "03",
+              title: "Simplify",
+              body: "Four divisions reporting on one set of numbers",
+              accent: 1,
+            },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "10" }] }),
       ],
     }),
 
     slide({
       id: "close",
-      name: "Thank You",
-      layout: "closing",
+      name: "Close",
+      layout: "hero",
+      motif: "meshBands",
+      split: 0.54,
       blocks: [
-        heading({ title: "Thank you", subtitle: "To our customers, our people and our shareholders." }),
-        timeline({
-          items: [
-            { icon: "flag", date: "FY2024", title: "Scaled" },
-            { icon: "trendingUp", date: "FY2026", title: "Profitable growth" },
-            { icon: "globe", date: "FY2027", title: "International" },
-          ],
-        }),
+        heading({ slot: "full", kicker: "Thank you", title: "The full accounts" }),
+        paragraph({ slot: "main", body: "The audited statements, the notes and the remuneration report are published in full on the investor site." }),
+        iso3d({ slot: "aside", scale: 290, items: [{ asset: "tower", title: "", accent: 1 }] }),
         contactFooter({
           slot: "footer",
           items: [
-            { icon: "mail", label: "investors@yourcompany.com" },
             { icon: "globe", label: "yourcompany.com/investors" },
+            { icon: "mail", label: "ir@yourcompany.com" },
           ],
         }),
       ],

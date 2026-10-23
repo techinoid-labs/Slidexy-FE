@@ -1,35 +1,32 @@
 /**
- * 07 — Product Launch
+ * 07. Product Launch
  *
- * Product-led: device mockups carry most slides, split-image cover, grid
- * motif, generous radii.
+ * DEVICE: soft, floating objects. Capsules, tiles lifted off their
+ * plinth, a sphere in orbit. A launch deck should feel like something
+ * arriving rather than something reported.
+ * 
+ * DENSITY: generous. Large radii, a lattice fogging out behind, and one
+ * object given real room on every other slide.
+ *
+ * COMPOSITIONS: showcase, band, hero, chart, gallery, split, pricing, people, statement.
+ * Every template shares the frame, and draws a different sequence from
+ * it, so no two decks run the same shapes in the same order.
  */
 
 import { productIndigo } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
-  bigStat,
-  callout,
   chart,
   checklist,
   contactFooter,
-  cta,
-  device,
   heading,
-  iconBullets,
-  iconGrid,
-  image,
   imageGrid,
+  iso3d,
   metricRow,
-  numbered,
   paragraph,
   pricingTable,
-  processFlow,
-  quote,
   slide,
-  spotlight,
-  statCards,
-  timeline,
+  teamCards,
 } from "./helpers";
 
 export const productLaunch: SlideTemplate = {
@@ -38,346 +35,334 @@ export const productLaunch: SlideTemplate = {
   name: "Product Launch",
   category: "Product",
   archetype: "product",
-  description: "Showcase your product to the world.",
+  description: "Indigo on midnight, soft capsules and floating tiles, built for a keynote.",
   theme: productIndigo,
-  coverPrompt: "sleek modern device on a soft indigo gradient backdrop, product photography, no text",
   slides: [
     slide({
       id: "cover",
       name: "Cover",
-      layout: "cover",
-      background: {
-        prompt: "sleek modern device floating on a soft indigo gradient backdrop, studio product photography, no text, no logos",
-        scrim: 0.52,
-      },
+      layout: "showcase",
+      motif: "meshLattice",
+      split: 0.5,
       blocks: [
-        heading({ kicker: "Introducing", title: "Meet the new standard", subtitle: "Everything your team needs, finally in one place." }),
-        contactFooter({ slot: "footer", items: [{ icon: "rocket", label: "YOUR LOGO" }] }),
+        heading({ slot: "full", kicker: "Launching March", title: "Meet the new one" }),
+        paragraph({ slot: "main", body: "Three years of work, rebuilt from the file format up, and the first version we have been willing to put our name on." }),
+        metricRow({
+          slot: "main",
+          items: [
+            { value: "3yr", label: "In the making" },
+            { value: "4x", label: "Faster" },
+            { value: "1", label: "File format" },
+          ],
+        }),
+        iso3d({ slot: "aside", scale: 236, items: [{ asset: "floatTiles", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "YOUR PRODUCT" }, { label: "MARCH 2026" }] }),
       ],
     }),
 
     slide({
-      id: "why",
-      name: "Why We Built It",
-      layout: "splitRight",
-      split: 0.55,
+      id: "contents",
+      name: "Contents",
+      layout: "band",
+      motif: "meshBands",
       blocks: [
-        heading({ slot: "full", title: "Why We Built It", subtitle: "The problem we kept hearing." }),
-        paragraph({ slot: "main", body: "Teams were stitching together four tools to do one job. Nothing talked to anything else, and the work fell through the gaps." }),
-        iconBullets({
+        heading({ slot: "full", kicker: "Contents", title: "What is new" }),
+        iso3d({
           slot: "main",
-          style: { compact: true },
+          divided: true,
+          scale: 56,
+          style: { columns: 4 },
           items: [
-            { icon: "layers", label: "Too many tools", body: "Four subscriptions for one workflow." },
-            { icon: "close", label: "Nothing connected", body: "Copy-paste between systems, every day." },
+            {
+              asset: "capsule",
+              value: "01",
+              title: "The problem",
+              body: "What the old version could never be talked into doing",
+              accent: 1,
+            },
+            {
+              asset: "orbit",
+              value: "02",
+              title: "The rebuild",
+              body: "What we changed underneath, and why it took three years",
+              accent: 1,
+            },
+            {
+              asset: "star",
+              value: "03",
+              title: "The features",
+              body: "The four that people will actually notice on day one",
+              accent: 1,
+            },
+            {
+              asset: "arrow",
+              value: "04",
+              title: "Availability",
+              body: "Pricing, dates, and what happens to your old files",
+              accent: 1,
+            },
           ],
         }),
-        image({ slot: "aside", prompt: "cluttered desk with multiple screens and sticky notes, slightly desaturated, no text" }),
+        contactFooter({ slot: "footer", items: [{ label: "02" }] }),
       ],
     }),
 
     slide({
-      id: "product",
-      name: "The Product",
-      layout: "splitLeft",
-      split: 0.44,
+      id: "problem",
+      name: "The problem",
+      layout: "band",
+      motif: "meshBands",
       blocks: [
-        heading({ slot: "full", title: "The Product", subtitle: "One place for the whole workflow." }),
-        iconBullets({
+        heading({ slot: "full", kicker: "Why rebuild", title: "What we could not fix" }),
+        iso3d({
           slot: "main",
+          divided: true,
+          scale: 66,
           items: [
-            { icon: "bolt", label: "Fast by default", body: "Built for speed on real-world data." },
-            { icon: "layers", label: "Everything connected", body: "One record, visible everywhere." },
-            { icon: "shield", label: "Secure", body: "Enterprise controls from day one." },
+            {
+              asset: "torus",
+              value: "11s",
+              title: "Open time",
+              body: "For a large file, on hardware that should not care",
+              accent: 1,
+            },
+            {
+              asset: "shards",
+              value: "3",
+              title: "Rendering paths",
+              body: "Editor, preview and export, each drifting from the others",
+              accent: 1,
+            },
+            {
+              asset: "blob",
+              value: "0",
+              title: "Plugin surface",
+              body: "Because nothing underneath was stable enough to expose",
+              accent: 1,
+            },
           ],
         }),
-        device({ slot: "aside", device: "browser", prompt: "clean SaaS product interface with sidebar and data table, indigo accent, light theme, no text" }),
+        contactFooter({ slot: "footer", items: [{ label: "03" }] }),
+      ],
+    }),
+
+    slide({
+      id: "solution",
+      name: "The rebuild",
+      layout: "hero",
+      motif: "meshField",
+      split: 0.54,
+      blocks: [
+        heading({ slot: "full", kicker: "The rebuild", title: "One core, underneath" }),
+        paragraph({ slot: "main", body: "Editor, preview and export now run the same renderer against the same document, so what you see is what ships, every time." }),
+        checklist({
+          slot: "main",
+          items: [
+            "One renderer behind all three surfaces",
+            "Documents open in under a second",
+            "A plugin API, because the core is finally stable",
+          ],
+        }),
+        iso3d({ slot: "aside", scale: 360, items: [{ asset: "capsule", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "04" }] }),
+      ],
+    }),
+
+    slide({
+      id: "proof",
+      name: "The numbers",
+      layout: "stack",
+      motif: "none",
+      invert: true,
+      blocks: [
+        heading({ kicker: "The numbers", title: "What changed underneath" }),
+        chart({
+          grow: 1,
+          kind: "barChart",
+          categories: ["Open a large file","Export","First paint","Save"],
+          series: [
+            { name: "Old version", values: [11,8.4,2.9,1.8], accent: 3 },
+            { name: "New version", values: [0.8,2.1,0.4,0.3], accent: 1 },
+          ],
+          caption: "Seconds, on the same files and the same machines.",
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "05" }] }),
       ],
     }),
 
     slide({
       id: "features",
-      name: "Key Features",
+      name: "Features",
       layout: "stack",
+      motif: "meshBands",
       blocks: [
-        heading({
-          kicker: "Features",
-          title: "Six capabilities, none of them an add-on",
-          subtitle: "Everything here is in every plan. We would rather compete on how well it works than on what we withhold.",
-        }),
-        iconGrid({
-          grow: 1,
-          style: { columns: 3 },
-          items: [
-            { icon: "bolt", title: "Automation", body: "Rules that run the repetitive work for you." },
-            { icon: "barChart", title: "Analytics", body: "Live dashboards without a data team." },
-            { icon: "users", title: "Collaboration", body: "Comments, mentions and shared views." },
-            { icon: "link", title: "Integrations", body: "Connects to the tools you already run." },
-            { icon: "smartphone", title: "Mobile", body: "Full functionality on the move." },
-            { icon: "lock", title: "Permissions", body: "Granular access for every role." },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "checkCircle",
-          solid: true,
-          statement: "Every feature is in every plan",
-          detail: "We compete on how well the product works, not on what we withhold from the cheaper tier.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "mobile",
-      name: "On Every Device",
-      layout: "splitRight",
-      split: 0.5,
-      blocks: [
-        heading({ slot: "full", title: "On Every Device", subtitle: "Same product, wherever the work happens." }),
-        device({ slot: "main", device: "phone", prompt: "mobile app interface with cards and charts, indigo accent, light theme, no text" }),
-        iconBullets({
-          slot: "aside",
-          style: { compact: true },
-          items: [
-            { icon: "smartphone", label: "Native mobile", body: "iOS and Android, not a wrapper." },
-            { icon: "cloud", label: "Offline capable", body: "Keeps working without a connection." },
-            { icon: "refresh", label: "Real-time sync", body: "Changes land everywhere instantly." },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "how",
-      name: "How It Works",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Getting started",
-          title: "Four steps, most teams finish in an afternoon",
-          subtitle: "No implementation call required. If you want one we will do it, but nothing is gated behind it.",
-        }),
-        processFlow({
-          grow: 1,
-          numbered: true,
-          items: [
-            { title: "Connect", body: "Link your existing tools in minutes." },
-            { title: "Configure", body: "Pick a template or build your own." },
-            { title: "Invite", body: "Bring the team in with one link." },
-            { title: "Run", body: "Work in one place from day one." },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "before-after",
-      name: "Before & After",
-      layout: "splitRight",
-      split: 0.5,
-      blocks: [
-        heading({ slot: "full", title: "Before & After", subtitle: "What changes on day one." }),
-        iconBullets({
-          slot: "main",
-          items: [
-            { icon: "close", label: "Before", body: "Four tools, manual handoffs, weekly reporting by hand." },
-            { icon: "checkCircle", label: "After", body: "One workspace, automated handoffs, live reporting." },
-          ],
-        }),
-        chart({
-          slot: "aside",
-          kind: "barChart",
-          categories: ["Setup", "Weekly admin", "Reporting"],
-          series: [
-            { name: "Before (hrs)", values: [16, 9, 6], accent: 4 },
-            { name: "After (hrs)", values: [2, 2, 0.5], accent: 1 },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "results",
-      name: "Early Results",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Results",
-          title: "What 2,400 beta users did with it",
-          subtitle: "Ninety days of real usage, including the teams who churned — the retention number below is net of them.",
-        }),
-        statCards({
-          grow: 1,
-          style: { columns: 4 },
-          items: [
-            { icon: "clock", value: "7hrs", label: "Saved per person weekly" },
-            { icon: "users", value: "2,400", label: "Beta users" },
-            { icon: "star", value: "4.8", label: "Average rating" },
-            { icon: "trendingUp", value: "92%", label: "Weekly retention" },
-          ],
-        }),
-        callout({
-          slot: "footer",
-          icon: "users",
-          statement: "2,400 beta users, 92% still active weekly",
-          detail: "Retention measured net of churn, including the teams who left in the first month.",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "testimonial",
-      name: "What Users Say",
-      layout: "fullBleed",
-      blocks: [
-        heading({ title: "What Early Users Say" }),
-        quote({
-          grow: 1,
-          quote: "We replaced three tools in the first week. The thing that surprised us was how little training anyone needed.",
-          author: "Priya Mehta",
-          role: "Head of Operations, Northwind",
-          avatarPrompt: "professional headshot of a woman, soft studio lighting, neutral background",
-        }),
-      ],
-    }),
-
-    slide({
-      id: "use-cases",
-      name: "Who It's For",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Who it's for",
-          title: "Three teams who felt this problem most",
-          subtitle: "If your week is shaped by a process rather than a project, this was built for you.",
-        }),
+        heading({ kicker: "Day one", title: "What you will notice" }),
         imageGrid({
           grow: 1,
           style: { columns: 3 },
           items: [
-            { icon: "settings", title: "Operations", body: "Standardise and automate the daily run.", prompt: "operations team at a bank of monitors, modern office, no text" },
-            { icon: "megaphone", title: "Marketing", body: "Plan campaigns and track performance.", prompt: "marketing team collaborating around a whiteboard, no text" },
-            { icon: "handshake", title: "Sales", body: "Keep the pipeline honest and current.", prompt: "sales professional on a call at a standing desk, no text" },
+            { title: "Instant open", body: "Large documents load before you finish clicking", prompt: "clean laptop screen on a minimal desk, soft studio light, no text, no interface" },
+            { title: "Real layers", body: "Groups and masks that survive a round trip", prompt: "designer hands arranging paper shapes on a light table, overhead, no text" },
+            { title: "True export", body: "Every object editable in whatever opens it next", prompt: "printed document and a tablet side by side on a desk, daylight, no text" },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "06" }] }),
       ],
     }),
 
     slide({
-      id: "integrations",
-      name: "Integrations",
-      layout: "stack",
+      id: "market",
+      name: "Who it is for",
+      layout: "split",
+      motif: "meshLattice",
+      split: 0.5,
       blocks: [
-        heading({
-          kicker: "Integrations",
-          title: "Connects to what you already run",
-          subtitle: "Nothing has to be migrated or retired. The product earns its place alongside your stack before it replaces any of it.",
-        }),
-        iconGrid({
-          grow: 1,
-          style: { columns: 4 },
+        heading({ slot: "full", kicker: "Who it is for", title: "Everyone on the old one" }),
+        paragraph({ slot: "main", body: "Four hundred thousand people use the version this replaces. Every file they have made opens in the new one without conversion." }),
+        metricRow({
+          slot: "main",
           items: [
-            { icon: "mail", title: "Email" },
-            { icon: "calendar", title: "Calendar" },
-            { icon: "database", title: "Data warehouse" },
-            { icon: "cloud", title: "Cloud storage" },
-            { icon: "code", title: "REST API" },
-            { icon: "users", title: "SSO / SCIM" },
-            { icon: "cart", title: "Billing" },
-            { icon: "barChart", title: "BI tools" },
+            { value: "400k", label: "On the old version" },
+            { value: "100%", label: "Files open" },
+            { value: "£0", label: "To upgrade" },
           ],
         }),
-        callout({
-          slot: "footer",
-          icon: "link",
-          statement: "Nothing has to be migrated or retired",
-          detail: "The product earns its place alongside your stack before it replaces any part of it.",
-        }),
+        iso3d({ slot: "aside", scale: 390, items: [{ asset: "desk", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "07" }] }),
       ],
     }),
 
     slide({
-      id: "pricing",
+      id: "model",
       name: "Pricing",
       layout: "stack",
+      motif: "meshBands",
       blocks: [
-        heading({
-          kicker: "Pricing",
-          title: "Per seat, and the free tier is genuinely usable",
-          subtitle: "No feature gating on the paid tiers — you pay for scale and support, not for unlocking the product.",
-        }),
+        heading({ kicker: "Pricing", title: "What it costs" }),
         pricingTable({
           grow: 1,
           plans: [
-            { name: "Starter", price: "$12", period: "/user/mo", features: ["Core workspace", "5 integrations", "Email support"], cta: "Start free" },
-            { name: "Team", price: "$24", period: "/user/mo", highlight: true, badge: "Most popular", features: ["Automation", "Unlimited integrations", "Priority support"], cta: "Start free" },
-            { name: "Enterprise", price: "Custom", features: ["SSO and SCIM", "Dedicated CSM", "99.9% SLA"], cta: "Talk to sales" },
+            {
+              name: "Existing users",
+              price: "£0",
+              period: "upgrade",
+              features: ["Free on a current licence","Every file opens","No conversion step"],
+            },
+            {
+              name: "Individual",
+              price: "£12",
+              period: "monthly",
+              highlight: true,
+              features: ["The full application","Plugin registry","Cloud sync"],
+            },
+            {
+              name: "Team",
+              price: "£29",
+              period: "per seat",
+              features: ["Shared libraries","Brand kit","Admin controls"],
+            },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "08" }] }),
       ],
     }),
 
     slide({
-      id: "roadmap",
-      name: "What's Next",
-      layout: "stack",
+      id: "people",
+      name: "The team",
+      layout: "band",
+      motif: "none",
       blocks: [
-        heading({
-          kicker: "Roadmap",
-          title: "Four quarters, committed publicly",
-          subtitle: "Dates we are prepared to be held to. Anything we are unsure about is not on this slide.",
-        }),
-        timeline({
-          grow: 1,
-          items: [
-            { icon: "rocket", date: "Q1", title: "General availability", body: "Open to everyone." },
-            { icon: "cpu", title: "AI assist", date: "Q2", body: "Drafting and summarisation." },
-            { icon: "globe", date: "Q3", title: "Localisation", body: "Eight new languages." },
-            { icon: "shield", date: "Q4", title: "Compliance", body: "SOC 2 Type II and HIPAA." },
-          ],
-        }),
-      ],
-    }),
-
-    slide({
-      id: "launch-plan",
-      name: "Launch Plan",
-      layout: "splitRight",
-      split: 0.54,
-      blocks: [
-        heading({ slot: "full", title: "Launch Plan", subtitle: "How we take it to market." }),
-        processFlow({
+        heading({ slot: "full", kicker: "The team", title: "Who built it" }),
+        teamCards({
           slot: "main",
+          style: { columns: 3 },
           items: [
-            { icon: "users", title: "Beta", body: "2,400 users, 90 days" },
-            { icon: "megaphone", title: "Announce", body: "Press and community" },
-            { icon: "rocket", title: "GA", body: "Open signup" },
-            { icon: "trendingUp", title: "Scale", body: "Paid acquisition" },
+            {
+              name: "Yuki Tanaka",
+              role: "Product",
+              bio: "Decided what to leave out, which took most of the three years",
+              photoPrompt: "professional headshot of a woman in a dark top, soft studio lighting, neutral background",
+            },
+            {
+              name: "Oscar Lindgren",
+              role: "Engineering",
+              bio: "Wrote the renderer that all three surfaces now share",
+              photoPrompt: "professional headshot of a man with a beard, soft studio lighting, neutral background",
+            },
+            {
+              name: "Fatima Siddiqui",
+              role: "Design",
+              bio: "Owns the object library and the way the whole thing feels",
+              photoPrompt: "professional headshot of a woman in business casual, soft studio lighting, neutral background",
+            },
           ],
         }),
-        checklist({
-          slot: "aside",
-          items: ["Launch page live", "Docs and onboarding ready", "Support team trained", "Pricing published"],
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "09" }] }),
       ],
     }),
 
     slide({
-      id: "cta",
-      name: "Get Started",
-      layout: "closing",
-      background: {
-        prompt: "soft indigo and violet gradient with subtle geometric shapes, clean and modern, no text, no logos",
-        scrim: 0.4,
-      },
+      id: "next",
+      name: "Launch plan",
+      layout: "band",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ title: "Try it with your team", subtitle: "Free for fourteen days. No card required." }),
-        cta({ label: "Start Free Trial" }),
+        heading({ slot: "full", kicker: "Launch plan", title: "The next four months" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 56,
+          style: { columns: 4 },
+          items: [
+            {
+              asset: "cone",
+              value: "Mar",
+              title: "General release",
+              body: "Everyone on the old version is offered the upgrade",
+              accent: 1,
+            },
+            {
+              asset: "capsule",
+              value: "Apr",
+              title: "Plugin registry",
+              body: "Opens to the twelve partners already building",
+              accent: 1,
+            },
+            {
+              asset: "badge",
+              value: "May",
+              title: "Teams",
+              body: "Shared libraries and the first enterprise controls",
+              accent: 1,
+            },
+            {
+              asset: "helix",
+              value: "Jun",
+              title: "Open API",
+              body: "Anyone can build and sell against the core",
+              accent: 1,
+            },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "10" }] }),
+      ],
+    }),
+
+    slide({
+      id: "close",
+      name: "Close",
+      layout: "statement",
+      motif: "meshLattice",
+      blocks: [
+        heading({ slot: "full", kicker: "Available now", title: "Try the beta" }),
+        paragraph({ slot: "main", body: "Open your heaviest file in it. That is the only test that has ever mattered to us." }),
         contactFooter({
           slot: "footer",
           items: [
-            { icon: "globe", label: "yourcompany.com" },
-            { icon: "mail", label: "hello@yourcompany.com" },
+            { icon: "globe", label: "yourproduct.com" },
+            { icon: "mail", label: "beta@yourproduct.com" },
           ],
         }),
       ],

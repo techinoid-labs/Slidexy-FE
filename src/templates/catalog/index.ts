@@ -16,6 +16,7 @@ import { productLaunch } from "./07-product-launch";
 import { annualReport } from "./08-annual-report";
 import { trainingWorkshop } from "./09-training-workshop";
 import { caseStudy } from "./10-case-study";
+import { dimensional } from "./11-dimensional";
 
 export const TEMPLATES: SlideTemplate[] = [
   businessCorporate,
@@ -28,6 +29,7 @@ export const TEMPLATES: SlideTemplate[] = [
   annualReport,
   trainingWorkshop,
   caseStudy,
+  dimensional,
 ];
 
 export const TEMPLATES_BY_ID: Record<string, SlideTemplate> = Object.fromEntries(

@@ -169,9 +169,60 @@ function addTextBox(pptSlide: any, el: HTMLElement, r: Rect) {
   });
 }
 
+/**
+ * PowerPoint preset geometries an element may ask for by name, via
+ * `data-ppt-shape`. Everything outside this list falls back to a plain
+ * rectangle, so a typo degrades instead of producing a corrupt deck.
+ *
+ * This is what lets the 3D asset library (templates/assets3d.tsx) draw a
+ * cube as three flat faces in the browser and still export as a real
+ * PowerPoint cube that a customer can recolour and resize.
+ */
+const PRESET_SHAPES = new Set([
+  // Solids
+  "cube",
+  "can",
+  "hexagon",
+  "parallelogram",
+  "trapezoid",
+  "diamond",
+  "triangle",
+
+  "ellipse",
+  "roundRect",
+  // Extruded objects
+  "star5",
+  "star6",
+  "star8",
+  "rightArrow",
+  "upArrow",
+  "bentArrow",
+  "chevron",
+  "gear6",
+  "gear9",
+  "lightningBolt",
+  "pie",
+  "donut",
+  "blockArc",
+  "teardrop",
+  "cloud",
+  "heart",
+  "pentagon",
+  "octagon",
+  "plaque",
+  "bevel",
+  "sun",
+  "moon",
+]);
+
 /** Panels, cards, bands and rules: anything with a visible fill or border. */
 function addDecoration(pptSlide: any, el: HTMLElement, r: Rect) {
   if (r.w < 2 || r.h < 2) return;
+  // An element inside a composed asset: its parent already emitted the one
+  // shape that represents the whole thing, so drawing it again would stack
+  // flat faces on top of the real geometry.
+  if (el.dataset.pptSkip) return;
+
   const cs = getComputedStyle(el);
 
   const fill = toHex(cs.backgroundColor);
@@ -184,14 +235,24 @@ function addDecoration(pptSlide: any, el: HTMLElement, r: Rect) {
 
   const radius = parseFloat(cs.borderTopLeftRadius) || 0;
 
-  pptSlide.addShape(radius > 3 ? "roundRect" : "rect", {
+  const asked = el.dataset.pptShape;
+  const preset = asked && PRESET_SHAPES.has(asked) ? asked : null;
+  const shape = preset ?? (radius > 3 ? "roundRect" : "rect");
+
+  // Degrees clockwise. The DOM rect of a rotated element is its bounding
+  // box, which is wider than the element, so a rotation is only carried for
+  // elements that opt in and are sized for it.
+  const rotate = parseFloat(el.dataset.pptRotate ?? "") || 0;
+
+  pptSlide.addShape(shape, {
     x: px(r.x),
     y: px(r.y),
     w: px(r.w),
     h: px(r.h),
     fill: fill ? { color: fill, transparency: Math.round((1 - fillAlpha) * 100) } : { type: "none" },
     line: hasBorder ? { color: borderCol!, width: borderW * PX_TO_PT } : { type: "none" },
-    ...(radius > 3 ? { rectRadius: Math.min(0.2, px(radius)) } : {}),
+    ...(!preset && radius > 3 ? { rectRadius: Math.min(0.2, px(radius)) } : {}),
+    ...(rotate ? { rotate } : {}),
   });
 }
 
@@ -428,7 +489,13 @@ export async function exportBlockDeckAsPPT(
         }
 
         // SVG icons have no PowerPoint equivalent; a small picture each.
+        //
+        // Unless the SVG is marked skip. The 3D assets draw themselves as
+        // true isometric artwork for the screen and declare an invisible
+        // hull for the export, so snapshotting the artwork too would lay a
+        // flat picture over the real, editable geometry.
         for (const svg of Array.from(el.querySelectorAll("svg")) as unknown as HTMLElement[]) {
+          if ((svg as HTMLElement).dataset?.pptSkip) continue;
           const sr = rectOf(svg, origin);
           if (sr.w < 6 || sr.h < 6) continue;
           const data = await snapshot(svg, 3);

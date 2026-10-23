@@ -352,6 +352,232 @@ export const BracketPair: React.FC<{ color: string }> = ({ color }) => (
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+/**
+ * An isometric ground plane running off the bottom-right corner, with two
+ * blocks standing on it.
+ *
+ * This is the signature device of the Dimensional template, and the reason
+ * it lives here rather than in assets3d.tsx: the exporter flattens the whole
+ * slide background into one picture, so decoration behind the content can be
+ * true isometric SVG, sheared faces and all. Anything in the content area
+ * cannot, and belongs in assets3d.tsx instead.
+ */
+export const IsoFloor: React.FC<DecorProps> = ({ palette, dark, intensity = 1 }) => {
+  const line = withAlpha(palette.accent, op(dark, 0.14, 0.2, intensity));
+  const faint = withAlpha(palette.text, op(dark, 0.07, 0.12, intensity));
+  const step = 48;
+
+  // A true isometric block: 30 degree faces, which only works out here.
+  const cube = (cx: number, cy: number, w: number, h: number) => {
+    const d = w * 0.577;
+    return {
+      top: `M${cx} ${cy} L${cx + w} ${cy + d} L${cx} ${cy + 2 * d} L${cx - w} ${cy + d} Z`,
+      left: `M${cx - w} ${cy + d} L${cx} ${cy + 2 * d} L${cx} ${cy + 2 * d + h} L${cx - w} ${cy + d + h} Z`,
+      right: `M${cx + w} ${cy + d} L${cx} ${cy + 2 * d} L${cx} ${cy + 2 * d + h} L${cx + w} ${cy + d + h} Z`,
+    };
+  };
+
+  const big = cube(880, 296, 150, 118);
+  const small = cube(694, 402, 54, 42);
+
+  return (
+    <svg style={svgBase} viewBox={`0 0 ${STAGE_WIDTH} ${STAGE_HEIGHT}`} aria-hidden focusable="false">
+      <g stroke={faint} strokeWidth="1" fill="none">
+        {Array.from({ length: 12 }, (_, i) => (
+          <path key={"a" + i} d={`M${300 + i * step} 580 L${780 + i * step} 303`} />
+        ))}
+        {Array.from({ length: 12 }, (_, i) => (
+          <path key={"b" + i} d={`M${300 + i * step} 303 L${780 + i * step} 580`} />
+        ))}
+      </g>
+
+      {[
+        { c: small, o: 0.7 },
+        { c: big, o: 1 },
+      ].map(({ c, o }, i) => (
+        <g key={i}>
+          {/* The blocks stand on the grid, so each face is first filled with
+              the page colour. Without this the grid lines read straight
+              through the solid and the whole thing looks like a mistake
+              rather than an object. */}
+          <path d={c.top} fill={palette.bg} />
+          <path d={c.left} fill={palette.bg} />
+          <path d={c.right} fill={palette.bg} />
+          <path d={c.top} fill={withAlpha(palette.accent, op(dark, 0.2, 0.3, intensity) * o)} />
+          <path d={c.left} fill={withAlpha(palette.accent, op(dark, 0.13, 0.2, intensity) * o)} />
+          <path d={c.right} fill={withAlpha(palette.accent, op(dark, 0.08, 0.14, intensity) * o)} />
+        </g>
+      ))}
+
+      {/* One hard edge down the front of the big block, so it reads as a
+          decision rather than a tint. */}
+      <path d={big.left} fill="none" stroke={line} strokeWidth="1.25" />
+    </svg>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────── mesh layers
+ *
+ * Depth behind the content.
+ *
+ * Everything above draws a shape on the slide. These draw the space the
+ * shapes sit in: a soft field of colour, a receding plane, a lattice with
+ * fog in it. Without one, an object on a flat field is a sticker; with one,
+ * it is an object somewhere.
+ *
+ * They belong here rather than in assets3d.tsx for the usual reason: the
+ * exporter flattens the whole slide background into a single picture, so a
+ * layer behind the content may use blur filters, mesh gradients and fifty
+ * hairlines at no cost. The same marks in the content area would each have
+ * to survive as a PowerPoint shape, and would not.
+ *
+ * All of them are keyed off the theme palette and are deterministic, which
+ * matters because the export re-renders off-screen and must match.
+ */
+
+/** A mesh gradient: four soft colour fields bleeding into each other. */
+export const MeshField: React.FC<DecorProps> = ({ palette, dark, intensity = 1 }) => {
+  const a = op(dark, 0.2, 0.15, intensity);
+  return (
+    <svg style={svgBase} viewBox={`0 0 ${STAGE_WIDTH} ${STAGE_HEIGHT}`} aria-hidden focusable="false">
+      <defs>
+        <filter id="mesh-blur" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="110" />
+        </filter>
+      </defs>
+      <g filter="url(#mesh-blur)">
+        <ellipse cx="760" cy="90" rx="330" ry="250" fill={withAlpha(palette.accent, a)} />
+        <ellipse cx="980" cy="430" rx="300" ry="280" fill={withAlpha(palette.accent2, a * 0.8)} />
+        <ellipse cx="180" cy="520" rx="320" ry="220" fill={withAlpha(palette.accent3, a * 0.55)} />
+        <ellipse cx="420" cy="-40" rx="260" ry="200" fill={withAlpha(palette.accent, a * 0.5)} />
+      </g>
+    </svg>
+  );
+};
+
+/**
+ * A ground plane receding to a horizon, with the lines fading as they go.
+ *
+ * The fade is the whole trick. An even grid reads as graph paper; a grid
+ * that loses contrast with distance reads as a floor.
+ */
+export const MeshPlane: React.FC<DecorProps> = ({ palette, dark, intensity = 1 }) => {
+  const line = withAlpha(palette.accent, op(dark, 0.26, 0.3, intensity));
+  const horizon = 300;
+  const vpX = STAGE_WIDTH * 0.5;
+
+  // Rows at an accelerating spacing, which is what perspective does.
+  const rows = Array.from({ length: 16 }, (_, i) => {
+    const t = (i + 1) / 16;
+    return horizon + Math.pow(t, 2.3) * (STAGE_HEIGHT - horizon) * 1.25;
+  }).filter((y) => y < STAGE_HEIGHT + 40);
+
+  return (
+    <svg style={svgBase} viewBox={`0 0 ${STAGE_WIDTH} ${STAGE_HEIGHT}`} aria-hidden focusable="false">
+      <defs>
+        <linearGradient id="plane-fade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fff" stopOpacity="0" />
+          <stop offset="45%" stopColor="#fff" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#fff" stopOpacity="1" />
+        </linearGradient>
+        <mask id="plane-mask">
+          <rect x="0" y={horizon} width={STAGE_WIDTH} height={STAGE_HEIGHT - horizon} fill="url(#plane-fade)" />
+        </mask>
+      </defs>
+      <g mask="url(#plane-mask)" stroke={line} strokeWidth="1" fill="none">
+        {rows.map((y, i) => (
+          <line key={"r" + i} x1={-200} y1={y} x2={STAGE_WIDTH + 200} y2={y} />
+        ))}
+        {Array.from({ length: 23 }, (_, i) => {
+          const x = -STAGE_WIDTH + i * (STAGE_WIDTH / 7);
+          return <line key={"c" + i} x1={vpX} y1={horizon} x2={x} y2={STAGE_HEIGHT + 60} />;
+        })}
+      </g>
+    </svg>
+  );
+};
+
+/** An isometric lattice of nodes and struts, fogged toward the corner. */
+export const MeshLattice: React.FC<DecorProps> = ({ palette, dark, intensity = 1 }) => {
+  const line = withAlpha(palette.accent, op(dark, 0.34, 0.46, intensity));
+  const node = withAlpha(palette.accent, op(dark, 0.55, 0.7, intensity));
+  const step = 74;
+  const cols = 11;
+  const rows = 7;
+
+  const at = (i: number, j: number): [number, number] => [
+    420 + (i - j) * step * 0.866,
+    120 + (i + j) * step * 0.5,
+  ];
+
+  const struts: Array<[number, number, number, number]> = [];
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      const [x, y] = at(i, j);
+      if (i + 1 < cols) {
+        const [x2, y2] = at(i + 1, j);
+        struts.push([x, y, x2, y2]);
+      }
+      if (j + 1 < rows) {
+        const [x2, y2] = at(i, j + 1);
+        struts.push([x, y, x2, y2]);
+      }
+    }
+  }
+
+  return (
+    <svg style={svgBase} viewBox={`0 0 ${STAGE_WIDTH} ${STAGE_HEIGHT}`} aria-hidden focusable="false">
+      <defs>
+        <radialGradient id="lattice-fog" cx="78%" cy="72%" r="72%">
+          <stop offset="0%" stopColor="#fff" stopOpacity="1" />
+          <stop offset="62%" stopColor="#fff" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+        </radialGradient>
+        <mask id="lattice-mask">
+          <rect width={STAGE_WIDTH} height={STAGE_HEIGHT} fill="url(#lattice-fog)" />
+        </mask>
+      </defs>
+      <g mask="url(#lattice-mask)">
+        <g stroke={line} strokeWidth="1" fill="none">
+          {struts.map(([x1, y1, x2, y2], i) => (
+            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
+          ))}
+        </g>
+        <g fill={node}>
+          {Array.from({ length: cols }, (_, i) =>
+            Array.from({ length: rows }, (_, j) => {
+              const [x, y] = at(i, j);
+              return <circle key={`${i}-${j}`} cx={x} cy={y} r={1.9} />;
+            })
+          )}
+        </g>
+      </g>
+    </svg>
+  );
+};
+
+/**
+ * Soft bands crossing the slide at a shallow angle, blurred into each other.
+ * The quietest of the four; use it under a dense band slide.
+ */
+export const MeshBands: React.FC<DecorProps> = ({ palette, dark, intensity = 1 }) => {
+  const a = op(dark, 0.22, 0.34, intensity);
+  return (
+    <svg style={svgBase} viewBox={`0 0 ${STAGE_WIDTH} ${STAGE_HEIGHT}`} aria-hidden focusable="false">
+      <defs>
+        <filter id="band-blur" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="46" />
+        </filter>
+      </defs>
+      <g filter="url(#band-blur)">
+        <path d="M-60 170 L1020 20 L1020 150 L-60 300 Z" fill={withAlpha(palette.accent, a)} />
+        <path d="M-60 420 L1020 250 L1020 360 L-60 530 Z" fill={withAlpha(palette.accent2, a * 0.75)} />
+      </g>
+    </svg>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Registry
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -367,6 +593,11 @@ export const BACKGROUND_DECOR = {
   blobCut: BlobCut,
   ruleMark: RuleMark,
   brokenFrame: BrokenFrame,
+  isoFloor: IsoFloor,
+  meshField: MeshField,
+  meshPlane: MeshPlane,
+  meshLattice: MeshLattice,
+  meshBands: MeshBands,
 } as const;
 
 export type BackgroundDecorName = keyof typeof BACKGROUND_DECOR;

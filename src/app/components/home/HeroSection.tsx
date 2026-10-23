@@ -254,9 +254,8 @@ export default function HeroSection() {
                 mb: 4,
               }}
             >
-              Hand over a topic, a document or a link. You get an outline you
-              can argue with, slides where every piece is editable, and a file
-              your client can actually open and change.
+              A topic, a document or a link. You get an outline to argue
+              with, and a file your client can actually edit.
             </Typography>
 
             {/* The input, set as a card rather than a search bar */}

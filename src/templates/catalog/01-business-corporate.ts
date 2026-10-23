@@ -1,38 +1,29 @@
 /**
- * 01 — Business & Corporate
+ * 01. Business & Corporate
  *
- * Reference template for content density and visual range. Each content slide
- * carries roughly 80–120 words rather than three short bullets, and leans on
- * the visual blocks — oversized figures, accent bands, overlapping spotlight
- * cards, ghost numerals — so no two slides are built the same way.
+ * DEVICE: structural objects, lattice frames and columns, in one blue.
+ * A corporate deck earns trust by looking built rather than styled.
+ * 
+ * DENSITY: measured. Wide margins, a receding plane behind, and figures
+ * carrying every column.
  *
- * Image prompts are written for the backend pipeline: subject, then
- * treatment, then a no-text qualifier, since generators render type badly.
+ * COMPOSITIONS: hero, band, split, chart, statement, table, people, timeline.
+ * Every template shares the frame, and draws a different sequence from
+ * it, so no two decks run the same shapes in the same order.
  */
 
 import { corporateNavy } from "../themes";
 import type { SlideTemplate } from "../types";
 import {
-  bigStat,
-  callout,
   chart,
   checklist,
+  comparisonTable,
   contactFooter,
-  cta,
   heading,
-  iconBullets,
-  iconGrid,
-  image,
+  iso3d,
   metricRow,
-  numbered,
   paragraph,
-  pillars,
-  processFlow,
-  roadmapPhases,
-  scatter,
   slide,
-  spotlight,
-  statCards,
   teamCards,
   timeline,
 } from "./helpers";
@@ -43,531 +34,318 @@ export const businessCorporate: SlideTemplate = {
   name: "Business & Corporate",
   category: "Business",
   archetype: "corporate",
-  description: "Professional decks for growth and success.",
+  description: "Boardroom blue, structural objects, nothing raised above the facts.",
   theme: corporateNavy,
-  coverPrompt:
-    "modern glass office towers photographed from below at blue hour, cool tones, no text, no logos",
   slides: [
-    // 01 ─ Cover
     slide({
       id: "cover",
       name: "Cover",
-      layout: "cover",
-      background: {
-        prompt:
-          "modern glass corporate towers from below at blue hour, cool cinematic lighting, shallow depth of field, no text, no logos",
-        scrim: 0.64,
-      },
+      layout: "hero",
+      motif: "meshPlane",
+      split: 0.5,
       blocks: [
-        heading({
-          kicker: "Company Overview 2026",
-          title: "Building what the next decade runs on",
-          subtitle:
-            "Ten years of compounding work, 1.2 million customers, and a plan for the three markets we enter next.",
-        }),
-        contactFooter({
-          slot: "footer",
-          items: [
-            { icon: "building", label: "YOUR COMPANY" },
-            { icon: "calendar", label: "October 2026" },
-          ],
-        }),
-      ],
-    }),
-
-    // 02 ─ At a glance
-    slide({
-      id: "at-a-glance",
-      name: "Company at a Glance",
-      layout: "splitRight",
-      split: 0.54,
-      blocks: [
-        heading({
-          slot: "full",
-          kicker: "Who we are",
-          title: "Company at a Glance",
-          subtitle:
-            "Founded in 2016 to solve one operational problem, now serving customers in twenty countries across four industries.",
-        }),
-        statCards({
+        heading({ slot: "full", kicker: "Annual Briefing", title: "Built to hold" }),
+        paragraph({ slot: "main", body: "Where the business stands, what it costs to run, and the three decisions this year turns on." }),
+        metricRow({
           slot: "main",
-          style: { columns: 2 },
           items: [
-            { icon: "calendar", value: "10+", label: "Years in operation", delta: "profitable since 2021" },
-            { icon: "users", value: "640", label: "People across 19 countries", delta: "+180 this year" },
-            { icon: "globe", value: "20+", label: "Markets served", delta: "6 added in 2026" },
-            { icon: "heart", value: "1.2M", label: "Customers using us weekly", delta: "+31% YoY" },
+            { value: "£412M", label: "Revenue" },
+            { value: "38", label: "Markets" },
+            { value: "9,400", label: "People" },
           ],
         }),
-        spotlight({
-          slot: "aside",
-          prompt:
-            "bright modern open-plan office interior with glass partitions and daylight, people out of focus, architectural photography, no text",
-          stat: { value: "94%", label: "Would recommend us" },
-          cardTitle: "Built on retention",
-          cardBody: "Nine in ten customers from our first three years are still with us today.",
-        }),
+        iso3d({ slot: "aside", scale: 380, items: [{ asset: "lattice", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "YOUR COMPANY" }, { label: "2026" }] }),
       ],
     }),
 
-    // 03 ─ About
+    slide({
+      id: "contents",
+      name: "Contents",
+      layout: "band",
+      motif: "meshBands",
+      blocks: [
+        heading({ slot: "full", kicker: "Contents", title: "What follows" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 56,
+          style: { columns: 4 },
+          items: [
+            {
+              asset: "cube",
+              value: "01",
+              title: "Where we stand",
+              body: "Position, scale and the markets that carried the year",
+              accent: 1,
+            },
+            {
+              asset: "lattice",
+              value: "02",
+              title: "How we are built",
+              body: "The operating model and the costs underneath it",
+              accent: 1,
+            },
+            {
+              asset: "tower",
+              value: "03",
+              title: "What we proved",
+              body: "Performance against the targets set last spring",
+              accent: 1,
+            },
+            {
+              asset: "arch",
+              value: "04",
+              title: "What comes next",
+              body: "Three decisions and the capital they need",
+              accent: 1,
+            },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "02" }] }),
+      ],
+    }),
+
     slide({
       id: "about",
-      name: "About Our Company",
-      layout: "splitRight",
-      split: 0.52,
+      name: "About",
+      layout: "band",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({ slot: "main", kicker: "Our story", title: "Why we exist" }),
-        paragraph({
+        heading({ slot: "full", kicker: "The business", title: "Who we are" }),
+        iso3d({
           slot: "main",
-          body:
-            "We started because the tools our founders needed did not exist. Every option was either built for enterprises with implementation teams, or so simple it fell over in the second month. We built the middle.",
-        }),
-        iconBullets({
-          slot: "main",
-          style: { compact: true },
+          divided: true,
+          scale: 66,
           items: [
             {
-              icon: "target",
-              label: "Problem first, always",
-              body: "Every product line started from a customer problem we could describe in one sentence.",
+              asset: "slab",
+              value: "32",
+              title: "Years trading",
+              body: "Through four recessions and two changes of ownership",
+              accent: 1,
             },
             {
-              icon: "globe",
-              label: "Local, not translated",
-              body: "Teams on the ground in every region we sell into, not a localisation layer.",
+              asset: "tower",
+              value: "38",
+              title: "Markets",
+              body: "Twelve direct, the rest through long-standing partners",
+              accent: 1,
             },
             {
-              icon: "shield",
-              label: "Built to be relied on",
-              body: "99.97% uptime over the last three years, with no unplanned data loss.",
+              asset: "cubeStack",
+              value: "4",
+              title: "Divisions",
+              body: "Each with its own balance sheet and its own board",
+              accent: 1,
             },
           ],
         }),
-        cta({ slot: "main", label: "Learn More" }),
-        image({
-          slot: "aside",
-          prompt:
-            "contemporary corporate lounge with warm wood, plants and soft daylight, wide angle, no people in focus, no text",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "03" }] }),
       ],
     }),
 
-    // 04 ─ Mission / Vision / Values
     slide({
-      id: "mission-vision-values",
-      name: "Mission, Vision & Values",
-      layout: "stack",
+      id: "problem",
+      name: "The challenge",
+      layout: "band",
+      motif: "meshBands",
       blocks: [
-        heading({
-          kicker: "What we stand for",
-          title: "Mission · Vision · Values",
-          subtitle: "Three statements we actually use to settle arguments.",
+        heading({ slot: "full", kicker: "The challenge", title: "Three pressures on the model" }),
+        iso3d({
+          slot: "main",
+          divided: true,
+          scale: 66,
+          items: [
+            {
+              asset: "wedge",
+              value: "19%",
+              title: "Cost of supply",
+              body: "Up year on year, and not expected to fall before 2028",
+              accent: 1,
+            },
+            {
+              asset: "shards",
+              value: "3",
+              title: "New entrants",
+              body: "Each funded well enough to buy share for a while",
+              accent: 1,
+            },
+            {
+              asset: "torus",
+              value: "11mo",
+              title: "Decision cycle",
+              body: "From board approval to anything reaching a customer",
+              accent: 1,
+            },
+          ],
         }),
-        iconGrid({
+        contactFooter({ slot: "footer", items: [{ label: "04" }] }),
+      ],
+    }),
+
+    slide({
+      id: "solution",
+      name: "The plan",
+      layout: "split",
+      motif: "meshLattice",
+      split: 0.54,
+      blocks: [
+        heading({ slot: "full", kicker: "The plan", title: "Fewer things, done properly" }),
+        paragraph({ slot: "main", body: "Consolidating four operating models into one, retiring the systems that no longer earn their maintenance, and moving decisions closer to the markets that live with them." }),
+        checklist({
+          slot: "main",
+          items: [
+            "One operating model across all four divisions",
+            "Nine systems retired, three retained and extended",
+            "Spending authority devolved to market leads",
+          ],
+        }),
+        iso3d({ slot: "aside", scale: 360, items: [{ asset: "arch", title: "", accent: 1 }] }),
+        contactFooter({ slot: "footer", items: [{ label: "05" }] }),
+      ],
+    }),
+
+    slide({
+      id: "proof",
+      name: "Performance",
+      layout: "stack",
+      motif: "none",
+      invert: true,
+      blocks: [
+        heading({ kicker: "Performance", title: "Revenue by division" }),
+        chart({
           grow: 1,
+          kind: "barChart",
+          categories: ["Industrial","Consumer","Services","Licensing"],
+          series: [
+            { name: "2025", values: [148,96,71,24], accent: 3 },
+            { name: "2026", values: [161,102,88,31], accent: 1 },
+          ],
+          yFormat: "currency",
+          caption: "Growth in every division but Consumer, which held flat.",
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "06" }] }),
+      ],
+    }),
+
+    slide({
+      id: "market",
+      name: "Market",
+      layout: "statement",
+      motif: "meshPlane",
+      blocks: [
+        heading({ slot: "full", kicker: "Market", title: "Where the growth is" }),
+        paragraph({ slot: "main", body: "Two thirds of the addressable market sits outside the regions we serve directly today, and the partners covering it take a margin we can no longer justify." }),
+        metricRow({
+          slot: "main",
+          items: [
+            { value: "£6.4B", label: "Addressable" },
+            { value: "31%", label: "Served direct" },
+            { value: "2", label: "Regions to enter" },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "07" }] }),
+      ],
+    }),
+
+    slide({
+      id: "model",
+      name: "Operating model",
+      layout: "stack",
+      motif: "meshBands",
+      blocks: [
+        heading({ kicker: "Operating model", title: "How the business makes money" }),
+        comparisonTable({
+          grow: 1,
+          columns: [
+            { label: "Contracted", highlight: true },
+            { label: "Transactional" },
+            { label: "Licensing" },
+          ],
+          rows: [
+            { label: "Share of revenue", cells: ["64%","27%","9%"] },
+            { label: "Gross margin", cells: ["41%","58%","92%"] },
+            { label: "Repricing", cells: ["Annual, indexed","Per order","Fixed term"] },
+            { label: "Falls first in a downturn", cells: ["no","yes","partial"] },
+          ],
+        }),
+        contactFooter({ slot: "footer", items: [{ label: "08" }] }),
+      ],
+    }),
+
+    slide({
+      id: "people",
+      name: "Leadership",
+      layout: "band",
+      motif: "none",
+      blocks: [
+        heading({ slot: "full", kicker: "Leadership", title: "Who runs it" }),
+        teamCards({
+          slot: "main",
           style: { columns: 3 },
           items: [
             {
-              icon: "target",
-              title: "Our Mission",
-              body: "Make operational software that a team can adopt in a week and still be using in a decade — without a consultant in the room.",
+              name: "Margaret Hale",
+              role: "Chief Executive",
+              bio: "Eleven years with the business, four in the chair",
+              photoPrompt: "professional headshot of a woman executive in a dark suit, soft studio lighting, neutral background",
             },
             {
-              icon: "lightbulb",
-              title: "Our Vision",
-              body: "A market where buying good infrastructure is not a privilege reserved for the largest companies in the sector.",
+              name: "Daniel Okonjo",
+              role: "Chief Financial Officer",
+              bio: "Joined from the audit side, which shows in the forecasts",
+              photoPrompt: "professional headshot of a man in a navy suit, soft studio lighting, neutral background",
             },
             {
-              icon: "award",
-              title: "Our Values",
-              body: "Integrity before growth, collaboration before heroics, invention before imitation, and people before any of it.",
+              name: "Priya Raman",
+              role: "Chief Operating Officer",
+              bio: "Runs the consolidation programme and the three plants",
+              photoPrompt: "professional headshot of a woman in business attire, soft studio lighting, neutral background",
             },
           ],
         }),
-        callout({
-          icon: "users",
-          statement: "Decisions get made by the people closest to the work",
-          detail:
-            "Every value above is enforced by one rule: if you are accountable for an outcome, you choose how it is delivered.",
-        }),
+        contactFooter({ slot: "footer", items: [{ label: "09" }] }),
       ],
     }),
 
-    // 05 ─ Snapshot
     slide({
-      id: "snapshot",
-      name: "Business Snapshot",
-      layout: "splitRight",
-      split: 0.46,
-      blocks: [
-        heading({
-          slot: "full",
-          kicker: "Performance",
-          title: "Business Snapshot",
-          subtitle:
-            "Revenue grew 46% while operating margin improved five points — the first year we have done both at once.",
-        }),
-        bigStat({
-          slot: "main",
-          value: "$152M",
-          label: "Annual recurring revenue",
-          body:
-            "Up from $104M last year, with 64% of growth coming from existing customers expanding rather than new logos.",
-        }),
-        chart({
-          slot: "aside",
-          kind: "comboChart",
-          categories: ["2022", "2023", "2024", "2025", "2026"],
-          series: [
-            { name: "Revenue", values: [34, 52, 78, 104, 152], accent: 1, kind: "bar" },
-            { name: "Gross profit", values: [18, 29, 46, 64, 98], accent: 3, kind: "line" },
-          ],
-          yFormat: "currency",
-        }),
-        metricRow({
-          slot: "footer",
-          items: [
-            { value: "24%", label: "Operating margin" },
-            { value: "118%", label: "Net revenue retention" },
-            { value: "64%", label: "Gross margin" },
-            { value: "$27M", label: "Free cash flow" },
-          ],
-        }),
-      ],
-    }),
-
-    // 06 ─ What we do
-    slide({
-      id: "what-we-do",
-      name: "What We Do",
-      layout: "splitLeft",
-      split: 0.58,
-      blocks: [
-        heading({
-          slot: "full",
-          kicker: "Our offering",
-          title: "What We Do",
-          subtitle: "Four practices that are sold separately and almost always bought together.",
-        }),
-        iconBullets({
-          slot: "main",
-          style: { columns: 2 },
-          items: [
-            {
-              icon: "briefcase",
-              label: "Consulting",
-              body: "Operating model and process design, delivered by people who have run the function themselves.",
-            },
-            {
-              icon: "cpu",
-              label: "Technology",
-              body: "Implementation and integration against your existing stack — no rip and replace.",
-            },
-            {
-              icon: "settings",
-              label: "Operations",
-              body: "Managed running of the processes we build, with published service levels.",
-            },
-            {
-              icon: "shield",
-              label: "Support",
-              body: "Named engineers, four-hour response, and a quarterly review that is not a sales call.",
-            },
-          ],
-        }),
-        image({
-          slot: "aside",
-          prompt:
-            "minimal desk scene with laptop, notebook and a plant beside a bright window, soft natural light, top-down, no text",
-        }),
-      ],
-    }),
-
-    // 07 ─ Pillars
-    slide({
-      id: "pillars",
-      name: "Our Strategic Pillars",
+      id: "next",
+      name: "What is next",
       layout: "stack",
+      motif: "none",
+      invert: true,
       blocks: [
-        heading({
-          kicker: "Strategy",
-          title: "Our Strategic Pillars",
-          subtitle: "Where the next three years of investment goes, in priority order.",
-        }),
-        pillars({
-          grow: 1,
-          items: [
-            { icon: "lightbulb", title: "Innovation", body: "Twenty per cent of engineering on problems no customer has asked for yet." },
-            { icon: "trendingUp", title: "Growth", body: "Two new markets a year, entered properly rather than tested." },
-            { icon: "users", title: "Customers", body: "Expansion revenue as the primary growth engine, not new logos." },
-            { icon: "settings", title: "Excellence", body: "Cost to serve falling every quarter while volume rises." },
-          ],
-        }),
-      ],
-    }),
-
-    // 08 ─ Business model
-    slide({
-      id: "business-model",
-      name: "Our Business Model",
-      layout: "fullBleed",
-      blocks: [
-        heading({
-          kicker: "How it works",
-          title: "Our Business Model",
-          subtitle: "How we create, deliver and capture value — and why the loop compounds.",
-        }),
-        processFlow({
-          grow: 1,
-          loopLabel: "Every cycle lowers the cost of the next one",
-          items: [
-            { icon: "database", title: "Inputs", body: "Domain expertise and operational data" },
-            { icon: "settings", title: "Activities", body: "Design, build and run" },
-            { icon: "award", title: "Value", body: "Measurable cost and cycle-time reduction" },
-            { icon: "users", title: "Customers", body: "Operators who renew and expand" },
-            { icon: "trendingUp", title: "Revenue", body: "Recurring, with 118% net retention" },
-          ],
-        }),
-      ],
-    }),
-
-    // 09 ─ Market position
-    slide({
-      id: "market-position",
-      name: "Market Position",
-      layout: "splitRight",
-      split: 0.4,
-      blocks: [
-        heading({
-          slot: "full",
-          kicker: "The market",
-          title: "Market Position",
-          subtitle: "A twelve-billion-dollar market where the top four vendors still hold under half of it.",
-        }),
-        bigStat({
-          slot: "main",
-          value: "25%",
-          label: "Share of our serviceable market",
-          body: "Up from 14% three years ago, taken almost entirely from incumbents rather than from market growth.",
-        }),
-        scatter({
-          slot: "aside",
-          xAxis: { low: "Low cost", high: "High cost" },
-          yAxis: { low: "Niche", high: "High quality" },
-          points: [
-            { label: "Our Company", x: 0.72, y: 0.82, highlight: true },
-            { label: "Competitor A", x: 0.38, y: 0.55 },
-            { label: "Competitor B", x: 0.24, y: 0.3 },
-            { label: "Competitor C", x: 0.62, y: 0.42 },
-            { label: "Competitor D", x: 0.45, y: 0.2 },
-          ],
-        }),
-      ],
-    }),
-
-    // 10 ─ Growth story
-    slide({
-      id: "growth-story",
-      name: "Our Growth Story",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "Milestones",
-          title: "Our Growth Story",
-          subtitle: "Six moments that changed the shape of the business.",
-        }),
+        heading({ kicker: "What is next", title: "The year ahead" }),
         timeline({
           grow: 1,
           items: [
-            { icon: "flag", date: "2018", title: "Founded", body: "Three people, one product idea, one customer." },
-            { icon: "rocket", date: "2019", title: "First launch", body: "Shipped to the first hundred paying customers." },
-            { icon: "globe", date: "2021", title: "Global expansion", body: "Offices opened on three continents." },
-            { icon: "users", date: "2023", title: "One million users", body: "Crossed a million weekly active accounts." },
-            { icon: "award", date: "2026", title: "Category leader", body: "Ranked first on both capability and support." },
+            { date: "Q1", title: "One model", body: "Divisions move onto shared planning and reporting" },
+            { date: "Q2", title: "Two regions", body: "Direct operations open in the Nordics and Iberia" },
+            { date: "Q3", title: "Systems retired", body: "Nine legacy platforms switched off for good" },
+            { date: "Q4", title: "Repricing", body: "The contracted book moves onto the new index" },
           ],
         }),
+        contactFooter({ slot: "footer", items: [{ label: "10" }] }),
       ],
     }),
 
-    // 11 ─ Performance
     slide({
-      id: "performance",
-      name: "Performance & Analytics",
-      layout: "splitRight",
-      split: 0.58,
+      id: "close",
+      name: "Close",
+      layout: "hero",
+      motif: "meshPlane",
+      split: 0.54,
       blocks: [
-        heading({
-          slot: "full",
-          kicker: "The numbers",
-          title: "Performance & Analytics",
-          subtitle: "Growth and efficiency moved in the same direction for the first time.",
-        }),
-        chart({
-          slot: "main",
-          kind: "comboChart",
-          categories: ["2022", "2023", "2024", "2025", "2026"],
-          series: [
-            { name: "Revenue", values: [48, 66, 88, 104, 152], accent: 1, kind: "bar" },
-            { name: "Profit", values: [12, 21, 34, 46, 78], accent: 3, kind: "line" },
-          ],
-          yFormat: "currency",
-        }),
-        statCards({
-          slot: "aside",
-          style: { columns: 1 },
-          items: [
-            { icon: "trendingUp", value: "+68%", label: "Revenue growth", delta: "third year above 40%" },
-            { icon: "barChart", value: "+42%", label: "Profit increase" },
-            { icon: "userCheck", value: "95%", label: "Customer retention" },
-          ],
-        }),
-      ],
-    }),
-
-    // 12 ─ Global presence
-    slide({
-      id: "global-presence",
-      name: "Global Presence",
-      layout: "splitLeft",
-      split: 0.52,
-      blocks: [
-        heading({
-          slot: "full",
-          kicker: "Where we operate",
-          title: "Global Presence",
-          subtitle: "Twenty markets, entered one at a time, each with local people before local customers.",
-        }),
-        numbered({
-          slot: "main",
-          items: [
-            { title: "North America", body: "Our largest region at 44% of revenue, and still growing 38% a year." },
-            { title: "Europe", body: "Fastest growing at 52%, driven almost entirely by regulated industries." },
-            { title: "Asia Pacific", body: "Newest region, profitable within eleven months of opening." },
-          ],
-        }),
-        image({
-          slot: "aside",
-          prompt:
-            "flat minimal world map illustration in soft blue tones on a light background, simple silhouette continents, no labels, no text",
-        }),
-      ],
-    }),
-
-    // 13 ─ Leadership
-    slide({
-      id: "leadership",
-      name: "Our Leadership Team",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "The people",
-          title: "Our Leadership Team",
-          subtitle: "Operators first. Between them, four decades of running the functions we now sell into.",
-        }),
-        teamCards({
-          grow: 1,
-          style: { columns: 3 },
-          items: [
-            {
-              name: "Ahmed Khan",
-              role: "CEO & Founder",
-              bio: "Twenty years building technology businesses across three continents. Previously founded and sold a logistics platform.",
-              photoPrompt: "professional corporate headshot of a man in a navy suit, neutral studio background, soft lighting",
-            },
-            {
-              name: "Sara Ahmed",
-              role: "Chief Technology Officer",
-              bio: "Leads product and engineering. Scaled two platform businesses past a million users before joining.",
-              photoPrompt: "professional corporate headshot of a woman in business attire, neutral studio background, soft lighting",
-            },
-            {
-              name: "Usman Raza",
-              role: "Chief Operating Officer",
-              bio: "Runs global operations and expansion. Opened eleven of our twenty markets personally.",
-              photoPrompt: "professional corporate headshot of a man in a grey suit, neutral studio background, soft lighting",
-            },
-          ],
-        }),
-      ],
-    }),
-
-    // 14 ─ Roadmap
-    slide({
-      id: "roadmap",
-      name: "Our Roadmap",
-      layout: "stack",
-      blocks: [
-        heading({
-          kicker: "What's next",
-          title: "Our Roadmap",
-          subtitle: "Committed work, likely work, and the direction beyond it.",
-        }),
-        roadmapPhases({
-          grow: 1,
-          items: [
-            {
-              icon: "flag",
-              phase: "Now",
-              period: "2026",
-              points: [
-                "Ship the platform rebuild to all regions",
-                "Hold operating margin at 24% through the migration",
-                "Close the two renewals worth 31% of revenue",
-              ],
-            },
-            {
-              icon: "rocket",
-              phase: "Next",
-              period: "2027",
-              points: [
-                "Enter two new markets with local teams first",
-                "Launch the adjacent product line already in beta",
-                "Take cost to serve down a further 15%",
-              ],
-            },
-            {
-              icon: "target",
-              phase: "Future",
-              period: "2028+",
-              points: ["Category leadership on capability and support", "Expansion revenue as the primary growth engine"],
-            },
-          ],
-        }),
-      ],
-    }),
-
-    // 15 ─ Next steps
-    slide({
-      id: "next-steps",
-      name: "Next Steps",
-      layout: "closing",
-      background: {
-        prompt:
-          "modern corporate skyscraper against a clear sky at golden hour, upward perspective, warm light, no text, no logos",
-        scrim: 0.68,
-      },
-      blocks: [
-        heading({
-          kicker: "Where we go from here",
-          title: "Let's build the next decade together",
-          subtitle: "Three ways to start, none of which require a procurement process.",
-        }),
-        checklist({
-          style: { columns: 1 },
-          items: [
-            "A ninety-minute discovery session with your operations lead",
-            "A baseline review of your current cost to serve, at no cost",
-            "A scoped pilot in one region, live inside a quarter",
-          ],
-        }),
-        cta({ label: "Get in Touch" }),
+        heading({ slot: "full", kicker: "The ask", title: "Approve the plan" }),
+        paragraph({ slot: "main", body: "Three decisions are in front of the board: the consolidation budget, the two market entries, and the authority to retire the legacy estate." }),
+        iso3d({ slot: "aside", scale: 300, items: [{ asset: "twist", title: "", accent: 1 }] }),
         contactFooter({
           slot: "footer",
           items: [
-            { icon: "mail", label: "hello@company.com" },
-            { icon: "phone", label: "+92 300 1234567" },
-            { icon: "globe", label: "www.company.com" },
+            { icon: "globe", label: "yourcompany.com" },
+            { icon: "mail", label: "board@yourcompany.com" },
           ],
         }),
       ],
