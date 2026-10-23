@@ -106,7 +106,13 @@ export type Motif =
   | "contour"
   | "blobCut"
   | "ruleMark"
-  | "brokenFrame";
+  | "brokenFrame"
+  | "isoFloor"
+  // Mesh layers: depth behind the content rather than a shape on it.
+  | "meshField"
+  | "meshPlane"
+  | "meshLattice"
+  | "meshBands";
 
 /**
  * A template's complete visual identity. Two templates sharing every block can
@@ -187,6 +193,7 @@ export type BlockType =
   | "spotlight"
   | "numberedList"
   | "metricRow"
+  | "iso3d"
   | "spacer";
 
 /** Where a block sits. Slots are resolved by the layout. */
@@ -517,6 +524,32 @@ export interface MetricRowBlock extends BlockBase {
   items: Array<{ id: string; value: RichText; label: RichText }>;
 }
 
+/**
+ * A row of 3D objects from `assets3d.tsx`, each with a label.
+ *
+ * The objects are built from flat divs and carry an invisible export hull,
+ * so they render as shaded faces in the browser and arrive in PowerPoint as
+ * real cube, can and hexagon geometry the customer can still edit.
+ */
+export interface Iso3dBlock extends BlockBase {
+  type: "iso3d";
+  items: Array<{
+    id: string;
+    /** A key from ASSETS_3D. An unknown name falls back to a plain block. */
+    asset: string;
+    title: RichText;
+    body?: RichText;
+    /** Optional figure, set above the title. */
+    value?: RichText;
+    /** Accent role to paint the object with. Defaults to its position. */
+    accent?: 1 | 2 | 3 | 4;
+  }>;
+  /** Object width in px on the 960x540 stage. */
+  scale?: number;
+  /** Hairline rules between the columns, as in the band layout. */
+  divided?: boolean;
+}
+
 export type Block =
   | HeadingBlock
   | ParagraphBlock
@@ -548,6 +581,7 @@ export type Block =
   | SpotlightBlock
   | NumberedListBlock
   | MetricRowBlock
+  | Iso3dBlock
   | SpacerBlock;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -565,6 +599,16 @@ export type SlideLayout =
   | "splitLeft"
   /** Edge-to-edge single block, e.g. a full-bleed image with overlay text. */
   | "fullBleed"
+  /** Editorial frame: a large headline over a divided row of columns. */
+  | "band"
+  /** Headline and copy on the left, one large object on the right. */
+  | "hero"
+  /** The mirror of hero: the object on the left, the words on the right. */
+  | "split"
+  /** One object at full size, headline above it and a line below. */
+  | "showcase"
+  /** Words only, at full volume, with no object at all. */
+  | "statement"
   /** Closing slide treatment. */
   | "closing";
 
@@ -578,6 +622,22 @@ export interface SlideSpec {
   split?: number;
   /** Background image for the whole slide. */
   background?: { url?: string; prompt?: string; scrim?: number };
+  /**
+   * Flips the field and the ink for this slide only.
+   *
+   * Used as a rhythm device: a long deck on one field colour reads as a
+   * single block, and one flipped slide every few slides breaks it into
+   * chapters without adding a second palette.
+   */
+  invert?: boolean;
+  /**
+   * Overrides the theme's background motif for this slide.
+   *
+   * A headline across the full width over a band across the full width
+   * leaves nowhere for decoration to go, so content slides usually set
+   * this to "none" and let the cover carry the motif.
+   */
+  motif?: Motif;
 }
 
 export interface SlideTemplate {

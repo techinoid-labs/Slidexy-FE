@@ -24,6 +24,7 @@ import type {
   IconGridBlock,
   ImageBlock,
   ImageGridBlock,
+  Iso3dBlock,
   LogoWallBlock,
   NestedCirclesBlock,
   ParagraphBlock,
@@ -362,7 +363,14 @@ export const pricingTable = (
 
 export const teamCards = (
   o: {
-    items: Array<{ name: string; role: string; bio?: string; photoPrompt?: string }>;
+    items: Array<{
+      name: string;
+      role: string;
+      bio?: string;
+      /** A real photograph. Falls back to photoPrompt when absent. */
+      photoUrl?: string;
+      photoPrompt?: string;
+    }>;
   } & Common
 ): TeamCardsBlock => ({
   id: nextId("tc"),
@@ -375,6 +383,7 @@ export const teamCards = (
     name: rt("name", it.name),
     role: rt("role", it.role),
     bio: it.bio ? rt("bio", it.bio) : undefined,
+    photoUrl: it.photoUrl,
     photoPrompt: it.photoPrompt,
   })),
 });
@@ -424,7 +433,9 @@ export const image = (
 });
 
 export const imageGrid = (
-  o: { items: Array<{ prompt?: string; icon?: string; title?: string; body?: string }> } & Common
+  o: {
+    items: Array<{ url?: string; prompt?: string; icon?: string; title?: string; body?: string }>;
+  } & Common
 ): ImageGridBlock => ({
   id: nextId("igr"),
   type: "imageGrid",
@@ -433,6 +444,7 @@ export const imageGrid = (
   style: o.style,
   items: o.items.map((it, i) => ({
     id: `i${i}`,
+    url: it.url,
     prompt: it.prompt,
     icon: it.icon,
     title: it.title ? rt("title", it.title) : undefined,
@@ -537,5 +549,35 @@ export const metricRow = (
     id: `i${i}`,
     value: rt("value", it.value),
     label: rt("label", it.label),
+  })),
+});
+
+export const iso3d = (
+  o: {
+    items: Array<{
+      asset: string;
+      title: string;
+      body?: string;
+      value?: string;
+      accent?: 1 | 2 | 3 | 4;
+    }>;
+    scale?: number;
+    divided?: boolean;
+  } & Common
+): Iso3dBlock => ({
+  id: nextId("iso"),
+  type: "iso3d",
+  slot: o.slot,
+  grow: o.grow,
+  style: o.style,
+  scale: o.scale,
+  divided: o.divided,
+  items: o.items.map((it, i) => ({
+    id: `i${i}`,
+    asset: it.asset,
+    accent: it.accent,
+    title: rt("title", it.title),
+    body: it.body ? rt("body", it.body) : undefined,
+    value: it.value ? rt("value", it.value) : undefined,
   })),
 });

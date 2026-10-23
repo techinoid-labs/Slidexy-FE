@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, Icon, Text, useBlockEdit, useTokens } from "./primitives";
 import { ImageEditAffordance } from "./inlineEdit";
-import { readableOn, withAlpha } from "../tokens";
+import { readableOn, withAlpha, RADII } from "../tokens";
 import type {
   ContactFooterBlock,
   CtaButtonBlock,
@@ -76,7 +76,10 @@ export const ImagePlaceholder: React.FC<{
 
 export const ImageBlockView: React.FC<{ block: ImageBlock }> = ({ block }) => {
   const t = useTokens();
-  const radius = t.radius;
+  // A pill radius on a card is a style choice; on a photograph it is a
+  // circle, and a grid of three circles reads as a fault rather than a
+  // decision. Images cap at the large step.
+  const radius = Math.min(t.radius, RADII.lg);
   const { onValueChange } = useBlockEdit();
   const setFit = (v: "cover" | "contain") => onValueChange?.(block.id, "fit", v);
 
@@ -161,7 +164,14 @@ export const ImageGridBlockView: React.FC<{ block: ImageGridBlock }> = ({ block 
       {block.items.map((item, i) => {
         const accent = t.accent(i + 1);
         return (
-          <Card key={item.id} accent={accent} style={{ overflow: "hidden" }}>
+          <Card
+            key={item.id}
+            accent={accent}
+            // A pill radius on a card is a style choice; on a card that is
+            // mostly photograph it turns the picture into a circle, and a
+            // row of three circles reads as a fault rather than a decision.
+            style={{ overflow: "hidden", borderRadius: Math.min(t.radius, RADII.lg) }}
+          >
             <div style={{ position: "relative", height: 74 }}>
               {item.url ? (
                 <div
@@ -328,7 +338,14 @@ export const TeamCardsBlockView: React.FC<{ block: TeamCardsBlock }> = ({ block 
       {block.items.map((item, i) => {
         const accent = t.accent(i + 1);
         return (
-          <Card key={item.id} accent={accent} style={{ overflow: "hidden" }}>
+          <Card
+            key={item.id}
+            accent={accent}
+            // A pill radius on a card is a style choice; on a card that is
+            // mostly photograph it turns the picture into a circle, and a
+            // row of three circles reads as a fault rather than a decision.
+            style={{ overflow: "hidden", borderRadius: Math.min(t.radius, RADII.lg) }}
+          >
             <div style={{ position: "relative", height: 96 }}>
               {item.photoUrl ? (
                 <div
@@ -433,7 +450,11 @@ export const ContactFooterBlockView: React.FC<{ block: ContactFooterBlock }> = (
     <div style={{ display: "flex", gap: t.space(6), flexWrap: "wrap", alignItems: "center" }}>
       {block.items.map((item, i) => (
         <div key={item.id} style={{ display: "flex", gap: t.space(2), alignItems: "center" }}>
-          <Icon name={item.icon} accent={t.palette.textMuted} size={18} variant="plainGlyph" />
+          {/* No icon means no icon. A page number in the corner was getting
+              a fallback glyph next to it, which reads as a broken asset. */}
+          {item.icon && (
+            <Icon name={item.icon} accent={t.palette.textMuted} size={18} variant="plainGlyph" />
+          )}
           <Text
             blockId={block.id}
             path={`items.${i}.label`}
