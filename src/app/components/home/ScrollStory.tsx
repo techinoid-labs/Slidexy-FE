@@ -25,17 +25,17 @@ const BEATS = [
   {
     n: "01",
     title: "One sentence",
-    body: "You write a line about what the deck is for. Nothing else is needed to start.",
+    body: "A line about what the deck is for. Nothing else.",
   },
   {
     n: "02",
     title: "Becomes a running order",
-    body: "Structure first, before anything is designed. Rewrite a line, drop a section, change the order.",
+    body: "Structure first. Rewrite, drop, reorder.",
   },
   {
     n: "03",
     title: "Becomes a deck you own",
-    body: "Slides you can edit down to the last caption, and a PowerPoint file with real objects inside it.",
+    body: "Editable slides, and a PowerPoint file with real objects in it.",
   },
 ];
 

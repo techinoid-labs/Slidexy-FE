@@ -116,8 +116,8 @@ export default function Community() {
                 mb: 4,
               }}
             >
-              Bring something real, not a test topic. The thing you are
-              actually presenting next week is the only fair way to judge it.
+              Bring what you are presenting next week. A test topic proves
+              nothing.
             </Typography>
 
             <Link href="/tools/prompt-to-deck" style={{ textDecoration: "none" }}>

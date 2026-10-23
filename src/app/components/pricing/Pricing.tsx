@@ -111,9 +111,7 @@ export default function PricingSection({ compact = false }: { compact?: boolean 
             not the seat count.
           </Display>
           <Lede sx={{ pb: 1 }}>
-            Start free and find out whether the output is good enough for
-            your work before you pay for anything. Paid plans carry a 7 day
-            money back guarantee.
+            Start free. Paid plans carry a 7 day money back guarantee.
           </Lede>
         </Box>
 
@@ -344,8 +342,7 @@ export default function PricingSection({ compact = false }: { compact?: boolean 
         )}
 
         <Typography sx={{ mt: 3.5, fontSize: "0.88rem", color: "#9A94A6" }}>
-          Editable PowerPoint export is on every plan, including the free
-          one. It is not held back for the expensive tier.
+          Editable PowerPoint export is on every plan, including the free one.
         </Typography>
       </Container>
     </Box>

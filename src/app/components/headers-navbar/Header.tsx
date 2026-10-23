@@ -39,11 +39,23 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /**
+   * Four links and one button.
+   *
+   * It had nine things in it: Home, which the logo already does, four
+   * nav links, "Explore templates" styled as a third kind of control,
+   * a Create deck button, a login, and a "Try without signing up"
+   * button pointing at the same route as Create deck. Two buttons to
+   * the same page is not a choice, it is a crowd.
+   *
+   * Templates is a page, so it sits with the pages. Everything that
+   * leads to the composer is one button.
+   */
   const navigationItems = [
-    { label: "Home", link: "/" },
+    { label: "Templates", link: "/templates" },
     { label: "How it works", link: "/how-it-works" },
     { label: "Pricing", link: "/pricing" },
-    { label: "Blogs", link: "/blog" },
+    { label: "Blog", link: "/blog" },
   ];
 
   return (
@@ -73,9 +85,9 @@ export default function Header() {
         sx={{
           justifyContent: "space-between",
           alignItems: "center",
-          px: { xs: 2, md: 5 },
-          minHeight: { xs: 64, md: 72 },
-          py: 0.5,
+          px: { xs: 2, md: 4 },
+          minHeight: { xs: 56, md: 60 },
+          py: 0,
         }}
       >
         <Link href="/" style={{ textDecoration: "none" }}>
@@ -88,15 +100,15 @@ export default function Header() {
             <Image
               src="/images/Logo.svg"
               alt="Slidexy"
-              width={148}
-              height={52}
+              width={112}
+              height={40}
             />
           </Box>
         </Link>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           {!isMobile && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mr: 4 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, mr: 2 }}>
               {navigationItems.map((item) => {
                 const isActive = pathname === item.link;
                 return (
@@ -105,9 +117,9 @@ export default function Header() {
                       component="span"
                       sx={{
                         display: "inline-block",
-                        px: 1.75,
+                        px: 1.25,
                         py: 0.5,
-                        fontSize: "0.93rem",
+                        fontSize: "0.88rem",
                         fontWeight: isActive ? 600 : 500,
                         color: isActive ? "#0F0A19" : "#6B6478",
                         borderBottom: isActive ? "2px solid #8E2DE2" : "2px solid transparent",
@@ -124,37 +136,20 @@ export default function Header() {
           )}
 
           {!isMobile && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2.5, pl: 3, borderLeft: "1px solid #E4E1EA" }}>
-              <Link href="/templates" style={{ textDecoration: "none", color: "inherit" }}>
-                <Box
-                  component="span"
-                  sx={{
-                    fontSize: "0.93rem",
-                    fontWeight: 600,
-                    color: "#0F0A19",
-                    borderBottom: "2px solid #8E2DE2",
-                    pb: 0.3,
-                    whiteSpace: "nowrap",
-                    transition: "color 0.15s ease",
-                    "&:hover": { color: "#8E2DE2" },
-                  }}
-                >
-                  Explore templates
-                </Box>
-              </Link>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
               <Box
                 component={Link}
                 href="/tools/prompt-to-deck"
                 sx={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 1,
                   bgcolor: "#0F0A19",
                   color: "#fff",
-                  px: 2.75,
-                  py: 1.15,
-                  fontSize: "0.93rem",
+                  px: 2.25,
+                  py: 0.95,
+                  fontSize: "0.88rem",
                   fontWeight: 600,
+                  lineHeight: 1.2,
                   textDecoration: "none",
                   whiteSpace: "nowrap",
                   transition: "background 0.15s ease",

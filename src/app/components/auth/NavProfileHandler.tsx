@@ -129,46 +129,25 @@ const NavProfileHandler = ({ size, showMail }: any) => {
           disableElevation
           size={size ? "small" : "medium"}
           sx={{
-            ml: "10px",
+            mr: "2px",
             whiteSpace: "nowrap",
-            // Square and quiet, so the one filled block in the header stays
-            // the primary action. A second rounded pill competes with it.
+            // A text link, not a second button. The bar has one button
+            // and it is the one that starts a deck. The try-without-
+            // signing-up flow this used to sit beside pointed at the
+            // same route, so it is that button now.
+            minWidth: 0,
             borderRadius: 0,
-            border: "1.5px solid rgba(15,10,25,0.18)",
-            color: "#0F0A19",
+            border: "none",
+            color: "#6B6478",
             bgcolor: "transparent",
-            fontWeight: 600,
-            fontSize: "0.93rem",
+            fontWeight: 500,
+            fontSize: "0.88rem",
             textTransform: "none",
-            px: 2.25,
-            "&:hover": { bgcolor: "transparent", borderColor: "#0F0A19" },
+            px: 1,
+            "&:hover": { bgcolor: "transparent", color: "#0F0A19" },
           }}
         >
           {size ? `Sign in` : `Log in`}
-        </Button>
-        {/* Kept from main: the first deck does not need an account, and
-            saying so here is worth more than another sign-in prompt.
-            Squared off to match the rest of the header. */}
-        <Button
-          suppressHydrationWarning
-          variant="contained"
-          disableElevation
-          onClick={() => router.push("/tools/prompt-to-deck")}
-          size={size ? "small" : "medium"}
-          sx={{
-            ml: 1.25,
-            whiteSpace: "nowrap",
-            borderRadius: 0,
-            bgcolor: "#0F0A19",
-            color: "#fff",
-            fontWeight: 600,
-            fontSize: size ? "0.82rem" : "0.93rem",
-            textTransform: "none",
-            px: 2.25,
-            "&:hover": { bgcolor: "#8E2DE2" },
-          }}
-        >
-          Try without signing up
         </Button>
         </Box>
       )}

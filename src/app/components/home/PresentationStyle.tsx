@@ -51,9 +51,8 @@ export default function PresentationStyle() {
             Starting points,<br />none of them generic.
           </Display>
           <Lede sx={{ pb: 1 }}>
-            Each one is a different design system, not a recolour of the same
-            one. Pick a template, or switch later. Your content stays where it
-            is while everything around it changes.
+            Ten design systems, not one recoloured ten ways. Switch
+            whenever. Your content stays put.
           </Lede>
         </Box>
 
@@ -158,10 +157,8 @@ export default function PresentationStyle() {
               A template is a starting point, not a cage
             </Typography>
             <Typography sx={{ fontSize: "0.95rem", lineHeight: 1.6, color: MUTED }}>
-              The layout holds everything in place so a long deck stays
-              consistent. Unlock any single block and it comes out of the flow,
-              ready to drag, resize or rotate, snapping to every other element
-              on the slide. Put it back whenever you want.
+              The layout keeps a long deck consistent. Unlock any block to
+              drag, resize or rotate it, then put it back.
             </Typography>
           </Box>
         </Box>
