@@ -42,6 +42,7 @@ import {
   LogoWallBlockView,
   TeamCardsBlockView,
 } from "./mediaBlocks";
+import { Iso3dBlockView } from "./isoBlocks";
 
 export * from "./primitives";
 export { ICONS } from "./icons";
@@ -123,6 +124,9 @@ export const BlockView: React.FC<{ block: Block; slideNumber?: number }> = ({
       return <NumberedListBlockView block={block} />;
     case "metricRow":
       return <MetricRowBlockView block={block} />;
+
+    case "iso3d":
+      return <Iso3dBlockView block={block} />;
 
     case "spacer":
       return <SpacerView size={block.size} />;
