@@ -217,6 +217,12 @@ export function applyTemplateToDeck(slides: any[], template: SlideTemplate): any
   return slides.map((slide, i) => reskin(slide, i, slides.length, template));
 }
 
+/** The heading text a filled spec ended up with, if it has one. */
+function headingTextOf(spec: SlideSpec): string {
+  const heading: any = spec.blocks.find((b) => b.type === "heading");
+  return textOf(heading?.title);
+}
+
 function reskin(slide: any, i: number, total: number, template: SlideTemplate): any {
     const content = extractContent(slide);
     const spec = pickSpec(template, i, total);
@@ -241,8 +247,34 @@ function reskin(slide: any, i: number, total: number, template: SlideTemplate): 
       slide_title: {
         ...(slide.slide_title ?? {}),
         konva_component: slide.slide_title?.konva_component ?? "Konva.Text",
-        text: content.title || slide.slide_title?.text || template.name,
+        // Falls back to the heading fillSpec actually left on the slide
+        // before the template's name. On a starter slide there is no
+        // incoming title, and without this step slide_title said
+        // "Investor & Fundraising" while the slide itself read "The
+        // case for capital", so the thumbnail strip and the canvas
+        // disagreed about what the slide was called.
+        text:
+          content.title ||
+          slide.slide_title?.text ||
+          headingTextOf(filled) ||
+          template.name,
       },
       slide_id: slide.slide_id ?? `slide-${uuid()}`,
     };
+}
+
+/**
+ * Builds a fresh slide from a template, for an editor that has nothing
+ * in it yet.
+ *
+ * It goes through the same reskin path as a template change rather than
+ * copying the spec directly, so a starter slide and a re-skinned slide
+ * are the same kind of object and nothing downstream has to tell them
+ * apart. Passing an empty slide means extractContent finds no title and
+ * no bullets, and fillSpec then leaves the template's own copy in place:
+ * the user opens on a finished-looking slide they can type over, not an
+ * empty frame that makes them do the designing.
+ */
+export function createStarterSlide(template: SlideTemplate, index = 0, total = 1): any {
+  return reskin({}, index, total, template);
 }

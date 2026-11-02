@@ -40,6 +40,21 @@ export function getTemplate(id: string): SlideTemplate | undefined {
   return TEMPLATES_BY_ID[id];
 }
 
+/**
+ * The template a deck starts on when nobody has chosen one.
+ *
+ * Capital Green. A starting slide is the first thing anyone sees of the
+ * product, so it should look like a decision rather than a default: dark
+ * ink, one number carrying the slide, a lattice fogging out behind. A
+ * blank white rectangle teaches people nothing about what the editor can
+ * do, and the eleven templates are the strongest thing here.
+ */
+export const DEFAULT_TEMPLATE_ID = "investor-deck";
+
+export function defaultTemplate(): SlideTemplate {
+  return TEMPLATES_BY_ID[DEFAULT_TEMPLATE_ID] ?? TEMPLATES[0];
+}
+
 /** Catalogue metadata for the template picker, without pulling slide data. */
 export interface TemplateSummary {
   id: string;

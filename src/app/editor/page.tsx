@@ -40,7 +40,10 @@ import { generateSlideVariants } from "@/utils/variantGenerator";
 import { getSlideDimensions } from "@/utils/slideUtils";
 import { SHELL } from "../components/modify-presentation/shellTheme";
 import BlockInspector from "../components/modify-presentation/BlockInspector";
+import EditorBackdrop from "../components/modify-presentation/EditorBackdrop";
 import { parseBlockElementId } from "@/templates/mutate";
+import { defaultTemplate } from "@/templates/catalog";
+import { createStarterSlide } from "@/templates/applyTemplate";
 
 
 const Page = () => {
@@ -216,6 +219,23 @@ const Page = () => {
     setIsMobileImageSelected(false);
     setIsThemePanelOpen(false);
     setSelectedShapeIndex(null);
+  };
+
+  /**
+   * Starts a deck from the default template.
+   *
+   * EditorEmptyState has always taken an onCreateSlide prop and has
+   * always been rendered without one, so its "Blank slide" button never
+   * appeared and the empty editor's only exit was to go and generate a
+   * deck with AI. This wires it up, and what it produces is a designed
+   * slide from the Capital Green template rather than a white rectangle:
+   * an empty frame makes the user do the design work, a finished slide
+   * they can type over does not.
+   */
+  const handleCreateFirstSlide = () => {
+    const slide = createStarterSlide(defaultTemplate());
+    setSlides([slide]);
+    setSelectedSlideIndex(0);
   };
 
   const handleClearCanvas = () => {
@@ -550,7 +570,7 @@ const Page = () => {
             <>
               <LowerNavbarMobile />
               {slides.length === 0 ? (
-                <EditorEmptyState />
+                <EditorEmptyState onCreateSlide={handleCreateFirstSlide} />
               ) : (
                 <>
                   <SlideEditorMobile slides={slides} onDeselect={handleDeselect} />
@@ -620,25 +640,21 @@ const Page = () => {
               <div className="shrink-0 z-10">
                 <SideNavBar />
               </div>
+              {/* The backdrop is a sibling behind the scroller, not a
+                  background on it. As a background it would scroll away
+                  with the content; the drifting fields are meant to
+                  stay put and light the slide from behind. The scroller
+                  is laid over it rather than nested inside, so its own
+                  scroll position never moves them. */}
+              <div className="relative flex-1 min-h-0">
+              <EditorBackdrop />
               <div
                 ref={canvasContainerRef}
-                className="flex-1 overflow-auto z-0"
-                style={{
-                  marginTop: 0,
-                  background: "#FAFAFA",
-                  backgroundImage: [
-                    "radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px)",
-                    "linear-gradient(45deg, #F0F0F1 25%, transparent 25%)",
-                    "linear-gradient(-45deg, #F0F0F1 25%, transparent 25%)",
-                    "linear-gradient(45deg, transparent 75%, #F0F0F1 75%)",
-                    "linear-gradient(-45deg, transparent 75%, #F0F0F1 75%)",
-                  ].join(", "),
-                  backgroundSize: "28px 28px, 48px 48px, 48px 48px, 48px 48px, 48px 48px",
-                  backgroundPosition: "0 0, 0 0, 0 24px, 24px -24px, -24px 0px",
-                }}
+                className="absolute inset-0 overflow-auto"
+                style={{ marginTop: 0, zIndex: 1 }}
               >
                 {slides.length === 0 ? (
-                  <EditorEmptyState />
+                  <EditorEmptyState onCreateSlide={handleCreateFirstSlide} />
                 ) : (
                   <>
                     <SlideEditor slides={slides} onDeselect={handleDeselect} slideCount={slides.length} deselectAllRef={deselectAllRef} scale={scale} />
@@ -652,6 +668,7 @@ const Page = () => {
                     />
                   </>
                 )}
+                </div>
               </div>
               <div
                 className={`
