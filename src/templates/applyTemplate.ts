@@ -191,19 +191,46 @@ function pickSpec(template: SlideTemplate, i: number, total: number): SlideSpec 
   return middle[(i - 1) % middle.length];
 }
 
+/**
+ * Re-skins one slide and leaves the rest of the deck alone.
+ *
+ * The picker offers "this slide only", and that promise has to mean
+ * something. Position still matters: slide 1 of a deck should get the
+ * template's cover even when it is the only slide being changed, so the
+ * index and deck length go through the same pickSpec as a full apply.
+ */
+export function applyTemplateToSlide(
+  slides: any[],
+  index: number,
+  template: SlideTemplate
+): any[] {
+  if (!slides.length || index < 0 || index >= slides.length) return slides;
+
+  return slides.map((slide, i) =>
+    i === index ? reskin(slide, i, slides.length, template) : slide
+  );
+}
+
 export function applyTemplateToDeck(slides: any[], template: SlideTemplate): any[] {
   if (!slides.length) return slides;
 
-  return slides.map((slide, i) => {
+  return slides.map((slide, i) => reskin(slide, i, slides.length, template));
+}
+
+function reskin(slide: any, i: number, total: number, template: SlideTemplate): any {
     const content = extractContent(slide);
-    const spec = pickSpec(template, i, slides.length);
+    const spec = pickSpec(template, i, total);
     const filled = fillSpec(structuredClone(spec), content);
 
     return {
       ...slide,
       // A re-skinned slide becomes a block slide; its old layout variants and
       // loose elements no longer describe what is on screen.
-      blockSpec: { ...filled, id: `${filled.id}-${i}` },
+      // templateId is repeated inside blockSpec on purpose: the editor's
+      // autosave reads blockSpec.templateId and the picker reads the slide
+      // level one, and for a long time only the second was written, so every
+      // save recorded a null template.
+      blockSpec: { ...filled, id: `${filled.id}-${i}`, templateId: template.id },
       templateThemeId: template.theme.id,
       templateId: template.id,
       layout_type: `block:${filled.layout}`,
@@ -218,5 +245,4 @@ export function applyTemplateToDeck(slides: any[], template: SlideTemplate): any
       },
       slide_id: slide.slide_id ?? `slide-${uuid()}`,
     };
-  });
 }

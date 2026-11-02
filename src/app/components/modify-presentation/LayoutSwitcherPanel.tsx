@@ -10,8 +10,20 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useSlideThemeContext } from "@/app/context/ThemeContext";
 import { generateSlideVariants } from "@/utils/variantGenerator";
 import { TEMPLATES } from "@/templates/catalog";
-import { applyTemplateToDeck } from "@/templates/applyTemplate";
+import { applyTemplateToDeck, applyTemplateToSlide } from "@/templates/applyTemplate";
 import { PANEL, panelContainerSx, panelCloseButtonSx } from "./panelTheme";
+import TemplateThumbnail from "./TemplateThumbnail";
+import UndoIcon from "@mui/icons-material/Undo";
+
+/**
+ * Width of a template card's live preview.
+ *
+ * The panel is 292px, the templates tab pads 12px a side and the grid gap
+ * is 8px, which leaves 130px a column; the card's 2px border takes the
+ * last four. Hard-coding it keeps the thumbnail from having to measure
+ * itself, which for eleven slides would mean eleven layout passes.
+ */
+const THUMB_WIDTH = 126;
 
 // Variant count map — must stay in sync with backend LAYOUT_VARIANT_COUNTS and variantGenerator.ts
 const VARIANT_COUNTS: Record<string, number> = {
@@ -175,19 +187,44 @@ const LayoutSwitcherPanel = forwardRef<HTMLDivElement, LayoutSwitcherPanelProps>
     };
 
     /**
-     * Block templates re-skin the whole deck rather than setting a per-slide
-     * style flag: content is lifted out of each slide and poured into the
-     * template's slide specs, so an AI-generated deck keeps its words and
-     * only changes how it looks.
+     * Block templates re-skin slides rather than setting a per-slide style
+     * flag: content is lifted out and poured into the template's specs, so
+     * an AI-generated deck keeps its words and only changes how it looks.
+     *
+     * Two things this used to get wrong. It ignored the scope toggle and
+     * always rewrote the whole deck, so "This Slide" was a control that lied.
+     * And it was unrecoverable: one click replaced every slide's layout with
+     * no way back, which makes browsing the catalogue feel risky enough that
+     * people stop doing it.
      */
+    // One step is the right depth here. The panel is for trying templates on,
+    // and the regret people have is about the last click, not the fifth.
+    const [undoSnapshot, setUndoSnapshot] = useState<{ slides: any[]; name: string } | null>(null);
+
     const handleSelectBlockTemplate = (templateId: string) => {
       const template = TEMPLATES.find((t) => t.id === templateId);
       if (!template || !slides.length) return;
-      setSlides(applyTemplateToDeck(structuredClone(slides), template));
+
+      const before = structuredClone(slides);
+      const next =
+        scope === "current"
+          ? applyTemplateToSlide(before, selectedSlideIndex, template)
+          : applyTemplateToDeck(before, template);
+
+      setUndoSnapshot({ slides: structuredClone(slides), name: template.name });
+      setSlides(next);
+    };
+
+    const handleUndo = () => {
+      if (!undoSnapshot) return;
+      setSlides(undoSnapshot.slides);
+      setUndoSnapshot(null);
     };
 
     const activeBlockTemplateId: string | null =
-      (currentSlide as any)?.templateId ?? null;
+      (currentSlide as any)?.templateId ??
+      (currentSlide as any)?.blockSpec?.templateId ??
+      null;
 
     const handleSelectVariant = (variantIndex: number) => {
       if (!currentSlide) return;
@@ -323,6 +360,28 @@ const LayoutSwitcherPanel = forwardRef<HTMLDivElement, LayoutSwitcherPanelProps>
             {/* ════════ TEMPLATES TAB ════════ */}
             {activeTab === "templates" && (
               <Box sx={{ p: 1.5 }}>
+                {/* Undo the last apply. Sits above the grid so it is in
+                    view right where the click happened. */}
+                {undoSnapshot && (
+                  <Box
+                    onClick={handleUndo}
+                    sx={{
+                      mb: 1.5, px: 1.25, py: 0.875, borderRadius: "10px",
+                      display: "flex", alignItems: "center", gap: 0.875,
+                      cursor: "pointer",
+                      background: PANEL.surfaceSunken,
+                      border: `1px solid ${PANEL.border}`,
+                      transition: "background 0.15s ease, border-color 0.15s ease",
+                      "&:hover": { background: PANEL.surface, borderColor: accentColor },
+                    }}
+                  >
+                    <UndoIcon sx={{ fontSize: 15, color: PANEL.textMuted }} />
+                    <Typography sx={{ fontSize: "0.68rem", color: PANEL.text, lineHeight: 1.4 }}>
+                      Undo {undoSnapshot.name}
+                    </Typography>
+                  </Box>
+                )}
+
                 {/* Active template banner */}
                 {activeTemplateStyle && (
                   <Box sx={{
@@ -362,7 +421,6 @@ const LayoutSwitcherPanel = forwardRef<HTMLDivElement, LayoutSwitcherPanelProps>
                   <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
                     {TEMPLATES.map((tpl) => {
                       const isActive = activeBlockTemplateId === tpl.id;
-                      const p = tpl.theme.palette;
                       return (
                         <Box
                           key={tpl.id}
@@ -382,16 +440,11 @@ const LayoutSwitcherPanel = forwardRef<HTMLDivElement, LayoutSwitcherPanelProps>
                             },
                           }}
                         >
-                          {/* Miniature of the template's actual palette and type */}
-                          <Box sx={{ height: 64, background: p.bg, p: "10px 12px", position: "relative", overflow: "hidden" }}>
-                            <Box sx={{ width: "70%", height: 7, borderRadius: 1, background: p.text, opacity: 0.9, mb: "5px", fontFamily: tpl.theme.fonts.display }} />
-                            <Box sx={{ width: "45%", height: 4, borderRadius: 1, background: p.textMuted, opacity: 0.6, mb: "8px" }} />
-                            <Box sx={{ display: "flex", gap: "4px" }}>
-                              {[p.accent, p.accent2, p.accent3, p.accent4].map((c, i) => (
-                                <Box key={i} sx={{ width: 14, height: 14, borderRadius: tpl.theme.radius === "pill" ? "50%" : "4px", background: c }} />
-                              ))}
-                            </Box>
-                          </Box>
+                          {/* The template's real cover slide, not an
+                              impression of it. THUMB_WIDTH matches the
+                              column so the 16:9 stage lands square in the
+                              card with no letterboxing. */}
+                          <TemplateThumbnail template={tpl} width={THUMB_WIDTH} />
                           <Box sx={{ px: 1.25, py: 0.9, background: PANEL.surface, borderTop: `1px solid ${PANEL.border}` }}>
                             <Typography sx={{ fontSize: "0.72rem", fontWeight: 600, color: PANEL.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                               {tpl.name}

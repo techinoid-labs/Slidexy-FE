@@ -44,7 +44,9 @@ import { parseBlockElementId } from "@/templates/mutate";
 
 
 const Page = () => {
-  const [showTemplatePanel, setShowTemplatePanel] = useState(false);
+  // showTemplatePanel used to live here and was threaded into both nav bars,
+  // which accepted it and never read it. The template picker is a panel the
+  // rail owns (LayoutSwitcherPanel), so the flag controlled nothing.
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
 
   const {
@@ -172,8 +174,15 @@ const Page = () => {
 
   // Keeps the deck on the server. Debounced, coalesced, and a no-op while
   // signed out -- the status it returns is what the top bar shows.
+  // applyTemplateToDeck writes templateId on the slide; this only ever read
+  // blockSpec.templateId, which nothing set, so every autosave recorded a
+  // null template and a reopened deck forgot which one it was built from.
+  // Both are read now, slide level first, because that is the one the
+  // picker treats as the source of truth.
   const activeTemplateId =
-    (slides?.find((sl: any) => sl?.blockSpec?.templateId) as any)?.blockSpec?.templateId ?? null;
+    (slides?.find((sl: any) => sl?.templateId || sl?.blockSpec?.templateId) as any)?.templateId ??
+    (slides?.find((sl: any) => sl?.blockSpec?.templateId) as any)?.blockSpec?.templateId ??
+    null;
   const autosave = useDeckAutosave({
     presentationId: presentationId ?? null,
     slides,
@@ -539,10 +548,7 @@ const Page = () => {
         <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
           {isMobile ? (
             <>
-              <LowerNavbarMobile
-                showTemplatePanel={showTemplatePanel}
-                setShowTemplatePanel={setShowTemplatePanel}
-              />
+              <LowerNavbarMobile />
               {slides.length === 0 ? (
                 <EditorEmptyState />
               ) : (
@@ -612,10 +618,7 @@ const Page = () => {
           ) : (
             <div className="relative flex flex-1 min-h-0 overflow-hidden">
               <div className="shrink-0 z-10">
-                <SideNavBar
-                  showTemplatePanel={showTemplatePanel}
-                  setShowTemplatePanel={setShowTemplatePanel}
-                />
+                <SideNavBar />
               </div>
               <div
                 ref={canvasContainerRef}

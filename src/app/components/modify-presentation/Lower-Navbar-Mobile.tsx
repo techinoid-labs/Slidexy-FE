@@ -15,11 +15,6 @@ import MobileMedia from "../Media-Mobile";
 
 type PanelType = null | "template" | "text" | "media" | "shapes";
 
-interface SideNavBarProps {
-  showTemplatePanel: boolean;
-  setShowTemplatePanel: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
 const navItems = [
   { label: "Themes", icon: "/images/template-icon.svg" },
   { label: "Text", icon: "/images/text-icon.svg" },
@@ -27,10 +22,7 @@ const navItems = [
   { label: "Shapes", icon: "/images/nav-icon.svg" },
 ];
 
-const SideNavBar = ({
-  showTemplatePanel,
-  setShowTemplatePanel,
-}: SideNavBarProps) => {
+const SideNavBar = () => {
   const [selectedIdx, setSelectedIdx] = React.useState(0);
 
   // console.log(selectedIdx);
