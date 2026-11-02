@@ -19,11 +19,6 @@ import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 
 type PanelType = null | "themes" | "text" | "media" | "shapes" | "layouts";
 
-interface SideNavBarProps {
-  showTemplatePanel: boolean;
-  setShowTemplatePanel: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
 const NAV_ITEMS: {
   label: string;
   panel: PanelType;
@@ -40,7 +35,7 @@ const NAV_ITEMS: {
 
 const ACCENT = SHELL.accent;
 
-const SideNavBar = ({ showTemplatePanel, setShowTemplatePanel }: SideNavBarProps) => {
+const SideNavBar = () => {
   const [openPanel, setOpenPanel] = React.useState<PanelType>(null);
   const panelRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const sidebarHeight = "100vh";
