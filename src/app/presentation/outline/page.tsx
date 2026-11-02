@@ -10,6 +10,7 @@ import { useSlides } from "@/app/context/SlidesContext";
 import { useDispatch } from "react-redux";
 import { setSlides } from "@/app/slice/slidesSlice";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   ACCENT,
   BONE,
@@ -81,8 +82,10 @@ export default function OutlinePage() {
   const [cards, setCards] = useState(() =>
     slidesState.length > 0 ? mapApiSlidesToCards(slidesState) : []
   );
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>("");
@@ -99,9 +102,23 @@ export default function OutlinePage() {
     suggestions: string[];
   } | null>(null);
 
-  // ✅ FIXED: Improved save function with better error handling
-  const saveToBackend = async (updatedCards: any[]) => {
-    if (!pid || updatedCards.length === 0) return false;
+  /**
+   * Saves the outline.
+   *
+   * PUT /api/presentations/:id is behind the auth middleware while the GET
+   * beside it is not, which is why the outline would load with every slide
+   * on it and then fail on save: the request carried no token and came
+   * back 401. Returns the reason so the caller can say something true
+   * rather than "please try again" at a user who cannot succeed by trying
+   * again.
+   */
+  const saveToBackend = async (
+    updatedCards: any[]
+  ): Promise<{ ok: boolean; reason?: "empty" | "unauthenticated" | "failed" }> => {
+    if (!pid || updatedCards.length === 0) return { ok: false, reason: "empty" };
+
+    const token = (session?.user as { accessToken?: string } | undefined)?.accessToken;
+    if (!token) return { ok: false, reason: "unauthenticated" };
 
     try {
       const slidesToSave = updatedCards.map((card, index) => {
@@ -130,24 +147,26 @@ export default function OutlinePage() {
 
       const response = await fetch(`${API_BASE_URL}/api/presentations/${pid}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ slides: slidesToSave }),
       });
 
+      if (response.status === 401) {
+        return { ok: false, reason: "unauthenticated" };
+      }
       if (!response.ok) {
-        throw new Error(`Failed to save: ${response.statusText}`);
+        throw new Error(`Failed to save: ${response.status} ${response.statusText}`);
       }
 
-      const result = await response.json();
-      console.log("✅ Presentation saved successfully:", result);
-      
-      // ✅ Update Redux store with saved slides
+      await response.json();
       dispatch(setSlides(slidesToSave));
-      
-      return true;
+      return { ok: true };
     } catch (err) {
-      console.error("❌ Failed to save presentation:", err);
-      return false;
+      console.error("Failed to save presentation:", err);
+      return { ok: false, reason: "failed" };
     }
   };
 
@@ -155,10 +174,13 @@ export default function OutlinePage() {
   const debouncedSave = useCallback(
     debounce(async (updatedCards: any[]) => {
       setIsSaving(true);
-      await saveToBackend(updatedCards);
+      const result = await saveToBackend(updatedCards);
+      // A later autosave succeeding clears an earlier complaint, so the
+      // bar does not keep an error on screen after the problem is gone.
+      if (result.ok) setSaveError(null);
       setIsSaving(false);
     }, 800),
-    [pid, slidesState]
+    [pid, slidesState, session]
   );
 
   // Fetch presentation on mount
@@ -190,22 +212,26 @@ export default function OutlinePage() {
 
   // ✅ FIXED: Ensure all changes are saved before navigation
   const handleContinue = async () => {
+    setSaveError(null);
     setIsSaving(true);
-    
+
     // Cancel any pending debounced saves
     debouncedSave.cancel();
     
-    // Perform immediate save
-    const success = await saveToBackend(cards);
-    
+    const result = await saveToBackend(cards);
+
     setIsSaving(false);
-    
-    if (success) {
-      // Navigate to editor after successful save
+
+    if (result.ok) {
       router.push(`/editor?pid=${pid}`);
-    } else {
-      alert("Failed to save changes. Please try again.");
+      return;
     }
+
+    setSaveError(
+      result.reason === "unauthenticated"
+        ? "Sign in to save this outline. Your changes are still here."
+        : "That did not save. Check your connection and try again."
+    );
   };
 
   // Title editing
@@ -584,6 +610,21 @@ export default function OutlinePage() {
           >
             {cards.length} slides in this order
           </Typography>
+
+          {saveError && (
+            <Typography
+              role="alert"
+              sx={{
+                fontFamily: "inherit",
+                fontSize: "0.86rem",
+                color: "#b3261e",
+                mr: { sm: 2 },
+                order: { xs: -1, sm: 0 },
+              }}
+            >
+              {saveError}
+            </Typography>
+          )}
 
           <Box
             component="button"
